@@ -80,6 +80,11 @@ test("a page mirror keeps the main content and drops the editor, scripts and chr
   assert.equal(markdownPath("/a/"), "/a/index.md");
 });
 
+test("in a mirror, keys to type read as code and FAQ questions as headings", () => {
+  const page = readPage('<html><body><main><p>Type <kbd>kannaDa</kbd>.</p><details><summary>Is it free?</summary><p>Yes.</p></details></main></body></html>', "/f/");
+  assert.equal(page.markdown, "Type `kannaDa`.\n\n### Is it free?\n\nYes.");
+});
+
 test("llms.txt lists every page with its markdown, and llms-full.txt holds their text", () => {
   const pages = [
     { path: "/", title: "Home", description: "The editor.", markdown: "# Home" },

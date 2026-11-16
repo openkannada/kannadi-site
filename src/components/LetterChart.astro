@@ -12,7 +12,7 @@ const groups = Object.entries(CHART).map(([name, letters]) => ({
   <p>Each letter with the Baraha spelling you type for it, and its ISO 15919 spelling under that.</p>
   {groups.map((g) => (
     <>
-      <h3 lang={/[ಀ-೿]/.test(g.name) ? "kn" : undefined}>{g.name}</h3>
+      <h3 set:html={g.name.replace(/[ಀ-೿]+/gu, (k) => `<span lang="kn">${k}</span>`)} />
       <ul class="chart" role="list">
         {g.cells.map((c) => (
           <li>

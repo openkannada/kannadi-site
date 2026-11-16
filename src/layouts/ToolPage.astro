@@ -21,7 +21,7 @@ const { page } = Astro.props;
     <section aria-labelledby="how-heading">
       <h2 id="how-heading">{page.howTitle}</h2>
       <ol class="steps">
-        {page.steps.map((s) => <li set:html={withBase(s)} />)}
+        {page.steps.map((s) => <li><span set:html={withBase(s)} /></li>)}
       </ol>
     </section>
     {page.chart === "letters" && <LetterChart />}

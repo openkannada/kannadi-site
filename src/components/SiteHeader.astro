@@ -11,8 +11,8 @@ const { current } = Astro.props;
 const converters = PAGES.filter((p) => p.slug.endsWith("-to-unicode") || p.slug === "unicode-to-nudi");
 const typing = PAGES.filter((p) => p.slug.endsWith("typing"));
 const groups = [
-  { id: "nav-convert", label: "Convert", pages: converters },
-  { id: "nav-type", label: "Type", pages: typing },
+  { id: "nav-convert", label: "Converters", pages: converters },
+  { id: "nav-type", label: "Typing", pages: typing },
 ];
 ---
 <header class="mx-auto flex w-full max-w-6xl items-center gap-2 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-6">
@@ -20,7 +20,7 @@ const groups = [
     <span class="brand-disc" aria-hidden="true" lang="kn">ಕ</span>
     <span class="flex items-baseline gap-2">
       <span class="text-lg leading-none font-semibold tracking-tight">{SITE.name}</span>
-      <span class="hidden text-sm leading-none text-muted-foreground sm:inline" lang="kn">{SITE.nameKn}</span>
+      <span class="text-sm leading-none text-muted-foreground" lang="kn">{SITE.nameKn}</span>
     </span>
   </a>
   <nav aria-label="Pages" class="hidden items-center gap-1 md:flex">

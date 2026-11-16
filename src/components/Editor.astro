@@ -17,7 +17,7 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string }[]
 ---
 <section class="editor" aria-label="Kannada editor" data-md-skip data-default-mode={mode}>
   <div class="dock">
-    <div class="toolbar glass" role="toolbar" aria-label="Editor">
+    <div class="toolbar glass" role="group" aria-label="Editor tools">
       <fieldset class="seg" aria-describedby="mode-help">
         <legend class="sr-only">Type with</legend>
         {modes.map((m) => (
@@ -32,10 +32,10 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string }[]
       </fieldset>
       <p id="mode-help" class="sr-only">With Baraha or ISO, type Kannada words in English letters. Alt+1, Alt+2 and Alt+3 switch.</p>
       <span class="divider" aria-hidden="true"></span>
-      <label class="btn" for="file" title="Open a file (Ctrl+O)">
+      <button type="button" class="btn" id="open" title="Open a TXT, Word or HTML file (Ctrl+O)">
         <Icon name="open" /><span class="label">Open</span>
-      </label>
-      <input type="file" id="file" class="sr-only" tabindex="-1" accept=".txt,.docx,.html,.htm,text/plain,text/html,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+      </button>
+      <input type="file" id="file" class="sr-only" tabindex="-1" aria-hidden="true" accept=".txt,.docx,.html,.htm,text/plain,text/html,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
       <button type="button" class="btn hidden sm:inline-flex" id="convert" title="Convert the selection, or the whole document, from Nudi, Baraha or Akruti">
         <Icon name="convert" /><span class="label">Convert</span>
       </button>
@@ -53,7 +53,7 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string }[]
     </div>
   </div>
 
-  <div id="tools-menu" popover class="menu tool-menu" aria-label="More tools">
+  <div id="tools-menu" popover class="menu tool-menu" role="group" aria-label="More tools">
     <button type="button" class="menu-item sm:hidden" data-run="convert">Convert from Nudi, Baraha or Akruti</button>
     <button type="button" class="menu-item" data-run="normalize">Normalize <small>joins split vowel signs</small></button>
     <button type="button" class="menu-item" data-run="modernize">Modernize <small lang="kn">ೞ ಱ to ಳ ರ</small></button>
@@ -70,12 +70,12 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string }[]
     <p class="menu-label">When converting</p>
     <label class="menu-check"><input type="checkbox" id="auto-convert" checked /> Convert pasted legacy text</label>
     <label class="menu-check"><input type="checkbox" id="zero" checked /> <span>Read 0 inside a word as anusvara: <span lang="kn">ಪ್ರಾರ0ಭ</span> to <span lang="kn">ಪ್ರಾರಂಭ</span></span></label>
-    <label class="menu-check"><input type="checkbox" id="digits" /> Kannada digits, for Nudi fonts ending in k</label>
+    <label class="menu-check"><input type="checkbox" id="digits" /> Use Kannada digits (Nudi fonts whose names end in k)</label>
     <div class="menu-sep hidden md:block" role="separator"></div>
-    <button type="button" class="menu-item hidden md:flex" data-run="shortcuts">Keyboard shortcuts <small>Ctrl /</small></button>
+    <button type="button" class="menu-item hidden md:flex" data-run="shortcuts">Keyboard shortcuts <small data-shortcut>Ctrl /</small></button>
   </div>
 
-  <div id="save-menu" popover class="menu save-menu" aria-label="Save">
+  <div id="save-menu" popover class="menu save-menu" role="group" aria-label="Save">
     <button type="button" class="menu-item" data-export="docx">Word document <small>.docx</small></button>
     <button type="button" class="menu-item" data-export="txt">Plain text <small>.txt</small></button>
     <button type="button" class="menu-item" data-export="html">Web page <small>.html</small></button>
@@ -85,7 +85,7 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string }[]
     <button type="button" class="menu-item" data-run="copy-nudi">Copy as Nudi</button>
   </div>
 
-  <div id="problems-panel" popover class="menu problems-panel" aria-labelledby="problems-heading">
+  <div id="problems-panel" popover class="menu problems-panel" role="group" aria-labelledby="problems-heading">
     <p id="problems-heading" class="menu-label">Marked in the text</p>
     <ol id="problem-list" class="problem-list"></ol>
     <p id="problem-more" class="menu-note" hidden></p>
@@ -95,10 +95,10 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string }[]
   <div class="sheet" id="sheet">
     <div id="doc" class="doc" role="textbox" aria-multiline="true" aria-label="Document" aria-describedby="welcome" lang="kn" spellcheck="false" autocapitalize="off" translate="no"></div>
     <div id="welcome" class="welcome">
-      <p>{welcome}</p>
-      <button type="button" id="sample" class="sample">Try a page from 2002</button>
+      <p set:html={welcome} />
+      {mode === "kannada" && <button type="button" id="sample" class="sample">Try a page from 2002</button>}
     </div>
-    <div class="sheet-foot" aria-label="Document status">
+    <div class="sheet-foot" role="group" aria-label="Document status">
       <span><b id="count-aksharas">0</b> aksharas</span>
       <span><b id="count-words">0</b> words</span>
       <span class="hidden sm:inline"><b id="count-chars">0</b> characters</span>

@@ -28,6 +28,13 @@ export function readPage(html: string, path: string): BuiltPage {
   const main = document.querySelector("main");
   if (!main) throw new Error(`${path} has no <main> element`);
   for (const el of main.querySelectorAll(STRIP.join(","))) el.remove();
+  // Keys to type read as code, and FAQ questions as headings.
+  for (const kbd of main.querySelectorAll("kbd")) kbd.replaceWith(Object.assign(document.createElement("code"), { textContent: kbd.textContent }));
+  for (const summary of main.querySelectorAll("summary")) {
+    const h = document.createElement("h3");
+    h.innerHTML = summary.innerHTML;
+    summary.replaceWith(h);
+  }
   return {
     path,
     title: document.querySelector("title")?.textContent?.trim() ?? path,

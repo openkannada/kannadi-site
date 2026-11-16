@@ -180,9 +180,9 @@ ${body}
 </html>
 `;
 
-/** The editor text as a Blob in the given format. */
 export type ExportFormat = "docx" | "html" | "txt";
 
+/** The editor text as a Blob in the given format. */
 export async function exportBlob(text: string, format: ExportFormat, title: string): Promise<Blob> {
   if (format === "docx") {
     return new Blob([(await writeDocx(text)) as Uint8Array<ArrayBuffer>], {

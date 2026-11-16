@@ -11,6 +11,7 @@
 }
 .toolbar {
   @apply pointer-events-auto inline-flex max-w-full items-center gap-0.5 rounded-full p-1.5;
+  anchor-name: --toolbar;
   scrollbar-width: none;
 }
 .divider {
@@ -23,10 +24,17 @@
   @apply px-2.5 sm:px-3.5;
 }
 
+/* Phones: the dock floats above the home bar and the on-screen keyboard (--kb, set in main.ts). */
+.editor {
+  --dock-bottom: calc(max(0.75rem, env(safe-area-inset-bottom)) + var(--kb, 0px));
+}
 @media (max-width: 47.99rem) {
+  html {
+    scroll-padding-bottom: 6rem;
+  }
   .dock {
     position: fixed;
-    inset: auto 0 max(0.75rem, env(safe-area-inset-bottom)) 0;
+    inset: auto 0 var(--dock-bottom) 0;
     margin: 0;
     padding-inline: 0.5rem;
   }
@@ -218,10 +226,10 @@ body.dragging .drop-hint {
   .problems-panel {
     --lift-from: 10px;
     position-area: none;
-    inset: auto 0.5rem calc(max(0.75rem, env(safe-area-inset-bottom)) + 4.25rem) 0.5rem;
+    inset: auto 0.5rem calc(var(--dock-bottom) + 4.25rem) 0.5rem;
     width: auto;
     margin: 0;
-    max-height: 62vh;
+    max-height: 62dvh;
   }
 }
 .menu-row {
@@ -273,8 +281,13 @@ body.dragging .drop-hint {
 @media (max-width: 40rem) {
   .fix {
     --lift-from: 10px;
-    inset: auto 0.5rem calc(max(0.75rem, env(safe-area-inset-bottom)) + 4.25rem) 0.5rem;
+    inset: auto 0.5rem calc(var(--dock-bottom) + 4.25rem) 0.5rem;
     width: auto;
+    max-height: 55dvh;
+    overflow: auto;
+  }
+  .fix .pop-why {
+    display: none;
   }
 }
 .pop-close {
@@ -331,15 +344,26 @@ body.dragging .drop-hint {
   @apply h-9 cursor-pointer rounded-full bg-primary px-4 text-sm font-medium text-primary-foreground;
 }
 
-/* Messages rise near the toolbar and leave on their own. */
+/* Messages appear under the toolbar on desktop and above the dock on phones, then leave on their own. */
 .toast {
-  --lift-from: 8px;
-  @apply fixed inset-x-0 z-40 mx-auto flex w-max max-w-[min(32rem,calc(100vw-1rem))] items-center gap-3 rounded-xl px-4 py-2.5 text-sm;
-  bottom: 1.5rem;
+  @apply fixed inset-x-0 z-50 mx-auto flex w-max max-w-[min(32rem,calc(100vw-1rem))] items-center gap-3 rounded-xl px-4 py-2.5 text-sm;
+}
+@media (min-width: 48rem) {
+  .toast {
+    position-anchor: --toolbar;
+    position-area: bottom;
+    margin-top: 0.625rem;
+  }
+  @supports not (anchor-name: --a) {
+    .toast {
+      top: 4.75rem;
+    }
+  }
 }
 @media (max-width: 47.99rem) {
   .toast {
-    bottom: calc(max(0.75rem, env(safe-area-inset-bottom)) + 4.5rem);
+    --lift-from: 8px;
+    bottom: calc(var(--dock-bottom) + 4.5rem);
   }
 }
 .toast-action {
@@ -361,4 +385,22 @@ body.dragging .drop-hint {
 }
 .keys dt {
   @apply whitespace-nowrap;
+}
+
+/* Phones: the dock covers the sheet's bottom edge, so the counts move to the top. */
+@media (max-width: 47.99rem) {
+  .sheet {
+    padding-top: 3.25rem;
+    padding-bottom: 6rem;
+  }
+  .sheet-foot {
+    top: 1rem;
+    bottom: auto;
+  }
+  .welcome {
+    top: 3.25rem;
+  }
+  .editor:has(.fix:not([hidden])) .toast {
+    display: none;
+  }
 }

@@ -120,6 +120,11 @@ function hideToast(): void {
   ui.toast.hidden = true;
 }
 
+ui.toast.addEventListener("focusout", () => {
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, 3000);
+});
+
 const convert = (text: string, layout: Layout | "auto" = "auto") =>
   kannadi.convertLegacy(text, { zeroAsAnusvara: settings.zero, kannadaDigits: settings.digits, layout });
 
@@ -138,6 +143,14 @@ function report(result: Result, what: string): void {
   );
 }
 
+// The document stays read-only until the converter has loaded.
+try {
+  await kannadi.init();
+} catch (e) {
+  say("This browser could not load the editor. A recent Chrome, Edge, Firefox or Safari will work.");
+  throw e;
+}
+
 const editor = new DocEditor(ui.doc, (edit, after, inputType) => {
   issues.edited(edit, after);
   composer.handle(edit, after, inputType);
@@ -148,7 +161,7 @@ const issues = new Issues(editor, kannadi, {
   list: byId("problem-list"),
   more: byId("problem-more"),
   popover: ui.popover,
-  scheme: () => (settings.mode === "iso15919" ? "iso15919" : "baraha"),
+  scheme: () => (composer.mode === "iso15919" ? "iso15919" : "baraha"),
   onChange(i) {
     ui.chip.hidden = i.total === 0;
     ui.chip.dataset.kind = i.unknown.length ? "unknown" : "malformed";
@@ -234,18 +247,27 @@ async function exportAs(format: ExportFormat | "nudi"): Promise<void> {
     return;
   }
   const name = `${fileName}.${format}`;
-  download(await (await files()).exportBlob(editor.text, format, fileName), name);
+  try {
+    download(await (await files()).exportBlob(editor.text, format, fileName), name);
+  } catch {
+    say(`Could not save ${name}. Reload the page and try again.`);
+    return;
+  }
   settings.lastFormat = format;
   saveSettings();
   say(`Saved ${name} to your downloads.`);
 }
 
+/** The selected range, or the whole document when nothing is selected. */
+function selectionOrAll(): { start: number; end: number; whole: boolean } {
+  const sel = editor.selection();
+  if (!sel || sel.start === sel.end) return { start: 0, end: editor.text.length, whole: true };
+  return { ...sel, whole: false };
+}
+
 /** Applies a text transform to the selection, or to the whole document. */
 function transform(fn: (text: string) => string, done: string): void {
-  const sel = editor.selection();
-  const whole = !sel || sel.start === sel.end;
-  const start = whole ? 0 : sel.start;
-  const end = whole ? editor.text.length : sel.end;
+  const { start, end, whole } = selectionOrAll();
   const before = editor.text.slice(start, end);
   const after = fn(before);
   if (after === before) {
@@ -257,10 +279,7 @@ function transform(fn: (text: string) => string, done: string): void {
 }
 
 function convertSelection(): void {
-  const sel = editor.selection();
-  const whole = !sel || sel.start === sel.end;
-  const start = whole ? 0 : sel.start;
-  const end = whole ? editor.text.length : sel.end;
+  const { start, end, whole } = selectionOrAll();
   const result = convert(editor.text.slice(start, end));
   editor.replace(start, end, result.text);
   issues.addUnknown(result.unknown.map((o) => start + o));
@@ -274,11 +293,11 @@ function setMode(mode: TypingMode, remember = true): void {
   if (remember) saveSettings();
 }
 
-function setFont(font: Settings["font"]): void {
+function setFont(font: Settings["font"], remember = true): void {
   settings.font = font;
   document.documentElement.dataset.font = font;
   for (const input of document.querySelectorAll<HTMLInputElement>('input[name="font"]')) input.checked = input.value === font;
-  saveSettings();
+  if (remember) saveSettings();
 }
 
 function nextProblem(dir: number): void {
@@ -352,6 +371,9 @@ function wire(): void {
           say("Pasted as is, without converting.");
         },
       });
+    }, () => {
+      insert({ text: plain, unknown: [] });
+      say("Pasted as is: the converter did not load. Reload the page to convert pasted text.");
     });
   });
   ui.doc.addEventListener("click", () => {
@@ -359,7 +381,9 @@ function wire(): void {
     if (!sel || sel.start !== sel.end) return;
     issues.flush();
     const item = issues.at(sel.start);
-    if (item) issues.popover(item, false);
+    if (!item) return;
+    issues.popover(item, false);
+    ui.announce.textContent = `${item.kind === "unknown" ? "Unknown glyph" : "Malformed syllable"} here. Press F8 for its fixes.`;
   });
   ui.doc.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && composer.revert()) e.preventDefault();
@@ -373,6 +397,7 @@ function wire(): void {
     if (issues.open && !ui.popover.contains(e.target as Node) && e.target !== ui.doc) issues.close(false);
   });
 
+  byId("open").addEventListener("click", () => ui.file.click());
   ui.file.addEventListener("change", () => {
     void open(ui.file.files?.[0]);
     ui.file.value = "";
@@ -394,7 +419,7 @@ function wire(): void {
     void open(file);
   });
 
-  byId("sample").addEventListener("click", () => {
+  document.getElementById("sample")?.addEventListener("click", () => {
     const result = { ...convert(SAMPLE, "nudi"), converted: SAMPLE.length };
     issues.clear();
     editor.setText(result.text);
@@ -456,6 +481,17 @@ function wire(): void {
     }
   });
   addEventListener("pagehide", save);
+
+  // iOS keeps fixed elements behind the on-screen keyboard; --kb lifts them above it.
+  const vv = window.visualViewport;
+  if (vv) {
+    const inset = () => document.documentElement.style.setProperty("--kb", `${Math.max(0, innerHeight - vv.height - vv.offsetTop)}px`);
+    vv.addEventListener("resize", inset);
+    vv.addEventListener("scroll", inset);
+  }
+  if (/Mac|iPhone|iPad/.test(navigator.platform)) {
+    for (const el of document.querySelectorAll<HTMLElement>("[data-shortcut]")) el.textContent = el.textContent!.replace("Ctrl", "⌘");
+  }
 }
 
 function restore(): void {
@@ -468,7 +504,7 @@ function restore(): void {
   const pageMode = ui.section.dataset.defaultMode as TypingMode | undefined;
   if (pageMode && pageMode !== "kannada") setMode(pageMode, false);
   else setMode(MODES.includes(settings.mode) ? settings.mode : "kannada", false);
-  setFont(settings.font === "serif" ? "serif" : "sans");
+  setFont(settings.font === "serif" ? "serif" : "sans", false);
   if (saved?.text) {
     ui.doc.textContent = saved.text;
     editor.sync("restore", false);
@@ -481,12 +517,7 @@ function restore(): void {
   issues.check();
 }
 
-try {
-  await kannadi.init();
-  wire();
-  restore();
-  document.documentElement.classList.add("ready");
-} catch (e) {
-  say("This browser could not load the editor. A recent Chrome, Edge, Firefox or Safari will work.");
-  throw e;
-}
+wire();
+restore();
+document.documentElement.classList.add("ready");
+setTimeout(() => void files().catch(() => {}), 1500);

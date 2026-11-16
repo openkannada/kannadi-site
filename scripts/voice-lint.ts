@@ -25,9 +25,15 @@ const dist = process.argv[2] ?? "dist";
 const files = readdirSync(dist, { recursive: true, withFileTypes: true })
   .filter((e) => e.isFile() && /\.(html|md|txt)$/.test(e.name) && e.name !== "OFL.txt")
   .map((e) => join(e.parentPath, e.name));
+// Messages the editor shows at run time are not in the built pages.
+const runtime = readdirSync("src/editor").filter((n) => n.endsWith(".ts")).map((n) => join("src/editor", n));
 
 function visibleText(path: string): string {
   const raw = readFileSync(path, "utf8");
+  if (path.endsWith(".ts")) {
+    const strings = raw.replace(/^\s*(\/\/|\*|\/\*).*$/gm, "").match(/"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g) ?? [];
+    return strings.filter((s) => / [a-z]/.test(s)).join("\n");
+  }
   if (!path.endsWith(".html")) return raw;
   const { document } = parseHTML(raw);
   for (const el of document.querySelectorAll("script, style, kbd, code")) el.remove();
@@ -37,7 +43,7 @@ function visibleText(path: string): string {
 }
 
 const problems: string[] = [];
-for (const file of files) {
+for (const file of [...files, ...runtime]) {
   const text = visibleText(file)
     .replace(/`[^`]*`/g, "")
     .replace(ALLOWED[0]!, "");
@@ -52,4 +58,4 @@ if (problems.length) {
   console.error(problems.join("\n"));
   process.exit(1);
 }
-console.log(`Voice lint: ${files.length} files read clean.`);
+console.log(`Voice lint: ${files.length} built files and ${runtime.length} editor modules read clean.`);

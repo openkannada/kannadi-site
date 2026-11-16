@@ -177,6 +177,9 @@ export class Issues {
   /** Selects a problem and opens its fixes. */
   show(item: Problem, focus: boolean): void {
     this.flush();
+    // The fix card sits under an open problems panel, so the panel goes first.
+    const panel = this.ui.list.closest<HTMLElement>("[popover]");
+    if (panel?.matches(":popover-open")) panel.hidePopover();
     const current = this.items().find((i) => i.start === item.start && i.kind === item.kind) ?? this.at(item.start);
     if (!current) return;
     this.editor.select(current.start, current.end);
@@ -214,11 +217,11 @@ export class Issues {
     const action = (label: string, preview: string | null, run: () => void) => {
       const b = document.createElement("button");
       b.type = "button";
-      if (preview !== null) {
+      if (preview) {
         const p = document.createElement("span");
         p.lang = "kn";
         p.className = "pop-preview";
-        p.textContent = preview || "(nothing)";
+        p.textContent = preview;
         b.append(p);
       }
       b.append(label);
@@ -293,6 +296,10 @@ export class Issues {
     const pop = this.ui.popover;
     if (matchMedia("(max-width: 40rem)").matches) {
       pop.style.left = pop.style.top = "";
+      // On phones the card is a bottom sheet; keep the mark visible above it.
+      const mark = this.editor.rect(item.start, item.end);
+      const cardTop = pop.getBoundingClientRect().top;
+      if (mark.bottom > cardTop - 16) scrollBy({ top: mark.bottom - cardTop + 16, behavior: "instant" });
       return;
     }
     const r = this.editor.rect(item.start, item.end);

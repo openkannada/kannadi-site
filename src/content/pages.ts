@@ -18,7 +18,7 @@ export interface Page {
   h1: string;
   /** The answer-first definition under the heading. */
   intro: string;
-  /** The line inside the empty editor. */
+  /** The line inside the empty editor; trusted HTML. */
   welcome: string;
   mode: TypingMode;
   howTitle: string;
@@ -64,7 +64,7 @@ export const PAGES: Page[] = [
     h1: "Kannada editor and converter",
     intro:
       "kannadi is a free Kannada editor that converts text typed in the old Nudi, Baraha and Akruti fonts to Unicode and back, types Kannada from English letters, and saves Word, web and text files, all in your browser.",
-    welcome: "Type, paste or drop a file here. Old Nudi, Baraha and Akruti text turns into Unicode as it lands.",
+    welcome: "Type here, or paste or drop old Nudi, Baraha and Akruti text to get Unicode.",
     mode: "kannada",
     howTitle: "How to use the Kannada editor",
     steps: [
@@ -102,7 +102,7 @@ export const PAGES: Page[] = [
     h1: "Nudi to Unicode converter",
     intro:
       'A Nudi to Unicode converter turns Kannada typed in the Nudi fonts, which store Latin symbols such as <code>PÀ£ÀßqÀ</code>, into Unicode Kannada such as <span lang="kn">ಕನ್ನಡ</span> that every phone, website and search engine can read.',
-    welcome: "Paste Nudi text or drop a Word file here. It turns into Unicode as it lands.",
+    welcome: "Paste Nudi text or drop a Word file here to get Unicode.",
     mode: "kannada",
     howTitle: "How to convert a Nudi file to Unicode",
     steps: CONVERT_STEPS,
@@ -174,7 +174,7 @@ export const PAGES: Page[] = [
     h1: "Baraha to Unicode converter",
     intro:
       "A Baraha to Unicode converter turns Kannada typed in Baraha's older ANSI fonts, such as BRH Kannada, into Unicode Kannada that any phone or website can show. Baraha ANSI fonts share the Nudi glyph layout, so 1 converter handles both.",
-    welcome: "Paste Baraha text or drop a saved page here. It turns into Unicode as it lands.",
+    welcome: "Paste Baraha text or drop a saved page here to get Unicode.",
     mode: "kannada",
     howTitle: "How to convert Baraha text to Unicode",
     steps: [
@@ -210,7 +210,7 @@ export const PAGES: Page[] = [
     h1: "Akruti to Unicode converter",
     intro:
       "An Akruti to Unicode converter turns Kannada typed in the Akruti fonts, such as AkrutiKndPadma, into Unicode Kannada. Akruti stores each glyph as a Latin symbol in its own layout, different from Nudi's, and the editor tells the 2 apart by itself.",
-    welcome: "Paste Akruti text or drop a Word file here. It turns into Unicode as it lands.",
+    welcome: "Paste Akruti text or drop a Word file here to get Unicode.",
     mode: "kannada",
     howTitle: "How to convert Akruti text to Unicode",
     steps: CONVERT_STEPS,
@@ -242,7 +242,7 @@ export const PAGES: Page[] = [
     h1: "Kannada typing online",
     intro:
       "Kannada typing means writing Kannada script on a computer or phone, either with a Kannada keyboard or by typing words in English letters that turn into Kannada as you go. You can do both here.",
-    welcome: 'Start typing. kannaDa becomes ಕನ್ನಡ as you go.',
+    welcome: 'Type <kbd>kannaDa</kbd> and it becomes <span lang="kn">ಕನ್ನಡ</span> as you go.',
     mode: "baraha",
     howTitle: "How to type in Kannada",
     steps: [
@@ -282,7 +282,7 @@ export const PAGES: Page[] = [
     h1: "English to Kannada typing",
     intro:
       'English to Kannada typing lets you write Kannada words with English letters: type <kbd>namaskAra</kbd> and get <span lang="kn">ನಮಸ್ಕಾರ</span>. It spells Kannada words in Kannada script, which is called transliteration.',
-    welcome: "Type a Kannada word in English letters. namaskAra becomes ನಮಸ್ಕಾರ.",
+    welcome: 'Type a Kannada word in English letters: <kbd>namaskAra</kbd> becomes <span lang="kn">ನಮಸ್ಕಾರ</span>.',
     mode: "baraha",
     howTitle: "How to type Kannada in English letters",
     steps: [
@@ -303,11 +303,11 @@ export const PAGES: Page[] = [
       },
       {
         q: "How do I type a conjunct such as ಜ್ಞ or ಕ್ಷ?",
-        a: "Type the consonants one after another and the editor joins them: <kbd>j~ja</kbd> gives <span lang=\"kn\">ಜ್ಞ</span> and <kbd>kSha</kbd> gives <span lang=\"kn\">ಕ್ಷ</span>. The word list on this page shows more.",
+        a: "Type the consonants in order and the editor joins them: <kbd>j~ja</kbd> gives <span lang=\"kn\">ಜ್ಞ</span> and <kbd>kSha</kbd> gives <span lang=\"kn\">ಕ್ಷ</span>. The word list on this page shows more.",
       },
       {
         q: "Can I turn Kannada back into English letters?",
-        a: 'The <a href="https://github.com/prasadus92/kannadi">kannadi</a> library can, in Baraha, ISO 15919 and IAST spellings. It is coming to this page.',
+        a: 'The <a href="https://github.com/prasadus92/kannadi">kannadi</a> library can, in Baraha, ISO 15919 and IAST spellings.',
       },
       PRIVATE,
     ],

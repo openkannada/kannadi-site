@@ -1,0 +1,57 @@
+---
+import { CHART } from "../content/pages.ts";
+import { spellings } from "../lib/spell.ts";
+
+const groups = Object.entries(CHART).map(([name, letters]) => ({
+  name,
+  cells: letters.map((k) => ({ k, ...spellings(k) })),
+}));
+---
+<section aria-labelledby="chart-heading">
+  <h2 id="chart-heading">Kannada letters in English letters</h2>
+  <p>Each letter with the Baraha spelling you type for it, and its ISO 15919 spelling under that.</p>
+  {groups.map((g) => (
+    <>
+      <h3 lang={/[ಀ-೿]/.test(g.name) ? "kn" : undefined}>{g.name}</h3>
+      <ul class="chart" role="list">
+        {g.cells.map((c) => (
+          <li>
+            <span class="chart-kn" lang="kn">{c.k}</span>
+            <span class="sr-only">: type </span>
+            <kbd>{c.baraha}</kbd>
+            <span class="sr-only">; ISO 15919 </span>
+            <span class="chart-iso">{c.iso}</span>
+          </li>
+        ))}
+      </ul>
+    </>
+  ))}
+</section>
+
+<style>
+  .chart {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .chart li {
+    display: grid;
+    justify-items: center;
+    gap: 0.25rem;
+    padding: 0.75rem 0.25rem 0.625rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+  .chart-kn {
+    font-size: 1.75rem;
+    line-height: 1.5;
+  }
+  .chart-iso {
+    font-size: 0.8125rem;
+    color: var(--muted-foreground);
+  }
+</style>

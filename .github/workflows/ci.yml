@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - id: kannadi
+        run: echo "rev=$(tr -d '[:space:]' < kannadi.rev)" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v7
+        with:
+          repository: prasadus92/kannadi
+          ref: ${{ steps.kannadi.outputs.rev }}
+          path: .kannadi
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: .kannadi
+      - id: wasm-bindgen
+        run: echo "version=$(awk '/^name = "wasm-bindgen"$/ { getline; gsub(/version = |"/, ""); print }' .kannadi/Cargo.lock)" >> "$GITHUB_OUTPUT"
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-bindgen@${{ steps.wasm-bindgen.outputs.version }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: KANNADI_DIR=.kannadi scripts/build-wasm.sh
+      - run: npm run check
+      - run: npm test
+      - run: npm run build
+      - run: npm run seo-smoke
+      - run: npm run voice-lint
+      - name: Lighthouse, mobile
+        run: npx lhci autorun
+      - name: Build and check with a site URL
+        run: |
+          SITE_URL=https://example.org/kannada/ npx astro build --outDir dist-site
+          node scripts/seo-smoke.ts dist-site https://example.org/kannada/
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: site
+          path: |
+            dist
+            .lighthouseci
+          retention-days: 14

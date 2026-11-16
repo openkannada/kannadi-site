@@ -5,3 +5,4 @@ dist/
 src/editor/wasm/
 .lighthouseci/
 .DS_Store
+dist-site/

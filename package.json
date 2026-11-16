@@ -1,0 +1,30 @@
+{
+  "name": "kannadi-site",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "wasm": "scripts/build-wasm.sh",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "node --test 'test/**/*.test.ts'",
+    "seo-smoke": "node scripts/seo-smoke.ts",
+    "voice-lint": "node scripts/voice-lint.ts",
+    "lighthouse": "lhci autorun"
+  },
+  "dependencies": {
+    "astro": "7.4.12"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.12",
+    "@lhci/cli": "0.16.1",
+    "@tailwindcss/vite": "4.3.5",
+    "@types/node": "26.6.6",
+    "linkedom": "0.18.15",
+    "node-html-markdown": "2.0.0",
+    "tailwindcss": "4.3.5",
+    "typescript": "6.0.3"
+  }
+}

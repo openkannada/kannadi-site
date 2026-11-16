@@ -1,0 +1,15 @@
+---
+import type { GetStaticPaths } from "astro";
+
+import { PAGES, type Page } from "../content/pages.ts";
+import ToolPage from "../layouts/ToolPage.astro";
+
+export const getStaticPaths = (() =>
+  PAGES.filter((page) => page.slug).map((page) => ({ params: { slug: page.slug }, props: { page } }))) satisfies GetStaticPaths;
+
+interface Props {
+  page: Page;
+}
+const { page } = Astro.props;
+---
+<ToolPage page={page} />

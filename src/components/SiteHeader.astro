@@ -1,0 +1,120 @@
+---
+import { PAGES } from "../content/pages.ts";
+import { SITE } from "../content/site.ts";
+import { href } from "../lib/paths.ts";
+import Icon from "./Icon.astro";
+
+interface Props {
+  current: string;
+}
+const { current } = Astro.props;
+const converters = PAGES.filter((p) => p.slug.endsWith("-to-unicode") || p.slug === "unicode-to-nudi");
+const typing = PAGES.filter((p) => p.slug.endsWith("typing"));
+const groups = [
+  { id: "nav-convert", label: "Convert", pages: converters },
+  { id: "nav-type", label: "Type", pages: typing },
+];
+---
+<header class="mx-auto flex w-full max-w-6xl items-center gap-2 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-6">
+  <a href={href("/")} class="mr-auto flex items-center gap-2.5 rounded-full py-1 pr-2 text-foreground no-underline">
+    <span class="brand-disc" aria-hidden="true" lang="kn">ಕ</span>
+    <span class="flex items-baseline gap-2">
+      <span class="text-lg leading-none font-semibold tracking-tight">{SITE.name}</span>
+      <span class="hidden text-sm leading-none text-muted-foreground sm:inline" lang="kn">{SITE.nameKn}</span>
+    </span>
+  </a>
+  <nav aria-label="Pages" class="hidden items-center gap-1 md:flex">
+    {groups.map((g) => (
+      <>
+        <button type="button" class="btn nav-trigger" popovertarget={g.id}>
+          {g.label}
+          <Icon name="chevron" class="!size-4 text-muted-foreground" />
+        </button>
+        <div id={g.id} popover class="menu nav-menu">
+          {g.pages.map((p) => (
+            <a class="menu-item" href={href(`/${p.slug}/`)} aria-current={p.slug === current ? "page" : undefined}>{p.name}</a>
+          ))}
+        </div>
+      </>
+    ))}
+  </nav>
+  <button type="button" class="btn btn-icon" id="theme" aria-label="Theme: same as system. Change theme" data-theme="auto">
+    <Icon name="auto" class="theme-auto" />
+    <Icon name="sun" class="theme-light" />
+    <Icon name="moon" class="theme-dark" />
+  </button>
+  <button type="button" class="btn btn-icon md:hidden" popovertarget="nav-all" aria-label="Pages">
+    <Icon name="menu" />
+  </button>
+  <div id="nav-all" popover class="menu nav-menu">
+    <a class="menu-item" href={href("/")} aria-current={current === "" ? "page" : undefined}>Editor</a>
+    {groups.map((g) => (
+      <>
+        <div class="menu-sep" role="separator"></div>
+        <p class="menu-label">{g.label}</p>
+        {g.pages.map((p) => (
+          <a class="menu-item" href={href(`/${p.slug}/`)} aria-current={p.slug === current ? "page" : undefined}>{p.name}</a>
+        ))}
+      </>
+    ))}
+  </div>
+</header>
+
+<script>
+  import { applyTheme, nextTheme, readTheme } from "../lib/theme.ts";
+
+  const button = document.getElementById("theme");
+  let theme = readTheme();
+  applyTheme(theme, button);
+  button?.addEventListener("click", () => {
+    theme = nextTheme(theme);
+    applyTheme(theme, button);
+  });
+</script>
+
+<style>
+  .brand-disc {
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 9999px;
+    font-size: 1.25rem;
+    line-height: 1;
+    font-weight: 650;
+    color: var(--primary-foreground);
+    background:
+      radial-gradient(circle at 30% 25%, oklch(1 0 0 / 0.45), transparent 55%),
+      var(--primary);
+    box-shadow: inset 0 -2px 4px oklch(0 0 0 / 0.18), 0 4px 10px -4px oklch(from var(--primary) l c h / 0.7);
+    padding-bottom: 0.1rem;
+  }
+  #theme :global(svg) {
+    display: none;
+  }
+  #theme[data-theme="auto"] :global(.theme-auto),
+  #theme[data-theme="light"] :global(.theme-light),
+  #theme[data-theme="dark"] :global(.theme-dark) {
+    display: block;
+  }
+  [popovertarget="nav-convert"] { anchor-name: --nav-convert; }
+  [popovertarget="nav-type"] { anchor-name: --nav-type; }
+  [popovertarget="nav-all"] { anchor-name: --nav-all; }
+  #nav-convert { position-anchor: --nav-convert; }
+  #nav-type { position-anchor: --nav-type; }
+  #nav-all { position-anchor: --nav-all; }
+  .nav-menu {
+    position-area: bottom span-left;
+    margin-top: 0.375rem;
+  }
+  .nav-menu [aria-current="page"] {
+    font-weight: 600;
+    color: var(--primary);
+  }
+  @supports not (anchor-name: --a) {
+    .nav-menu {
+      top: 3.75rem;
+      right: 1rem;
+    }
+  }
+</style>

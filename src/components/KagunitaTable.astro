@@ -1,0 +1,33 @@
+---
+import { CONSONANTS, SIGNS } from "../content/letters.ts";
+import "../styles/letters.css";
+
+import { spellings } from "../lib/spell.ts";
+
+const signs = SIGNS.slice(1);
+---
+<section aria-labelledby="kagunita-heading">
+  <h2 id="kagunita-heading">Kagunita chart</h2>
+  <p>Each row is 1 consonant with every vowel sign. Under each letter is its Baraha spelling for typing.</p>
+  <div class="table-scroll kagunita">
+    <table class="letters">
+      <thead>
+        <tr>
+          <th scope="col">Consonant</th>
+          {signs.map((sign) => <th scope="col" lang="kn">{`◌${sign}`}</th>)}
+        </tr>
+      </thead>
+      <tbody>
+        {CONSONANTS.map((c) => (
+          <tr>
+            <th scope="row"><span class="cell-kn" lang="kn">{c}</span><span class="sr-only">: type </span><kbd>{spellings(c).baraha}</kbd></th>
+            {signs.map((sign) => {
+              const k = c + sign;
+              return <td><span class="cell-kn" lang="kn">{k}</span><span class="sr-only">: type </span><kbd>{spellings(k).baraha}</kbd></td>;
+            })}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>

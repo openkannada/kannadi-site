@@ -22,8 +22,9 @@ export function absolute(path: string, site: URL | null): string {
 }
 
 /**
- * The page's JSON-LD graph: the editor as a WebApplication, its how-to steps,
- * FAQ, breadcrumbs, the library's source code and its author.
+ * The page's JSON-LD graph: the page, what it offers (the editor with its
+ * how-to, or a reference chart), FAQ, breadcrumbs, author, and on the home
+ * page the site and the library's source code.
  */
 export function jsonLd(page: Page, site: URL | null, home: Page): Node {
   const url = absolute(pagePath(page.slug), site);
@@ -40,41 +41,11 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
       description: page.description,
       inLanguage: SITE.language,
       isPartOf: { "@id": id("website", root) },
-      mainEntity: { "@id": id("app") },
+      mainEntity: { "@id": id(page.kind === "tool" ? "app" : "resource") },
       breadcrumb: { "@id": id("breadcrumb") },
       author,
     },
-    {
-      "@type": "WebApplication",
-      "@id": id("app"),
-      name: page.slug ? `${page.h1} by ${SITE.name}` : `${SITE.name} ${SITE.tagline}`,
-      url,
-      description: plainText(page.intro),
-      applicationCategory: "UtilitiesApplication",
-      operatingSystem: "Any",
-      browserRequirements: "Requires a browser with WebAssembly",
-      inLanguage: ["kn", "en"],
-      isAccessibleForFree: true,
-      offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
-      featureList: [
-        "Nudi, Baraha and Akruti to Unicode",
-        "Unicode to Nudi and Baraha ANSI",
-        "Opens TXT, DOCX and HTML files",
-        "Marks unknown glyphs and malformed syllables with fixes",
-        "Kannada typing in Baraha and ISO 15919 letters",
-        "Akshara and word counts",
-        "Saves DOCX, HTML, TXT and Nudi text",
-        "Runs offline in the browser",
-      ],
-      author,
-      isBasedOn: { "@id": id("library", root) },
-    },
-    {
-      "@type": "HowTo",
-      "@id": id("howto"),
-      name: page.howTitle,
-      step: page.steps.map((text, i) => ({ "@type": "HowToStep", position: i + 1, text: plainText(text) })),
-    },
+    ...mainNodes(page, url, id, author, root),
     {
       "@type": "FAQPage",
       "@id": id("faq"),
@@ -126,6 +97,61 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
   }
 
   return { "@context": "https://schema.org", "@graph": graph };
+}
+
+/** The editor as a WebApplication with its how-to, or a reference page as a LearningResource. */
+function mainNodes(page: Page, url: string, id: (name: string, base?: string) => string, author: Node, root: string): Node[] {
+  if (page.kind === "reference") {
+    return [
+      {
+        "@type": "LearningResource",
+        "@id": id("resource"),
+        name: page.h1,
+        url,
+        description: plainText(page.intro),
+        learningResourceType: "Reference chart",
+        teaches: page.name,
+        inLanguage: ["kn", "en"],
+        isAccessibleForFree: true,
+        author,
+        isBasedOn: { "@id": id("library", root) },
+      },
+    ];
+  }
+  return [
+    {
+      "@type": "WebApplication",
+      "@id": id("app"),
+      name: page.slug ? `${page.h1} by ${SITE.name}` : `${SITE.name} ${SITE.tagline}`,
+      url,
+      description: plainText(page.intro),
+      applicationCategory: "UtilitiesApplication",
+      operatingSystem: "Any",
+      browserRequirements: "Requires a browser with WebAssembly",
+      inLanguage: ["kn", "en"],
+      isAccessibleForFree: true,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
+      featureList: [
+        "Nudi, Baraha and Akruti to Unicode",
+        "Unicode to Nudi and Baraha ANSI",
+        "Opens TXT, DOCX and HTML files",
+        "Marks unknown glyphs and malformed syllables with fixes",
+        "Kannada typing in English letters with word suggestions, Baraha and ISO 15919",
+        "Voice typing in Kannada where the browser supports it",
+        "Akshara and word counts",
+        "Saves DOCX, HTML, TXT and Nudi text",
+        "Runs offline in the browser",
+      ],
+      author,
+      isBasedOn: { "@id": id("library", root) },
+    },
+    {
+      "@type": "HowTo",
+      "@id": id("howto"),
+      name: page.howTitle,
+      step: page.steps.map((text, i) => ({ "@type": "HowToStep", position: i + 1, text: plainText(text) })),
+    },
+  ];
 }
 
 /** JSON for a script element: "<" is escaped so the text can never close the element. */

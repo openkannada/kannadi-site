@@ -1,5 +1,5 @@
 ---
-import { CONSONANTS, SIGNS } from "../content/letters.ts";
+import { CONSONANTS, SIGN_NAMES, SIGNS } from "../content/letters.ts";
 import "../styles/letters.css";
 
 import { spellings } from "../lib/spell.ts";
@@ -14,7 +14,7 @@ const signs = SIGNS.slice(1);
       <thead>
         <tr>
           <th scope="col">Consonant</th>
-          {signs.map((sign) => <th scope="col" lang="kn">{`◌${sign}`}</th>)}
+          {signs.map((sign, i) => <th scope="col"><span aria-hidden="true" lang="kn">{`◌${sign}`}</span><span class="sr-only">{SIGN_NAMES[i + 1]}</span></th>)}
         </tr>
       </thead>
       <tbody>

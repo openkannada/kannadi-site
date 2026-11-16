@@ -2,7 +2,7 @@
 // also published as plain text in the FAQPage JSON-LD.
 
 import type { TypingMode } from "../editor/text.ts";
-import { CONSONANTS, VOWELS, YOGAVAHAS } from "./letters.ts";
+import { CONSONANTS, SIGNS, VOWELS, YOGAVAHAS } from "./letters.ts";
 
 export interface Faq {
   q: string;
@@ -387,15 +387,15 @@ export const PAGES: Page[] = [
     name: "Kagunita",
     title: "Kannada kagunita chart: every consonant with every vowel sign",
     description:
-      "The full Kannada kagunita chart: all 34 consonants with every vowel sign, ಂ, ಃ and the virama, each with its Baraha and ISO 15919 spelling.",
+      "The full Kannada kagunita chart: all 34 consonants with every vowel sign, ಂ, ಃ and the virama, each with its Baraha spelling for typing.",
     h1: "Kannada kagunita",
     intro:
-      'The Kannada kagunita, <span lang="kn">ಕಾಗುಣಿತ</span>, is the table of every consonant joined with every vowel sign: <span lang="kn">ಕ</span>, <span lang="kn">ಕಾ</span>, <span lang="kn">ಕಿ</span>, <span lang="kn">ಕೀ</span> and on to <span lang="kn">ಕಃ</span>. The chart below has all 34 consonants, each with its Baraha spelling for typing.',
+      'The Kannada kagunita, <span lang="kn">ಕಾಗುಣಿತ</span>, is the table of every consonant joined with every vowel sign and the yogavahas: <span lang="kn">ಕ</span>, <span lang="kn">ಕಾ</span>, <span lang="kn">ಕಿ</span>, <span lang="kn">ಕೀ</span> and on to <span lang="kn">ಕಃ</span> and <span lang="kn">ಕ್</span>. The chart below has all 34 consonants, each letter with its Baraha spelling for typing.',
     table: "kagunita",
     faq: [
       {
         q: "What is kagunita?",
-        a: 'The table of consonants written with each vowel sign, beginning <span lang="kn">ಕ ಕಾ ಕಿ ಕೀ</span>. Each letter in it is a <span lang="kn">ಗುಣಿತಾಕ್ಷರ</span>.',
+        a: 'The table of consonants written with each vowel sign, beginning <span lang="kn">ಕ ಕಾ ಕಿ ಕೀ</span>. Each consonant with a vowel sign is a <span lang="kn">ಗುಣಿತಾಕ್ಷರ</span>; the last column is the consonant alone, <span lang="kn">ಕ್</span>.',
       },
       {
         q: "How many letters are in each row?",
@@ -415,7 +415,7 @@ export const PAGES: Page[] = [
   },
 ];
 
-export const HOME = PAGES[0] as ToolPage;
+export const HOME = PAGES.find((p): p is ToolPage => p.kind === "tool" && p.slug === "")!;
 
 /** Kannada words shown with their Baraha and ISO 15919 spellings. */
 export const EXAMPLE_WORDS = ["ಕನ್ನಡ", "ನಮಸ್ಕಾರ", "ಕರ್ನಾಟಕ", "ಬೆಂಗಳೂರು", "ಮೈಸೂರು", "ಜ್ಞಾನ", "ಶ್ರೀ", "ಹೃದಯ", "ಅಮ್ಮ", "ಊರು"];
@@ -424,5 +424,5 @@ export const EXAMPLE_WORDS = ["ಕನ್ನಡ", "ನಮಸ್ಕಾರ", "ಕ�
 export const CHART: Record<string, string[]> = {
   Vowels: [...VOWELS, ...YOGAVAHAS],
   Consonants: CONSONANTS,
-  "Vowel signs on ಕ": ["ಕ", "ಕಾ", "ಕಿ", "ಕೀ", "ಕು", "ಕೂ", "ಕೃ", "ಕೆ", "ಕೇ", "ಕೈ", "ಕೊ", "ಕೋ", "ಕೌ", "ಕಂ", "ಕಃ", "ಕ್"],
+  "Vowel signs on ಕ": SIGNS.map((sign) => `ಕ${sign}`),
 };

@@ -19,7 +19,7 @@ import LetterTile from "./LetterTile.astro";
   <div class="table-scroll">
     <table class="letters">
       <thead>
-        <tr><th scope="col">Group</th>{MANNERS.map((m) => <th scope="col">{m}</th>)}</tr>
+        <tr><th scope="col">Group</th>{MANNERS.map((m) => <th scope="col">{m.en}<span class="manner-kn" lang="kn">{m.kn}</span></th>)}</tr>
       </thead>
       <tbody>
         {STRUCTURED.map((row) => (

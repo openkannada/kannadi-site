@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { CONSONANTS, DIGITS, MANNERS, SIGNS, STRUCTURED, UNSTRUCTURED, VOWELS, YOGAVAHAS } from "../src/content/letters.ts";
+import { CONSONANTS, DIGITS, MANNERS, SIGN_NAMES, SIGNS, STRUCTURED, UNSTRUCTURED, VOWELS, YOGAVAHAS } from "../src/content/letters.ts";
 import { HOME, PAGES } from "../src/content/pages.ts";
 import { jsonLd } from "../src/lib/seo.ts";
 
@@ -28,6 +28,7 @@ test("the kagunita has 16 columns and digits run 0 to 9", () => {
   assert.equal(SIGNS.length, 16);
   assert.equal(SIGNS[0], "");
   assert.equal(SIGNS.at(-1), "್");
+  assert.equal(SIGN_NAMES.length, SIGNS.length, "every column has a name for screen readers");
   assert.equal(DIGITS.length, 10);
   assert.equal(DIGITS.map((d) => d.codePointAt(0) - 0x0ce6).join(""), "0123456789");
 });

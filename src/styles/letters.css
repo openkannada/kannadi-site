@@ -54,9 +54,16 @@
   font-size: 1.5rem;
   line-height: 1.6;
 }
-.letters tbody th {
+.letters tbody th,
+.letters thead th:first-child {
   @apply sticky left-0 z-10 bg-card font-normal;
   box-shadow: 1px 0 0 var(--border);
+}
+.letters thead th:first-child {
+  @apply z-20;
+}
+.manner-kn {
+  @apply block text-xs font-normal;
 }
 .kagunita .cell-kn {
   font-size: 1.375rem;

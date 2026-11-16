@@ -108,7 +108,7 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
         "@id": id("resource"),
         name: page.h1,
         url,
-        description: plainText(page.intro),
+        description: page.description,
         learningResourceType: "Reference chart",
         teaches: page.name,
         inLanguage: ["kn", "en"],

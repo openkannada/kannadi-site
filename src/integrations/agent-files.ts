@@ -61,6 +61,7 @@ export function agentFiles(): AstroIntegration {
           details: [
             `Source of the library: ${SITE.repository} (Rust, MIT license).`,
             "Every page is also served as markdown at the same path plus index.md, and on requests that accept text/markdown.",
+            "In browsers with WebMCP, every editor page registers 4 read-only tools that run the library on the page: convert_legacy_to_unicode, convert_unicode_to_legacy, transliterate and count_aksharas.",
           ],
           url,
         };

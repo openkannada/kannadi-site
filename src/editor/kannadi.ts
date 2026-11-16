@@ -11,6 +11,11 @@ export interface ConvertOptions {
   layout?: Layout | "auto";
 }
 
+/** A legacy conversion with the converter's own report of malformed output ranges. */
+export interface LegacyConversion extends Converted {
+  malformed: number[];
+}
+
 export interface Encoded {
   text: string;
   unencodable: number[];
@@ -35,7 +40,7 @@ export function bestLayout(text: string): Layout {
  * Converts legacy font text in `layout`, or in the layout it reads best in.
  * Unknown glyph offsets are UTF-16 code units in the output.
  */
-export function convertLegacy(text: string, { kannadaDigits = false, zeroAsAnusvara = true, layout = "auto" }: ConvertOptions = {}): Converted {
+export function convertLegacy(text: string, { kannadaDigits = false, zeroAsAnusvara = true, layout = "auto" }: ConvertOptions = {}): LegacyConversion {
   const used = layout === "auto" ? bestLayout(text) : layout;
   const options = new wasm.NudiOptions();
   options.kannadaDigits = kannadaDigits;
@@ -46,7 +51,7 @@ export function convertLegacy(text: string, { kannadaDigits = false, zeroAsAnusv
   } finally {
     options.free();
   }
-  const out = { text: result.text, unknown: Array.from(result.unknownInText), layout: used };
+  const out = { text: result.text, unknown: Array.from(result.unknownInText), malformed: Array.from(result.malformed), layout: used };
   result.free();
   return out;
 }

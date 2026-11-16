@@ -70,6 +70,11 @@
   outline: 2px solid var(--ring);
   outline-offset: 1px;
 }
+@media (max-width: 39.99rem) {
+  .seg .wide-only {
+    display: none;
+  }
+}
 .seg-small label {
   @apply h-7 px-3;
 }
@@ -272,6 +277,47 @@ body.dragging .drop-hint {
 }
 .issue-unknown .issue-sample {
   background: var(--mark-unknown);
+}
+
+/* Suggestions for the word being typed: above the word on desktop, a keyboard-style bar above the dock on phones. */
+.suggest {
+  @apply fixed z-40 flex max-w-[calc(100vw-1rem)] gap-1 overflow-x-auto rounded-full p-1;
+  scrollbar-width: none;
+}
+.suggest button {
+  @apply h-9 shrink-0 cursor-pointer rounded-full px-3.5 text-lg text-foreground;
+  line-height: 1;
+}
+.suggest button:hover {
+  @apply bg-accent;
+}
+.suggest button[aria-pressed="true"] {
+  @apply bg-card text-primary;
+  box-shadow: 0 1px 2px oklch(0.2 0.03 268 / 0.16);
+}
+@media (max-width: 47.99rem) {
+  .suggest {
+    --lift-from: 8px;
+    inset: auto 0.5rem calc(var(--dock-bottom) + 4.25rem) 0.5rem;
+    justify-content: center;
+    border-radius: 1.25rem;
+  }
+}
+
+/* The microphone glows while it listens. */
+.mic[aria-pressed="true"] {
+  color: var(--mark-unknown-line);
+  background: var(--mark-unknown);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mic[aria-pressed="true"] svg {
+    animation: listen 1.4s var(--ease-out) infinite;
+  }
+}
+@keyframes listen {
+  50% {
+    transform: scale(1.12);
+  }
 }
 
 /* The fix card, beside the mark on desktop and above the dock on phones. */

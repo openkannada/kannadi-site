@@ -9,10 +9,11 @@ interface Props {
   welcome: string;
 }
 const { mode, welcome } = Astro.props;
-const modes: { value: TypingMode; label: string; name: string; lang?: string }[] = [
+const modes: { value: TypingMode; label: string; name: string; lang?: string; wide?: boolean }[] = [
   { value: "kannada", label: "ಕ", name: "a Kannada keyboard", lang: "kn" },
+  { value: "english", label: "English", name: "English letters, with word suggestions" },
   { value: "baraha", label: "Baraha", name: "Baraha letters" },
-  { value: "iso15919", label: "ISO", name: "ISO 15919 letters" },
+  { value: "iso15919", label: "ISO", name: "ISO 15919 letters", wide: true },
 ];
 ---
 <section class="editor" aria-label="Kannada editor" data-md-skip data-default-mode={mode}>
@@ -23,21 +24,24 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string }[]
         {modes.map((m) => (
           <>
             <input type="radio" name="mode" id={`mode-${m.value}`} value={m.value} checked={m.value === mode} />
-            <label for={`mode-${m.value}`} data-name={m.name} title={`Type with ${m.name}`} lang={m.lang}>
+            <label for={`mode-${m.value}`} data-name={m.name} title={`Type with ${m.name}`} lang={m.lang} class:list={[m.wide && "wide-only"]}>
               {m.label}
               {m.value === "kannada" && <span class="sr-only" lang="en">Kannada keyboard</span>}
             </label>
           </>
         ))}
       </fieldset>
-      <p id="mode-help" class="sr-only">With Baraha or ISO, type Kannada words in English letters. Alt+1, Alt+2 and Alt+3 switch.</p>
+      <p id="mode-help" class="sr-only">With English, type Kannada words the way they sound and pick from the suggestions. Baraha and ISO follow their spelling rules exactly. Alt+1 to Alt+4 switch.</p>
       <span class="divider" aria-hidden="true"></span>
-      <button type="button" class="btn" id="open" title="Open a TXT, Word or HTML file (Ctrl+O)">
+      <button type="button" class="btn hidden sm:inline-flex" id="open" title="Open a TXT, Word or HTML file (Ctrl+O)">
         <Icon name="open" /><span class="label">Open</span>
       </button>
       <input type="file" id="file" class="sr-only" tabindex="-1" aria-hidden="true" accept=".txt,.docx,.html,.htm,text/plain,text/html,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
       <button type="button" class="btn hidden sm:inline-flex" id="convert" title="Convert the selection, or the whole document, from Nudi, Baraha or Akruti">
         <Icon name="convert" /><span class="label">Convert</span>
+      </button>
+      <button type="button" class="btn btn-icon mic" id="voice" aria-pressed="false" aria-label="Type by voice in Kannada" title="Type by voice in Kannada" hidden>
+        <Icon name="mic" />
       </button>
       <button type="button" class="btn btn-icon" popovertarget="tools-menu" aria-label="More tools" title="More tools">
         <Icon name="tools" />
@@ -54,7 +58,9 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string }[]
   </div>
 
   <div id="tools-menu" popover class="menu tool-menu" role="group" aria-label="More tools">
+    <button type="button" class="menu-item sm:hidden" data-run="open">Open a file</button>
     <button type="button" class="menu-item sm:hidden" data-run="convert">Convert from Nudi, Baraha or Akruti</button>
+    <button type="button" class="menu-item sm:hidden" data-run="iso">Type with ISO 15919 letters</button>
     <button type="button" class="menu-item" data-run="normalize">Normalize <small>joins split vowel signs</small></button>
     <button type="button" class="menu-item" data-run="modernize">Modernize <small lang="kn">ೞ ಱ to ಳ ರ</small></button>
     <button type="button" class="menu-item" data-run="new">New document</button>
@@ -92,6 +98,8 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string }[]
     <p class="menu-note hidden md:block"><kbd>F8</kbd> jumps to the next one.</p>
   </div>
 
+  <div id="suggest" class="suggest glass lift" role="group" aria-label="Kannada words for what you typed. Tab picks the next one." hidden></div>
+
   <div class="sheet" id="sheet">
     <div id="doc" class="doc" role="textbox" aria-multiline="true" aria-label="Document" aria-describedby="welcome" lang="kn" spellcheck="false" autocapitalize="off" translate="no"></div>
     <div id="welcome" class="welcome">
@@ -127,7 +135,8 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string }[]
         <dt><kbd>Ctrl</kbd> <kbd>Z</kbd></dt><dd>Undo, including conversions and fixes</dd>
         <dt><kbd>F8</kbd></dt><dd>Next marked problem and its fixes</dd>
         <dt><kbd>Shift</kbd> <kbd>F8</kbd></dt><dd>Previous marked problem</dd>
-        <dt><kbd>Alt</kbd> <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Type with Kannada keys, Baraha or ISO</dd>
+        <dt><kbd>Alt</kbd> <kbd>1</kbd> to <kbd>4</kbd></dt><dd>Type with Kannada keys, English letters, Baraha or ISO</dd>
+        <dt><kbd>Tab</kbd></dt><dd>Next suggested word while typing in English letters</dd>
         <dt><kbd>Esc</kbd></dt><dd>Keep the word you are typing in English letters</dd>
         <dt><kbd>Ctrl</kbd> <kbd>/</kbd></dt><dd>This list</dd>
       </dl>

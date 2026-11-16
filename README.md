@@ -10,7 +10,7 @@ The conversion runs on [kannadi](https://github.com/prasadus92/kannadi), a Rust 
 |---|---|
 | `/` | The editor |
 | `/nudi-to-unicode/`, `/unicode-to-nudi/`, `/baraha-to-unicode/`, `/akruti-to-unicode/` | Converter pages, each with the editor |
-| `/kannada-typing/`, `/english-to-kannada-typing/` | Typing pages, opening in Baraha letters |
+| `/kannada-typing/`, `/english-to-kannada-typing/` | Typing pages, opening in English letters with word suggestions |
 
 Every page also has a markdown mirror at `<page>index.md`. In browsers with WebMCP, the editor registers 4 read-only tools (`convert_legacy_to_unicode`, `convert_unicode_to_legacy`, `transliterate`, `count_aksharas`) on `document.modelContext`, or the older `navigator.modelContext`, after the page is idle. The build writes `llms.txt`, `llms-full.txt` and `robots.txt`, and `sitemap.xml` once a site URL is set.
 
@@ -28,6 +28,12 @@ npm run preview
 `npm run wasm` clones kannadi into `.kannadi`. Set `KANNADI_DIR` to use an existing checkout at the same commit.
 
 Set `SITE_URL` (for example `https://example.org/` or `https://example.org/kannada/`) to add canonical links, absolute Open Graph images and the sitemap. It stays unset until the domain is chosen.
+
+## Typing in English letters
+
+In English mode a word typed the way it sounds ("namaskara") becomes the commonest Kannada word that sounds the same (ನಮಸ್ಕಾರ). Tab or a tap picks another, and the choice is remembered in the browser. Words are matched by kannadi's sound-alike keys (`latinKey`, `phoneticKey`). The word list, `data/words.tsv`, holds the 30,000 commonest words in Kannada Wikipedia; regenerate it with `node scripts/words.ts <counts.tsv>`. It is under CC BY-SA 4.0, credited in the site footer.
+
+Voice typing uses the browser's speech recognition in `kn-IN`, in browsers that have it (Chrome and Edge).
 
 ## Checks
 

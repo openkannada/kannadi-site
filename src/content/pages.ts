@@ -79,7 +79,7 @@ export const PAGES: Page[] = [
       },
       {
         q: "How do I type Kannada with an English keyboard?",
-        a: 'Choose <b>Baraha</b> in the toolbar and type words the way they sound: <kbd>kannaDa</kbd> gives <span lang="kn">ಕನ್ನಡ</span>, <kbd>nADu</kbd> gives <span lang="kn">ನಾಡು</span>. Capitals change the letter, so <kbd>A</kbd> gives <span lang="kn">ಆ</span> and <kbd>K</kbd> gives <span lang="kn">ಖ</span>. Press <kbd>Esc</kbd> to keep a word in English letters.',
+        a: 'Choose <b>English</b> in the toolbar and type words the way they sound: <kbd>namaskara</kbd> gives <span lang="kn">ನಮಸ್ಕಾರ</span>. Other words that sound alike appear above the word; press <kbd>Tab</kbd> or tap one to pick it. For exact spelling, choose <b>Baraha</b>: <kbd>kannaDa</kbd> gives <span lang="kn">ಕನ್ನಡ</span>. Press <kbd>Esc</kbd> to keep a word in English letters.',
       },
       {
         q: "What do Normalize and Modernize do?",
@@ -139,7 +139,7 @@ export const PAGES: Page[] = [
     mode: "kannada",
     howTitle: "How to convert Unicode to Nudi",
     steps: [
-      "Paste Unicode Kannada here, open a file, or type it with <b>Baraha</b> letters.",
+      "Paste Unicode Kannada here, open a file, or type it in <b>English</b> letters.",
       "Choose <b>Save</b>, then <b>Copy as Nudi</b> to paste into Word, or <b>Nudi text</b> for a file.",
       "In Word, select the pasted text and choose a Nudi font, such as Nudi 01 e, or a Baraha font, such as BRH Kannada.",
     ],
@@ -242,23 +242,27 @@ export const PAGES: Page[] = [
     h1: "Kannada typing online",
     intro:
       "Kannada typing means writing Kannada script on a computer or phone, either with a Kannada keyboard or by typing words in English letters that turn into Kannada as you go. You can do both here.",
-    welcome: 'Type <kbd>kannaDa</kbd> and it becomes <span lang="kn">ಕನ್ನಡ</span> as you go.',
-    mode: "baraha",
+    welcome: 'Type <kbd>kannada</kbd> and it becomes <span lang="kn">ಕನ್ನಡ</span> as you go.',
+    mode: "english",
     howTitle: "How to type in Kannada",
     steps: [
       "With a Kannada keyboard on your phone or computer, choose <b>ಕ</b> in the toolbar and type as usual.",
-      "Without one, choose <b>Baraha</b> and type each word the way it sounds. The chart below shows every letter.",
+      "Without one, keep <b>English</b> chosen and type each word the way it sounds, then pick the right word from the suggestions. For exact spelling, <b>Baraha</b> follows the chart below.",
       "Check the akshara and word counts under the page, then choose <b>Save</b> or <b>Copy all</b>.",
     ],
     chart: "letters",
     faq: [
       {
         q: "Do I need to install a Kannada keyboard?",
-        a: "No. With <b>Baraha</b> chosen, a normal English keyboard is enough. If your phone or computer already has a Kannada keyboard, choose <b>ಕ</b> and type as usual.",
+        a: "No. With <b>English</b> chosen, a normal English keyboard is enough. If your phone or computer already has a Kannada keyboard, choose <b>ಕ</b> and type as usual.",
+      },
+      {
+        q: "Can I type Kannada by voice?",
+        a: "Yes, in Chrome and Edge. Select the microphone in the toolbar and speak in Kannada; the words appear where the cursor is. Voice typing uses the browser's own speech service, which hears the audio. Everything else on this page stays on your device.",
       },
       {
         q: "How do I type long vowels and hard consonants?",
-        a: 'Use capital letters: <kbd>A</kbd> gives <span lang="kn">ಆ</span>, <kbd>I</kbd> gives <span lang="kn">ಈ</span>, <kbd>T</kbd> gives <span lang="kn">ಟ</span> and <kbd>D</kbd> gives <span lang="kn">ಡ</span>. The chart on this page lists every letter.',
+        a: 'With <b>English</b>, type them the way they sound and pick from the suggestions. With <b>Baraha</b>, use capital letters: <kbd>A</kbd> gives <span lang="kn">ಆ</span>, <kbd>I</kbd> gives <span lang="kn">ಈ</span>, <kbd>T</kbd> gives <span lang="kn">ಟ</span> and <kbd>D</kbd> gives <span lang="kn">ಡ</span>. The chart on this page lists every letter.',
       },
       {
         q: "Can I type Kannada on my phone here?",
@@ -278,17 +282,17 @@ export const PAGES: Page[] = [
     name: "English to Kannada typing",
     title: "English to Kannada typing: type Kannada in English letters",
     description:
-      "Type Kannada words in English letters and get Kannada script: namaskAra gives ನಮಸ್ಕಾರ. Free English to Kannada transliteration in your browser.",
+      "Type Kannada words in English letters and get Kannada script: namaskara gives ನಮಸ್ಕಾರ, with word suggestions. Free English to Kannada typing in your browser.",
     h1: "English to Kannada typing",
     intro:
-      'English to Kannada typing lets you write Kannada words with English letters: type <kbd>namaskAra</kbd> and get <span lang="kn">ನಮಸ್ಕಾರ</span>. It spells Kannada words in Kannada script, which is called transliteration.',
-    welcome: 'Type a Kannada word in English letters: <kbd>namaskAra</kbd> becomes <span lang="kn">ನಮಸ್ಕಾರ</span>.',
-    mode: "baraha",
+      'English to Kannada typing lets you write Kannada words with English letters: type <kbd>namaskara</kbd> and get <span lang="kn">ನಮಸ್ಕಾರ</span>. It spells Kannada words in Kannada script, which is called transliteration.',
+    welcome: 'Type a Kannada word the way it sounds: <kbd>namaskara</kbd> becomes <span lang="kn">ನಮಸ್ಕಾರ</span>.',
+    mode: "english",
     howTitle: "How to type Kannada in English letters",
     steps: [
-      "Keep <b>Baraha</b> chosen in the toolbar. It is already on for this page.",
-      'Type a word the way it sounds: <kbd>kannaDa</kbd> gives <span lang="kn">ಕನ್ನಡ</span>. The word turns into Kannada letter by letter.',
-      "Press space or a punctuation key to finish the word, or <kbd>Esc</kbd> to keep it in English letters.",
+      "Keep <b>English</b> chosen in the toolbar. It is already on for this page.",
+      'Type a word the way it sounds: <kbd>kannada</kbd> gives <span lang="kn">ಕನ್ನಡ</span>. The word turns into Kannada as you type, and words that sound alike appear above it.',
+      "Press space to keep the word, <kbd>Tab</kbd> or a tap to pick another, or <kbd>Esc</kbd> to keep it in English letters.",
       "Choose <b>Save</b> for a Word file, or <b>Copy all</b> to paste the text anywhere.",
     ],
     chart: "words",
@@ -299,7 +303,11 @@ export const PAGES: Page[] = [
       },
       {
         q: "Which spelling rules does it use?",
-        a: 'The Baraha phonetic scheme, which many Kannada typists already know. Capitals change the letter: <kbd>A</kbd> gives <span lang="kn">ಆ</span>, <kbd>T</kbd> gives <span lang="kn">ಟ</span>, and <kbd>K</kbd> gives <span lang="kn">ಖ</span>. ISO 15919 is there too, for typists who use Latin letters with marks.',
+        a: 'With <b>English</b>, none to learn: type the way the word sounds and pick from the suggestions. With <b>Baraha</b>, the Baraha phonetic scheme that many Kannada typists know, where capitals change the letter: <kbd>A</kbd> gives <span lang="kn">ಆ</span>, <kbd>T</kbd> gives <span lang="kn">ಟ</span>, and <kbd>K</kbd> gives <span lang="kn">ಖ</span>. ISO 15919 is there too, for typists who use Latin letters with marks.',
+      },
+      {
+        q: "Where do the word suggestions come from?",
+        a: 'From the 30,000 commonest words in <a href="https://kn.wikipedia.org">Kannada Wikipedia</a>, counted from its article text under the CC BY-SA 4.0 license. The editor matches what you type by sound, offers the commonest words first, and remembers the words you pick, on your device.',
       },
       {
         q: "How do I type a conjunct such as ಜ್ಞ or ಕ್ಷ?",

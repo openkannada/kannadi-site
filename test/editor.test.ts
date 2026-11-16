@@ -321,7 +321,7 @@ function composer(mode) {
     const table = { k: "ಕ್", ka: "ಕ", kan: "ಕನ್", kann: "ಕನ್ನ್", kanna: "ಕನ್ನ", kannaD: "ಕನ್ನಡ್", kannaDa: "ಕನ್ನಡ" };
     return table[text] ?? `[${text}]`;
   };
-  const c = new Composer(editor, translit, () => {});
+  const c = new Composer(editor, translit, { onComposing: () => {} });
   editor.onEdit = (edit, after, type) => c.handle(edit, after, type);
   c.setMode(mode);
   return { editor, c };
@@ -389,4 +389,20 @@ test("undo history merges typing into 1 step and keeps other edits apart", () =>
       { start: 2, removed: "", inserted: "X" },
     ],
   );
+});
+
+test("a word typed in English letters renders as its best spelling and can be swapped for another", () => {
+  const editor = new FakeEditor();
+  const words = [];
+  const spell = (latin, mode) => (mode === "english" ? { n: "ನ", na: "ನ", nam: "ನಮ್", nama: "ನಮ" }[latin] ?? `<${latin}>` : `[${latin}]`);
+  const c = new Composer(editor, spell, { onComposing: () => {}, onWord: (w) => words.push(w && w.latin) });
+  editor.onEdit = (edit, after, type) => c.handle(edit, after, type);
+  c.setMode("english");
+  editor.type("nama");
+  assert.equal(editor.text, "ನಮ");
+  assert.deepEqual(c.current, { latin: "nama", start: 0, end: 2 });
+  c.choose("ನಾಮ");
+  assert.equal(editor.text, "ನಾಮ");
+  assert.equal(c.current, null);
+  assert.deepEqual(words, ["n", "na", "nam", "nama", null]);
 });

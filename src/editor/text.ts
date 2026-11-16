@@ -2,7 +2,7 @@
 
 /** A legacy font layout, or "auto" for legacy text in an unknown font. */
 export type Layout = "nudi" | "akruti";
-export type TypingMode = "kannada" | "baraha" | "iso15919";
+export type TypingMode = "kannada" | "english" | "baraha" | "iso15919";
 export type SegmentFont = false | Layout | "auto";
 
 export interface Segment {

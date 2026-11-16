@@ -70,6 +70,12 @@
   outline: 2px solid var(--ring);
   outline-offset: 1px;
 }
+@media (max-width: 39.99rem) {
+  .seg .wide-only,
+  .seg .wide-only + label {
+    display: none;
+  }
+}
 .seg-small label {
   @apply h-7 px-3;
 }
@@ -272,6 +278,61 @@ body.dragging .drop-hint {
 }
 .issue-unknown .issue-sample {
   background: var(--mark-unknown);
+}
+
+/* Suggestions for the word being typed: above the word on desktop, a keyboard-style bar above the dock on phones. */
+.suggest {
+  @apply fixed z-40 flex max-w-[calc(100vw-1rem)] gap-1 overflow-x-auto rounded-full p-1;
+  scrollbar-width: none;
+}
+.suggest button {
+  @apply h-9 shrink-0 cursor-pointer rounded-full px-3.5 text-lg text-foreground;
+  line-height: 1;
+}
+.suggest button:hover {
+  @apply bg-accent;
+}
+.suggest button[aria-current="true"] {
+  @apply bg-card text-primary;
+  box-shadow: 0 1px 2px oklch(0.2 0.03 268 / 0.16);
+}
+@media (max-width: 47.99rem) {
+  .suggest {
+    --lift-from: 8px;
+    inset: auto 0.5rem calc(var(--dock-bottom) + 4.25rem) 0.5rem;
+    justify-content: safe center;
+    border-radius: 1.25rem;
+  }
+}
+
+/* What voice typing hears, before it is final: a quiet line beside the sheet's foot. */
+.heard {
+  @apply fixed right-4 bottom-4 z-30 max-w-[min(24rem,calc(100vw-2rem))] truncate rounded-full px-4 py-2 text-base;
+  --lift-from: 8px;
+}
+@media (max-width: 47.99rem) {
+  .heard {
+    inset: calc(max(0.75rem, env(safe-area-inset-top)) + 0.25rem) 0.5rem auto 0.5rem;
+    max-width: none;
+    text-align: center;
+    --lift-from: -8px;
+  }
+}
+
+/* The microphone glows while it listens. */
+.mic[aria-pressed="true"] {
+  color: var(--mark-unknown-line);
+  background: var(--mark-unknown);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mic[aria-pressed="true"] svg {
+    animation: listen 1.4s var(--ease-out) infinite;
+  }
+}
+@keyframes listen {
+  50% {
+    transform: scale(1.12);
+  }
 }
 
 /* The fix card, beside the mark on desktop and above the dock on phones. */

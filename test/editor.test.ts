@@ -312,6 +312,9 @@ class FakeEditor {
   selection() {
     return { start: this.caret, end: this.caret };
   }
+  select(at) {
+    this.caret = at;
+  }
 }
 
 function composer(mode) {
@@ -321,7 +324,7 @@ function composer(mode) {
     const table = { k: "ಕ್", ka: "ಕ", kan: "ಕನ್", kann: "ಕನ್ನ್", kanna: "ಕನ್ನ", kannaD: "ಕನ್ನಡ್", kannaDa: "ಕನ್ನಡ" };
     return table[text] ?? `[${text}]`;
   };
-  const c = new Composer(editor, translit, () => {});
+  const c = new Composer(editor, translit, { onComposing: () => {} });
   editor.onEdit = (edit, after, type) => c.handle(edit, after, type);
   c.setMode(mode);
   return { editor, c };
@@ -389,4 +392,41 @@ test("undo history merges typing into 1 step and keeps other edits apart", () =>
       { start: 2, removed: "", inserted: "X" },
     ],
   );
+});
+
+test("a word typed in English letters renders as its best spelling and can be swapped for another", () => {
+  const editor = new FakeEditor();
+  const words = [];
+  const spell = (latin, mode) => (mode === "english" ? { n: "ನ", na: "ನ", nam: "ನಮ್", nama: "ನಮ" }[latin] ?? `<${latin}>` : `[${latin}]`);
+  const c = new Composer(editor, spell, { onComposing: () => {}, onWord: (w) => words.push(w && w.latin) });
+  editor.onEdit = (edit, after, type) => c.handle(edit, after, type);
+  c.setMode("english");
+  editor.type("nama");
+  assert.equal(editor.text, "ನಮ");
+  assert.deepEqual(c.current, { latin: "nama", start: 0, end: 2 });
+  c.choose("ನಾಮ");
+  assert.equal(editor.text, "ನಾಮ");
+  assert.equal(c.current, null);
+  assert.deepEqual(words, ["n", "na", "nam", "nama", null]);
+});
+
+test("after a word committed with its space, the caret is after the space", () => {
+  const { editor } = composer("baraha");
+  editor.commit("kannaDa ");
+  editor.commit("ka ");
+  assert.equal(editor.text, "ಕನ್ನಡ ಕ ");
+  assert.equal(editor.caret, editor.text.length);
+});
+
+test("a word is reported done once, kept or put back in Latin letters", () => {
+  const editor = new FakeEditor();
+  const done = [];
+  const c = new Composer(editor, (latin) => latin.toUpperCase(), { onComposing: () => {}, onDone: (w, kept) => done.push([w.latin, kept]) });
+  editor.onEdit = (edit, after, type) => c.handle(edit, after, type);
+  c.setMode("english");
+  editor.type("ab ");
+  editor.type("cd");
+  c.revert();
+  assert.deepEqual(done, [["ab", true], ["cd", false]]);
+  assert.equal(editor.text, "AB cd");
 });

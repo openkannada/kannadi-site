@@ -1,22 +1,39 @@
-// Phonetic typing: Latin letters typed in Baraha or ISO 15919 turn into Kannada
-// as you type. The word being typed is kept as Latin in `latin`, and each new
-// letter re-renders the whole word, since a later letter can change an earlier
-// one (k is ಕ್, ka is ಕ).
+// Phonetic typing: Latin letters turn into Kannada as you type. The word being
+// typed is kept as Latin in `latin`, and each new letter re-renders the whole
+// word, since a later letter can change an earlier one (k is ಕ್, ka is ಕ).
 
 import type { DocEditor } from "./editor.ts";
-import type { Scheme } from "./kannadi.ts";
 import type { Edit, TypingMode } from "./text.ts";
 
-const LETTERS: Record<Exclude<TypingMode, "kannada">, RegExp> = {
+type LatinMode = Exclude<TypingMode, "kannada">;
+
+const LETTERS: Record<LatinMode, RegExp> = {
+  english: /^[A-Za-z]+$/,
   baraha: /^[A-Za-z~^_]+$/,
   iso15919: /^[\p{Script=Latin}\p{M}:]+$/u,
 };
+
+/** The word being typed: its Latin letters and where its Kannada rendering sits. */
+export interface ComposingWord {
+  latin: string;
+  start: number;
+  end: number;
+}
+
+export interface ComposerEvents {
+  /** The rendered word's range, or [] when no word is being typed. */
+  onComposing: (range: number[]) => void;
+  /** The word being typed after each change, or null when it is done. */
+  onWord?: (word: ComposingWord | null) => void;
+  /** A word is done: kept as rendered, or put back in Latin letters. */
+  onDone?: (word: ComposingWord, kept: boolean) => void;
+}
 // Phone keyboards that compose whole words often commit the word and the
 // space after it as 1 insertion.
 const WORD_AND_BREAK = /^(.+?)([\s.,;:!?]+)$/u;
 
 /** The editor surface the composer needs; DocEditor provides it. */
-export type ComposerEditor = Pick<DocEditor, "replace" | "selection">;
+export type ComposerEditor = Pick<DocEditor, "replace" | "selection" | "select">;
 
 interface Word {
   start: number;
@@ -29,17 +46,18 @@ export class Composer {
   private word: Word | null = null;
   private busy = false;
   private readonly editor: ComposerEditor;
-  private readonly transliterate: (text: string, from: Scheme, to: Scheme) => string;
-  private readonly onComposing: (range: number[]) => void;
+  private readonly spell: (latin: string, mode: LatinMode) => string;
+  private readonly events: ComposerEvents;
 
-  constructor(
-    editor: ComposerEditor,
-    transliterate: (text: string, from: Scheme, to: Scheme) => string,
-    onComposing: (range: number[]) => void,
-  ) {
+  /** `spell` writes a word's Latin letters in Kannada for a typing mode. */
+  constructor(editor: ComposerEditor, spell: (latin: string, mode: LatinMode) => string, events: ComposerEvents) {
     this.editor = editor;
-    this.transliterate = transliterate;
-    this.onComposing = onComposing;
+    this.spell = spell;
+    this.events = events;
+  }
+
+  get current(): ComposingWord | null {
+    return this.word ? { latin: this.word.latin, start: this.word.start, end: this.end() } : null;
   }
 
   setMode(mode: TypingMode): void {
@@ -52,24 +70,55 @@ export class Composer {
   }
 
   commit(): void {
-    if (!this.word) return;
+    this.finish(true);
+  }
+
+  private finish(kept: boolean): void {
+    const done = this.current;
+    if (!done) return;
     this.word = null;
-    this.onComposing([]);
+    this.events.onComposing([]);
+    this.events.onWord?.(null);
+    this.events.onDone?.(done, kept);
+  }
+
+  /** Writes the composer's own change, which must not start or extend a word. */
+  private write(start: number, end: number, text: string): void {
+    this.busy = true;
+    try {
+      this.editor.replace(start, end, text, "compose");
+    } finally {
+      this.busy = false;
+    }
+  }
+
+  /** Shows `kannada` for the word being typed and keeps typing it, for cycling through suggestions. */
+  respell(kannada: string): void {
+    const w = this.word;
+    if (!w || !kannada) return;
+    this.write(w.start, this.end(), kannada);
+    w.rendered = kannada;
+    this.events.onComposing([w.start, w.start + kannada.length]);
+  }
+
+  /** Puts `kannada` in place of the word being typed, and ends the word. */
+  choose(kannada: string): void {
+    this.respell(kannada);
+    this.commit();
   }
 
   private render(replaceEnd: number): void {
     const w = this.word;
     if (!w || this.mode === "kannada") return;
-    const out = w.latin ? this.transliterate(w.latin, this.mode, "kannada") : "";
-    this.busy = true;
-    try {
-      this.editor.replace(w.start, replaceEnd, out, "compose");
-    } finally {
-      this.busy = false;
-    }
+    const out = w.latin ? this.spell(w.latin, this.mode) : "";
+    this.write(w.start, replaceEnd, out);
     w.rendered = out;
-    if (out) this.onComposing([w.start, w.start + out.length]);
-    else this.commit();
+    if (!out) {
+      this.commit();
+      return;
+    }
+    this.events.onComposing([w.start, w.start + out.length]);
+    this.events.onWord?.(this.current);
   }
 
   /** Called after every edit; turns newly typed Latin letters into Kannada. */
@@ -91,6 +140,11 @@ export class Composer {
     if (m && m[1] && letters.test(m[1])) {
       this.extend(edit.start, m[1]);
       this.render(edit.start + m[1].length);
+      // The caret goes after the space or punctuation that came with the word.
+      const after = this.end() + (m[2]?.length ?? 0);
+      this.commit();
+      this.editor.select(after);
+      return;
     }
     this.commit();
   }
@@ -114,15 +168,9 @@ export class Composer {
   revert(): boolean {
     if (!this.word) return false;
     const { start, latin } = this.word;
-    const end = this.end();
-    this.word = null;
-    this.busy = true;
-    try {
-      this.editor.replace(start, end, latin, "compose");
-    } finally {
-      this.busy = false;
-    }
-    this.onComposing([]);
+    this.write(start, this.end(), latin);
+    this.word.rendered = latin;
+    this.finish(false);
     return true;
   }
 

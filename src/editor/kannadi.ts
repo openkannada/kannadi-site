@@ -82,6 +82,16 @@ export function transliterate(text: string, from: Scheme, to: Scheme): string {
   return wasm.transliterate(text, from, to);
 }
 
+/** The medium-level sound-alike key of a Kannada word. */
+export function phoneticKey(word: string): string {
+  return wasm.phoneticKey(word, "medium");
+}
+
+/** The medium-level sound-alike key of a word typed in Latin letters. */
+export function latinKey(latin: string): string {
+  return wasm.latinKey(latin, "medium");
+}
+
 export const normalize = wasm.normalize;
 export const modernize = wasm.modernize;
 export const countAksharas = wasm.countAksharas;

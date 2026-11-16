@@ -45,9 +45,9 @@ Glass is used only for things that float over the writing: the toolbar, its menu
 ## Components
 
 - **Toolbar** (`.dock`, `.toolbar`): on desktop it is centered, sticky 12px from the top, and overlaps the sheet's top edge by 1.6rem. Below 768px it is fixed at the bottom, above the home bar and the on-screen keyboard (`--kb`, set from `visualViewport`). It contains, in order:
-  - the typing mode as a segmented control (ಕ, Baraha, ISO);
-  - Open;
-  - Convert (from 640px; in the Tools menu below that);
+  - the typing mode as a segmented control (ಕ, English, Baraha, and ISO from 640px; ISO is in the Tools menu below that);
+  - Open and Convert (from 640px; in the Tools menu below that);
+  - the microphone, where voice typing works;
   - Tools;
   - the problem count chip;
   - Save, the only solid button.
@@ -56,6 +56,8 @@ Glass is used only for things that float over the writing: the toolbar, its menu
 - **Menus** (`.menu`): native `popover` elements, anchored to their buttons with CSS anchor positioning. They fall back to a fixed spot under the toolbar, and below 768px they become bottom sheets above the dock. They open with a short lift out of blur (`@starting-style`).
 - **Fix card** (`.fix`): opens beside the mark on desktop. On phones it is a bottom sheet, and the page scrolls so the mark stays visible above it.
 - **Toast** (`.toast`): under the toolbar on desktop and above the dock on phones. It leaves after 5 seconds, or 10 when it carries an action. An always-present visually hidden live region reads every message.
+- **Suggestion strip** (`.suggest`): glass pill above the word being typed in English letters on desktop; on phones a keyboard-style bar above the dock. The picked word is a white bead with indigo text, like the segmented control.
+- **Microphone** (`.mic`): shown only where the browser has speech recognition. While it listens it turns rose and breathes slowly; reduced motion keeps it still.
 - **Marks**: drawn with the CSS Custom Highlight API: a tinted background, a wavy underline 1.5px thick and offset 0.35em. `composing` marks the word being typed in Baraha or ISO with a dotted indigo underline.
 - **Content sections**: numbered steps with accent discs, a letter chart of tiles (Kannada, the Baraha key, ISO), a 3-column word table, and an FAQ of `details` elements with a rotating chevron.
 

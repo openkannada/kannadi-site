@@ -1,6 +1,4 @@
-// The editor's WebMCP tools: the converter, transliterator and counter, run on
-// the page's own WebAssembly. Each returns a plain object, which the browser
-// serializes for the agent; a bad input returns { error } so the agent can fix it.
+// The editor's WebMCP tools on the page's WebAssembly; bad input returns { error } so the agent can correct it.
 import type { ModelContextTool } from "../lib/model-context.ts";
 import type { ConvertOptions, Encoded, LegacyConversion, Scheme } from "./kannadi.ts";
 import { countWords } from "./text.ts";
@@ -137,7 +135,7 @@ export function editorTools(k: ToolKannadi): ModelContextTool[] {
     {
       name: "count_aksharas",
       description:
-        "Count the aksharas (written syllables, such as ಕ್ಷ or ಕ್ಕಿ) in Kannada text, with its words and UTF-16 characters. Akshara counts are how Kannada text length is usually measured.",
+        "Count the aksharas (written syllables, such as ಕ್ಷ or ಕ್ಕಿ) in Kannada text, with its words and UTF-16 code units. Akshara counts are how Kannada text length is usually measured.",
       inputSchema: { type: "object", properties: { text }, required: ["text"], additionalProperties: false },
       annotations: { readOnlyHint: true },
       execute: guarded((input) => {

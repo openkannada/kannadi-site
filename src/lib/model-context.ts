@@ -10,7 +10,7 @@ export interface ModelContextTool {
 }
 
 export interface ModelContext {
-  registerTool: (tool: ModelContextTool, options?: { signal?: AbortSignal }) => unknown | Promise<unknown>;
+  registerTool: (tool: ModelContextTool, options?: { signal?: AbortSignal }) => unknown;
 }
 
 /**

@@ -75,7 +75,7 @@ export function editorTools(k: ToolKannadi): ModelContextTool[] {
     {
       name: "transliterate",
       description:
-        "Transliterate between Kannada script and Latin spellings: Baraha phonetic letters (kannaDa), ISO 15919 (kannaḍa) or IAST. For example, from baraha to kannada turns namaskAra into ನಮಸ್ಕಾರ. It changes the script, not the language.",
+        "Transliterate between Kannada script and Latin spellings: Baraha phonetic letters (kannaDa), ISO 15919 (kannaḍa) or IAST. For example, from baraha to kannada turns namaskAra into ನಮಸ್ಕಾರ. The words stay the same and only the script changes.",
       inputSchema: {
         type: "object",
         properties: {

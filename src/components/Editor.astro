@@ -99,9 +99,9 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string }[]
       {mode === "kannada" && <button type="button" id="sample" class="sample">Try a page from 2002</button>}
     </div>
     <div class="sheet-foot" role="group" aria-label="Document status">
-      <span><b id="count-aksharas">0</b> aksharas</span>
-      <span><b id="count-words">0</b> words</span>
-      <span class="hidden sm:inline"><b id="count-chars">0</b> characters</span>
+      <span><b id="count-aksharas">0</b> <span data-one="akshara">aksharas</span></span>
+      <span><b id="count-words">0</b> <span data-one="word">words</span></span>
+      <span class="hidden sm:inline"><b id="count-chars">0</b> <span data-one="character">characters</span></span>
       <span id="saved" class="saved"></span>
     </div>
     <p class="drop-hint" aria-hidden="true">Drop to open</p>

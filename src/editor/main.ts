@@ -173,14 +173,21 @@ const issues = new Issues(editor, kannadi, {
 
 const composer = new Composer(editor, kannadi.transliterate, (range) => editor.highlight("composing", range));
 
+/** Shows a count and its noun, singular for 1: "1 word", "2 words". */
+function showCount(el: HTMLElement, n: number): void {
+  el.textContent = n.toLocaleString("en-IN");
+  const noun = el.nextElementSibling as HTMLElement | null;
+  if (noun?.dataset.one) noun.textContent = n === 1 ? noun.dataset.one : `${noun.dataset.one}s`;
+}
+
 function update(text: string): void {
   ui.welcome.hidden = text.length > 0;
-  ui.chars.textContent = text.length.toLocaleString("en-IN");
+  showCount(ui.chars, text.length);
   clearTimeout(countTimer);
   countTimer = setTimeout(() => {
     const current = editor.text;
-    ui.words.textContent = countWords(current).toLocaleString("en-IN");
-    ui.aksharas.textContent = kannadi.countAksharas(current).toLocaleString("en-IN");
+    showCount(ui.words, countWords(current));
+    showCount(ui.aksharas, kannadi.countAksharas(current));
   }, Math.min(600, 80 + text.length / 10000));
   clearTimeout(saveTimer);
   saveTimer = setTimeout(save, 500);
@@ -485,7 +492,11 @@ function wire(): void {
   // iOS keeps fixed elements behind the on-screen keyboard; --kb lifts them above it.
   const vv = window.visualViewport;
   if (vv) {
-    const inset = () => document.documentElement.style.setProperty("--kb", `${Math.max(0, innerHeight - vv.height - vv.offsetTop)}px`);
+    const inset = () => {
+      // A pinch zoom also shrinks the visual viewport; only a keyboard should lift the dock.
+      if (vv.scale !== 1) return;
+      document.documentElement.style.setProperty("--kb", `${Math.max(0, innerHeight - vv.height - vv.offsetTop)}px`);
+    };
     vv.addEventListener("resize", inset);
     vv.addEventListener("scroll", inset);
   }

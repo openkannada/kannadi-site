@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.astro/
+.kannadi/
+src/editor/wasm/
+.lighthouseci/
+.DS_Store

@@ -32,8 +32,8 @@ export function recognitionClass(w: object = globalThis): RecognitionConstructor
 export interface VoiceEvents {
   /** Final text to insert, and the words still being heard. */
   onText: (final: string, interim: string) => void;
-  onState: (listening: boolean) => void;
-  onError: (message: string) => void;
+  /** Listening started or stopped; `error` is set when it stopped because of one. */
+  onState: (listening: boolean, error?: string) => void;
 }
 
 const ERRORS: Record<string, string> = {
@@ -43,9 +43,14 @@ const ERRORS: Record<string, string> = {
   network: "Voice typing needs a connection to the browser's speech service.",
   "language-not-supported": "This browser cannot recognize Kannada speech.",
 };
+/** Errors after which listening again would fail the same way. */
+const FATAL = new Set(["not-allowed", "service-not-allowed", "audio-capture", "language-not-supported"]);
 
 export class Voice {
   private recognition: Recognition | null = null;
+  /** The user asked to stop, or a fatal error happened: do not listen again on end. */
+  private stopping = false;
+  private error: string | undefined;
   private readonly Recognition: RecognitionConstructor;
   private readonly events: VoiceEvents;
 
@@ -64,6 +69,14 @@ export class Voice {
   }
 
   start(): void {
+    this.stopping = false;
+    this.error = undefined;
+    if (this.listen()) this.events.onState(true);
+    else this.events.onState(false, this.error);
+  }
+
+  /** Starts 1 recognition session; Chrome on Android ends each one after a pause. */
+  private listen(): boolean {
     const r = new this.Recognition();
     r.lang = "kn-IN";
     r.continuous = true;
@@ -79,18 +92,27 @@ export class Voice {
       this.events.onText(final, interim);
     };
     r.onerror = (e) => {
-      if (e.error !== "no-speech" && e.error !== "aborted") this.events.onError(ERRORS[e.error] ?? "Voice typing stopped.");
+      if (e.error === "no-speech" || e.error === "aborted") return;
+      this.error = ERRORS[e.error] ?? "Voice typing stopped.";
+      if (FATAL.has(e.error)) this.stopping = true;
     };
     r.onend = () => {
       this.recognition = null;
-      this.events.onState(false);
+      if (!this.stopping && this.listen()) return;
+      this.events.onState(false, this.error);
     };
+    try {
+      r.start();
+    } catch {
+      this.error = "Voice typing could not start.";
+      return false;
+    }
     this.recognition = r;
-    r.start();
-    this.events.onState(true);
+    return true;
   }
 
   stop(): void {
+    this.stopping = true;
     this.recognition?.stop();
   }
 }

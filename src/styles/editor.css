@@ -71,7 +71,8 @@
   outline-offset: 1px;
 }
 @media (max-width: 39.99rem) {
-  .seg .wide-only {
+  .seg .wide-only,
+  .seg .wide-only + label {
     display: none;
   }
 }
@@ -291,7 +292,7 @@ body.dragging .drop-hint {
 .suggest button:hover {
   @apply bg-accent;
 }
-.suggest button[aria-pressed="true"] {
+.suggest button[aria-current="true"] {
   @apply bg-card text-primary;
   box-shadow: 0 1px 2px oklch(0.2 0.03 268 / 0.16);
 }
@@ -299,7 +300,7 @@ body.dragging .drop-hint {
   .suggest {
     --lift-from: 8px;
     inset: auto 0.5rem calc(var(--dock-bottom) + 4.25rem) 0.5rem;
-    justify-content: center;
+    justify-content: safe center;
     border-radius: 1.25rem;
   }
 }

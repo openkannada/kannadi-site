@@ -7,8 +7,8 @@ import type { ExportFormat } from "./files.ts";
 import { registerWhenIdle, resolveModelContext } from "../lib/model-context.ts";
 import { Issues } from "./issues.ts";
 import * as kannadi from "./kannadi.ts";
+import { EnglishTyping } from "./english.ts";
 import { SuggestStrip } from "./strip.ts";
-import { parseWords, Suggester } from "./suggest.ts";
 import { countWords, LAYOUT_NAMES, type Layout, looksLegacy, nudiNotes, plural, type TypingMode } from "./text.ts";
 import { recognitionClass, Voice } from "./voice.ts";
 
@@ -158,6 +158,7 @@ try {
 }
 
 const editor = new DocEditor(ui.doc, (edit, after, inputType) => {
+  if (inputType !== "compose") english.edited();
   issues.edited(edit, after);
   composer.handle(edit, after, inputType);
   update(after);
@@ -177,72 +178,49 @@ const issues = new Issues(editor, kannadi, {
   },
 });
 
-// English letters: words from the list, best first, with the strict Baraha spelling as the fallback.
-let suggester: Suggester | null = null;
-let loadingWords: Promise<void> | null = null;
-let choices: string[] = [];
-let chosen = 0;
-const strict = (latin: string) => kannadi.transliterate(latin, "baraha", "kannada");
-
-function loadWords(): Promise<void> {
-  loadingWords ??= (async () => {
-    const text = await (await fetch(wordsUrl)).text();
-    let picks: [string, string][] = [];
-    try {
-      picks = JSON.parse(localStorage.getItem(PICKS) ?? "[]") as [string, string][];
-    } catch {
-      // Unreadable choices start over.
-    }
-    suggester = await Suggester.create({ phoneticKey: kannadi.phoneticKey, latinKey: kannadi.latinKey, strict }, parseWords(text), picks);
-  })().catch(() => {
-    loadingWords = null;
-  });
-  return loadingWords;
-}
-
-function spell(latin: string, mode: Exclude<TypingMode, "kannada">): string {
-  if (mode !== "english") return kannadi.transliterate(latin, mode, "kannada");
-  if (!suggester) void loadWords();
-  choices = suggester?.suggest(latin) ?? [strict(latin)];
-  chosen = 0;
-  return choices[0] ?? strict(latin);
-}
-
-let typed = "";
-const strip = new SuggestStrip(byId("suggest"), (start, end) => editor.rect(start, end), (i) => {
-  chosen = i;
-  composer.choose(choices[i]!);
-});
-
-const composer = new Composer(editor, spell, {
-  onComposing: (range) => editor.highlight("composing", range),
-  onWord(word) {
-    if (word && composer.mode === "english" && choices.length > 1) {
-      typed = word.latin;
-      strip.show(word, choices, chosen);
-      return;
-    }
-    if (!word && typed && chosen > 0 && suggester) {
-      suggester.remember(typed, choices[chosen]!);
-      try {
-        localStorage.setItem(PICKS, JSON.stringify(suggester.remembered()));
-      } catch {
-        // Choices are a convenience; the editor works without them.
-      }
-    }
-    if (!word) typed = "";
-    strip.hide();
+const english = new EnglishTyping({
+  kannadi: { phoneticKey: kannadi.phoneticKey, latinKey: kannadi.latinKey, transliterate: (latin) => kannadi.transliterate(latin, "baraha", "kannada") },
+  async loadWords() {
+    const res = await fetch(wordsUrl);
+    if (!res.ok) throw new Error(`word list: HTTP ${res.status}`);
+    return res.text();
   },
+  picks: {
+    read() {
+      try {
+        return JSON.parse(localStorage.getItem(PICKS) ?? "[]");
+      } catch {
+        return [];
+      }
+    },
+    write(picks) {
+      try {
+        localStorage.setItem(PICKS, JSON.stringify(picks));
+      } catch {
+        // Remembered choices are a convenience; the editor works without them.
+      }
+    },
+  },
+  strip: new SuggestStrip(byId("suggest"), (start, end) => editor.rect(start, end), (i) => english.pick(i)),
+  text: () => editor.text,
+  replace: (start, end, text) => editor.replace(start, end, text),
+  announce: (message) => (ui.announce.textContent = message),
 });
 
-/** Tab and Shift+Tab move through the suggestions for the word being typed. */
-function cycleSuggestion(e: KeyboardEvent): void {
-  if (e.key !== "Tab" || composer.mode !== "english" || !composer.current || choices.length < 2) return;
-  e.preventDefault();
-  chosen = (chosen + (e.shiftKey ? choices.length - 1 : 1)) % choices.length;
-  composer.respell(choices[chosen]!);
-  strip.select(chosen);
-}
+const composer = new Composer(
+  editor,
+  (latin, mode) => (mode === "english" ? english.spell(latin) : kannadi.transliterate(latin, mode, "kannada")),
+  {
+    onComposing: (range) => editor.highlight("composing", range),
+    onWord: (word) => {
+      if (composer.mode === "english") english.typing(word);
+    },
+    onDone: (word, kept) => {
+      if (composer.mode === "english") english.done(word, kept);
+    },
+  },
+);
+english.attach(composer);
 
 /** Shows a count and its noun, singular for 1: "1 word", "2 words". */
 function showCount(el: HTMLElement, n: number): void {
@@ -366,7 +344,7 @@ function convertSelection(): void {
 
 function setMode(mode: TypingMode, remember = true): void {
   composer.setMode(mode);
-  if (mode === "english") setTimeout(() => void loadWords(), 0);
+  if (mode !== "english") english.hide();
   for (const input of document.querySelectorAll<HTMLInputElement>('input[name="mode"]')) input.checked = input.value === mode;
   settings.mode = remember ? mode : settings.mode;
   if (remember) saveSettings();
@@ -434,6 +412,7 @@ const ACTIONS: Record<string, () => void> = {
 function wireVoice(): void {
   const Recognition = recognitionClass();
   const mic = byId<HTMLButtonElement>("voice");
+  const heard = byId("heard");
   if (!Recognition) return;
   mic.hidden = false;
   const voice = new Voice(Recognition, {
@@ -444,15 +423,15 @@ function wireVoice(): void {
         const before = editor.text.slice(0, sel.start);
         insert({ text: (before && !/\s$/.test(before) ? " " : "") + final.trim(), unknown: [] });
       }
-      ui.toastText.textContent = interim || "Listening";
-      ui.toastAction.hidden = true;
-      ui.toast.hidden = false;
+      heard.textContent = interim || "Listening";
     },
-    onState(listening) {
+    onState(listening, error) {
       mic.setAttribute("aria-pressed", String(listening));
-      say(listening ? "Listening. Speak in Kannada; select the microphone again to stop." : "Stopped listening.");
+      heard.hidden = !listening;
+      heard.textContent = "Listening";
+      if (listening) ui.announce.textContent = "Listening. Speak in Kannada; select the microphone again to stop.";
+      else say(error ?? "Stopped listening.");
     },
-    onError: (message) => say(message),
   });
   // Keep the caret in the document, where the words go.
   mic.addEventListener("pointerdown", (e) => e.preventDefault());
@@ -503,7 +482,8 @@ function wire(): void {
     ui.announce.textContent = `${item.kind === "unknown" ? "Unknown glyph" : "Malformed syllable"} here. Press F8 for its fixes.`;
   });
   ui.doc.addEventListener("keydown", (e) => {
-    cycleSuggestion(e);
+    if (e.key === "Tab" && composer.mode === "english" && english.cycle(e.shiftKey)) e.preventDefault();
+    if (e.key === "Escape") english.hide();
     if (e.key === "Escape" && composer.revert()) e.preventDefault();
     if (e.key === "Escape" && issues.open) issues.close(false);
   });
@@ -511,6 +491,14 @@ function wire(): void {
     if (e.target === e.currentTarget) editor.el.focus();
   });
   document.addEventListener("selectionchange", () => composer.selectionChanged());
+  // The word list loads when someone starts typing in English letters, not with the page.
+  ui.doc.addEventListener("focus", () => {
+    if (composer.mode === "english") void english.prepare();
+  });
+  ui.doc.addEventListener("focusout", () => {
+    composer.commit();
+    english.hide();
+  });
   document.addEventListener("pointerdown", (e) => {
     if (issues.open && !ui.popover.contains(e.target as Node) && e.target !== ui.doc) issues.close(false);
   });

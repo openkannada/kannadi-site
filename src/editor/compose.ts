@@ -25,13 +25,15 @@ export interface ComposerEvents {
   onComposing: (range: number[]) => void;
   /** The word being typed after each change, or null when it is done. */
   onWord?: (word: ComposingWord | null) => void;
+  /** A word is done: kept as rendered, or put back in Latin letters. */
+  onDone?: (word: ComposingWord, kept: boolean) => void;
 }
 // Phone keyboards that compose whole words often commit the word and the
 // space after it as 1 insertion.
 const WORD_AND_BREAK = /^(.+?)([\s.,;:!?]+)$/u;
 
 /** The editor surface the composer needs; DocEditor provides it. */
-export type ComposerEditor = Pick<DocEditor, "replace" | "selection">;
+export type ComposerEditor = Pick<DocEditor, "replace" | "selection" | "select">;
 
 interface Word {
   start: number;
@@ -54,7 +56,6 @@ export class Composer {
     this.events = events;
   }
 
-  /** The word being typed, or null. */
   get current(): ComposingWord | null {
     return this.word ? { latin: this.word.latin, start: this.word.start, end: this.end() } : null;
   }
@@ -69,36 +70,40 @@ export class Composer {
   }
 
   commit(): void {
-    if (!this.word) return;
+    this.finish(true);
+  }
+
+  private finish(kept: boolean): void {
+    const done = this.current;
+    if (!done) return;
     this.word = null;
     this.events.onComposing([]);
     this.events.onWord?.(null);
+    this.events.onDone?.(done, kept);
+  }
+
+  /** Writes the composer's own change, which must not start or extend a word. */
+  private write(start: number, end: number, text: string): void {
+    this.busy = true;
+    try {
+      this.editor.replace(start, end, text, "compose");
+    } finally {
+      this.busy = false;
+    }
   }
 
   /** Shows `kannada` for the word being typed and keeps typing it, for cycling through suggestions. */
   respell(kannada: string): void {
     const w = this.word;
     if (!w || !kannada) return;
-    this.busy = true;
-    try {
-      this.editor.replace(w.start, this.end(), kannada, "compose");
-    } finally {
-      this.busy = false;
-    }
+    this.write(w.start, this.end(), kannada);
     w.rendered = kannada;
     this.events.onComposing([w.start, w.start + kannada.length]);
   }
 
   /** Puts `kannada` in place of the word being typed, and ends the word. */
   choose(kannada: string): void {
-    const w = this.word;
-    if (!w) return;
-    this.busy = true;
-    try {
-      this.editor.replace(w.start, this.end(), kannada, "compose");
-    } finally {
-      this.busy = false;
-    }
+    this.respell(kannada);
     this.commit();
   }
 
@@ -106,12 +111,7 @@ export class Composer {
     const w = this.word;
     if (!w || this.mode === "kannada") return;
     const out = w.latin ? this.spell(w.latin, this.mode) : "";
-    this.busy = true;
-    try {
-      this.editor.replace(w.start, replaceEnd, out, "compose");
-    } finally {
-      this.busy = false;
-    }
+    this.write(w.start, replaceEnd, out);
     w.rendered = out;
     if (!out) {
       this.commit();
@@ -140,6 +140,11 @@ export class Composer {
     if (m && m[1] && letters.test(m[1])) {
       this.extend(edit.start, m[1]);
       this.render(edit.start + m[1].length);
+      // The caret goes after the space or punctuation that came with the word.
+      const after = this.end() + (m[2]?.length ?? 0);
+      this.commit();
+      this.editor.select(after);
+      return;
     }
     this.commit();
   }
@@ -163,16 +168,9 @@ export class Composer {
   revert(): boolean {
     if (!this.word) return false;
     const { start, latin } = this.word;
-    const end = this.end();
-    this.word = null;
-    this.busy = true;
-    try {
-      this.editor.replace(start, end, latin, "compose");
-    } finally {
-      this.busy = false;
-    }
-    this.events.onComposing([]);
-    this.events.onWord?.(null);
+    this.write(start, this.end(), latin);
+    this.word.rendered = latin;
+    this.finish(false);
     return true;
   }
 

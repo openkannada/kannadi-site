@@ -33,7 +33,7 @@ export class SuggestStrip {
   }
 
   select(index: number): void {
-    this.buttons.forEach((b, i) => b.setAttribute("aria-pressed", String(i === index)));
+    this.buttons.forEach((b, i) => (i === index ? b.setAttribute("aria-current", "true") : b.removeAttribute("aria-current")));
   }
 
   hide(): void {

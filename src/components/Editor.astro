@@ -23,8 +23,8 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string; wi
         <legend class="sr-only">Type with</legend>
         {modes.map((m) => (
           <>
-            <input type="radio" name="mode" id={`mode-${m.value}`} value={m.value} checked={m.value === mode} />
-            <label for={`mode-${m.value}`} data-name={m.name} title={`Type with ${m.name}`} lang={m.lang} class:list={[m.wide && "wide-only"]}>
+            <input type="radio" name="mode" id={`mode-${m.value}`} value={m.value} checked={m.value === mode} class:list={[m.wide && "wide-only"]} />
+            <label for={`mode-${m.value}`} data-name={m.name} title={`Type with ${m.name}`} lang={m.lang}>
               {m.label}
               {m.value === "kannada" && <span class="sr-only" lang="en">Kannada keyboard</span>}
             </label>
@@ -98,7 +98,7 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string; wi
     <p class="menu-note hidden md:block"><kbd>F8</kbd> jumps to the next one.</p>
   </div>
 
-  <div id="suggest" class="suggest glass lift" role="group" aria-label="Kannada words for what you typed. Tab picks the next one." hidden></div>
+  <div id="suggest" class="suggest glass lift" role="group" aria-label="Kannada words for what you typed" hidden></div>
 
   <div class="sheet" id="sheet">
     <div id="doc" class="doc" role="textbox" aria-multiline="true" aria-label="Document" aria-describedby="welcome" lang="kn" spellcheck="false" autocapitalize="off" translate="no"></div>
@@ -116,6 +116,7 @@ const modes: { value: TypingMode; label: string; name: string; lang?: string; wi
   </div>
 
   <p id="announce" class="sr-only" role="status" aria-live="polite"></p>
+  <p id="heard" class="toast heard glass lift" lang="kn" hidden></p>
   <div id="toast" class="toast glass lift" hidden>
     <p id="toast-text"></p>
     <button type="button" id="toast-action" class="toast-action" hidden></button>

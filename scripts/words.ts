@@ -20,8 +20,11 @@ const top = [...merged].sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : 1)).sl
 
 const header = [
   "# The commonest words in Kannada Wikipedia, with how often each appears.",
-  "# Counted from the Kannada Wikipedia article text, which is under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).",
-  "# Only single words and their counts are kept. Regenerate with scripts/words.ts.",
+  "# This list is licensed under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).",
+  "# Source: the article text of Kannada Wikipedia by its contributors (https://kn.wikipedia.org), from the",
+  "# knwiki-latest-pages-articles dump downloaded in November 2026, counted 9 articles in 10 by kspell corpus.",
+  "# Changes: only words wholly in Kannada script, with zero-width joiners removed and NFC normalization,",
+  `# merged, then the ${limit.toLocaleString("en-US")} commonest kept. Regenerate with scripts/words.ts.`,
 ];
 writeFileSync("data/words.tsv", `${[...header, ...top.map(([w, c]) => `${w}\t${c}`)].join("\n")}\n`);
 console.log(`data/words.tsv: ${top.length} words, the rarest seen ${top.at(-1)?.[1]} times`);

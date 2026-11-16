@@ -258,7 +258,7 @@ export const PAGES: Page[] = [
       },
       {
         q: "Can I type Kannada by voice?",
-        a: "Yes, in Chrome and Edge. Select the microphone in the toolbar and speak in Kannada; the words appear where the cursor is. Voice typing uses the browser's own speech service, which hears the audio. Everything else on this page stays on your device.",
+        a: "Yes, in browsers with speech recognition for Kannada, such as Chrome and Edge. The microphone appears in the toolbar where it works: select it and speak in Kannada, and the words appear where the cursor is. Voice typing uses the browser's own speech service, which hears the audio. Everything else on this page stays on your device.",
       },
       {
         q: "How do I type long vowels and hard consonants?",
@@ -307,7 +307,7 @@ export const PAGES: Page[] = [
       },
       {
         q: "Where do the word suggestions come from?",
-        a: 'From the 30,000 commonest words in <a href="https://kn.wikipedia.org">Kannada Wikipedia</a>, counted from its article text under the CC BY-SA 4.0 license. The editor matches what you type by sound, offers the commonest words first, and remembers the words you pick, on your device.',
+        a: 'From the 30,000 commonest words in <a href="https://kn.wikipedia.org">Kannada Wikipedia</a>, counted from the article text its contributors write. The word list is shared under the CC BY-SA 4.0 license, as the articles are. The editor matches what you type by sound, offers the commonest words first, and remembers the words you pick, on your device.',
       },
       {
         q: "How do I type a conjunct such as ಜ್ಞ or ಕ್ಷ?",

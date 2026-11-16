@@ -7,11 +7,8 @@ export interface SuggestKannadi {
   strict: (latin: string) => string;
 }
 
-/** How many words the strip shows. */
 export const SHOWN = 5;
-/** Words keyed between pauses while building. */
 const CHUNK = 2000;
-/** How many remembered choices are kept. */
 const REMEMBERED = 500;
 
 export class Suggester {
@@ -20,9 +17,9 @@ export class Suggester {
   private readonly words: string[];
   private readonly rank = new Map<string, number>();
   /** Word indexes sorted by key, and their keys, for exact and prefix lookups. */
-  private order: number[] = [];
-  private keys: string[] = [];
-  private picks: Map<string, string>;
+  private readonly order: number[];
+  private readonly keys: string[];
+  private readonly picks: Map<string, string>;
 
   /** `wordKeys[i]` is the phonetic key of `words[i]`; see {@link Suggester.create}. */
   constructor(k: SuggestKannadi, words: string[], wordKeys: string[], picks: [string, string][] = []) {
@@ -66,12 +63,20 @@ export class Suggester {
   /** Words whose key equals `key`, and words whose key starts with it, each by rank. */
   private lookup(key: string): { exact: string[]; longer: string[] } {
     const exact: number[] = [];
+    // The commonest few longer words, kept sorted while scanning: a 1-letter key can match thousands.
     const longer: number[] = [];
     for (let i = this.lowerBound(key); i < this.keys.length && this.keys[i]!.startsWith(key); i++) {
-      (this.keys[i] === key ? exact : longer).push(this.order[i]!);
+      const id = this.order[i]!;
+      if (this.keys[i] === key) {
+        exact.push(id);
+      } else if (longer.length < SHOWN || id < longer[SHOWN - 1]!) {
+        const at = longer.findIndex((r) => r > id);
+        longer.splice(at < 0 ? longer.length : at, 0, id);
+        longer.length = Math.min(longer.length, SHOWN);
+      }
     }
-    const byRank = (ids: number[]) => ids.sort((a, b) => a - b).map((i) => this.words[i]!);
-    return { exact: byRank(exact), longer: byRank(longer).slice(0, SHOWN) };
+    const words = (ids: number[]) => ids.map((i) => this.words[i]!);
+    return { exact: words(exact.sort((a, b) => a - b)), longer: words(longer) };
   }
 
   /**

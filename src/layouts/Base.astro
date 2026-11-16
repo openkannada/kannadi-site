@@ -1,0 +1,80 @@
+---
+import "../styles/global.css";
+
+import kannadaFont from "../fonts/noto-sans-kannada-kannada-wght-normal.woff2?url";
+import latinFont from "../fonts/noto-sans-kannada-latin-wght-normal.woff2?url";
+
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import { HOME, type Page } from "../content/pages.ts";
+import { SITE, pagePath } from "../content/site.ts";
+import { href } from "../lib/paths.ts";
+import { jsonLd, scriptJson } from "../lib/seo.ts";
+
+interface Props {
+  page: Page;
+  /** Pages with no structured data or index entry, such as the 404 page. */
+  noindex?: boolean;
+}
+const { page, noindex = false } = Astro.props;
+const site = Astro.site ? new URL(import.meta.env.BASE_URL, Astro.site) : null;
+const canonical = site ? new URL(pagePath(page.slug).slice(1), site).href : null;
+const ogImage = href(`/og/${page.slug || "home"}.png`);
+const ogImageUrl = site ? new URL(ogImage, site).href : null;
+
+// The build keeps this comment as the first child of <body>; see DESIGN.md.
+const contract = `<!--
+THESIS: The page is a sheet of paper you can write Kannada on at once; every tool floats above it on 1 pane of glass and gets out of the way. It refuses the converter page of 2 text boxes, a button and ads.
+OWN-WORLD: Cool paper sheet on a canvas lit by turmeric, kumkuma and indigo fields; glass panes with a lit rim; indigo for action; rose and amber only for problems in the text; Noto Sans Kannada throughout, Kannada set large.
+STORY: Arrive from a search, read 1 sentence that answers it, type or drop a file into the sheet, fix what is marked, save.
+FIRST VIEWPORT: Brand and page links on the canvas, the heading and 1-sentence answer, then the sheet with its 1-line welcome; the glass toolbar floats at the sheet's top edge on desktop and at the thumb on phones; Save is the 1 solid button.
+FORM: Brief-pinned glass over a writing surface (seed f6311fac rolled; the brief wins).
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
+-->`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <title>{page.title}</title>
+    <meta name="description" content={page.description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    {canonical && <link rel="canonical" href={canonical} />}
+    {!noindex && <link rel="alternate" type="text/markdown" href={href(`${pagePath(page.slug)}index.md`)} />}
+    <meta name="referrer" content="no-referrer" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#f4f5fa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#16171f" media="(prefers-color-scheme: dark)" />
+    <meta name="author" content="Prasad Subrahmanya" />
+    <link rel="icon" href={href("/favicon.svg")} type="image/svg+xml" />
+    <link rel="preload" href={latinFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={kannadaFont} as="font" type="font/woff2" crossorigin />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={`${SITE.name} ${SITE.nameKn}`} />
+    <meta property="og:title" content={page.h1} />
+    <meta property="og:description" content={page.description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+    {ogImageUrl && <meta property="og:image:width" content="1200" />}
+    {ogImageUrl && <meta property="og:image:height" content="630" />}
+    {ogImageUrl && <meta property="og:image:alt" content={`${page.og.from} becomes ${page.og.to}`} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    {!noindex && <script type="application/ld+json" set:html={scriptJson(jsonLd(page, site, HOME))} />}
+    <script is:inline>
+      try {
+        const t = localStorage.getItem("kannadi.theme");
+        if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;
+      } catch {}
+    </script>
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <Fragment set:html={contract} />
+    <a href="#main" class="sr-only z-50 rounded-md bg-primary px-3 py-2 text-primary-foreground no-underline focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
+    <SiteHeader current={page.slug} />
+    <main id="main" class="w-full flex-1">
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

@@ -1,0 +1,141 @@
+---
+import type { TypingMode } from "../editor/text.ts";
+import "../styles/editor.css";
+
+import Icon from "./Icon.astro";
+
+interface Props {
+  mode: TypingMode;
+  welcome: string;
+}
+const { mode, welcome } = Astro.props;
+const modes: { value: TypingMode; label: string; name: string; lang?: string }[] = [
+  { value: "kannada", label: "ಕ", name: "a Kannada keyboard", lang: "kn" },
+  { value: "baraha", label: "Baraha", name: "Baraha letters" },
+  { value: "iso15919", label: "ISO", name: "ISO 15919 letters" },
+];
+---
+<section class="editor" aria-label="Kannada editor" data-md-skip data-default-mode={mode}>
+  <div class="dock">
+    <div class="toolbar glass" role="group" aria-label="Editor tools">
+      <fieldset class="seg" aria-describedby="mode-help">
+        <legend class="sr-only">Type with</legend>
+        {modes.map((m) => (
+          <>
+            <input type="radio" name="mode" id={`mode-${m.value}`} value={m.value} checked={m.value === mode} />
+            <label for={`mode-${m.value}`} data-name={m.name} title={`Type with ${m.name}`} lang={m.lang}>
+              {m.label}
+              {m.value === "kannada" && <span class="sr-only" lang="en">Kannada keyboard</span>}
+            </label>
+          </>
+        ))}
+      </fieldset>
+      <p id="mode-help" class="sr-only">With Baraha or ISO, type Kannada words in English letters. Alt+1, Alt+2 and Alt+3 switch.</p>
+      <span class="divider" aria-hidden="true"></span>
+      <button type="button" class="btn" id="open" title="Open a TXT, Word or HTML file (Ctrl+O)">
+        <Icon name="open" /><span class="label">Open</span>
+      </button>
+      <input type="file" id="file" class="sr-only" tabindex="-1" aria-hidden="true" accept=".txt,.docx,.html,.htm,text/plain,text/html,application/vnd.openxmlformats-officedocument.wordprocessingml.document" />
+      <button type="button" class="btn hidden sm:inline-flex" id="convert" title="Convert the selection, or the whole document, from Nudi, Baraha or Akruti">
+        <Icon name="convert" /><span class="label">Convert</span>
+      </button>
+      <button type="button" class="btn btn-icon" popovertarget="tools-menu" aria-label="More tools" title="More tools">
+        <Icon name="tools" />
+      </button>
+      <button type="button" class="chip" id="problems" popovertarget="problems-panel" hidden>
+        <span class="chip-dot" aria-hidden="true"></span>
+        <span id="problem-count">0</span>
+        <span class="chip-words">to check</span>
+      </button>
+      <button type="button" class="btn btn-primary" popovertarget="save-menu" title="Save a copy (Ctrl+S)">
+        <Icon name="save" /><span class="label">Save</span>
+      </button>
+    </div>
+  </div>
+
+  <div id="tools-menu" popover class="menu tool-menu" role="group" aria-label="More tools">
+    <button type="button" class="menu-item sm:hidden" data-run="convert">Convert from Nudi, Baraha or Akruti</button>
+    <button type="button" class="menu-item" data-run="normalize">Normalize <small>joins split vowel signs</small></button>
+    <button type="button" class="menu-item" data-run="modernize">Modernize <small lang="kn">ೞ ಱ to ಳ ರ</small></button>
+    <button type="button" class="menu-item" data-run="new">New document</button>
+    <div class="menu-sep" role="separator"></div>
+    <fieldset class="menu-row">
+      <legend class="menu-label">Typeface</legend>
+      <div class="seg seg-small">
+        <input type="radio" name="font" id="font-sans" value="sans" checked /><label for="font-sans">Sans</label>
+        <input type="radio" name="font" id="font-serif" value="serif" /><label for="font-serif">Serif</label>
+      </div>
+    </fieldset>
+    <div class="menu-sep" role="separator"></div>
+    <p class="menu-label">When converting</p>
+    <label class="menu-check"><input type="checkbox" id="auto-convert" checked /> Convert pasted legacy text</label>
+    <label class="menu-check"><input type="checkbox" id="zero" checked /> <span>Read 0 inside a word as anusvara: <span lang="kn">ಪ್ರಾರ0ಭ</span> to <span lang="kn">ಪ್ರಾರಂಭ</span></span></label>
+    <label class="menu-check"><input type="checkbox" id="digits" /> Use Kannada digits (Nudi fonts whose names end in k)</label>
+    <div class="menu-sep hidden md:block" role="separator"></div>
+    <button type="button" class="menu-item hidden md:flex" data-run="shortcuts">Keyboard shortcuts <small data-shortcut>Ctrl /</small></button>
+  </div>
+
+  <div id="save-menu" popover class="menu save-menu" role="group" aria-label="Save">
+    <button type="button" class="menu-item" data-export="docx">Word document <small>.docx</small></button>
+    <button type="button" class="menu-item" data-export="txt">Plain text <small>.txt</small></button>
+    <button type="button" class="menu-item" data-export="html">Web page <small>.html</small></button>
+    <button type="button" class="menu-item" data-export="nudi">Nudi text <small>.txt</small></button>
+    <div class="menu-sep" role="separator"></div>
+    <button type="button" class="menu-item" data-run="copy">Copy all</button>
+    <button type="button" class="menu-item" data-run="copy-nudi">Copy as Nudi</button>
+  </div>
+
+  <div id="problems-panel" popover class="menu problems-panel" role="group" aria-labelledby="problems-heading">
+    <p id="problems-heading" class="menu-label">Marked in the text</p>
+    <ol id="problem-list" class="problem-list"></ol>
+    <p id="problem-more" class="menu-note" hidden></p>
+    <p class="menu-note hidden md:block"><kbd>F8</kbd> jumps to the next one.</p>
+  </div>
+
+  <div class="sheet" id="sheet">
+    <div id="doc" class="doc" role="textbox" aria-multiline="true" aria-label="Document" aria-describedby="welcome" lang="kn" spellcheck="false" autocapitalize="off" translate="no"></div>
+    <div id="welcome" class="welcome">
+      <p set:html={welcome} />
+      {mode === "kannada" && <button type="button" id="sample" class="sample">Try a page from 2002</button>}
+    </div>
+    <div class="sheet-foot" role="group" aria-label="Document status">
+      <span><b id="count-aksharas">0</b> <span data-one="akshara">aksharas</span></span>
+      <span><b id="count-words">0</b> <span data-one="word">words</span></span>
+      <span class="hidden sm:inline"><b id="count-chars">0</b> <span data-one="character">characters</span></span>
+      <span id="saved" class="saved"></span>
+    </div>
+    <p class="drop-hint" aria-hidden="true">Drop to open</p>
+  </div>
+
+  <p id="announce" class="sr-only" role="status" aria-live="polite"></p>
+  <div id="toast" class="toast glass lift" hidden>
+    <p id="toast-text"></p>
+    <button type="button" id="toast-action" class="toast-action" hidden></button>
+  </div>
+
+  <div id="popover" class="fix glass lift" role="dialog" aria-label="Fix this problem" hidden></div>
+
+  <dialog id="shortcuts" class="glass shortcuts" aria-labelledby="shortcuts-heading">
+    <form method="dialog">
+      <div class="flex items-center justify-between gap-4">
+        <h2 id="shortcuts-heading" class="text-lg font-semibold">Keyboard shortcuts</h2>
+        <button type="submit" class="btn btn-icon" aria-label="Close"><Icon name="close" /></button>
+      </div>
+      <dl class="keys">
+        <dt><kbd>Ctrl</kbd> <kbd>O</kbd></dt><dd>Open a file</dd>
+        <dt><kbd>Ctrl</kbd> <kbd>S</kbd></dt><dd>Save in the last format used</dd>
+        <dt><kbd>Ctrl</kbd> <kbd>Z</kbd></dt><dd>Undo, including conversions and fixes</dd>
+        <dt><kbd>F8</kbd></dt><dd>Next marked problem and its fixes</dd>
+        <dt><kbd>Shift</kbd> <kbd>F8</kbd></dt><dd>Previous marked problem</dd>
+        <dt><kbd>Alt</kbd> <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd>Type with Kannada keys, Baraha or ISO</dd>
+        <dt><kbd>Esc</kbd></dt><dd>Keep the word you are typing in English letters</dd>
+        <dt><kbd>Ctrl</kbd> <kbd>/</kbd></dt><dd>This list</dd>
+      </dl>
+      <p class="text-sm text-muted-foreground">On a Mac, use <kbd>⌘</kbd> for <kbd>Ctrl</kbd> and <kbd>Option</kbd> for <kbd>Alt</kbd>.</p>
+    </form>
+  </dialog>
+</section>
+
+<script>
+  import "../editor/main.ts";
+</script>

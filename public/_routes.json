@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "include": ["/*"],
+  "exclude": ["/_astro/*", "/og/*", "/fonts/*", "/favicon.svg", "/*.md", "/*.txt", "/*.xml", "/404.html"]
+}

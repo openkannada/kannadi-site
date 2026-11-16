@@ -1,0 +1,30 @@
+---
+import { EXAMPLE_WORDS } from "../content/pages.ts";
+import { spellings } from "../lib/spell.ts";
+
+const rows = EXAMPLE_WORDS.map((k) => ({ k, ...spellings(k) }));
+---
+<section aria-labelledby="chart-heading">
+  <h2 id="chart-heading">Common Kannada words in English letters</h2>
+  <p>Type the spelling in the middle column to get the word. Capitals matter: <kbd>D</kbd> is <span lang="kn">ಡ</span> and <kbd>d</kbd> is <span lang="kn">ದ</span>.</p>
+  <div class="overflow-x-auto rounded-xl border border-border bg-card">
+    <table class="w-full border-collapse text-left">
+      <thead>
+        <tr class="border-b border-border text-sm text-muted-foreground">
+          <th scope="col" class="px-4 py-2.5 font-medium">Kannada</th>
+          <th scope="col" class="px-4 py-2.5 font-medium">Type in Baraha</th>
+          <th scope="col" class="px-4 py-2.5 font-medium">ISO 15919</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr class="border-b border-border last:border-0">
+            <td class="px-4 py-2 text-xl" lang="kn">{r.k}</td>
+            <td class="px-4 py-2"><kbd>{r.baraha}</kbd></td>
+            <td class="px-4 py-2 text-muted-foreground">{r.iso}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</section>

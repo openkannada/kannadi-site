@@ -12,7 +12,7 @@ The conversion runs on [kannadi](https://github.com/prasadus92/kannadi), a Rust 
 | `/nudi-to-unicode/`, `/unicode-to-nudi/`, `/baraha-to-unicode/`, `/akruti-to-unicode/` | Converter pages, each with the editor |
 | `/kannada-typing/`, `/english-to-kannada-typing/` | Typing pages, opening in Baraha letters |
 
-Every page also has a markdown mirror at `<page>index.md`. The build writes `llms.txt`, `llms-full.txt` and `robots.txt`, and `sitemap.xml` once a site URL is set.
+Every page also has a markdown mirror at `<page>index.md`. In browsers with WebMCP, the editor registers 4 read-only tools (`convert_legacy_to_unicode`, `convert_unicode_to_legacy`, `transliterate`, `count_aksharas`) on `document.modelContext`, or the older `navigator.modelContext`, after the page is idle. The build writes `llms.txt`, `llms-full.txt` and `robots.txt`, and `sitemap.xml` once a site URL is set.
 
 ## Build
 

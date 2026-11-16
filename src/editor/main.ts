@@ -3,6 +3,7 @@
 import { Composer } from "./compose.ts";
 import { DocEditor } from "./editor.ts";
 import type { ExportFormat } from "./files.ts";
+import { registerWhenIdle, resolveModelContext } from "../lib/model-context.ts";
 import { Issues } from "./issues.ts";
 import * as kannadi from "./kannadi.ts";
 import { countWords, LAYOUT_NAMES, type Layout, looksLegacy, nudiNotes, plural, type TypingMode } from "./text.ts";
@@ -531,4 +532,6 @@ function restore(): void {
 wire();
 restore();
 document.documentElement.classList.add("ready");
+const modelContext = resolveModelContext(document, navigator);
+if (modelContext) void import("./tools.ts").then(({ editorTools }) => registerWhenIdle(modelContext, editorTools(kannadi)));
 setTimeout(() => void files().catch(() => {}), 1500);

@@ -2,6 +2,7 @@
 import type { GetStaticPaths } from "astro";
 
 import { PAGES, type Page } from "../content/pages.ts";
+import ReferencePage from "../layouts/ReferencePage.astro";
 import ToolPage from "../layouts/ToolPage.astro";
 
 export const getStaticPaths = (() =>
@@ -12,4 +13,4 @@ interface Props {
 }
 const { page } = Astro.props;
 ---
-<ToolPage page={page} />
+{page.kind === "tool" ? <ToolPage page={page} /> : <ReferencePage page={page} />}

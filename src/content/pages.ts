@@ -2,13 +2,14 @@
 // also published as plain text in the FAQPage JSON-LD.
 
 import type { TypingMode } from "../editor/text.ts";
+import { CONSONANTS, SIGNS, VOWELS, YOGAVAHAS } from "./letters.ts";
 
 export interface Faq {
   q: string;
   a: string;
 }
 
-export interface Page {
+interface PageBase {
   /** URL path without slashes; "" is the home page. */
   slug: string;
   /** Short name for navigation and breadcrumbs. */
@@ -18,18 +19,31 @@ export interface Page {
   h1: string;
   /** The answer-first definition under the heading. */
   intro: string;
-  /** The line inside the empty editor; trusted HTML. */
-  welcome: string;
-  mode: TypingMode;
-  howTitle: string;
-  steps: string[];
-  chart?: "letters" | "words";
   faq: Faq[];
   /** The Open Graph card: legacy or Latin text on the left, Kannada on the right. */
   og: { from: string; to: string };
   /** Search terms this page answers, with monthly searches in India (DataForSEO, November 2026). */
   keywords: string;
 }
+
+/** A page built around the editor. */
+export interface ToolPage extends PageBase {
+  kind: "tool";
+  /** The line inside the empty editor; trusted HTML. */
+  welcome: string;
+  mode: TypingMode;
+  howTitle: string;
+  steps: string[];
+  chart?: "letters" | "words";
+}
+
+/** A page to read and look things up in, with no editor. */
+export interface ReferencePage extends PageBase {
+  kind: "reference";
+  table: "alphabet" | "kagunita";
+}
+
+export type Page = ToolPage | ReferencePage;
 
 const PRIVATE: Faq = {
   q: "Is my text uploaded anywhere?",
@@ -54,9 +68,12 @@ const CONVERT_STEPS = [
   "Choose <b>Save</b> for a Word file, plain text or a web page.",
 ];
 
+const TYPING_LINK = '<a href="/english-to-kannada-typing/">English to Kannada typing</a>';
+
 export const PAGES: Page[] = [
   {
     slug: "",
+    kind: "tool",
     name: "Editor",
     title: "Kannada editor and converter: Nudi to Unicode, typing and more",
     description:
@@ -95,6 +112,7 @@ export const PAGES: Page[] = [
   },
   {
     slug: "nudi-to-unicode",
+    kind: "tool",
     name: "Nudi to Unicode",
     title: "Nudi to Unicode converter: Nudi Kannada text and Word files",
     description:
@@ -128,6 +146,7 @@ export const PAGES: Page[] = [
   },
   {
     slug: "unicode-to-nudi",
+    kind: "tool",
     name: "Unicode to Nudi",
     title: "Unicode to Nudi converter: Kannada Unicode to Nudi and Baraha",
     description:
@@ -167,6 +186,7 @@ export const PAGES: Page[] = [
   },
   {
     slug: "baraha-to-unicode",
+    kind: "tool",
     name: "Baraha to Unicode",
     title: "Baraha to Unicode converter: BRH Kannada to Unicode",
     description:
@@ -203,6 +223,7 @@ export const PAGES: Page[] = [
   },
   {
     slug: "akruti-to-unicode",
+    kind: "tool",
     name: "Akruti to Unicode",
     title: "Akruti to Unicode converter: Akruti Kannada to Unicode",
     description:
@@ -235,6 +256,7 @@ export const PAGES: Page[] = [
   },
   {
     slug: "kannada-typing",
+    kind: "tool",
     name: "Kannada typing",
     title: "Kannada typing online: type Kannada with an English keyboard",
     description:
@@ -279,6 +301,7 @@ export const PAGES: Page[] = [
   },
   {
     slug: "english-to-kannada-typing",
+    kind: "tool",
     name: "English to Kannada typing",
     title: "English to Kannada typing: type Kannada in English letters",
     description:
@@ -322,19 +345,84 @@ export const PAGES: Page[] = [
     og: { from: "namaskAra", to: "ನಮಸ್ಕಾರ" },
     keywords: "english to kannada typing 49,500; kannada transliteration 135,000",
   },
+  {
+    slug: "kannada-alphabet",
+    kind: "reference",
+    name: "Kannada alphabet",
+    title: "Kannada alphabet: vowels, consonants and how to type each letter",
+    description:
+      "The Kannada alphabet in 1 page: 13 vowels, 2 yogavahas and 34 consonants, each with its Baraha and ISO 15919 spelling, plus Kannada digits.",
+    h1: "Kannada alphabet",
+    intro:
+      'The Kannada alphabet, <span lang="kn">ವರ್ಣಮಾಲೆ</span>, has 49 letters in common use: 13 vowels, 2 yogavahas written <span lang="kn">ಅಂ</span> and <span lang="kn">ಅಃ</span>, and 34 consonants. Each letter below shows how to type it in Baraha letters and how it is written in ISO 15919.',
+    table: "alphabet",
+    faq: [
+      {
+        q: "How many letters are in the Kannada alphabet?",
+        a: "49 in common use: 13 vowels (<span lang=\"kn\">ಸ್ವರಗಳು</span>), 2 yogavahas (<span lang=\"kn\">ಯೋಗವಾಹಗಳು</span>) and 34 consonants (<span lang=\"kn\">ವ್ಯಂಜನಗಳು</span>). Older lists add letters that are rare today, such as <span lang=\"kn\">ೠ</span>, <span lang=\"kn\">ಌ</span>, <span lang=\"kn\">ೞ</span> and <span lang=\"kn\">ಱ</span>.",
+      },
+      {
+        q: "What are structured and unstructured consonants?",
+        a: 'The 25 structured consonants (<span lang="kn">ವರ್ಗೀಯ ವ್ಯಂಜನಗಳು</span>) form 5 groups of 5, by where in the mouth they are said, from <span lang="kn">ಕ</span> at the throat to <span lang="kn">ಪ</span> at the lips. The other 9, from <span lang="kn">ಯ</span> to <span lang="kn">ಳ</span>, are the unstructured consonants (<span lang="kn">ಅವರ್ಗೀಯ ವ್ಯಂಜನಗಳು</span>).',
+      },
+      {
+        q: "What are ಅಂ and ಅಃ?",
+        a: 'The anusvara <span lang="kn">ಂ</span> and the visarga <span lang="kn">ಃ</span>, shown on <span lang="kn">ಅ</span>. They follow a vowel sound, as in <span lang="kn">ಕಂ</span> and <span lang="kn">ಕಃ</span>, and are called yogavahas.',
+      },
+      {
+        q: "How do I type these letters?",
+        a: 'In the editor, choose <b>Baraha</b> and type the spelling under each letter, such as <kbd>A</kbd> for <span lang="kn">ಆ</span>. To type whole words the way they sound, see '+TYPING_LINK+'.',
+      },
+      {
+        q: "How are consonants and vowels combined?",
+        a: 'Each consonant takes a vowel sign: <span lang="kn">ಕ</span> becomes <span lang="kn">ಕಾ</span>, <span lang="kn">ಕಿ</span>, <span lang="kn">ಕೀ</span> and so on. The full table of these is the <a href="/kagunita/">kagunita</a>.',
+      },
+    ],
+    og: { from: "a ā i ka", to: "ಅ ಆ ಇ ಕ" },
+    keywords: "kannada alphabet 60,500; kannada letters 60,500",
+  },
+  {
+    slug: "kagunita",
+    kind: "reference",
+    name: "Kagunita",
+    title: "Kannada kagunita chart: every consonant with every vowel sign",
+    description:
+      "The full Kannada kagunita chart: all 34 consonants with every vowel sign, ಂ, ಃ and the virama, each with its Baraha spelling for typing.",
+    h1: "Kannada kagunita",
+    intro:
+      'The Kannada kagunita, <span lang="kn">ಕಾಗುಣಿತ</span>, is the table of every consonant joined with every vowel sign and the yogavahas: <span lang="kn">ಕ</span>, <span lang="kn">ಕಾ</span>, <span lang="kn">ಕಿ</span>, <span lang="kn">ಕೀ</span> and on to <span lang="kn">ಕಃ</span> and <span lang="kn">ಕ್</span>. The chart below has all 34 consonants, each letter with its Baraha spelling for typing.',
+    table: "kagunita",
+    faq: [
+      {
+        q: "What is kagunita?",
+        a: 'The table of consonants written with each vowel sign, beginning <span lang="kn">ಕ ಕಾ ಕಿ ಕೀ</span>. Each consonant with a vowel sign is a <span lang="kn">ಗುಣಿತಾಕ್ಷರ</span>; the last column is the consonant alone, <span lang="kn">ಕ್</span>.',
+      },
+      {
+        q: "How many letters are in each row?",
+        a: 'This chart has 16: the consonant, the 12 vowel signs, <span lang="kn">ಂ</span>, <span lang="kn">ಃ</span>, and the consonant alone with the virama <span lang="kn">್</span>, as in <span lang="kn">ಕ್</span>.',
+      },
+      {
+        q: "How do I type a kagunita letter?",
+        a: 'Choose <b>Baraha</b> in the editor and type the spelling under the letter: <kbd>kA</kbd> gives <span lang="kn">ಕಾ</span> and <kbd>kai</kbd> gives <span lang="kn">ಕೈ</span>. To type whole words the way they sound, see '+TYPING_LINK+'.',
+      },
+      {
+        q: "Where are the vowels on their own?",
+        a: 'The vowels, yogavahas and consonants are in the <a href="/kannada-alphabet/">Kannada alphabet</a>.',
+      },
+    ],
+    og: { from: "ka kā ki kī", to: "ಕ ಕಾ ಕಿ ಕೀ" },
+    keywords: "kannada kagunita 27,100; kagunita 8,100",
+  },
 ];
 
-export const HOME = PAGES[0]!;
+export const HOME = PAGES.find((p): p is ToolPage => p.kind === "tool" && p.slug === "")!;
 
 /** Kannada words shown with their Baraha and ISO 15919 spellings. */
 export const EXAMPLE_WORDS = ["ಕನ್ನಡ", "ನಮಸ್ಕಾರ", "ಕರ್ನಾಟಕ", "ಬೆಂಗಳೂರು", "ಮೈಸೂರು", "ಜ್ಞಾನ", "ಶ್ರೀ", "ಹೃದಯ", "ಅಮ್ಮ", "ಊರು"];
 
 /** Letters in the typing chart, in the order of the Kannada alphabet. */
 export const CHART: Record<string, string[]> = {
-  Vowels: ["ಅ", "ಆ", "ಇ", "ಈ", "ಉ", "ಊ", "ಋ", "ಎ", "ಏ", "ಐ", "ಒ", "ಓ", "ಔ", "ಅಂ", "ಅಃ"],
-  Consonants: [
-    "ಕ", "ಖ", "ಗ", "ಘ", "ಙ", "ಚ", "ಛ", "ಜ", "ಝ", "ಞ", "ಟ", "ಠ", "ಡ", "ಢ", "ಣ", "ತ", "ಥ", "ದ", "ಧ", "ನ",
-    "ಪ", "ಫ", "ಬ", "ಭ", "ಮ", "ಯ", "ರ", "ಲ", "ವ", "ಶ", "ಷ", "ಸ", "ಹ", "ಳ",
-  ],
-  "Vowel signs on ಕ": ["ಕ", "ಕಾ", "ಕಿ", "ಕೀ", "ಕು", "ಕೂ", "ಕೃ", "ಕೆ", "ಕೇ", "ಕೈ", "ಕೊ", "ಕೋ", "ಕೌ", "ಕಂ", "ಕಃ", "ಕ್"],
+  Vowels: [...VOWELS, ...YOGAVAHAS],
+  Consonants: CONSONANTS,
+  "Vowel signs on ಕ": SIGNS.map((sign) => `ಕ${sign}`),
 };

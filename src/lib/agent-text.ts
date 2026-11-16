@@ -80,7 +80,7 @@ export function llmsIndex(pages: BuiltPage[], site: SiteInfo): string {
     "",
     ...(home ? [line(home)] : []),
     "",
-    "## Converters and typing",
+    "## Converters, typing and letters",
     "",
     ...rest.map(line),
     "",

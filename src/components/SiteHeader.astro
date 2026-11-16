@@ -9,10 +9,10 @@ interface Props {
 }
 const { current } = Astro.props;
 const converters = PAGES.filter((p) => p.slug.endsWith("-to-unicode") || p.slug === "unicode-to-nudi");
-const typing = PAGES.filter((p) => p.slug.endsWith("typing"));
+const typing = PAGES.filter((p) => p.slug.endsWith("typing") || p.kind === "reference");
 const groups = [
   { id: "nav-convert", label: "Converters", pages: converters },
-  { id: "nav-type", label: "Typing", pages: typing },
+  { id: "nav-type", label: "Typing and letters", pages: typing },
 ];
 ---
 <header class="mx-auto flex w-full max-w-6xl items-center gap-2 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-6">

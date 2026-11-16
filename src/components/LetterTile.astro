@@ -1,0 +1,18 @@
+---
+import "../styles/letters.css";
+
+import { spellings } from "../lib/spell.ts";
+
+interface Props {
+  letter: string;
+}
+const { letter } = Astro.props;
+const s = spellings(letter);
+---
+<li>
+  <span class="tile-kn" lang="kn">{letter}</span>
+  <span class="sr-only">: type </span>
+  <kbd>{s.baraha}</kbd>
+  <span class="sr-only">; ISO 15919 </span>
+  <span class="tile-iso">{s.iso}</span>
+</li>

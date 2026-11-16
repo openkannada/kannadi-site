@@ -1,0 +1,70 @@
+@reference "./global.css";
+
+/* Letter tiles: the Kannada letter large, its Baraha key and ISO 15919 spelling under it. */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(4.75rem, 1fr));
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tiles li {
+  @apply grid justify-items-center gap-1 rounded-lg border border-border bg-card px-1 pt-3 pb-2.5;
+}
+.tile-kn {
+  font-size: 1.75rem;
+  line-height: 1.5;
+}
+.tile-iso,
+.cell-iso {
+  @apply text-[0.8125rem] text-muted-foreground;
+}
+
+/* Letter tables scroll sideways on phones, with the row heading kept in view. */
+.table-scroll {
+  @apply relative overflow-x-auto rounded-xl border border-border bg-card;
+}
+.letters {
+  @apply w-full border-collapse text-center;
+}
+.letters th,
+.letters td {
+  @apply border-b border-border px-2 py-2;
+}
+.letters tr:last-child th,
+.letters tr:last-child td {
+  @apply border-b-0;
+}
+.letters thead th {
+  @apply text-sm font-medium text-muted-foreground;
+}
+.letters td,
+.letters tbody th {
+  @apply align-top;
+}
+.letters td > *,
+.letters tbody th > * {
+  @apply block;
+}
+.letters kbd {
+  @apply mx-auto w-max;
+}
+.cell-kn {
+  font-size: 1.5rem;
+  line-height: 1.6;
+}
+.letters tbody th,
+.letters thead th:first-child {
+  @apply sticky left-0 z-10 bg-card font-normal;
+  box-shadow: 1px 0 0 var(--border);
+}
+.letters thead th:first-child {
+  @apply z-20;
+}
+.manner-kn {
+  @apply block text-xs font-normal;
+}
+.kagunita .cell-kn {
+  font-size: 1.375rem;
+}

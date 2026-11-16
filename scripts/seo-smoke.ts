@@ -15,7 +15,8 @@ const base = site ? site.pathname.replace(/\/$/, "") : "";
 const problems: string[] = [];
 const fail = (where: string, what: string) => problems.push(`${where}: ${what}`);
 const file = (path: string) => join(dist, path.replace(/^\//, ""));
-const NEEDED = ["WebPage", "WebApplication", "HowTo", "FAQPage", "BreadcrumbList", "Person"];
+const NEEDED = ["WebPage", "FAQPage", "BreadcrumbList", "Person"];
+const BY_KIND = { tool: ["WebApplication", "HowTo"], reference: ["LearningResource"] };
 
 /** The dist file a site link points at, or null for links that leave the site. */
 function target(href: string, from: string): string | null {
@@ -61,7 +62,7 @@ for (const page of PAGES) {
   if (scripts.length !== 1) fail(where, `${scripts.length} JSON-LD scripts`);
   const graph = JSON.parse(scripts[0]?.textContent ?? "{}")["@graph"] ?? [];
   const types = graph.map((n: { "@type": string }) => n["@type"]);
-  for (const t of NEEDED) if (!types.includes(t)) fail(where, `JSON-LD lacks ${t}`);
+  for (const t of [...NEEDED, ...BY_KIND[page.kind]]) if (!types.includes(t)) fail(where, `JSON-LD lacks ${t}`);
   if (!page.slug) for (const t of ["WebSite", "SoftwareSourceCode"]) if (!types.includes(t)) fail(where, `JSON-LD lacks ${t}`);
   const faq = graph.find((n: { "@type": string }) => n["@type"] === "FAQPage")?.mainEntity ?? [];
   const visible = [...document.querySelectorAll(".faq summary")].map((s) => plainText(s.innerHTML));

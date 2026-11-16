@@ -12,7 +12,8 @@ const types = (graph) => graph["@graph"].map((n) => n["@type"]);
 test("every page has the structured data the strategy asks for", () => {
   for (const page of PAGES) {
     const t = types(jsonLd(page, null, HOME));
-    for (const want of ["WebPage", "WebApplication", "HowTo", "FAQPage", "BreadcrumbList", "Person"]) {
+    const main = page.kind === "tool" ? ["WebApplication", "HowTo"] : ["LearningResource"];
+    for (const want of ["WebPage", "FAQPage", "BreadcrumbList", "Person", ...main]) {
       assert.ok(t.includes(want), `${page.slug || "home"} lacks ${want}`);
     }
   }

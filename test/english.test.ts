@@ -25,7 +25,12 @@ function harness({ load = async () => WORDS, stored = [] } = {}) {
     picks,
     strip,
     text: () => doc.text,
-    replace: (s, e, t) => (doc.text = doc.text.slice(0, s) + t + doc.text.slice(e)),
+    replace: (s, e, t) => {
+      doc.text = doc.text.slice(0, s) + t + doc.text.slice(e);
+      doc.caret = s + t.length;
+    },
+    caret: () => doc.caret ?? doc.text.length,
+    select: (at) => (doc.caret = at),
     announce: () => {},
   });
   const write = (kannada) => {
@@ -88,8 +93,10 @@ test("a finished word keeps its alternatives until the next edit, and a tap swap
   h.finish(true);
   assert.ok(h.strip.shown, "the strip stays for the finished word");
   h.doc.text += " ";
+  h.doc.caret = h.doc.text.length;
   h.english.pick(2);
   assert.equal(h.doc.text, "ಮದ್ದು ");
+  assert.equal(h.doc.caret, h.doc.text.length, "the caret stays after the space");
   assert.equal(h.strip.shown, null);
   assert.deepEqual(h.picks.saved, [["maadu", "ಮದ್ದು"]]);
 
@@ -134,4 +141,15 @@ test("a failed word list is not fetched again for 30 seconds, and bad stored pic
   const bad = harness({ stored: { not: "a list" } });
   await bad.english.prepare();
   assert.equal(bad.english.ready, true);
+});
+
+test("the finished word's alternatives go when the caret moves away from it", async () => {
+  const h = harness();
+  await h.english.prepare();
+  h.type("maadu");
+  h.finish(true);
+  h.english.caretMoved(h.doc.text.length + 1);
+  assert.ok(h.strip.shown);
+  h.english.caretMoved(0);
+  assert.equal(h.strip.shown, null);
 });

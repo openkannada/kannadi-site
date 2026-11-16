@@ -204,6 +204,11 @@ const english = new EnglishTyping({
   strip: new SuggestStrip(byId("suggest"), (start, end) => editor.rect(start, end), (i) => english.pick(i)),
   text: () => editor.text,
   replace: (start, end, text) => editor.replace(start, end, text),
+  caret: () => {
+    const sel = editor.selection();
+    return sel && sel.start === sel.end ? sel.start : null;
+  },
+  select: (at) => editor.select(at),
   announce: (message) => (ui.announce.textContent = message),
 });
 
@@ -490,7 +495,11 @@ function wire(): void {
   byId("sheet").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) editor.el.focus();
   });
-  document.addEventListener("selectionchange", () => composer.selectionChanged());
+  document.addEventListener("selectionchange", () => {
+    composer.selectionChanged();
+    const sel = editor.selection();
+    english.caretMoved(sel && sel.start === sel.end ? sel.start : null);
+  });
   // The word list loads when someone starts typing in English letters, not with the page.
   ui.doc.addEventListener("focus", () => {
     if (composer.mode === "english") void english.prepare();

@@ -1,7 +1,8 @@
 # The commonest words in Kannada Wikipedia, with how often each appears.
 # This list is licensed under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).
 # Source: the article text of Kannada Wikipedia by its contributors (https://kn.wikipedia.org), from the
-# knwiki-latest-pages-articles dump downloaded in November 2026, counted 9 articles in 10 by kspell corpus.
+# knwiki-latest-pages-articles.xml.bz2 dump that was latest on 16 November 2026. Words were counted in
+# 9 of every 10 articles (kspell corpus in kannada-spell keeps 1 in 10 aside to test the spell checker).
 # Changes: only words wholly in Kannada script, with zero-width joiners removed and NFC normalization,
 # merged, then the 30,000 commonest kept. Regenerate with scripts/words.ts.
 ಮತ್ತು	457586

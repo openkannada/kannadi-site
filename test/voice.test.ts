@@ -83,3 +83,26 @@ test("a recognition that cannot start leaves the microphone off", () => {
   assert.equal(voice.listening, false);
   assert.deepEqual(states, [[false, "Voice typing could not start."]]);
 });
+
+test("an error that keeps coming back stops listening after a few tries and says so", () => {
+  const states = [];
+  const voice = new Voice(FakeRecognition, { onText() {}, onState: (s, error) => states.push([s, error]) });
+  voice.start();
+  for (let i = 0; i < 5 && voice.listening; i++) {
+    FakeRecognition.last.onerror({ error: "network" });
+    FakeRecognition.last.onend();
+  }
+  assert.equal(voice.listening, false);
+  assert.deepEqual(states.at(-1), [false, "Voice typing needs a connection to the browser's speech service."]);
+});
+
+test("an error followed by speech is forgotten, so stopping later says only that it stopped", () => {
+  const states = [];
+  const voice = new Voice(FakeRecognition, { onText() {}, onState: (s, error) => states.push([s, error]) });
+  voice.start();
+  FakeRecognition.last.onerror({ error: "network" });
+  FakeRecognition.last.onend();
+  FakeRecognition.last.onresult({ resultIndex: 0, results: [{ isFinal: true, 0: { transcript: "ನಮಸ್ಕಾರ" } }] });
+  voice.stop();
+  assert.deepEqual(states.at(-1), [false, undefined]);
+});

@@ -43,6 +43,8 @@ const ERRORS: Record<string, string> = {
   network: "Voice typing needs a connection to the browser's speech service.",
   "language-not-supported": "This browser cannot recognize Kannada speech.",
 };
+/** Restarts in a row that each end in an error before listening gives up. */
+const MAX_EMPTY = 3;
 /** Errors after which listening again would fail the same way. */
 const FATAL = new Set(["not-allowed", "service-not-allowed", "audio-capture", "language-not-supported"]);
 
@@ -51,6 +53,8 @@ export class Voice {
   /** The user asked to stop, or a fatal error happened: do not listen again on end. */
   private stopping = false;
   private error: string | undefined;
+  /** Sessions in a row that ended without hearing anything; a few mean something is wrong. */
+  private empty = 0;
   private readonly Recognition: RecognitionConstructor;
   private readonly events: VoiceEvents;
 
@@ -71,6 +75,7 @@ export class Voice {
   start(): void {
     this.stopping = false;
     this.error = undefined;
+    this.empty = 0;
     if (this.listen()) this.events.onState(true);
     else this.events.onState(false, this.error);
   }
@@ -82,6 +87,8 @@ export class Voice {
     r.continuous = true;
     r.interimResults = true;
     r.onresult = (e) => {
+      this.empty = 0;
+      this.error = undefined;
       let final = "";
       let interim = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -98,7 +105,9 @@ export class Voice {
     };
     r.onend = () => {
       this.recognition = null;
-      if (!this.stopping && this.listen()) return;
+      // Restart after a pause, but not forever: an error that keeps coming back stops listening.
+      const again = !this.stopping && (!this.error || ++this.empty < MAX_EMPTY);
+      if (again && this.listen()) return;
       this.events.onState(false, this.error);
     };
     try {

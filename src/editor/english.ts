@@ -15,6 +15,9 @@ export interface EnglishDeps {
   text: () => string;
   /** Replaces a finished word in the document. */
   replace: (start: number, end: number, text: string) => void;
+  /** The collapsed caret, or null, and a way to put it back after a swap. */
+  caret: () => number | null;
+  select: (at: number) => void;
   announce: (message: string) => void;
 }
 
@@ -67,11 +70,10 @@ export class EnglishTyping {
   /** Starts loading the word list, unless it is loaded, loading, or failed a moment ago. */
   prepare(now = Date.now()): Promise<void> | null {
     if (this.suggester || this.loading || now - this.failedAt < RETRY_MS) return this.loading;
-    const { kannadi } = this.deps;
-    const strict = (latin: string) => kannadi.transliterate(latin.toLowerCase());
     this.loading = (async () => {
       const words = parseWords(await this.deps.loadWords());
-      this.suggester = await Suggester.create({ ...kannadi, strict }, words, validPicks(this.deps.picks.read()));
+      const k = { ...this.deps.kannadi, strict: (latin: string) => this.strict(latin) };
+      this.suggester = await Suggester.create(k, words, validPicks(this.deps.picks.read()));
     })()
       .catch(() => {
         this.failedAt = Date.now();
@@ -82,16 +84,20 @@ export class EnglishTyping {
     return this.loading;
   }
 
+  /** Baraha spelling of loosely typed letters, where capitals carry no meaning. */
+  private strict(latin: string): string {
+    return this.deps.kannadi.transliterate(latin.toLowerCase());
+  }
+
   /** The Kannada shown for `latin` while it is typed: the best suggestion. */
   spell(latin: string): string {
     void this.prepare();
-    const strict = this.deps.kannadi.transliterate(latin.toLowerCase());
+    const strict = this.strict(latin);
     this.choices = this.suggester?.suggest(latin) ?? [strict];
     this.chosen = 0;
     return this.choices[0] ?? strict;
   }
 
-  /** The composer's word changed. */
   typing(word: ComposingWord | null): void {
     if (!word) return;
     this.last = null;
@@ -120,7 +126,6 @@ export class EnglishTyping {
     }
   }
 
-  /** A word on the strip was tapped. */
   pick(index: number): void {
     const composer = this.composer;
     if (composer?.current) {
@@ -133,8 +138,12 @@ export class EnglishTyping {
     const { word, choices, chosen } = last;
     this.hide();
     if (this.deps.text().slice(word.start, word.end) !== choices[chosen]) return;
-    this.deps.replace(word.start, word.end, choices[index]!);
-    if (index > 0) this.remember(word.latin, choices[index]!);
+    const caret = this.deps.caret();
+    const next = choices[index]!;
+    this.deps.replace(word.start, word.end, next);
+    // The caret stays where it was, after the space, moved by the change in length.
+    if (caret !== null && caret >= word.end) this.deps.select(caret + next.length - (word.end - word.start));
+    if (index > 0) this.remember(word.latin, next);
   }
 
   /** Tab and Shift+Tab move through the suggestions; returns true when the key was used. */
@@ -154,6 +163,14 @@ export class EnglishTyping {
   /** Another edit happened: the finished word's alternatives go away. */
   edited(): void {
     if (this.last) this.hide();
+  }
+
+  /** The caret moved: the finished word's alternatives stay only while it is next to the word. */
+  caretMoved(at: number | null): void {
+    const last = this.last;
+    if (!last) return;
+    const gap = at === null ? -1 : at - last.word.end;
+    if (gap < 0 || gap > 1) this.hide();
   }
 
   hide(): void {

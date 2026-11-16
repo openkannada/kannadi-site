@@ -5,11 +5,12 @@ export interface ModelContextTool {
   description: string;
   inputSchema: Record<string, unknown>;
   annotations?: { readOnlyHint?: boolean };
-  execute: (input: Record<string, unknown>) => Promise<string> | string;
+  /** Returns a JSON-serializable value; the browser serializes it for the agent. */
+  execute: (input: Record<string, unknown>, options?: { signal?: AbortSignal }) => unknown;
 }
 
 export interface ModelContext {
-  registerTool: (tool: ModelContextTool, options?: { signal?: AbortSignal }) => unknown;
+  registerTool: (tool: ModelContextTool, options?: { signal?: AbortSignal }) => unknown | Promise<unknown>;
 }
 
 /**
@@ -35,11 +36,12 @@ export function registerWhenIdle(
   idle(() => {
     for (const tool of tools) {
       if (controller.signal.aborted) return;
+      // A tool the browser refuses, by a throw or a rejected promise, must not stop the others.
+      const refused = (e: unknown) => console.warn(`WebMCP: ${tool.name} was not registered`, e);
       try {
-        ctx.registerTool(tool, { signal: controller.signal });
+        Promise.resolve(ctx.registerTool(tool, { signal: controller.signal })).catch(refused);
       } catch (e) {
-        // A tool the browser refuses must not stop the others or the page.
-        console.warn(`WebMCP: ${tool.name} was not registered`, e);
+        refused(e);
       }
     }
   });

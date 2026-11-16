@@ -533,5 +533,9 @@ wire();
 restore();
 document.documentElement.classList.add("ready");
 const modelContext = resolveModelContext(document, navigator);
-if (modelContext) void import("./tools.ts").then(({ editorTools }) => registerWhenIdle(modelContext, editorTools(kannadi)));
+if (modelContext) {
+  void import("./tools.ts")
+    .then(({ editorTools }) => registerWhenIdle(modelContext, editorTools(kannadi)))
+    .catch((e) => console.warn("WebMCP: the tools did not load", e));
+}
 setTimeout(() => void files().catch(() => {}), 1500);

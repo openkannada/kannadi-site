@@ -22,6 +22,13 @@ export const SITE_KN: SiteStrings = {
     homeLabel: "ಇಂಗ್ಲಿಷ್ ಮುಖಪುಟ",
   },
   breadcrumb: "ನೀವು ಇರುವ ಜಾಗ",
+  askAi: {
+    label: "AI ಅನ್ನು ಕೇಳಿ",
+    copy: "ಪುಟವನ್ನು Markdown ಆಗಿ ನಕಲಿಸಿ",
+    copied: "ನಕಲಿಸಲಾಗಿದೆ",
+    open: "{name} ನಲ್ಲಿ ತೆರೆಯಿರಿ",
+    prompt: "{url} ಓದಿ, ಅದರ ಬಗ್ಗೆ ನನ್ನ ಪ್ರಶ್ನೆಗಳಿಗೆ ಉತ್ತರಿಸಿ.",
+  },
   imageAlt: "{from} ಇದ್ದದ್ದು {to} ಆಗುತ್ತದೆ",
   appName: "ಕನ್ನಡಿ: ಕನ್ನಡ ಸಂಪಾದಕ ಮತ್ತು ಪರಿವರ್ತಕ",
   features: [

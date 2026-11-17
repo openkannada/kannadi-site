@@ -61,6 +61,9 @@ const ogImageUrl = site ? new URL(ogImage, site).href : null;
     <meta name="twitter:card" content="summary_large_image" />
     {!noindex && <script type="application/ld+json" set:html={scriptJson(jsonLd(page, site, HOMES[page.lang ?? "en"]))} />}
     <script is:inline>
+      const root = document.documentElement;
+      root.classList.add("illo-wait");
+      setTimeout(() => root.classList.contains("illo-ready") || root.classList.remove("illo-wait"), 3000);
       try {
         const t = localStorage.getItem("kannadi.theme");
         if (t === "light" || t === "dark") document.documentElement.dataset.theme = t;

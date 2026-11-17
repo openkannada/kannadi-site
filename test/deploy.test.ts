@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { checkoutProblem, deployEnv, deploySteps, placeholders, productionUrl, unreviewed } from "../src/lib/deploy.ts";
+import { checkoutProblem, deployEnv, deploySteps, launchSteps, placeholders, productionUrl, unreviewed } from "../src/lib/deploy.ts";
 
 const URL_ROOT = "https://kannada.example.com.au/";
 
@@ -16,6 +16,7 @@ test("the production URL needs a real https host at the domain root", () => {
     assert.throws(() => productionUrl(`https://${host}/`), /placeholder/, host);
   }
   assert.throws(() => productionUrl("https://kannadi.pages.dev/"), /own domain/);
+  assert.throws(() => productionUrl("https://openkannada.prasad.workers.dev/"), /own domain/);
 });
 
 test("only a clean main at origin/main is deployed", () => {
@@ -34,13 +35,13 @@ test("the deploy builds the library from kannadi.rev, never from a local checkou
 });
 
 test("the deploy checks the build at the production URL before it publishes", () => {
-  const lines = deploySteps(new URL(URL_ROOT)).map((s) => [s.command, ...s.args].join(" "));
+  const lines = deploySteps(new URL(URL_ROOT), true).map((s) => [s.command, ...s.args].join(" "));
   const at = (line: string) => {
     const i = lines.indexOf(line);
     assert.ok(i >= 0, `missing step: ${line}`);
     return i;
   };
-  const publish = at("npx --no -- wrangler pages deploy --branch main");
+  const publish = at("npx --no -- wrangler deploy");
   assert.ok(at(`node scripts/indexnow.ts snapshot ${URL_ROOT}`) < publish, "the live sitemap is saved before it is replaced");
   assert.ok(at(`node scripts/live-check.ts ${URL_ROOT}`) > publish);
   assert.ok(at(`node scripts/indexnow.ts submit ${URL_ROOT}`) > at(`node scripts/live-check.ts ${URL_ROOT}`), "IndexNow hears only about a site that checked out");
@@ -52,7 +53,22 @@ test("the deploy checks the build at the production URL before it publishes", ()
   assert.ok(at("npm run build") < at(`node scripts/seo-smoke.ts dist ${URL_ROOT}`));
 });
 
-test("placeholders for Prasad's words are found in built HTML and markdown", () => {
+test("before launch the deploy publishes and checks the noindex site, with no placeholder gate or IndexNow", () => {
+  const lines = deploySteps(new URL(URL_ROOT), false).map((s) => [s.command, ...s.args].join(" "));
+  assert.ok(lines.includes("npx --no -- wrangler deploy"));
+  assert.ok(lines.includes(`node scripts/live-check.ts ${URL_ROOT}`));
+  assert.ok(!lines.some((l) => l.includes("placeholders.ts") || l.includes("indexnow.ts")));
+});
+
+test("CI runs the launch-only steps on the right side of its publish, and none before launch", () => {
+  const url = new URL(URL_ROOT);
+  const line = (s: { command: string; args: string[] }) => [s.command, ...s.args].join(" ");
+  assert.deepEqual(launchSteps(url, true, "before").map(line), ["node scripts/placeholders.ts dist", `node scripts/indexnow.ts snapshot ${URL_ROOT}`]);
+  assert.deepEqual(launchSteps(url, true, "after").map(line), [`node scripts/indexnow.ts submit ${URL_ROOT}`]);
+  assert.deepEqual([...launchSteps(url, false, "before"), ...launchSteps(url, false, "after")], []);
+});
+
+test("placeholders for words still to be written are found in built HTML and markdown", () => {
   assert.deepEqual(placeholders('<p><mark class="todo">PRASAD: 1 line on Neha.</mark> <a href="/">x</a></p>'), ["PRASAD: 1 line on Neha."]);
   assert.deepEqual(placeholders("Contact\n\nPRASAD: press contact, an email address or a form.\n"), ["PRASAD: press contact, an email address or a form."]);
   assert.deepEqual(placeholders("Prasad: the founder."), []);

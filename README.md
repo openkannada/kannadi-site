@@ -12,6 +12,7 @@ The conversion runs on [kannadi](https://github.com/openkannada/kannadi), a Rust
 | `/nudi-to-unicode/`, `/unicode-to-nudi/`, `/baraha-to-unicode/`, `/akruti-to-unicode/` | Converter pages, each with the editor |
 | `/kannada-typing/`, `/english-to-kannada-typing/` | Typing pages, opening in English letters with word suggestions |
 | `/kannada-alphabet/`, `/kagunita/` | Reference pages: every letter, and every consonant with every vowel sign, spelled by the library at build time |
+| `/kn/`, `/kn/about/`, `/kn/press/`, `/kn/names-and-logos/` | The Kannada pages. Each is built once a native reader has checked it and its `needsReview` mark is removed in `src/content/pages.ts`; until then `KANNADA_DRAFTS=1 npm run build` (or `npm run dev`) includes them for reading. |
 
 Every page also has a markdown mirror at `<page>index.md`. In browsers with WebMCP, the editor registers 4 read-only tools (`convert_legacy_to_unicode`, `convert_unicode_to_legacy`, `transliterate`, `count_aksharas`) on `document.modelContext`, or the older `navigator.modelContext`, after the page is idle. The build writes `llms.txt`, `llms-full.txt` and `robots.txt`, and `sitemap.xml` once a site URL is set.
 
@@ -32,25 +33,18 @@ Set `SITE_URL` (for example `https://example.org/` or `https://example.org/kanna
 
 ## Deploy
 
-The site is built for Cloudflare Pages: static files in `dist/`, plus `functions/_middleware.ts` for markdown on request. `wrangler.jsonc` names the project `kannadi`. Run every command below from the repository root.
+The site runs on Cloudflare Workers with static assets at https://openkannada.org. `infra/README.md` describes the hosting, which `wrangler.jsonc` declares in full.
 
-Once, on the machine that deploys:
+- **From CI:** every push to `main` that passes the checks is built for https://openkannada.org, published with Wrangler, then checked live (`scripts/live-check.ts`).
+- **By hand,** from a clean `main` that matches `origin/main`: `npm run deploy`. It runs the same steps. The API token comes from `CLOUDFLARE_API_TOKEN`, or else from the macOS keychain item `openkannada.cloudflare.api`.
+- **Before launch:**
+  - every response carries `X-Robots-Tag: noindex`;
+  - the placeholder check waits;
+  - IndexNow stays quiet.
 
-1. Sign in to the Cloudflare account: `npx wrangler login`.
-2. Create the project: `npx wrangler pages project create kannadi --production-branch main`.
-3. Add the domain to Cloudflare (Add a domain, then set the registrar's nameservers to the 2 Cloudflare gives).
-4. In Workers & Pages, open `kannadi`, then Custom domains, and add the bare domain.
-5. Send `www` to the bare domain: add a proxied DNS record `www` (type A, `192.0.2.1`), then a redirect rule from the "Redirect from WWW to root" template (301, keeping the path and query string).
+  Launching is `LIVE.launched` in `src/content/site.ts`.
 
-Each deploy, from `main` once it matches `origin/main`, with no local changes:
-
-```sh
-SITE_URL=https://your-domain/ npm run deploy
-```
-
-`scripts/deploy.ts` refuses a missing, plain http, placeholder or sub-path `SITE_URL`, local changes, any branch other than `main`, and a `main` that differs from `origin/main`. It ignores `KANNADI_DIR`, so the WebAssembly package comes from kannadi at `kannadi.rev`. It then builds that package, checks types, runs the unit tests, builds the site, runs the SEO smoke check at the production address and the voice lint, and checks that no `PRASAD:` placeholder is left on the About and Press pages. It saves the live sitemap, publishes `dist/` and `functions/` to the production branch with the pinned Wrangler, checks that the live site serves its key pages and files with the right content types, and sends the pages whose `lastmod` changed to IndexNow. IndexNow stays off until `INDEXNOW.enabled` is set in `src/content/site.ts`. It stops at the first step that fails.
-
-The sitemap's `lastmod` for each page is the date of the commit that last changed the page's text fingerprint in `data/page-hashes.json`; on `main` that is the merge. After changing any page's text, run `npm run build && npm run page-hashes` and commit the file with the change; `npm run seo-smoke` fails until it matches. Copies of the site on `pages.dev` are served with `X-Robots-Tag: noindex`, and the deploy refuses a `pages.dev` `SITE_URL`.
+The deploy refuses a missing, plain http, placeholder, `pages.dev`, `workers.dev` or sub-path `SITE_URL`, local changes, any branch other than `main`, and a `main` that differs from `origin/main`. It ignores `KANNADI_DIR`, so the WebAssembly package comes from kannadi at `kannadi.rev`.
 
 ## Typing in English letters
 
@@ -79,9 +73,9 @@ CI runs all of them on every pull request.
 | `src/components/`, `src/layouts/` | Astro components |
 | `src/lib/` | JSON-LD, agent files, content negotiation |
 | `src/integrations/agent-files.ts` | Writes the markdown mirrors and llms files after the build |
-| `functions/_middleware.ts` | Cloudflare Pages: markdown on `Accept: text/markdown` |
-| `public/_headers` | Security and cache headers for Cloudflare Pages |
-| `wrangler.jsonc`, `scripts/deploy.ts` | Cloudflare Pages project and the deploy command |
+| `worker/index.ts`, `src/lib/edge.ts` | The Worker: the canonical-host redirect, markdown on `Accept: text/markdown`, noindex until launch |
+| `public/_headers` | Security and cache headers |
+| `wrangler.jsonc`, `scripts/deploy.ts`, `infra/` | The Cloudflare Worker, the deploy command, and the hosting notes |
 | `scripts/` | wasm build, Open Graph cards, SEO smoke, voice lint |
 
 ## License

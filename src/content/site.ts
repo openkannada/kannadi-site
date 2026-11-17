@@ -34,6 +34,16 @@ export const INDEXNOW = {
   key: "3601f9fcb12d8a620b36768a880d87ae",
 } as const;
 
+/**
+ * Where the site lives, and whether it is launched. Until launch, every response is sent with X-Robots-Tag: noindex
+ * and IndexNow stays quiet; launching is this 1 flag, set to true in a pull request.
+ */
+export const LIVE = {
+  origin: "https://openkannada.org",
+  host: "openkannada.org",
+  launched: false,
+} as const;
+
 export const AUTHOR = {
   name: "Prasad Subrahmanya",
   url: "https://prasad.tech",

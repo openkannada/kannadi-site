@@ -12,7 +12,8 @@ const found = readdirSync(dist, { recursive: true, withFileTypes: true })
   .filter((e) => e.isFile() && /\.(html|md|txt)$/.test(e.name))
   .flatMap((e) => placeholders(readFileSync(join(e.parentPath, e.name), "utf8")).map((p) => `${join(e.parentPath, e.name)}: ${p}`));
 const waiting = unreviewed(PAGES);
-if (found.length) console.error(`${found.length} placeholders still need Prasad's words:\n${found.join("\n")}`);
-if (waiting.length) console.error(`${waiting.length} pages wait for Prasad's read (needsReview in src/content/pages.ts):\n${waiting.join("\n")}`);
+if (found.length) console.error(`${found.length} placeholders still need their words or photos:\n${found.join("\n")}`);
+// Drafts are left out of PAGES; any here means a build that included them, such as KANNADA_DRAFTS=1.
+if (waiting.length) console.error(`${waiting.length} pages wait for a native reader (needsReview in src/content/pages.ts):\n${waiting.join("\n")}`);
 if (found.length || waiting.length) process.exit(1);
 console.log("No placeholders left.");

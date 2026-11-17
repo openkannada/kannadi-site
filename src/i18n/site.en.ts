@@ -23,6 +23,14 @@ export const SITE_EN = {
     homeLabel: "The Kannada home page",
   },
   breadcrumb: "Breadcrumb",
+  /** The Ask AI menu on every page but the home pages. */
+  askAi: {
+    label: "Ask AI",
+    copy: "Copy page as Markdown",
+    copied: "Copied",
+    open: "Open in {name}",
+    prompt: "Read {url} and answer my questions about it.",
+  },
   /** The Open Graph image of a tool page. */
   imageAlt: "{from} becomes {to}",
   appName: "kannadi Kannada editor and converter",

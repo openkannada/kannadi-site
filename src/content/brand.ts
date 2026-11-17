@@ -1,5 +1,4 @@
-// Copy for the names and logos page, from the licensing policy Prasad approved on 17 November 2026.
-// Strings are trusted HTML. The Kannada is a draft for Prasad's read.
+// Copy for the names and logos page. Strings are trusted HTML. The Kannada waits for a native reader.
 import type { Lang } from "../i18n/core.ts";
 
 const BRAND_EN = {

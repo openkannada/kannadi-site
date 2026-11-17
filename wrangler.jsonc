@@ -1,6 +1,28 @@
 {
+  // The site on Cloudflare Workers with static assets. Everything the hosting needs is declared here;
+  // infra/README.md lists the few settings that live in the dashboard.
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "kannadi",
-  "pages_build_output_dir": "./dist",
-  "compatibility_date": "2026-11-16"
+  "name": "openkannada",
+  "account_id": "47ac3abdfba61feac39847f19ee678b1",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-11-16",
+  // No *.workers.dev address and no preview URLs, so the site has 1 address.
+  "workers_dev": false,
+  "preview_urls": false,
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    // The Worker sees pages and files, to redirect other hosts and set noindex before launch. Hashed scripts,
+    // styles and fonts go straight to the asset server, which bills no Worker request; _headers marks them noindex.
+    "run_worker_first": ["/*", "!/_astro/*", "!/fonts/*"]
+  },
+  // wrangler dev rewrites requests to the first route's host over http; https keeps the redirect from looping.
+  "dev": { "upstream_protocol": "https" },
+  "routes": [
+    { "pattern": "openkannada.org", "custom_domain": true },
+    { "pattern": "www.openkannada.org", "custom_domain": true },
+    { "pattern": "openkannada.com", "custom_domain": true },
+    { "pattern": "www.openkannada.com", "custom_domain": true }
+  ]
 }

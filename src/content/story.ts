@@ -1,6 +1,5 @@
-// Open Kannada's story, approved by Prasad on 17 November 2026. The About page opens with it
-// and the press kit carries it as the boilerplate. Strings are trusted HTML.
-// The Kannada is a draft for Prasad's read; the Kannada tagline is his.
+// Open Kannada's story. The About page opens with it and the press kit carries it as the
+// boilerplate. Strings are trusted HTML. The Kannada waits for a native reader.
 import type { Lang } from "../i18n/core.ts";
 
 export const TAGLINE: Record<Lang, string> = {

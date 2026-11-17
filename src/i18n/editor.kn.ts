@@ -91,6 +91,7 @@ export const EDITOR_KN: EditorStrings = {
     },
     typoWhy: {
       "ra-vocalic-r": "ಕನ್ನಡದಲ್ಲಿ ಈ ಧ್ವನಿಯನ್ನು ಋ ಅಕ್ಷರದಿಂದ ಬರೆಯುತ್ತಾರೆ, ನೈಋತ್ಯ ಎಂಬಂತೆ.",
+      "ra-virama-vocalic-r": "ಕನ್ನಡದಲ್ಲಿ ಈ ಧ್ವನಿಯನ್ನು ಋ ಎಂಬ ಒಂದೇ ಅಕ್ಷರದಿಂದ ಬರೆಯುತ್ತಾರೆ, ನೈಋತ್ಯ ಎಂಬಂತೆ.",
     },
     actions: {
       normalize: "ಸರಿಯಾದ ಕಾಗುಣಿತ ಬಳಸಿ",

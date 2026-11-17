@@ -1,6 +1,6 @@
 // Copy for the press kit. Strings are trusted HTML.
-// "PRASAD:" marks words and photos only Prasad can supply; the deploy stops while any remain.
-// The Kannada is a draft for Prasad's read.
+// "PRASAD:" marks words and photos still to come; once launched, the deploy fails while any remain.
+// The Kannada waits for a native reader.
 import type { Lang } from "../i18n/core.ts";
 
 const KANNADI = "https://github.com/openkannada/kannadi";

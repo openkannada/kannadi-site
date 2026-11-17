@@ -93,6 +93,7 @@ export const EDITOR_EN = {
     },
     typoWhy: {
       "ra-vocalic-r": "Kannada writes this sound with the letter ಋ, as in ನೈಋತ್ಯ.",
+      "ra-virama-vocalic-r": "Kannada writes this sound as the single letter ಋ, as in ನೈಋತ್ಯ.",
     } as Record<string, string>,
     actions: {
       normalize: "Use the standard spelling",

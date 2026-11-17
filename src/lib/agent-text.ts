@@ -104,7 +104,11 @@ export function sitemap(entries: { loc: string; lastmod?: string | undefined }[]
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${lines}\n</urlset>\n`;
 }
 
-/** robots.txt that welcomes search and AI crawlers. */
+/** AI crawlers named in robots.txt, so it is plain to them and to readers that they are welcome. */
+export const AI_CRAWLERS = ["GPTBot", "OAI-SearchBot", "ClaudeBot", "Claude-SearchBot", "PerplexityBot", "Google-Extended", "Applebot-Extended"];
+
+/** robots.txt that welcomes every crawler, names the AI crawlers, and links the sitemap. */
 export function robots(sitemapUrl: string | null): string {
-  return ["User-agent: *", "Allow: /", ...(sitemapUrl ? ["", `Sitemap: ${sitemapUrl}`] : []), ""].join("\n");
+  const named = AI_CRAWLERS.flatMap((agent) => [`User-agent: ${agent}`, "Allow: /", ""]);
+  return [...named, "User-agent: *", "Allow: /", ...(sitemapUrl ? ["", `Sitemap: ${sitemapUrl}`] : []), ""].join("\n");
 }

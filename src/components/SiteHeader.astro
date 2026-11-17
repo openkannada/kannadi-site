@@ -76,10 +76,12 @@ const themeLabels = JSON.stringify({ ...T.theme });
 </header>
 
 <script>
+  import { watchInView } from "../lib/inview.ts";
   import { followLight } from "../lib/light.ts";
   import { applyTheme, nextTheme, readTheme } from "../lib/theme.ts";
 
   followLight(window);
+  watchInView();
 
   const button = document.getElementById("theme");
   let theme = readTheme();

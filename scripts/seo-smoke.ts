@@ -6,7 +6,10 @@ import { join, relative, sep } from "node:path";
 import { parseHTML } from "linkedom";
 
 import { PAGES, isHome } from "../src/content/pages.ts";
-import { AUTHOR, pagePath } from "../src/content/site.ts";
+import { AUTHOR, LIVE, pagePath } from "../src/content/site.ts";
+import { fmt } from "../src/i18n/core.ts";
+import { SITE_STRINGS } from "../src/i18n/site.ts";
+import { ASSISTANTS } from "../src/lib/ask-ai.ts";
 import { readPage } from "../src/lib/agent-text.ts";
 import { contentHash, HASH_FILE, type PageHashes, staleHashes } from "../src/lib/freshness.ts";
 import { graphemes, plainText, twinProblems } from "../src/lib/seo.ts";
@@ -89,6 +92,14 @@ for (const page of PAGES) {
   const crumbs = graph.find((n: { "@type": string }) => n["@type"] === "BreadcrumbList")?.itemListElement?.map((i: { name: string }) => i.name) ?? [];
   if (!isHome(page) && JSON.stringify(trail) !== JSON.stringify(crumbs)) fail(where, `visible breadcrumbs ${JSON.stringify(trail)} differ from JSON-LD ${JSON.stringify(crumbs)}`);
   if (isHome(page) && (trail.length || crumbs.length !== 1)) fail(where, "a home page shows a breadcrumb trail");
+  const ask = document.querySelector("#ask-ai-menu [data-copy-markdown]")?.getAttribute("href");
+  if (!isHome(page) && !ask) fail(where, "no Ask AI menu");
+  if (isHome(page) && document.querySelector("#ask-ai-menu")) fail(where, "a home page shows the Ask AI menu");
+  if (ask && !existsSync(file(ask.slice(base.length)))) fail(where, `Ask AI copies ${ask}, which is missing`);
+  const asks = [...document.querySelectorAll("#ask-ai-menu a[target]")].map((a) => new URL(a.getAttribute("href") ?? ""));
+  const prompt = ask ? fmt(SITE_STRINGS[page.lang ?? "en"].askAi.prompt, { url: new URL(ask, site ?? `${LIVE.origin}/`).href }) : "";
+  if (!isHome(page) && JSON.stringify(asks.map((u) => u.origin)) !== JSON.stringify(ASSISTANTS.map((a) => new URL(a.url("")).origin))) fail(where, "Ask AI links go to the wrong assistants");
+  for (const u of asks) if (u.searchParams.get("q") !== prompt) fail(where, `${u.origin} gets the prompt "${u.searchParams.get("q")}"`);
   for (const n of graph.filter((n: { "@type": string; name?: string }) => n["@type"] === "Person" && n.name === AUTHOR.name)) authorIds.add(n["@id"]);
 
   for (const [seen, value, what] of [[titles, title, "title"], [descriptions, description, "description"]] as const) {
@@ -112,7 +123,8 @@ for (const page of PAGES) {
     if (size && w && h && Math.abs(w / h - size[0] / size[1]) > 0.01) fail(where, `image ${src} is ${w}x${h} in the page but ${size.join("x")} in the file`);
   }
   hreflangs.set(path, [...document.querySelectorAll("link[rel=alternate][hreflang]")].map((l) => l.getAttribute("href") ?? ""));
-  hashes.push({ path, hash: contentHash(readPage(html, path).markdown) });
+  // A draft gets its fingerprint when it is published; a local KANNADA_DRAFTS=1 build only reads it.
+  if (!page.needsReview) hashes.push({ path, hash: contentHash(readPage(html, path).markdown) });
 
   const md = document.querySelector('link[rel="alternate"][type="text/markdown"]')?.getAttribute("href");
   const mdTarget = md ? target(md, path) : null;

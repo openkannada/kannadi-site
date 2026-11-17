@@ -5,6 +5,7 @@ import { fmt, type Lang } from "../i18n/core.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
 import { href } from "../lib/paths.ts";
 
+import Icon from "./Icon.astro";
 interface Props {
   lang: Lang;
 }
@@ -15,13 +16,13 @@ const TAGLINE = TAGLINES[lang];
 const T = SITE_STRINGS[lang].press;
 ---
 <section aria-labelledby="story">
-  <h2 id="story">{T.story}</h2>
+  <h2 id="story" class="icon-heading"><Icon name="book" filled class="size-6 text-primary" />{T.story}</h2>
   <p class="press-tagline">{TAGLINE}</p>
   {STORY.map((p) => <p set:html={p} />)}
 </section>
 
 <section aria-labelledby="logos">
-  <h2 id="logos">{T.logos}</h2>
+  <h2 id="logos" class="icon-heading"><Icon name="image" filled class="size-6 text-primary" />{T.logos}</h2>
   <p>{T.logosIntro}</p>
   <div class="logos">
     {LOGOS.map((l) => (
@@ -31,7 +32,7 @@ const T = SITE_STRINGS[lang].press;
         <figcaption>
           <b>{l.name}</b>
           <ul class="files" role="list">
-            {l.files.map((f) => <li><a href={href(`/brand/${l.mark}-${f}`)} download><span class="sr-only">{l.name} </span>{f}</a></li>)}
+            {l.files.map((f) => <li><a class="file-link" href={href(`/brand/${l.mark}-${f}`)} download><Icon name="save" class="size-4" /><span class="sr-only">{l.name} </span>{f}</a></li>)}
           </ul>
         </figcaption>
       </figure>
@@ -41,7 +42,7 @@ const T = SITE_STRINGS[lang].press;
 </section>
 
 <section aria-labelledby="colors">
-  <h2 id="colors">{T.colors}</h2>
+  <h2 id="colors" class="icon-heading"><Icon name="palette" filled class="size-6 text-primary" />{T.colors}</h2>
   <ul class="colors" role="list">
     {COLORS.map((c) => (
       <li>
@@ -53,7 +54,7 @@ const T = SITE_STRINGS[lang].press;
 </section>
 
 <section aria-labelledby="descriptions">
-  <h2 id="descriptions">{T.descriptions}</h2>
+  <h2 id="descriptions" class="icon-heading"><Icon name="quote" filled class="size-6 text-primary" />{T.descriptions}</h2>
   {DESCRIPTIONS.map((d) => (
     <>
       <h3>{fmt(T.inWords, { n: d.words })}</h3>
@@ -63,7 +64,7 @@ const T = SITE_STRINGS[lang].press;
 </section>
 
 <section aria-labelledby="people">
-  <h2 id="people">{T.people}</h2>
+  <h2 id="people" class="icon-heading"><Icon name="people" filled class="size-6 text-primary" />{T.people}</h2>
   <div class="bios">
     {BIOS.map((b, i) => (
       <article class="bio">
@@ -78,7 +79,7 @@ const T = SITE_STRINGS[lang].press;
 </section>
 
 <section aria-labelledby="screenshots">
-  <h2 id="screenshots">{T.screenshots}</h2>
+  <h2 id="screenshots" class="icon-heading"><Icon name="image" filled class="size-6 text-primary" />{T.screenshots}</h2>
   <div class="shots">
     {SCREENSHOTS.map((s) => (
       <a href={href(`/press/${s.file}`)} download>
@@ -89,18 +90,28 @@ const T = SITE_STRINGS[lang].press;
 </section>
 
 <section aria-labelledby="facts">
-  <h2 id="facts">{T.facts}</h2>
+  <h2 id="facts" class="icon-heading"><Icon name="info" filled class="size-6 text-primary" />{T.facts}</h2>
   <ul class="facts">
     {FACTS.map((f) => <li>{f.fact} <a href={f.source.startsWith("/") ? href(f.source) : f.source}>{f.label}</a></li>)}
   </ul>
 </section>
 
 <section aria-labelledby="contact">
-  <h2 id="contact">{T.contact}</h2>
+  <h2 id="contact" class="icon-heading"><Icon name="mail" filled class="size-6 text-primary" />{T.contact}</h2>
   <p set:html={CONTACT} />
 </section>
 
 <style>
+  .icon-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .file-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
   .press-tagline {
     font-size: 1.25rem;
     font-weight: 600;

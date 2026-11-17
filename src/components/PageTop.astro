@@ -1,0 +1,39 @@
+---
+import { isHome, type Page } from "../content/pages.ts";
+import AskAi from "./AskAi.astro";
+import Breadcrumbs from "./Breadcrumbs.astro";
+
+interface Props {
+  page: Page;
+}
+const { page } = Astro.props;
+---
+{!isHome(page) && (
+  <div class="page-top">
+    <Breadcrumbs page={page} />
+    <AskAi page={page} />
+  </div>
+)}
+
+<style>
+  .page-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+  }
+  .page-top > :global(:first-child) {
+    min-width: 0;
+  }
+  .page-top :global(.crumbs ol) {
+    margin: 0;
+    flex-wrap: nowrap;
+  }
+  .page-top :global(.crumbs li[aria-current]) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+</style>

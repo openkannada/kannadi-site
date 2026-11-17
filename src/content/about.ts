@@ -1,5 +1,5 @@
 // Copy for the About page. Strings are trusted HTML.
-// "PRASAD:" marks words still to come; the deploy after launch stops while any remain.
+// "PRASAD:" marks words still to come; once launched, the deploy fails while any remain.
 import { STORY } from "./story.ts";
 
 export const ABOUT = {

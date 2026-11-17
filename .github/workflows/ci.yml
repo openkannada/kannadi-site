@@ -109,6 +109,8 @@ jobs:
         run: node scripts/seo-smoke.ts dist https://openkannada.org/
       - name: Before launch nothing; after launch, check for placeholders and save the live sitemap
         run: node scripts/launch-steps.ts before https://openkannada.org/
+      - name: Keep the live build files that pages still open may ask for
+        run: node scripts/keep-assets.ts https://openkannada.org/ dist
       - name: Publish to Cloudflare Workers
         uses: cloudflare/wrangler-action@953926a2e2182532811c01a25e53647d93bf07c0 # v4.1.3
         with:

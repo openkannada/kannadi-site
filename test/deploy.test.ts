@@ -42,6 +42,7 @@ test("the deploy checks the build at the production URL before it publishes", ()
     return i;
   };
   const publish = at("npx --no -- wrangler deploy");
+  assert.equal(at(`node scripts/keep-assets.ts ${URL_ROOT} dist`), publish - 1, "the live build files join the upload just before it");
   assert.ok(at(`node scripts/indexnow.ts snapshot ${URL_ROOT}`) < publish, "the live sitemap is saved before it is replaced");
   assert.ok(at(`node scripts/live-check.ts ${URL_ROOT}`) > publish);
   assert.ok(at(`node scripts/indexnow.ts submit ${URL_ROOT}`) > at(`node scripts/live-check.ts ${URL_ROOT}`), "IndexNow hears only about a site that checked out");

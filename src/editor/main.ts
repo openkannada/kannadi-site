@@ -5,7 +5,7 @@ import { Composer } from "./compose.ts";
 import { DocEditor } from "./editor.ts";
 import type { ExportFormat } from "./files.ts";
 import { registerWhenIdle, resolveModelContext } from "../lib/model-context.ts";
-import { Issues } from "./issues.ts";
+import { Issues, PROBLEM_NAMES } from "./issues.ts";
 import * as kannadi from "./kannadi.ts";
 import { EnglishTyping } from "./english.ts";
 import { SuggestStrip } from "./strip.ts";
@@ -38,6 +38,7 @@ interface Settings {
 interface Saved {
   text: string;
   unknown?: number[];
+  kept?: number[];
   settings?: Partial<Settings>;
   fileName?: string;
 }
@@ -175,6 +176,9 @@ const issues = new Issues(editor, kannadi, {
     ui.problemCount.textContent = i.total.toLocaleString("en-IN");
     ui.chip.setAttribute("aria-label", `${plural(i.total, "problem", "problems")} to check`);
     if (i.total === 0) byId("problems-panel").hidePopover?.();
+    // Keeping a spelling changes no text, so save here too.
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(save, 500);
   },
 });
 
@@ -249,7 +253,8 @@ function update(text: string): void {
 
 function save(): void {
   const unknown = issues.unknown.map((u) => u.offset);
-  const ok = store.write({ text: editor.text, unknown, settings, fileName });
+  const kept = issues.kept.map((k) => k.offset);
+  const ok = store.write({ text: editor.text, unknown, kept, settings, fileName });
   if (!editor.text) ui.saved.textContent = "";
   else ui.saved.textContent = ok ? "Saved on this device" : "Too large to keep on this device";
 }
@@ -369,8 +374,7 @@ function nextProblem(dir: number): void {
     return;
   }
   const sel = editor.selection();
-  const at = sel ? (dir > 0 ? sel.end : sel.start) : -1;
-  const item = issues.next(at, dir);
+  const item = sel ? issues.next(sel.start, sel.end, dir) : issues.next(-1, -1, dir);
   if (item) issues.show(item, true);
   else say("Nothing is marked.");
 }
@@ -484,7 +488,7 @@ function wire(): void {
     const item = issues.at(sel.start);
     if (!item) return;
     issues.popover(item, false);
-    ui.announce.textContent = `${item.kind === "unknown" ? "Unknown glyph" : "Malformed syllable"} here. Press F8 for its fixes.`;
+    ui.announce.textContent = `${PROBLEM_NAMES[item.kind]} here. Press F8 for its fixes.`;
   });
   ui.doc.addEventListener("keydown", (e) => {
     if (e.key === "Tab" && composer.mode === "english" && english.cycle(e.shiftKey)) e.preventDefault();
@@ -627,7 +631,9 @@ function restore(): void {
   if (saved?.text) {
     ui.doc.textContent = saved.text;
     editor.sync("restore", false);
-    issues.addUnknown((saved.unknown ?? []).filter((o) => Number.isInteger(o) && o < saved.text.length));
+    const offsets = (list: unknown) => (Array.isArray(list) ? list.filter((o): o is number => Number.isInteger(o) && o < saved.text.length) : []);
+    issues.addUnknown(offsets(saved.unknown));
+    issues.keep(offsets(saved.kept));
     fileName = saved.fileName ?? "kannada";
     if (looksLegacy(saved.text)) say("Welcome back. Some of this still looks like Nudi, Baraha or Akruti: select it and choose Convert.");
   } else {

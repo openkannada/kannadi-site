@@ -26,6 +26,7 @@ Restrained: neutrals, 1 action color, and 2 problem colors that appear only in t
 | `--primary` | Actions, the current choice, links, the caret | indigo `oklch(0.46 0.19 277)` | light indigo |
 | `--mark-unknown`, `--mark-unknown-line` | Glyphs with no Kannada letter | rose tint and wavy line | |
 | `--mark-malformed`, `--mark-malformed-line` | Signs that cannot form a syllable | amber tint and wavy line | |
+| `--mark-malformed-line`, dashed | Likely typos, such as ರೃ written for ಋ | dashed amber line, no tint | |
 | `--field-turmeric`, `--field-kumkuma`, `--field-indigo` | Blurred color fields fixed behind the page, so the glass has something to bend | | |
 
 Every token is 1 `light-dark()` pair in a single `:root` block, so the 2 themes cannot drift apart. `data-theme="light"` or `"dark"` on `<html>` pins a theme; with no attribute the page follows the system. Tailwind reads the tokens through `@theme inline` under shadcn's names (`bg-background`, `text-muted-foreground`, `bg-primary` and so on).
@@ -64,7 +65,7 @@ Glass is used only for things that float over the writing: the toolbar, its menu
 - **Toast** (`.toast`): under the toolbar on desktop and above the dock on phones. It leaves after 5 seconds, or 10 when it carries an action. An always-present visually hidden live region reads every message.
 - **Suggestion strip** (`.suggest`): glass pill above the word being typed in English letters on desktop; on phones a keyboard-style bar above the dock. The picked word is a white bead with indigo text, like the segmented control.
 - **Microphone** (`.mic`): shown only where the browser has speech recognition. While it listens it turns rose and breathes slowly; reduced motion keeps it still.
-- **Marks**: drawn with the CSS Custom Highlight API: a tinted background, a wavy underline 1.5px thick and offset 0.35em. `composing` marks the word being typed in Baraha or ISO with a dotted indigo underline.
+- **Marks**: drawn with the CSS Custom Highlight API. Unknown glyphs and malformed syllables get a tinted background and a wavy underline 1.5px thick, offset 0.35em. A likely typo gets only a dashed amber underline of the same weight, in the text, the list and the fix card. `composing` marks the word being typed in Baraha or ISO with a dotted indigo underline.
 - **Content sections**: numbered steps with accent discs, a letter chart of tiles (Kannada, the Baraha key, ISO), a 3-column word table, and an FAQ of `details` elements with a rotating chevron.
 
 ## Motion

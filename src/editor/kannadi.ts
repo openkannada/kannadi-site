@@ -29,6 +29,14 @@ export interface Fix {
   kind: string;
 }
 
+/** A likely typing mistake: replace start..end with `replacement`. `rule` names the check, such as "ra-vocalic-r". */
+export interface Typo {
+  start: number;
+  end: number;
+  replacement: string;
+  rule: string;
+}
+
 export type Scheme = "kannada" | "baraha" | "iso15919" | "iast";
 
 /** The layout the text reads best in, with the fewest problems. */
@@ -75,6 +83,15 @@ export function fixes(text: string, start: number, end: number): Fix[] {
     const fix = { start: f.start, end: f.end, replacement: f.replacement, kind: f.kind };
     f.free();
     return fix;
+  });
+}
+
+/** Likely typing mistakes in well-formed text, such as ರೃ for ಋ. */
+export function typos(text: string): Typo[] {
+  return wasm.typos(text).map((t) => {
+    const typo = { start: t.start, end: t.end, replacement: t.replacement, rule: t.rule };
+    t.free();
+    return typo;
   });
 }
 

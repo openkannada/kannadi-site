@@ -1,12 +1,12 @@
 // Problems in the document: unknown glyphs left by a conversion, tracked
-// through edits, and malformed syllables, found again after each edit.
+// through edits, and malformed syllables and likely typos, found again after each edit.
 // Each problem is highlighted inline and listed; selecting one offers fixes.
 import type { DocEditor } from "./editor.ts";
-import type { Fix, Scheme } from "./kannadi.ts";
+import type { Fix, Scheme, Typo } from "./kannadi.ts";
 import { type Anchor, codePoints, type Edit, shiftAnchors, shiftRanges } from "./text.ts";
 
 export interface Problem {
-  kind: "unknown" | "malformed";
+  kind: "unknown" | "malformed" | "typo";
   start: number;
   end: number;
 }
@@ -14,6 +14,7 @@ export interface Problem {
 export interface IssuesKannadi {
   malformed: (text: string) => ArrayLike<number>;
   fixes: (text: string, start: number, end: number) => Fix[];
+  typos: (text: string) => Typo[];
   transliterate: (text: string, from: Scheme, to: Scheme) => string;
 }
 
@@ -26,6 +27,19 @@ export interface IssuesUi {
 }
 
 const LIST_LIMIT = 200;
+
+export const PROBLEM_NAMES: Record<Problem["kind"], string> = {
+  unknown: "Unknown glyph",
+  malformed: "Malformed syllable",
+  typo: "Likely typo",
+};
+const WHY: Record<Exclude<Problem["kind"], "typo">, string> = {
+  unknown: "The converter has no Kannada letter for this glyph. It was kept so nothing is lost.",
+  malformed: "These marks cannot form a Kannada syllable here.",
+};
+const TYPO_WHY: Record<string, string> = {
+  "ra-vocalic-r": "Kannada writes this sound with the letter ಋ, as in ನೈಋತ್ಯ.",
+};
 const FIX_LABELS: Record<string, string> = {
   normalize: "Use the standard spelling",
   join: "Join to the letter before",
@@ -37,6 +51,9 @@ const FIX_LABELS: Record<string, string> = {
 export class Issues {
   unknown: Anchor[] = [];
   malformed: number[] = [];
+  typos: Typo[] = [];
+  /** Likely typos the writer chose to keep, followed through edits. */
+  kept: Anchor[] = [];
   open: Problem | null = null;
   private timer: ReturnType<typeof setTimeout> | 0 = 0;
   private readonly editor: DocEditor;
@@ -60,7 +77,7 @@ export class Issues {
   }
 
   get total(): number {
-    return this.unknown.length + this.malformed.length / 2;
+    return this.unknown.length + this.malformed.length / 2 + this.typos.length;
   }
 
   /** Adds unknown glyphs at these text offsets. */
@@ -74,8 +91,20 @@ export class Issues {
     this.check();
   }
 
+  /** Stops marking the likely typos that start at these offsets, such as those kept in a saved draft. */
+  keep(offsets: number[]): void {
+    if (!offsets.length) return;
+    this.flush();
+    const text = this.editor.text;
+    for (const t of this.typos) {
+      if (offsets.includes(t.start)) this.kept.push({ offset: t.start, glyph: text.slice(t.start, t.end) });
+    }
+    this.check();
+  }
+
   clear(): void {
     this.unknown = [];
+    this.kept = [];
     this.check();
   }
 
@@ -83,6 +112,11 @@ export class Issues {
   edited(edit: Edit, after: string): void {
     this.unknown = shiftAnchors(this.unknown, edit, after);
     this.malformed = shiftRanges(this.malformed, edit);
+    this.typos = this.typos.flatMap((t) => {
+      const [start, end] = shiftRanges([t.start, t.end], edit);
+      return start === undefined || end === undefined ? [] : [{ ...t, start, end }];
+    });
+    this.kept = shiftAnchors(this.kept, edit, after);
     this.close(false);
     clearTimeout(this.timer);
     // About 1 ms per 5,000 characters: check less often in large documents.
@@ -93,7 +127,9 @@ export class Issues {
   check(): void {
     clearTimeout(this.timer);
     this.timer = 0;
-    this.malformed = Array.from(this.kannadi.malformed(this.editor.text));
+    const text = this.editor.text;
+    this.malformed = Array.from(this.kannadi.malformed(text));
+    this.typos = this.kannadi.typos(text).filter((t) => !this.kept.some((k) => k.offset === t.start));
     this.draw();
     this.list();
   }
@@ -108,6 +144,10 @@ export class Issues {
       this.unknown.flatMap((u) => [u.offset, u.offset + u.glyph.length]),
     );
     this.editor.highlight("malformed", this.malformed);
+    this.editor.highlight(
+      "typo",
+      this.typos.flatMap((t) => [t.start, t.end]),
+    );
     this.ui.onChange(this);
   }
 
@@ -117,6 +157,7 @@ export class Issues {
     for (let i = 0; i + 1 < this.malformed.length; i += 2) {
       out.push({ kind: "malformed", start: this.malformed[i]!, end: this.malformed[i + 1]! });
     }
+    for (const t of this.typos) out.push({ kind: "typo", start: t.start, end: t.end });
     return out.sort((a, b) => a.start - b.start);
   }
 
@@ -125,12 +166,16 @@ export class Issues {
     return this.items().find((i) => i.start <= offset && offset <= i.end) ?? null;
   }
 
-  /** The next problem after `offset`, wrapping around; backward when `dir` is -1. */
-  next(offset: number, dir = 1): Problem | null {
+  /**
+   * The next problem after the range start..end, wrapping around; backward when
+   * `dir` is -1. A problem exactly at the range counts as the current one, so
+   * problems that touch it are reached in turn.
+   */
+  next(start: number, end: number, dir = 1): Problem | null {
     const items = this.items();
     if (!items.length) return null;
-    if (dir > 0) return items.find((i) => i.start > offset) ?? items[0]!;
-    return [...items].reverse().find((i) => i.end < offset) ?? items[items.length - 1]!;
+    if (dir > 0) return items.find((i) => i.start > start || (i.start === start && i.end > end)) ?? items[0]!;
+    return [...items].reverse().find((i) => i.end < end || (i.end === end && i.start < start)) ?? items[items.length - 1]!;
   }
 
   list(): void {
@@ -158,7 +203,7 @@ export class Issues {
       line.textContent = `Line ${lineOf(item.start)}`;
       const what = document.createElement("span");
       what.className = "issue-what";
-      what.textContent = item.kind === "unknown" ? "Unknown glyph" : "Malformed syllable";
+      what.textContent = PROBLEM_NAMES[item.kind];
       const sample = document.createElement("span");
       sample.className = "issue-sample";
       sample.lang = "kn";
@@ -204,17 +249,15 @@ export class Issues {
     sample.lang = "kn";
     sample.className = `pop-sample pop-sample-${item.kind}`;
     sample.textContent = bad;
-    title.append(item.kind === "unknown" ? "Unknown glyph " : "Malformed syllable ", sample, ` ${codePoints(bad)}`);
+    title.append(`${PROBLEM_NAMES[item.kind]} `, sample, ` ${codePoints(bad)}`);
     const why = document.createElement("p");
     why.className = "pop-why";
-    why.textContent =
-      item.kind === "unknown"
-        ? "The converter has no Kannada letter for this glyph. It was kept so nothing is lost."
-        : "These marks cannot form a Kannada syllable here.";
+    const typo = item.kind === "typo" ? this.typos.find((t) => t.start === item.start && t.end === item.end) : undefined;
+    why.textContent = item.kind === "typo" ? (TYPO_WHY[typo?.rule ?? ""] ?? "This spelling is usually a typing mistake.") : WHY[item.kind];
 
     const actions = document.createElement("div");
     actions.className = "pop-actions";
-    const action = (label: string, preview: string | null, run: () => void) => {
+    const action = (label: string | Node, preview: string | null, run: () => void) => {
       const b = document.createElement("button");
       b.type = "button";
       if (preview) {
@@ -234,6 +277,20 @@ export class Issues {
         const word = wordAround(text, f.start, f.end, f.replacement);
         action(FIX_LABELS[f.kind] ?? "Fix", word, () => this.apply(f.start, f.end, f.replacement));
       }
+    } else if (item.kind === "typo") {
+      if (typo) {
+        const word = wordAround(text, typo.start, typo.end, typo.replacement);
+        const letter = document.createElement("span");
+        letter.lang = "kn";
+        letter.textContent = typo.replacement;
+        const label = document.createDocumentFragment();
+        label.append("Use ", letter);
+        action(label, word, () => this.apply(typo.start, typo.end, typo.replacement));
+      }
+      action("Keep it", null, () => {
+        this.close(true);
+        this.keep([item.start]);
+      });
     } else {
       action("Delete the glyph", wordAround(text, item.start, item.end, ""), () => this.apply(item.start, item.end, ""));
       action("Keep it", null, () => {

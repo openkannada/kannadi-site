@@ -77,10 +77,10 @@ export const PAGES: Page[] = [
     name: "Editor",
     title: "Kannada editor and converter: Nudi to Unicode, typing and more",
     description:
-      "A free Kannada editor in your browser. Convert Nudi, Baraha and Akruti text to Unicode and back, fix what did not convert, and type Kannada in English letters.",
+      "A free Kannada editor in your browser. Convert Nudi, Baraha and Akruti text to Unicode, fix what did not convert, and type Kannada in English letters.",
     h1: "Kannada editor and converter",
     intro:
-      "kannadi is a free Kannada editor that converts text typed in the old Nudi, Baraha and Akruti fonts to Unicode and back, types Kannada from English letters, and saves Word, web and text files, all in your browser.",
+      "kannadi is a free Kannada editor that converts text typed in the old Nudi, Baraha and Akruti fonts to Unicode, and Unicode back to Nudi, types Kannada from English letters, and saves Word, web and text files, all in your browser.",
     welcome: "Type here, or paste or drop old Nudi, Baraha and Akruti text to get Unicode.",
     mode: "kannada",
     howTitle: "How to use the Kannada editor",

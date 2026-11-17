@@ -19,7 +19,7 @@ Astro 7 for static pages, Tailwind CSS 4 with design tokens as CSS variables, an
 
 ## Product Purpose
 
-A free Kannada editor that works in the browser with nothing uploaded. It converts legacy font text to Unicode and back, types Kannada from English letters, marks what could not be converted and offers fixes, counts aksharas and words, and saves Word, web and text files. Success: someone who arrives from a search finishes their document on the page, on any device.
+A free Kannada editor that works in the browser with nothing uploaded. It converts legacy font text to Unicode, and Unicode back to Nudi, types Kannada from English letters, marks what could not be converted and offers fixes, counts aksharas and words, and saves Word, web and text files. Success: someone who arrives from a search finishes their document on the page, on any device.
 
 ## Positioning
 

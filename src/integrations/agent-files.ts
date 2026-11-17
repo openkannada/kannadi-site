@@ -57,7 +57,7 @@ export function agentFiles(): AstroIntegration {
         const info = {
           name: `${SITE.name} (${SITE.nameKn}): ${SITE.tagline}`,
           summary:
-            "A free Kannada editor in the browser. It converts text typed in the Nudi, Baraha and Akruti fonts to Unicode and back, types Kannada from English letters, marks what could not be converted, and saves Word, web and text files. It runs on the visitor's device with the open-source kannadi library compiled to WebAssembly.",
+            "A free Kannada editor in the browser. It converts text typed in the Nudi, Baraha and Akruti fonts to Unicode, and Unicode back to Nudi, types Kannada from English letters, marks what could not be converted, and saves Word, web and text files. It runs on the visitor's device with the open-source kannadi library compiled to WebAssembly.",
           details: [
             `Source of the library: ${SITE.repository} (Rust, MIT license).`,
             "Every page is also served as markdown at the same path plus index.md, and on requests that accept text/markdown.",

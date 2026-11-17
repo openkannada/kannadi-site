@@ -106,3 +106,13 @@ test("robots.txt allows every crawler and names the sitemap once there is one", 
   assert.ok(robots("https://example.org/sitemap.xml").endsWith("\nSitemap: https://example.org/sitemap.xml\n"));
   assert.ok(sitemap(["https://example.org/?a&b"]).includes("<loc>https://example.org/?a&amp;b</loc>"));
 });
+
+test("the copy says the way back from Unicode is to Nudi only, which is what the editor saves", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const files = ["src/content/pages.ts", "src/integrations/agent-files.ts", "README.md", "PRODUCT.md"];
+  for (const f of files) {
+    const text = await readFile(new URL(`../${f}`, import.meta.url), "utf8");
+    assert.doesNotMatch(text, /to Unicode and back/, f);
+  }
+  assert.match(HOME.intro, /Unicode back to Nudi/);
+});

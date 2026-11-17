@@ -24,13 +24,13 @@ const DESCRIPTIONS = [
 const BIOS = [
   {
     name: "Prasad Subrahmanya",
-    role: "Co-founder",
+    role: "Founding member",
     text: "Prasad Subrahmanya builds Open Kannada's software. He is the founder and CEO of Luminik. Before that, he was CTO of Aura at Bain's Founder's Studio, where he took a workforce-analytics platform from concept to $3.6M ARR in 15 months, and co-founder and CTO of Mainteny. He is based in Oslo, Norway.",
     source: "https://prasad.tech",
   },
   {
     name: "Neha Prasad",
-    role: "Co-founder",
+    role: "Founding member",
     text: '<mark class="todo">PRASAD: Neha\'s bio, about 60 words.</mark>',
     source: "https://neha-prasad.com/",
   },
@@ -129,13 +129,13 @@ const PRESS_KN: Press = {
   bios: [
     {
       name: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ",
-      role: "ಸಹಸ್ಥಾಪಕ",
+      role: "ಸ್ಥಾಪಕ ಸದಸ್ಯ",
       text: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ ಓಪನ್ ಕನ್ನಡದ ತಂತ್ರಾಂಶವನ್ನು ಕಟ್ಟುತ್ತಾರೆ. ಅವರು Luminik ನ ಸ್ಥಾಪಕರು ಮತ್ತು CEO. ಅದಕ್ಕೂ ಮೊದಲು Bain's Founder's Studio ನಲ್ಲಿ Aura ದ CTO ಆಗಿದ್ದರು. ಅಲ್ಲಿ ಕಾರ್ಯಪಡೆ ವಿಶ್ಲೇಷಣೆಯ ವೇದಿಕೆಯೊಂದನ್ನು ಕಲ್ಪನೆಯಿಂದ 15 ತಿಂಗಳಲ್ಲಿ $3.6M ARR ಮಟ್ಟಕ್ಕೆ ಬೆಳೆಸಿದರು. ಅದಕ್ಕೂ ಮೊದಲು Mainteny ಯ ಸಹಸ್ಥಾಪಕರು ಮತ್ತು CTO ಆಗಿದ್ದರು. ಅವರು ನಾರ್ವೆಯ ಓಸ್ಲೋದಲ್ಲಿ ನೆಲೆಸಿದ್ದಾರೆ.",
       source: "https://prasad.tech",
     },
     {
       name: "ನೇಹಾ ಪ್ರಸಾದ್",
-      role: "ಸಹಸ್ಥಾಪಕಿ",
+      role: "ಸ್ಥಾಪಕ ಸದಸ್ಯೆ",
       text: '<mark class="todo">PRASAD: ನೇಹಾ ಅವರ ಪರಿಚಯ, ಸುಮಾರು 60 ಪದಗಳು.</mark>',
       source: "https://neha-prasad.com/",
     },

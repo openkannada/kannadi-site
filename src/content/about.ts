@@ -6,23 +6,14 @@ import { STORY } from "./story.ts";
 
 const ABOUT_EN = {
   sections: [{ heading: "Why", paragraphs: STORY.en }],
-  founders: [
-    {
-      name: "Prasad Subrahmanya",
-      url: "https://prasad.tech",
-      site: "prasad.tech",
-      line: "builds the software. Kannada is his mother tongue.",
-    },
-    {
-      name: "Neha Prasad",
-      url: "https://neha-prasad.com/",
-      site: "neha-prasad.com",
-      line: '<mark class="todo">PRASAD: 1 line on Neha\'s part in Open Kannada, in your words.</mark>',
-    },
+  /** The people of Open Kannada, in 1 list with 1 layout: a role is a label, never a rank. */
+  people: [
+    { name: "Prasad Subrahmanya", role: "Founding member", url: "https://prasad.tech", site: "prasad.tech" },
+    { name: "Neha Prasad", role: "Founding member", url: "https://neha-prasad.com/", site: "neha-prasad.com" },
   ],
   dedication: [
     'I dedicate this work to my parents, Veena and Subramanya. They were farmers, and the values and principles they lived by made my sister <a href="https://www.pramodinisubramanya.com/">Pramodini</a> and me who we are today.',
-    "And to Neha, my wife and co-founder, who backs every hour and every bit of money we put into this. She has been my other shoulder throughout.",
+    "And to Neha, my wife, who backs every hour and every bit of money we put into this. She has been my other shoulder throughout.",
   ],
   signature: "Prasad",
   help: [
@@ -42,23 +33,13 @@ type About = typeof ABOUT_EN;
 
 const ABOUT_KN: About = {
   sections: [{ heading: "ಯಾಕೆ", paragraphs: STORY.kn }],
-  founders: [
-    {
-      name: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ",
-      url: "https://prasad.tech",
-      site: "prasad.tech",
-      line: "ತಂತ್ರಾಂಶವನ್ನು ಕಟ್ಟುತ್ತಾರೆ. ಕನ್ನಡ ಅವರ ಮಾತೃಭಾಷೆ.",
-    },
-    {
-      name: "ನೇಹಾ ಪ್ರಸಾದ್",
-      url: "https://neha-prasad.com/",
-      site: "neha-prasad.com",
-      line: '<mark class="todo">PRASAD: ಓಪನ್ ಕನ್ನಡದಲ್ಲಿ ನೇಹಾ ಅವರ ಪಾತ್ರದ ಬಗ್ಗೆ 1 ಸಾಲು, ನಿಮ್ಮ ಮಾತಿನಲ್ಲಿ.</mark>',
-    },
+  people: [
+    { name: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ", role: "ಸ್ಥಾಪಕ ಸದಸ್ಯ", url: "https://prasad.tech", site: "prasad.tech" },
+    { name: "ನೇಹಾ ಪ್ರಸಾದ್", role: "ಸ್ಥಾಪಕ ಸದಸ್ಯೆ", url: "https://neha-prasad.com/", site: "neha-prasad.com" },
   ],
   dedication: [
     'ಈ ಕೆಲಸವನ್ನು ನನ್ನ ತಂದೆ ತಾಯಿ, ವೀಣಾ ಮತ್ತು ಸುಬ್ರಮಣ್ಯ ಅವರಿಗೆ ಅರ್ಪಿಸುತ್ತೇನೆ. ಅವರು ರೈತರು. ಅವರು ಬದುಕಿದ ಮೌಲ್ಯಗಳು ಮತ್ತು ತತ್ವಗಳೇ ನನ್ನ ತಂಗಿ <a href="https://www.pramodinisubramanya.com/">ಪ್ರಮೋದಿನಿ</a> ಮತ್ತು ನನ್ನನ್ನು ಇಂದು ಇರುವಂತೆ ರೂಪಿಸಿವೆ.',
-    "ಮತ್ತು ನೇಹಾಗೆ: ನನ್ನ ಪತ್ನಿ ಮತ್ತು ಸಹಸ್ಥಾಪಕಿ. ಇದಕ್ಕೆ ನಾವು ಕೊಡುವ ಪ್ರತಿ ಗಂಟೆ, ಪ್ರತಿ ರೂಪಾಯಿಯ ಹಿಂದೆ ಅವಳಿದ್ದಾಳೆ. ಇಡೀ ದಾರಿಯಲ್ಲಿ ಅವಳು ನನ್ನ ಇನ್ನೊಂದು ಹೆಗಲಾಗಿದ್ದಾಳೆ.",
+    "ಮತ್ತು ನನ್ನ ಪತ್ನಿ ನೇಹಾಗೆ. ಇದಕ್ಕೆ ನಾವು ಕೊಡುವ ಪ್ರತಿ ಗಂಟೆ, ಪ್ರತಿ ರೂಪಾಯಿಯ ಹಿಂದೆ ಅವಳಿದ್ದಾಳೆ. ಇಡೀ ದಾರಿಯಲ್ಲಿ ಅವಳು ನನ್ನ ಇನ್ನೊಂದು ಹೆಗಲಾಗಿದ್ದಾಳೆ.",
   ],
   signature: "ಪ್ರಸಾದ್",
   help: [

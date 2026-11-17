@@ -450,7 +450,7 @@ export const PAGES: Page[] = [
     name: "Press kit",
     title: "Open Kannada press kit: logos, descriptions and facts",
     description:
-      "Logos, colors, short descriptions, founder bios, screenshots and sourced facts about Open Kannada and kannadi, for articles and talks.",
+      "Logos, colors, short descriptions, bios of the founding members, screenshots and sourced facts about Open Kannada and kannadi, for articles and talks.",
     h1: "Press kit",
     intro:
       "Logos, descriptions, bios, screenshots and facts about Open Kannada and its first project, the kannadi editor. Use them as they are, with no need to ask.",
@@ -541,10 +541,10 @@ export const PAGES: Page[] = [
     name: "ಪತ್ರಿಕಾ ಕಿಟ್",
     title: "ಓಪನ್ ಕನ್ನಡ ಪತ್ರಿಕಾ ಕಿಟ್: ಲೋಗೊಗಳು, ಪರಿಚಯಗಳು ಮತ್ತು ಮಾಹಿತಿ",
     description:
-      "ಲೇಖನಗಳು ಮತ್ತು ಭಾಷಣಗಳಿಗಾಗಿ ಓಪನ್ ಕನ್ನಡ ಮತ್ತು ಕನ್ನಡಿಯ ಲೋಗೊಗಳು, ಬಣ್ಣಗಳು, ಸಣ್ಣ ಪರಿಚಯಗಳು, ಸ್ಥಾಪಕರ ಪರಿಚಯ, ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳು ಮತ್ತು ಆಧಾರ ಸಹಿತ ಮಾಹಿತಿ.",
+      "ಲೇಖನಗಳು ಮತ್ತು ಭಾಷಣಗಳಿಗಾಗಿ ಓಪನ್ ಕನ್ನಡ ಮತ್ತು ಕನ್ನಡಿಯ ಲೋಗೊಗಳು, ಬಣ್ಣಗಳು, ಸಣ್ಣ ಪರಿಚಯಗಳು, ಸ್ಥಾಪಕ ಸದಸ್ಯರ ಪರಿಚಯ, ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳು ಮತ್ತು ಆಧಾರ ಸಹಿತ ಮಾಹಿತಿ.",
     h1: "ಪತ್ರಿಕಾ ಕಿಟ್",
     intro:
-      "ಓಪನ್ ಕನ್ನಡ ಮತ್ತು ಅದರ ಮೊದಲ ಯೋಜನೆಯಾದ ಕನ್ನಡಿ ಸಂಪಾದಕದ ಲೋಗೊಗಳು, ಪರಿಚಯಗಳು, ಸ್ಥಾಪಕರ ಪರಿಚಯ, ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳು ಮತ್ತು ಮಾಹಿತಿ. ಇವನ್ನು ಇದ್ದಂತೆಯೇ, ಕೇಳದೆಯೇ ಬಳಸಿ.",
+      "ಓಪನ್ ಕನ್ನಡ ಮತ್ತು ಅದರ ಮೊದಲ ಯೋಜನೆಯಾದ ಕನ್ನಡಿ ಸಂಪಾದಕದ ಲೋಗೊಗಳು, ಪರಿಚಯಗಳು, ಸ್ಥಾಪಕ ಸದಸ್ಯರ ಪರಿಚಯ, ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳು ಮತ್ತು ಮಾಹಿತಿ. ಇವನ್ನು ಇದ್ದಂತೆಯೇ, ಕೇಳದೆಯೇ ಬಳಸಿ.",
     body: "press",
     faq: [],
     og: { from: "Open Kannada", to: "ಕನ್ನಡ" },

@@ -196,3 +196,12 @@ test("a Kannada page's structured data is in Kannada and its trail starts at the
   const home = jsonLd(HOMES.kn, siteUrl("https://example.org/"), HOMES.kn)["@graph"].find((n) => n["@type"] === "BreadcrumbList");
   assert.equal(home.itemListElement.length, 1);
 });
+
+test("the people of Open Kannada carry a role label, and no page text ranks them as founders", async () => {
+  const { ABOUT } = await import("../src/content/about.ts");
+  const { SITE_STRINGS } = await import("../src/i18n/site.ts");
+  assert.deepEqual(ABOUT.en.people.map((p) => p.role), ["Founding member", "Founding member"]);
+  for (const p of [...ABOUT.en.people, ...ABOUT.kn.people]) assert.deepEqual(Object.keys(p).sort(), ["name", "role", "site", "url"]);
+  const shown = [JSON.stringify(ABOUT.en), JSON.stringify(SITE_STRINGS.en)].join("\n");
+  assert.doesNotMatch(shown.replace(/founders@luminik\.io/g, ""), /co-founder|\bfounded\b|>Founders</i);
+});

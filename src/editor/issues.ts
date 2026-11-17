@@ -1,6 +1,7 @@
 // Problems in the document: unknown glyphs left by a conversion, tracked
 // through edits, and malformed syllables and likely typos, found again after each edit.
 // Each problem is highlighted inline and listed; selecting one offers fixes.
+import { ICONS } from "../icons/icons.ts";
 import type { DocEditor } from "./editor.ts";
 import type { Fix, Scheme, Typo } from "./kannadi.ts";
 import { type Anchor, codePoints, type Edit, shiftAnchors, shiftRanges } from "./text.ts";
@@ -335,10 +336,11 @@ export class Issues {
     close.className = "pop-close";
     close.setAttribute("aria-label", "Close");
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 16 16");
+    svg.setAttribute("viewBox", "0 0 24 24");
     svg.setAttribute("aria-hidden", "true");
     const cross = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    cross.setAttribute("d", "M4 4l8 8M12 4l-8 8");
+    cross.setAttribute("d", ICONS.close.d);
+    cross.setAttribute("vector-effect", "non-scaling-stroke");
     svg.append(cross);
     close.append(svg);
     close.addEventListener("click", () => this.close(true));

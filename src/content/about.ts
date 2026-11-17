@@ -4,6 +4,16 @@ import { STORY } from "./story.ts";
 
 export const ABOUT = {
   sections: [{ heading: "Why", paragraphs: STORY }],
+  /** What Open Kannada works on, in the intro's own words, each with its illustration. */
+  work: {
+    heading: "What we work on",
+    items: [
+      { illustration: "convert" as const, label: "Converting old documents to Unicode" },
+      { illustration: "font" as const, label: "Fonts that draw every letter correctly" },
+      { illustration: "spell" as const, label: "Spelling" },
+      { illustration: "scan" as const, label: "Reading old printed books with OCR" },
+    ],
+  },
   /** The people of Open Kannada, in 1 list with 1 layout: a role is a label, never a rank. */
   people: [
     { name: "Prasad Subrahmanya", role: "Founding member", url: "https://prasad.tech", site: "prasad.tech" },

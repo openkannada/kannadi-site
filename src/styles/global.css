@@ -298,3 +298,31 @@
     animation-duration: 0.01ms !important;
   }
 }
+
+/* A page heading with its illustration beside it: on wide screens for tool pages, from tablets elsewhere.
+   Unlayered and 2 classes deep, to win over the illustration's own display rule. */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 1.5rem 2.5rem;
+}
+.hero .hero-illo {
+  display: none;
+}
+@media (min-width: 64rem) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) 15rem;
+  }
+  .hero .hero-illo {
+    display: block;
+  }
+}
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+  .hero-reference {
+    grid-template-columns: minmax(0, 1fr) 12rem;
+  }
+  .hero-reference .hero-illo {
+    display: block;
+  }
+}

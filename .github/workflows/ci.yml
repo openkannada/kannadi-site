@@ -51,6 +51,8 @@ jobs:
       - run: npm run build
       - run: npm run seo-smoke
       - run: npm run voice-lint
+      - name: Every page at 6 widths, light and dark
+        run: npm run layout-check
       - name: Lighthouse, mobile
         run: npx lhci autorun
       - name: Build and check with a site URL

@@ -1,5 +1,5 @@
 // Copy for the press kit. Strings are trusted HTML.
-// "PRASAD:" marks words and photos only Prasad can supply; the deploy stops while any remain.
+// "PRASAD:" marks words and photos still to come; the deploy after launch stops while any remain.
 
 const KANNADI = "https://github.com/openkannada/kannadi";
 

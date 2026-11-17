@@ -160,7 +160,7 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
   ];
 }
 
-/** Open Kannada with its founders: Prasad is the page author, the others are added as people. */
+/** Open Kannada with its founders: the page author is reused by id, the others are added as people. */
 function organization(id: (name: string, base?: string) => string, author: Node, root: string): Node[] {
   const personId = (name: string) => id(name.toLowerCase().replace(/\W+/g, "-"), root);
   return [

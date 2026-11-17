@@ -2,7 +2,7 @@
 
 <!-- impeccable:product-schema 1 -->
 
-Written from Prasad's brief of 16 November 2026 and the strategy in his reports, without a separate interview. Facts marked "(inferred)" come from the strategy and competitor research rather than from Prasad directly.
+Facts marked "(inferred)" come from strategy and competitor research rather than from user interviews.
 
 ## Platform
 
@@ -40,12 +40,12 @@ The pages that rank today are old, ad-funded wrappers around Google's transliter
 - Typing with Kannada keys, Baraha letters or ISO 15919.
 - Normalize, Modernize, akshara, word and character counts, autosave in the browser, keyboard shortcuts.
 - No tracking, cookies or third-party requests. A strict Content-Security-Policy.
-- No deploy and no domain yet: both wait on Prasad.
+- Hosted at https://openkannada.org on Cloudflare Workers, deployed from CI, and kept out of search results until launch.
 
 ## Brand Commitments
 
 - Name: kannadi, with the Kannada wordmark ಕನ್ನಡಿ ("mirror").
-- Prasad, 16 November 2026: modern and polished, using newer elements such as Liquid Glass where it makes sense; humane, clear and welcoming; no over-disclaimers or over-labeling in any public copy; super mobile friendly.
+- Modern and polished, using newer elements such as Liquid Glass where it makes sense; humane, clear and welcoming; no over-disclaimers or over-labeling in any public copy; super mobile friendly.
 - Kannada set large in self-hosted Noto Sans, Noto Sans Kannada and Noto Serif Kannada.
 - Footer credit: "If kannadi helps your project, a mention or a link to prasad.tech is appreciated."
 - Writing: plain American English, digits for numbers, no em dashes, no hype.

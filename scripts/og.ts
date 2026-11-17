@@ -1,5 +1,5 @@
 // Renders the Open Graph cards into public/og with headless Chrome:
-// node scripts/og.ts [path to Chrome]. Run it after changing a page heading.
+// node scripts/og.ts [path to Chrome]. Run it after changing a page heading or the logo (og-mark.svg).
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { join, resolve } from "node:path";

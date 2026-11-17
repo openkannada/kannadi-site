@@ -7,7 +7,7 @@ import latinFont from "../fonts/noto-sans-kannada-latin-wght-normal.woff2?url";
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import { HOME, type Page } from "../content/pages.ts";
-import { SITE, pagePath } from "../content/site.ts";
+import { ORG, pagePath } from "../content/site.ts";
 import { href } from "../lib/paths.ts";
 import { jsonLd, scriptJson } from "../lib/seo.ts";
 
@@ -39,10 +39,14 @@ const ogImageUrl = site ? new URL(ogImage, site).href : null;
     <meta name="theme-color" content="#16171f" media="(prefers-color-scheme: dark)" />
     <meta name="author" content="Prasad Subrahmanya" />
     <link rel="icon" href={href("/favicon.svg")} type="image/svg+xml" />
+    <link rel="icon" href={href("/favicon-32.png")} type="image/png" sizes="32x32" />
+    <link rel="icon" href={href("/favicon-16.png")} type="image/png" sizes="16x16" />
+    <link rel="apple-touch-icon" href={href("/apple-touch-icon.png")} />
+    <link rel="manifest" href={href("/site.webmanifest")} />
     <link rel="preload" href={latinFont} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={kannadaFont} as="font" type="font/woff2" crossorigin />
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content={`${SITE.name} ${SITE.nameKn}`} />
+    <meta property="og:site_name" content={ORG.name} />
     <meta property="og:title" content={page.h1} />
     <meta property="og:description" content={page.description} />
     {canonical && <meta property="og:url" content={canonical} />}

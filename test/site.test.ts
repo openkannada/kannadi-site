@@ -115,3 +115,25 @@ test("no copy says the editor converts Unicode back to Akruti: it saves Nudi onl
     assert.doesNotMatch(text, /Unicode and back|(Unicode|back) to Akruti\b/, f);
   }
 });
+
+test("the web manifest and the page's icon links point at icons of the stated size", () => {
+  const pub = (f) => new URL(`../public/${f}`, import.meta.url);
+  const pngSize = (f) => {
+    const b = readFileSync(pub(f));
+    return `${b.readUInt32BE(16)}x${b.readUInt32BE(20)}`;
+  };
+  const manifest = JSON.parse(readFileSync(pub("site.webmanifest"), "utf8"));
+  assert.ok(manifest.icons.some((i) => i.purpose === "maskable"));
+  for (const icon of manifest.icons) {
+    if (icon.type === "image/png") assert.equal(pngSize(icon.src), icon.sizes, icon.src);
+    else readFileSync(pub(icon.src));
+  }
+  const base = readFileSync(new URL("../src/layouts/Base.astro", import.meta.url), "utf8");
+  const links = [...base.matchAll(/<link rel="(?:icon|apple-touch-icon|manifest)" href=\{href\("\/([^"]+)"\)\}(?: type="[^"]+")?(?: sizes="(\d+x\d+)")?/g)];
+  assert.equal(links.length, 5);
+  for (const [, file, sizes] of links) {
+    if (sizes) assert.equal(pngSize(file), sizes, file);
+    else readFileSync(pub(file));
+  }
+  assert.equal(pngSize("apple-touch-icon.png"), "180x180");
+});

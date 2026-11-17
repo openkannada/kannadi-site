@@ -8,6 +8,12 @@ export const SITE = {
   license: "https://opensource.org/license/mit",
 } as const;
 
+/** The organization behind the site; kannadi is its first project. */
+export const ORG = {
+  name: "Open Kannada",
+  github: "https://github.com/openkannada",
+} as const;
+
 export const AUTHOR = {
   name: "Prasad Subrahmanya",
   url: "https://prasad.tech",

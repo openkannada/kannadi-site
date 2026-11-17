@@ -8,12 +8,12 @@ import { href } from "../lib/paths.ts";
   <div class="logos">
     {LOGOS.map((l) => (
       <figure class="logo-card">
-        <div class="logo-preview light"><img src={href(`/brand/${l.mark}-wordmark-light.svg`)} alt={`${l.name} logo on a light background`} height="48" /></div>
-        <div class="logo-preview dark"><img src={href(`/brand/${l.mark}-wordmark-dark.svg`)} alt={`${l.name} logo on a dark background`} height="48" /></div>
+        <div class="logo-preview light"><img src={href(`/brand/${l.mark}-wordmark-light.svg`)} alt={`${l.name} logo on a light background`} width={l.width} height="48" /></div>
+        <div class="logo-preview dark"><img src={href(`/brand/${l.mark}-wordmark-dark.svg`)} alt={`${l.name} logo on a dark background`} width={l.width} height="48" /></div>
         <figcaption>
           <b>{l.name}</b>
           <ul class="files" role="list">
-            {l.files.map((f) => <li><a href={href(`/brand/${l.mark}-${f}`)} download>{f}</a></li>)}
+            {l.files.map((f) => <li><a href={href(`/brand/${l.mark}-${f}`)} download><span class="sr-only">{l.name} </span>{f}</a></li>)}
           </ul>
         </figcaption>
       </figure>
@@ -63,7 +63,7 @@ import { href } from "../lib/paths.ts";
   <h2 id="screenshots">Screenshots</h2>
   <div class="shots">
     {SCREENSHOTS.map((s) => (
-      <a href={href(`/press/${s.file}`)} download>
+      <a href={href(`/press/${s.file}`)} download aria-label={`Download ${s.file}`}>
         <img src={href(`/press/${s.file}`)} alt={s.alt} width={s.width} height={s.height} loading="lazy" decoding="async" />
       </a>
     ))}

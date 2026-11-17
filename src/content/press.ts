@@ -11,11 +11,11 @@ export const DESCRIPTIONS = [
   },
   {
     words: 50,
-    text: "Open Kannada makes free, open-source software for Kannada. Its first project, kannadi, converts documents typed in 6 old Kannada font layouts, including Nudi, Baraha and Akruti, to Unicode. The editor runs in the browser, so files stay on the device. It also types Kannada from English letters.",
+    text: "Open Kannada makes free, open-source software for Kannada. Its first project, kannadi, converts documents typed in 6 old Kannada fonts, including Nudi, Baraha and Akruti, to Unicode. The editor runs in the browser, so files stay on the device. It also types Kannada from English letters.",
   },
   {
     words: 100,
-    text: "Open Kannada makes free, open-source software so that Kannada works properly on computers. Government orders, budgets and newspapers from the 2000s were typed in Nudi, Baraha and other fonts that store glyph codes in place of letters, so they cannot be searched or read aloud. Its first project, kannadi, converts 6 of these font layouts to Unicode, as a Rust library, a command-line tool and an editor that runs in the browser with no upload. Each conversion is measured on real documents. Open Kannada also tests Kannada fonts and adds checks to shared tools, such as Google Fonts' shaperglot.",
+    text: "Open Kannada makes free, open-source software so that Kannada works properly on computers. Government orders, budgets and newspapers from the 2000s were typed in Nudi, Baraha and other fonts that store glyph codes in place of letters, so they cannot be searched or read aloud. Its first project, kannadi, converts 6 of these fonts to Unicode, as a Rust library, a command-line tool and an editor that runs in the browser with no upload. Each conversion is measured on real documents. Open Kannada also tests Kannada fonts and adds checks to shared tools, such as Google Fonts' shaperglot.",
   },
 ] as const;
 
@@ -37,17 +37,17 @@ export const BIOS = [
 /** Facts with the page that shows each one. */
 export const FACTS = [
   {
-    fact: "kannadi converts 6 legacy Kannada font layouts to Unicode: Nudi, Baraha, Nudi B-Akshara, Kan-Eng, Akruti and Shree-Lipi.",
+    fact: "kannadi converts text typed in 6 legacy Kannada fonts to Unicode: Nudi, Baraha, Nudi B-Akshara, Kan-Eng, Akruti and Shree-Lipi.",
     source: KANNADI,
     label: "kannadi README",
   },
   {
-    fact: "On the benchmark corpus of 207 lines from 31 Karnataka government pages of 2002, all 207 Nudi and Baraha lines match the reviewed output. A Kannada reader's check of 100 lines is in progress.",
+    fact: "On the benchmark corpus of 207 lines from 31 Karnataka government pages of 2002, all 207 Nudi and Baraha lines match the reviewed output of the converter, and 1 line is flagged. A Kannada reader's check of 100 lines is in progress.",
     source: `${KANNADI}#measured-results`,
     label: "Measured results",
   },
   {
-    fact: "Unicode back to Nudi: 9,029 of 9,047 words from those pages encode to the exact bytes that were typed.",
+    fact: "Unicode back to Nudi: 9,029 of 9,047 words from Karnataka government pages of 2002 encode to the exact bytes that were typed.",
     source: `${KANNADI}#measured-results`,
     label: "Measured results",
   },
@@ -57,7 +57,7 @@ export const FACTS = [
     label: "Akruti notes",
   },
   {
-    fact: "Shree-Lipi: 233,346 glyphs from 173 Udayavani newspaper pages of 2003 and 2004, with 0 unknown glyphs.",
+    fact: "Shree-Lipi: 233,346 glyphs from 173 Udayavani newspaper pages of 2003 and 2004, with 0 unknown glyphs and 20 malformed syllables, each read against the text rendered in the font.",
     source: `${KANNADI}/blob/main/docs/shree-lipi.md`,
     label: "Shree-Lipi notes",
   },
@@ -67,7 +67,7 @@ export const FACTS = [
     label: "fontqa",
   },
   {
-    fact: "Google Fonts' shaperglot now checks every font for Kannada conjuncts and the arkavattu, from checks Open Kannada wrote. Merged on 17 November 2026.",
+    fact: "Google Fonts' shaperglot includes Kannada conjunct and arkavattu checks written by Open Kannada, merged on 17 November 2026.",
     source: "https://github.com/googlefonts/shaperglot/pull/192",
     label: "shaperglot pull request 192",
   },
@@ -83,10 +83,10 @@ export const FACTS = [
   },
 ] as const;
 
-/** Logo files in public/brand, for download. */
+/** Logo files in public/brand, for download; `width` is the wordmark at 48 px tall. */
 export const LOGOS = [
-  { name: "Open Kannada", mark: "open-kannada", files: ["mark-light.svg", "mark-dark.svg", "wordmark-light.svg", "wordmark-dark.svg", "1024-light.png", "1024-dark.png"] },
-  { name: "kannadi", mark: "kannadi", files: ["mark-light.svg", "mark-dark.svg", "wordmark-light.svg", "wordmark-dark.svg", "1024-light.png", "1024-dark.png"] },
+  { name: "Open Kannada", mark: "open-kannada", width: 276, files: ["mark-light.svg", "mark-dark.svg", "wordmark-light.svg", "wordmark-dark.svg", "1024-light.png", "1024-dark.png"] },
+  { name: "kannadi", mark: "kannadi", width: 232, files: ["mark-light.svg", "mark-dark.svg", "wordmark-light.svg", "wordmark-dark.svg", "1024-light.png", "1024-dark.png"] },
 ] as const;
 
 export const COLORS = [

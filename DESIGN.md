@@ -110,6 +110,7 @@ A pane (`@utility glass` on the site):
 - **Suggestion strip** (`.suggest`): glass pill above the word being typed in English letters on desktop; on phones a keyboard-style bar above the dock. The picked word is a white bead with indigo text, like the segmented control.
 - **Microphone** (`.mic`): shown only where the browser has speech recognition. While it listens it turns rose and breathes slowly; reduced motion keeps it still.
 - **Marks**: drawn with the CSS Custom Highlight API. Unknown glyphs and malformed syllables get a tinted background and a wavy underline 1.5px thick, offset 0.35em. A likely typo gets only a dashed amber underline of the same weight, in the text, the list and the fix card. `composing` marks the word being typed in Baraha or ISO with a dotted indigo underline.
+- **Ask AI** (`AskAi.astro`): an outlined pill at the right end of the breadcrumb row, on every page but home and never on the editor. Its glass menu copies the page's markdown mirror or opens ChatGPT, Claude or Perplexity with a prompt to read it. On narrow screens the current crumb truncates so the row stays 1 line.
 - **Content sections**: numbered steps with accent discs, a letter chart of tiles (Kannada, the Baraha key, ISO), a 3-column word table, and an FAQ of `details` elements with a rotating chevron.
 
 

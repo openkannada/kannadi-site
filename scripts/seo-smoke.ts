@@ -6,7 +6,8 @@ import { join, relative, sep } from "node:path";
 import { parseHTML } from "linkedom";
 
 import { PAGES } from "../src/content/pages.ts";
-import { AUTHOR, pagePath } from "../src/content/site.ts";
+import { ASK_AI, AUTHOR, LIVE, pagePath } from "../src/content/site.ts";
+import { ASSISTANTS } from "../src/lib/ask-ai.ts";
 import { readPage } from "../src/lib/agent-text.ts";
 import { contentHash, HASH_FILE, type PageHashes, staleHashes } from "../src/lib/freshness.ts";
 import { plainText, twinProblems } from "../src/lib/seo.ts";
@@ -89,6 +90,14 @@ for (const page of PAGES) {
   const crumbs = graph.find((n: { "@type": string }) => n["@type"] === "BreadcrumbList")?.itemListElement?.map((i: { name: string }) => i.name) ?? [];
   if (page.slug && JSON.stringify(trail) !== JSON.stringify(crumbs)) fail(where, `visible breadcrumbs ${JSON.stringify(trail)} differ from JSON-LD ${JSON.stringify(crumbs)}`);
   if (!page.slug && trail.length) fail(where, "the home page shows a breadcrumb trail");
+  const ask = document.querySelector("#ask-ai-menu [data-copy-markdown]")?.getAttribute("href");
+  if (page.slug && !ask) fail(where, "no Ask AI menu");
+  if (!page.slug && document.querySelector("#ask-ai-menu")) fail(where, "the home page shows the Ask AI menu");
+  if (ask && !existsSync(file(ask.slice(base.length)))) fail(where, `Ask AI copies ${ask}, which is missing`);
+  const asks = [...document.querySelectorAll("#ask-ai-menu a[target]")].map((a) => new URL(a.getAttribute("href") ?? ""));
+  const prompt = ask ? ASK_AI.prompt(new URL(ask, site ?? `${LIVE.origin}/`).href) : "";
+  if (page.slug && JSON.stringify(asks.map((u) => u.origin)) !== JSON.stringify(ASSISTANTS.map((a) => new URL(a.url("")).origin))) fail(where, "Ask AI links go to the wrong assistants");
+  for (const u of asks) if (u.searchParams.get("q") !== prompt) fail(where, `${u.origin} gets the prompt "${u.searchParams.get("q")}"`);
   for (const n of graph.filter((n: { "@type": string; name?: string }) => n["@type"] === "Person" && n.name === AUTHOR.name)) authorIds.add(n["@id"]);
 
   for (const [seen, value, what] of [[titles, title, "title"], [descriptions, description, "description"]] as const) {

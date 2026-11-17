@@ -50,7 +50,7 @@ export interface ReferencePage extends PageBase {
 /** A page about Open Kannada itself, with no editor or chart. */
 export interface InfoPage extends PageBase {
   kind: "info";
-  body: "about" | "press";
+  body: "about" | "press" | "brand";
 }
 
 export type Page = ToolPage | ReferencePage | InfoPage;
@@ -451,6 +451,21 @@ export const PAGES: Page[] = [
     body: "press",
     faq: [],
     og: { from: "Open Kannada", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
+  {
+    slug: "names-and-logos",
+    kind: "info",
+    name: "Names and logos",
+    title: "Open Kannada names and logos: how to refer to the project",
+    description:
+      "Anyone may say their work is built with kannadi. Here is how to use the Open Kannada and kannadi names and logos, and which license covers each part.",
+    h1: "Names and logos",
+    intro:
+      "Anyone may use our code, fonts and data under their licenses, and say that their work is built with kannadi. The names and logos say who made something, so they stay with this project.",
+    body: "brand",
+    faq: [],
+    og: { from: "kannadi", to: "ಕನ್ನಡಿ" },
     keywords: "",
   },
 ];

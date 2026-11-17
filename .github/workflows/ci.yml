@@ -41,6 +41,8 @@ jobs:
         with:
           node-version: 24
           cache: npm
+      - name: Every file has a license (REUSE)
+        run: pipx run reuse==6.3.0 lint
       - run: npm ci
       - run: KANNADI_DIR=.kannadi scripts/build-wasm.sh
       - run: npm run check

@@ -5,7 +5,8 @@ export const SITE = {
   language: "en-IN",
   repository: "https://github.com/openkannada/kannadi",
   siteRepository: "https://github.com/openkannada/kannadi-site",
-  license: "https://opensource.org/license/mit",
+  /** The library is MIT OR Apache-2.0, at the user's choice. */
+  license: ["https://opensource.org/license/mit", "https://www.apache.org/licenses/LICENSE-2.0"],
 } as const;
 
 /** The organization behind the site; kannadi is its first project. */

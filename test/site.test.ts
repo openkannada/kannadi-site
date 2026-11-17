@@ -178,3 +178,15 @@ test("the people of Open Kannada carry a role label, and no page text ranks them
   const shown = [JSON.stringify(ABOUT), readFileSync(new URL("../src/components/SiteFooter.astro", import.meta.url), "utf8")].join("\n");
   assert.doesNotMatch(shown.replace(/founders@luminik\.io/g, ""), /co-founder|\bfounded\b|>Founders</i);
 });
+
+test("the code is MIT OR Apache-2.0 from The Open Kannada Authors, and every page says who holds the names", () => {
+  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
+  assert.equal(JSON.parse(read("package.json")).license, "MIT OR Apache-2.0");
+  assert.match(read("LICENSE-MIT"), /Copyright \(c\) 2026 The Open Kannada Authors/);
+  assert.match(read("LICENSE-APACHE"), /Apache License\s+Version 2\.0/);
+  assert.match(read("REUSE.toml"), /path = "data\/words\.tsv"[\s\S]*?SPDX-License-Identifier = "CC-BY-SA-4\.0"/);
+  const footer = read("src/components/SiteFooter.astro");
+  assert.match(footer, /belong to the project\. \{ORG\.supporter\.label\} supports it and holds none of them\./);
+  assert.match(footer, /href=\{href\("\/names-and-logos\/"\)\}/);
+  assert.ok(PAGES.some((p) => p.slug === "names-and-logos"));
+});

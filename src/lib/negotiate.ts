@@ -29,7 +29,3 @@ export function markdownPathFor(pathname: string): string | null {
   return pathname.endsWith("/") ? `${pathname}index.md` : null;
 }
 
-/** Cloudflare preview and branch hosts, which copy the site and must stay out of search results. */
-export function isPreviewHost(host: string): boolean {
-  return /(^|\.)pages\.dev$/i.test(host);
-}

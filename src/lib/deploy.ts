@@ -5,6 +5,8 @@ export interface Step {
   label: string;
   command: string;
   args: string[];
+  /** Runs only once the site is launched, so CI runs it too, around its own publish step. */
+  launch?: "before" | "after";
 }
 
 /** What the deploy needs to know about the git checkout. */
@@ -23,9 +25,9 @@ export function productionUrl(value: string | undefined): URL {
   if (!url) throw new Error("Set SITE_URL to the production address, for example SITE_URL=https://your-domain/");
   if (url.protocol !== "https:") throw new Error(`SITE_URL must use https: ${url.href}`);
   if (PLACEHOLDER_HOSTS.test(url.hostname)) throw new Error(`SITE_URL is a placeholder host: ${url.href}`);
-  // pages.dev copies are served noindex, so a site published there would ask search engines to drop it.
-  if (/(^|\.)pages\.dev$/i.test(url.hostname)) throw new Error(`SITE_URL must be the site's own domain, not pages.dev: ${url.href}`);
-  // Pages serves dist/ at the domain root; a base path would leave every link pointing at a missing folder.
+  // Cloudflare's own hostnames are off for this Worker, so canonical links there would point at nothing.
+  if (/(^|\.)(pages|workers)\.dev$/i.test(url.hostname)) throw new Error(`SITE_URL must be the site's own domain, not ${url.hostname}: ${url.href}`);
+  // The Worker serves dist/ at the domain root; a base path would leave every link pointing at a missing folder.
   if (url.pathname !== "/") throw new Error(`SITE_URL must be the domain root, with no path: ${url.href}`);
   return url;
 }
@@ -45,7 +47,7 @@ export function deployEnv(env: NodeJS.ProcessEnv, url: URL): NodeJS.ProcessEnv {
 }
 
 /**
- * Placeholders for Prasad's own words or photos left in built text: each "PRASAD: ..." up to the end of its
+ * Placeholders for words or photos still to be written, left in built text: each "PRASAD: ..." up to the end of its
  * sentence, and any text still in the placeholder highlight after the "PRASAD:" note was replaced.
  */
 export function placeholders(text: string): string[] {
@@ -56,8 +58,12 @@ export function placeholders(text: string): string[] {
   return [...notes, ...marks];
 }
 
-/** The steps that build, check and publish the site at `url` to the Cloudflare Pages production branch, then check it live and notify IndexNow. */
-export function deploySteps(url: URL): Step[] {
+/**
+ * The steps that build, check and publish the site at `url` to Cloudflare Workers, then check it live. The
+ * placeholder check and IndexNow belong to the launched site; before launch the site is noindex and they wait.
+ */
+export function deploySteps(url: URL, launched: boolean): Step[] {
+  const launch = (step: Step) => (launched ? [step] : []);
   return [
     { label: "Build the WebAssembly package", command: "npm", args: ["run", "wasm"] },
     { label: "Check the types", command: "npm", args: ["run", "check"] },
@@ -65,10 +71,15 @@ export function deploySteps(url: URL): Step[] {
     { label: "Build the site", command: "npm", args: ["run", "build"] },
     { label: "Check the built pages", command: "node", args: ["scripts/seo-smoke.ts", "dist", url.href] },
     { label: "Check the writing", command: "npm", args: ["run", "voice-lint"] },
-    { label: "Check that no placeholder is left", command: "node", args: ["scripts/placeholders.ts", "dist"] },
-    { label: "Save the live sitemap for IndexNow", command: "node", args: ["scripts/indexnow.ts", "snapshot", url.href] },
-    { label: "Publish to Cloudflare Pages", command: "npx", args: ["--no", "--", "wrangler", "pages", "deploy", "--branch", "main"] },
+    ...launch({ label: "Check that no placeholder is left", command: "node", args: ["scripts/placeholders.ts", "dist"], launch: "before" }),
+    ...launch({ label: "Save the live sitemap for IndexNow", command: "node", args: ["scripts/indexnow.ts", "snapshot", url.href], launch: "before" }),
+    { label: "Publish to Cloudflare Workers", command: "npx", args: ["--no", "--", "wrangler", "deploy"] },
     { label: "Check the live site", command: "node", args: ["scripts/live-check.ts", url.href] },
-    { label: "Send the changed pages to IndexNow", command: "node", args: ["scripts/indexnow.ts", "submit", url.href] },
+    ...launch({ label: "Send the changed pages to IndexNow", command: "node", args: ["scripts/indexnow.ts", "submit", url.href], launch: "after" }),
   ];
+}
+
+/** The launch-only steps on 1 side of the publish, for CI, which builds and publishes with its own steps. */
+export function launchSteps(url: URL, launched: boolean, side: "before" | "after"): Step[] {
+  return deploySteps(url, launched).filter((s) => s.launch === side);
 }

@@ -56,4 +56,6 @@ test("placeholders for Prasad's words are found in built HTML and markdown", () 
   assert.deepEqual(placeholders("Contact\n\nPRASAD: press contact, an email address or a form.\n"), ["PRASAD: press contact, an email address or a form."]);
   assert.deepEqual(placeholders("Prasad: the founder."), []);
   assert.deepEqual(placeholders('<p><mark class="todo">Neha designs the fonts.</mark></p>'), ["highlighted as a placeholder: Neha designs the fonts."]);
+  assert.deepEqual(placeholders('<mark class="todo" data-astro-cid-x>Photo by <a href="/">Neha</a>.</mark>'), ["highlighted as a placeholder: Photo by Neha."]);
+  assert.deepEqual(placeholders('<mark class="todo" data-astro-cid-x>PRASAD: photo of Neha Prasad, from Prasad.</mark>'), ["PRASAD: photo of Neha Prasad, from Prasad."]);
 });

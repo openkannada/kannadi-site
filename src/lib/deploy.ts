@@ -48,7 +48,9 @@ export function deployEnv(env: NodeJS.ProcessEnv, url: URL): NodeJS.ProcessEnv {
  */
 export function placeholders(text: string): string[] {
   const notes = [...text.matchAll(/PRASAD:[^.?!<\n]*[.?!]?/g)].map((m) => m[0].trim());
-  const marks = [...text.matchAll(/<mark class="todo">(?!PRASAD:)([^<]*)/g)].map((m) => `highlighted as a placeholder: ${m[1]?.trim()}`);
+  const marks = [...text.matchAll(/<mark\b[^>]*\bclass="todo"[^>]*>(?!PRASAD:)([\s\S]*?)<\/mark>/g)].map(
+    (m) => `highlighted as a placeholder: ${(m[1] ?? "").replace(/<[^>]+>/g, "").trim()}`,
+  );
   return [...notes, ...marks];
 }
 

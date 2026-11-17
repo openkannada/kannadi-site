@@ -24,12 +24,23 @@ import { withBase } from "../lib/paths.ts";
   </div>
 </section>
 
+<section aria-labelledby="supported">
+  <h2 id="supported">Supported by</h2>
+  <p set:html={ABOUT.supporter} />
+</section>
+
 <section aria-labelledby="help">
   <h2 id="help">How you can help</h2>
   <ul class="help">
     {ABOUT.help.map((h) => <li set:html={h} />)}
   </ul>
-  <p set:html={ABOUT.contact} />
+</section>
+
+<section aria-labelledby="contact">
+  <h2 id="contact">Contact</h2>
+  <ul class="help">
+    {ABOUT.contact.map((c) => <li set:html={c} />)}
+  </ul>
 </section>
 
 <style>

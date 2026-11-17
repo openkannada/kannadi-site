@@ -104,4 +104,4 @@ export const SCREENSHOTS = [
 
 export const PHOTOS = ["Prasad Subrahmanya", "Neha Prasad"] as const;
 
-export const CONTACT = '<mark class="todo">PRASAD: press contact, an email address or a form.</mark>';
+export const CONTACT = 'Press, partnerships and government offices: <a href="mailto:founders@luminik.io">founders@luminik.io</a>. Open Kannada is supported by <a href="https://www.luminik.io">DataRavel Inc. (dba Luminik)</a>.';

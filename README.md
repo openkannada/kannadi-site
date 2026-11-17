@@ -85,3 +85,5 @@ CI runs all of them on every pull request.
 ## License
 
 MIT, except `data/words.tsv`, which is under CC BY-SA 4.0 as a work derived from Kannada Wikipedia (its header gives the source and changes). The fonts are Noto Sans Kannada and Noto Serif Kannada under the SIL Open Font License (`public/fonts/OFL.txt`).
+
+Part of [Open Kannada](https://github.com/openkannada), free and open-source tools that make Kannada work properly on computers.

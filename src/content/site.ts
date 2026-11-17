@@ -16,6 +16,12 @@ export const ORG = {
     { name: "Prasad Subrahmanya", url: "https://prasad.tech" },
     { name: "Neha Prasad", url: "https://neha-prasad.com/" },
   ],
+  supporter: { name: "DataRavel Inc.", alternateName: "Luminik", label: "DataRavel Inc. (dba Luminik)", url: "https://www.luminik.io" },
+  contacts: [
+    { contactType: "customer support", email: "support@luminik.io" },
+    { contactType: "press", email: "founders@luminik.io" },
+    { contactType: "security", email: "prasad@luminik.io" },
+  ],
 } as const;
 
 export const AUTHOR = {

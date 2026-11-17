@@ -25,7 +25,7 @@ export const ABOUT = {
     },
   ],
   dedication: [
-    'I dedicate this work to my parents, Subramanya and Veena. They were farmers, and the values and principles they lived by made my sister <a href="https://www.pramodinisubramanya.com/">Pramodini</a> and me who we are today.',
+    'I dedicate this work to my parents, Veena and Subramanya. They were farmers, and the values and principles they lived by made my sister <a href="https://www.pramodinisubramanya.com/">Pramodini</a> and me who we are today.',
     "And to Neha, my wife and co-founder, who backs every hour and every bit of money we put into this. She has been my other shoulder throughout.",
   ],
   signature: "Prasad",
@@ -34,5 +34,10 @@ export const ABOUT = {
     "<b>Read Kannada well?</b> Help check converted text against the original. It turns our results into verified ones.",
     "<b>Design type?</b> Several open Kannada fonts are missing letters and heavier weights.",
   ],
-  contact: '<mark class="todo">PRASAD: how helpers reach us: GitHub issues only, or also an email address?</mark>',
+  supporter: '<a href="https://www.luminik.io">DataRavel Inc. (dba Luminik)</a>, Prasad\'s company, supports Open Kannada.',
+  contact: [
+    'Bugs and file samples: open an issue on <a href="https://github.com/openkannada">GitHub</a>. For documents you can\'t share publicly, write to <a href="mailto:support@luminik.io">support@luminik.io</a>.',
+    'Press, partnerships and government offices: <a href="mailto:founders@luminik.io">founders@luminik.io</a>.',
+    'Security issues: <a href="mailto:prasad@luminik.io">prasad@luminik.io</a>.',
+  ],
 } as const;

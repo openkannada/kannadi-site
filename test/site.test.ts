@@ -155,6 +155,8 @@ test("the About page names Open Kannada with both founders", () => {
   assert.deepEqual(org.founder.map((f) => people[f["@id"]]), ["Prasad Subrahmanya", "Neha Prasad"]);
   assert.equal(graph.find((n) => n["@type"] === "WebPage").mainEntity["@id"], org["@id"]);
   assert.ok(!graph.some((n) => n["@type"] === "FAQPage"), "an empty FAQ adds no FAQPage");
+  assert.equal(org.sponsor.url, "https://www.luminik.io");
+  assert.deepEqual(org.contactPoint.map((c) => c.email), ["support@luminik.io", "founders@luminik.io", "prasad@luminik.io"]);
 });
 
 test("the site is named Open Kannada, and the editor and library kannadi", () => {

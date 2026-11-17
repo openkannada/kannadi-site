@@ -172,6 +172,8 @@ function organization(id: (name: string, base?: string) => string, author: Node,
       logo: `${root}icon-512.png`,
       sameAs: [ORG.github],
       founder: ORG.founders.map((f) => (f.name === AUTHOR.name ? author : { "@id": personId(f.name) })),
+      sponsor: { "@type": "Organization", name: ORG.supporter.name, alternateName: ORG.supporter.alternateName, url: ORG.supporter.url },
+      contactPoint: ORG.contacts.map((c) => ({ "@type": "ContactPoint", ...c })),
     },
     ...ORG.founders.filter((f) => f.name !== AUTHOR.name).map((f) => ({ "@type": "Person", "@id": personId(f.name), name: f.name, url: f.url })),
   ];

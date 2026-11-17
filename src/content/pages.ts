@@ -43,7 +43,13 @@ export interface ReferencePage extends PageBase {
   table: "alphabet" | "kagunita";
 }
 
-export type Page = ToolPage | ReferencePage;
+/** A page about Open Kannada itself, with no editor or chart. */
+export interface InfoPage extends PageBase {
+  kind: "info";
+  body: "about" | "press";
+}
+
+export type Page = ToolPage | ReferencePage | InfoPage;
 
 const PRIVATE: Faq = {
   q: "Is my text uploaded anywhere?",
@@ -412,6 +418,36 @@ export const PAGES: Page[] = [
     ],
     og: { from: "ka kā ki kī", to: "ಕ ಕಾ ಕಿ ಕೀ" },
     keywords: "kannada kagunita 27,100; kagunita 8,100",
+  },
+  {
+    slug: "about",
+    kind: "info",
+    name: "About",
+    title: "About Open Kannada: free, open-source tools for Kannada",
+    description:
+      "Open Kannada makes free, open-source tools so that Kannada works properly on computers: conversion of old documents, typing, fonts, spelling and OCR.",
+    h1: "About Open Kannada",
+    intro:
+      "Open Kannada makes free, open-source tools so that Kannada works properly on computers. That covers converting old documents to Unicode, typing in Kannada, fonts that draw every letter correctly, spelling, and reading old printed books with OCR. Everything is free to use, and the code is open for anyone to read, check and improve.",
+    body: "about",
+    faq: [],
+    og: { from: "Kannada", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
+  {
+    slug: "press",
+    kind: "info",
+    name: "Press kit",
+    title: "Open Kannada press kit: logos, descriptions and facts",
+    description:
+      "Logos, colors, short descriptions, founder bios, screenshots and sourced facts about Open Kannada and kannadi, for articles and talks.",
+    h1: "Press kit",
+    intro:
+      "Logos, descriptions, bios, screenshots and facts about Open Kannada and its first project, the kannadi editor. Use them as they are, with no need to ask.",
+    body: "press",
+    faq: [],
+    og: { from: "Open Kannada", to: "ಕನ್ನಡ" },
+    keywords: "",
   },
 ];
 

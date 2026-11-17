@@ -48,7 +48,7 @@ Each deploy, from `main` once it matches `origin/main`, with no local changes:
 SITE_URL=https://your-domain/ npm run deploy
 ```
 
-`scripts/deploy.ts` refuses a missing, plain http, placeholder or sub-path `SITE_URL`, local changes, any branch other than `main`, and a `main` that differs from `origin/main`. It ignores `KANNADI_DIR`, so the WebAssembly package comes from kannadi at `kannadi.rev`. It then builds that package, checks types, runs the unit tests, builds the site, runs the SEO smoke check at the production address and the voice lint, and publishes `dist/` and `functions/` to the production branch with the pinned Wrangler. It stops at the first step that fails.
+`scripts/deploy.ts` refuses a missing, plain http, placeholder or sub-path `SITE_URL`, local changes, any branch other than `main`, and a `main` that differs from `origin/main`. It ignores `KANNADI_DIR`, so the WebAssembly package comes from kannadi at `kannadi.rev`. It then builds that package, checks types, runs the unit tests, builds the site, runs the SEO smoke check at the production address and the voice lint, and checks that no `PRASAD:` placeholder is left on the About and Press pages. It then publishes `dist/` and `functions/` to the production branch with the pinned Wrangler. It stops at the first step that fails.
 
 ## Typing in English letters
 
@@ -85,3 +85,5 @@ CI runs all of them on every pull request.
 ## License
 
 MIT, except `data/words.tsv`, which is under CC BY-SA 4.0 as a work derived from Kannada Wikipedia (its header gives the source and changes). The fonts are Noto Sans Kannada and Noto Serif Kannada under the SIL Open Font License (`public/fonts/OFL.txt`).
+
+Part of [Open Kannada](https://github.com/openkannada), free and open-source tools that make Kannada work properly on computers.

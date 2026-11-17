@@ -276,6 +276,12 @@
   .prose-kn p {
     @apply my-3 max-w-[68ch];
   }
+  /* Words or photos only Prasad can supply; the deploy stops while any remain. */
+  mark.todo {
+    @apply rounded-md px-1.5 py-0.5;
+    background: var(--mark-malformed);
+    color: var(--foreground);
+  }
 }
 
 /* Popovers open from their trigger: a quick lift out of blur. */

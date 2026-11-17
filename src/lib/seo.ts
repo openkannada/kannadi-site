@@ -23,8 +23,9 @@ export function absolute(path: string, site: URL | null): string {
 
 /**
  * The page's JSON-LD graph: the page, what it offers (the editor with its
- * how-to, or a reference chart), FAQ, breadcrumbs, author, and on the home
- * page the site and the library's source code.
+ * how-to, a reference chart, or on the About and Press pages the organization
+ * and its founders), FAQ, breadcrumbs, author, and on the home page the site
+ * and the library's source code.
  */
 export function jsonLd(page: Page, site: URL | null, home: Page): Node {
   const url = absolute(pagePath(page.slug), site);
@@ -41,20 +42,24 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
       description: page.description,
       inLanguage: SITE.language,
       isPartOf: { "@id": id("website", root) },
-      mainEntity: { "@id": id(page.kind === "tool" ? "app" : "resource") },
+      mainEntity: { "@id": page.kind === "info" ? id("organization", root) : id(page.kind === "tool" ? "app" : "resource") },
       breadcrumb: { "@id": id("breadcrumb") },
       author,
     },
     ...mainNodes(page, url, id, author, root),
-    {
-      "@type": "FAQPage",
-      "@id": id("faq"),
-      mainEntity: page.faq.map((f) => ({
-        "@type": "Question",
-        name: plainText(f.q),
-        acceptedAnswer: { "@type": "Answer", text: plainText(f.a) },
-      })),
-    },
+    ...(page.faq.length
+      ? [
+          {
+            "@type": "FAQPage",
+            "@id": id("faq"),
+            mainEntity: page.faq.map((f) => ({
+              "@type": "Question",
+              name: plainText(f.q),
+              acceptedAnswer: { "@type": "Answer", text: plainText(f.a) },
+            })),
+          },
+        ]
+      : []),
     {
       "@type": "BreadcrumbList",
       "@id": id("breadcrumb"),
@@ -80,8 +85,9 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
         url: root,
         name: ORG.name,
         inLanguage: SITE.language,
-        publisher: author,
+        publisher: { "@id": id("organization", root) },
       },
+      ...organization(id, author, root),
       {
         "@type": "SoftwareSourceCode",
         "@id": id("library", root),
@@ -100,6 +106,7 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
 
 /** The editor as a WebApplication with its how-to, or a reference page as a LearningResource. */
 function mainNodes(page: Page, url: string, id: (name: string, base?: string) => string, author: Node, root: string): Node[] {
+  if (page.kind === "info") return organization(id, author, root);
   if (page.kind === "reference") {
     return [
       {
@@ -150,6 +157,25 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
       name: page.howTitle,
       step: page.steps.map((text, i) => ({ "@type": "HowToStep", position: i + 1, text: plainText(text) })),
     },
+  ];
+}
+
+/** Open Kannada with its founders: Prasad is the page author, the others are added as people. */
+function organization(id: (name: string, base?: string) => string, author: Node, root: string): Node[] {
+  const personId = (name: string) => id(name.toLowerCase().replace(/\W+/g, "-"), root);
+  return [
+    {
+      "@type": "Organization",
+      "@id": id("organization", root),
+      name: ORG.name,
+      url: root,
+      logo: `${root}icon-512.png`,
+      sameAs: [ORG.github],
+      founder: ORG.founders.map((f) => (f.name === AUTHOR.name ? author : { "@id": personId(f.name) })),
+      sponsor: { "@type": "Organization", name: ORG.supporter.name, alternateName: ORG.supporter.alternateName, url: ORG.supporter.url },
+      contactPoint: ORG.contacts.map((c) => ({ "@type": "ContactPoint", ...c })),
+    },
+    ...ORG.founders.filter((f) => f.name !== AUTHOR.name).map((f) => ({ "@type": "Person", "@id": personId(f.name), name: f.name, url: f.url })),
   ];
 }
 

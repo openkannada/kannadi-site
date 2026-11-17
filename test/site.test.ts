@@ -13,8 +13,10 @@ const types = (graph) => graph["@graph"].map((n) => n["@type"]);
 test("every page has the structured data the strategy asks for", () => {
   for (const page of PAGES) {
     const t = types(jsonLd(page, null, HOME));
-    const main = page.kind === "tool" ? ["WebApplication", "HowTo"] : ["LearningResource"];
-    for (const want of ["WebPage", "FAQPage", "BreadcrumbList", "Person", ...main]) {
+    const main = { tool: ["WebApplication", "HowTo"], reference: ["LearningResource"], info: ["Organization"] }[page.kind];
+    const faq = page.kind !== "info" || page.faq.length ? ["FAQPage"] : [];
+    if (page.kind !== "info") assert.ok(page.faq.length, `${page.slug || "home"} has no FAQ`);
+    for (const want of ["WebPage", "BreadcrumbList", "Person", ...faq, ...main]) {
       assert.ok(t.includes(want), `${page.slug || "home"} lacks ${want}`);
     }
   }
@@ -143,9 +145,26 @@ test("the web manifest and the page's icon links point at icons of the stated si
   assert.equal(pngSize("apple-touch-icon.png"), "180x180");
 });
 
+test("the About page names Open Kannada with both founders", () => {
+  const about = PAGES.find((p) => p.slug === "about");
+  const graph = jsonLd(about, siteUrl("https://example.org/"), HOME)["@graph"];
+  const org = graph.find((n) => n["@type"] === "Organization");
+  assert.equal(org.name, "Open Kannada");
+  assert.equal(org.url, "https://example.org/");
+  assert.equal(org.logo, "https://example.org/icon-512.png");
+  const people = Object.fromEntries(graph.filter((n) => n["@type"] === "Person").map((n) => [n["@id"], n.name]));
+  assert.deepEqual(org.founder.map((f) => people[f["@id"]]), ["Prasad Subrahmanya", "Neha Prasad"]);
+  assert.equal(graph.find((n) => n["@type"] === "WebPage").mainEntity["@id"], org["@id"]);
+  assert.ok(!graph.some((n) => n["@type"] === "FAQPage"), "an empty FAQ adds no FAQPage");
+  assert.equal(org.sponsor.url, "https://www.luminik.io");
+  assert.deepEqual(org.contactPoint.map((c) => c.email), ["support@luminik.io", "founders@luminik.io", "prasad@luminik.io"]);
+});
+
 test("the site is named Open Kannada, and the editor and library kannadi", () => {
   const graph = jsonLd(HOME, null, HOME)["@graph"];
-  assert.equal(graph.find((n) => n["@type"] === "WebSite").name, "Open Kannada");
+  const site = graph.find((n) => n["@type"] === "WebSite");
+  assert.equal(site.name, "Open Kannada");
+  assert.equal(site.publisher["@id"], graph.find((n) => n["@type"] === "Organization")["@id"]);
   assert.equal(graph.find((n) => n["@type"] === "SoftwareSourceCode").name, "kannadi");
   const base = readFileSync(new URL("../src/layouts/Base.astro", import.meta.url), "utf8");
   assert.match(base, /<meta property="og:site_name" content=\{ORG\.name\} \/>/);

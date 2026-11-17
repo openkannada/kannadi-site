@@ -10,7 +10,7 @@ out="$root/src/editor/wasm"
 
 if [ -z "${KANNADI_DIR:-}" ]; then
   if [ ! -d "$src/.git" ]; then
-    git clone --quiet --filter=blob:none https://github.com/prasadus92/kannadi.git "$src"
+    git clone --quiet --filter=blob:none https://github.com/openkannada/kannadi.git "$src"
   fi
   git -C "$src" fetch --quiet origin "$rev"
   git -C "$src" -c advice.detachedHead=false checkout --quiet "$rev"

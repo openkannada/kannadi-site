@@ -11,7 +11,7 @@ Read `PRODUCT.md` for who the site is for, and `DESIGN.md` for the visual system
 - Copy is in `src/content/pages.ts`. Plain American English, digits for numbers, no em dashes, no hype, no disclaimers. `npm run voice-lint` checks the built text.
 - Every new page needs an entry in `PAGES`; `npm run seo-smoke` fails on a built page without one.
 - The page CSP allows no inline style attributes. Put styles in CSS.
-- Library changes go to prasadus92/kannadi as pull requests; then update `kannadi.rev`.
+- Library changes go to openkannada/kannadi as pull requests; then update `kannadi.rev`.
 
 ## Commands
 

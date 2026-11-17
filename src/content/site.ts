@@ -3,8 +3,8 @@ export const SITE = {
   nameKn: "ಕನ್ನಡಿ",
   tagline: "Kannada editor and converter",
   language: "en-IN",
-  repository: "https://github.com/prasadus92/kannadi",
-  siteRepository: "https://github.com/prasadus92/kannadi-site",
+  repository: "https://github.com/openkannada/kannadi",
+  siteRepository: "https://github.com/openkannada/kannadi-site",
   license: "https://opensource.org/license/mit",
 } as const;
 

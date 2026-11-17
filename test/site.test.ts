@@ -105,7 +105,11 @@ test("llms.txt lists every page with its markdown, and llms-full.txt holds their
 });
 
 test("robots.txt allows every crawler and names the sitemap once there is one", () => {
-  assert.equal(robots(null), "User-agent: *\nAllow: /\n");
+  assert.ok(robots(null).endsWith("User-agent: *\nAllow: /\n"));
+  for (const agent of ["GPTBot", "OAI-SearchBot", "ClaudeBot", "Claude-SearchBot", "PerplexityBot", "Google-Extended", "Applebot-Extended"]) {
+    assert.ok(robots(null).includes(`User-agent: ${agent}\nAllow: /\n`), agent);
+  }
+  assert.doesNotMatch(robots(null), /Disallow/);
   assert.ok(robots("https://example.org/sitemap.xml").endsWith("\nSitemap: https://example.org/sitemap.xml\n"));
   assert.ok(sitemap([{ loc: "https://example.org/?a&b" }]).includes("<url><loc>https://example.org/?a&amp;b</loc></url>"));
   assert.ok(sitemap([{ loc: "https://example.org/", lastmod: "2026-11-17" }]).includes("<loc>https://example.org/</loc><lastmod>2026-11-17</lastmod>"));

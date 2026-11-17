@@ -6,7 +6,7 @@ This site is part of Open Kannada. Copyright 2026 The Open Kannada Authors: ever
 
 | Part | License | Notes |
 |---|---|---|
-| Code: `src/`, `scripts/`, `functions/`, `design/`, `test/` and the configuration | MIT OR Apache-2.0 | `LICENSE-MIT`, `LICENSE-APACHE`. Choose either. |
+| Code: `src/`, `scripts/`, `worker/`, `infra/`, `design/`, `test/` and the configuration | MIT OR Apache-2.0 | `LICENSE-MIT`, `LICENSE-APACHE`. Choose either. |
 | Words we write: page copy in `src/content/` and `src/i18n/`, and the Markdown documents | CC BY 4.0 | `LICENSES/CC-BY-4.0.txt` |
 | Images we make: logos, icons, Open Graph cards, screenshots | CC BY 4.0 | The letters in the logos and cards are Noto Sans Kannada outlines, under the SIL Open Font License. Names and logos are also covered by the section below. |
 | `data/words.tsv` | CC BY-SA 4.0 | See below. |

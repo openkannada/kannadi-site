@@ -1,0 +1,78 @@
+---
+import { ASK_AI, LIVE, pagePath } from "../content/site.ts";
+import type { Page } from "../content/pages.ts";
+import { askLinks } from "../lib/ask-ai.ts";
+import { href } from "../lib/paths.ts";
+import Icon from "./Icon.astro";
+
+interface Props {
+  page: Page;
+}
+const { page } = Astro.props;
+const markdownPath = href(`${pagePath(page.slug)}index.md`);
+const links = askLinks(new URL(markdownPath, Astro.site ?? LIVE.origin).href, ASK_AI.prompt);
+---
+<div class="ask-ai" data-md-skip>
+  <button type="button" class="btn ask-ai-button" popovertarget="ask-ai-menu">
+    <Icon name="sparkle" />
+    {ASK_AI.label}
+  </button>
+  <div id="ask-ai-menu" popover class="menu ask-ai-menu" role="group" aria-label={ASK_AI.label}>
+    <button type="button" class="menu-item" data-copy-markdown={markdownPath} data-copied={ASK_AI.copied}>
+      <Icon name="copy" class="size-5 shrink-0" />
+      <span data-label>{ASK_AI.copy}</span>
+    </button>
+    <div class="menu-sep" role="separator"></div>
+    {links.map((l) => (
+      <a class="menu-item" href={l.href} target="_blank" rel="noopener noreferrer">
+        <Icon name="external" class="size-5 shrink-0" />
+        {ASK_AI.open(l.name)}
+      </a>
+    ))}
+  </div>
+</div>
+
+<script>
+  import { copyMarkdown } from "../lib/copy-markdown.ts";
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy-markdown]")) {
+    const label = button.querySelector<HTMLElement>("[data-label]");
+    const idle = label?.textContent ?? "";
+    button.addEventListener("click", async () => {
+      const url = button.dataset.copyMarkdown ?? "";
+      if (await copyMarkdown(url)) {
+        if (label) label.textContent = button.dataset.copied ?? idle;
+        setTimeout(() => {
+          if (label) label.textContent = idle;
+          button.closest<HTMLElement>("[popover]")?.hidePopover();
+        }, 1200);
+      } else {
+        window.open(url, "_blank", "noopener");
+      }
+    });
+  }
+</script>
+
+<style>
+  .ask-ai {
+    flex-shrink: 0;
+  }
+  .ask-ai-button {
+    anchor-name: --ask-ai;
+    height: 2.25rem;
+    padding-inline: 0.875rem;
+    border: 1px solid var(--border);
+  }
+  .ask-ai-menu {
+    position-anchor: --ask-ai;
+    position-area: block-end span-inline-start;
+    position-try-fallbacks: flip-block;
+    margin-top: 0.5rem;
+  }
+  @supports not (anchor-name: --a) {
+    .ask-ai-menu {
+      top: 5rem;
+      right: 1rem;
+    }
+  }
+</style>

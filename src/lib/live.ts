@@ -33,3 +33,32 @@ export function liveProblems(results: { path: string; status: number; type: stri
     return [];
   });
 }
+
+export interface LiveSeo {
+  /** The live home page's HTML and its X-Robots-Tag. */
+  home: string;
+  robotsTag: string | null;
+  robotsTxt: string;
+  sitemap: string;
+  /** Where each other host's root redirects: its status and Location. */
+  aliases: { host: string; status: number; location: string | null }[];
+}
+
+/** What is wrong with what search engines and AI assistants read on the live site. */
+export function liveSeoProblems(seen: LiveSeo, origin: string, launched: boolean, crawlers: string[]): string[] {
+  const out: string[] = [];
+  const home = `${origin}/`;
+  if (!seen.home.includes(`<link rel="canonical" href="${home}"`)) out.push(`/: no canonical link to ${home}`);
+  if (!seen.home.includes('type="application/ld+json"')) out.push("/: no JSON-LD");
+  if (!/<link rel="alternate" type="text\/markdown" href="[^"]*index\.md"/.test(seen.home)) out.push("/: no link to its markdown mirror");
+  const noindex = /noindex/i.test(seen.robotsTag ?? "");
+  if (!launched && !noindex) out.push("/: X-Robots-Tag is not noindex before launch");
+  if (launched && noindex) out.push("/: X-Robots-Tag is still noindex after launch");
+  for (const agent of crawlers) if (!seen.robotsTxt.includes(`User-agent: ${agent}\nAllow: /`)) out.push(`/robots.txt: does not allow ${agent}`);
+  if (!seen.robotsTxt.includes(`Sitemap: ${origin}/sitemap.xml`)) out.push("/robots.txt: does not link the sitemap");
+  if (!/<loc>[^<]+<\/loc><lastmod>[^<]+<\/lastmod>/.test(seen.sitemap)) out.push("/sitemap.xml: no URL with a lastmod");
+  for (const a of seen.aliases) {
+    if (a.status !== 301 || a.location !== home) out.push(`${a.host}: answers ${a.status} to ${a.location ?? "nowhere"}, expected a 301 to ${home}`);
+  }
+  return out;
+}

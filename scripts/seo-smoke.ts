@@ -89,6 +89,10 @@ for (const page of PAGES) {
   const crumbs = graph.find((n: { "@type": string }) => n["@type"] === "BreadcrumbList")?.itemListElement?.map((i: { name: string }) => i.name) ?? [];
   if (page.slug && JSON.stringify(trail) !== JSON.stringify(crumbs)) fail(where, `visible breadcrumbs ${JSON.stringify(trail)} differ from JSON-LD ${JSON.stringify(crumbs)}`);
   if (!page.slug && trail.length) fail(where, "the home page shows a breadcrumb trail");
+  const ask = document.querySelector("#ask-ai-menu [data-copy-markdown]")?.getAttribute("data-copy-markdown");
+  if (page.slug && !ask) fail(where, "no Ask AI menu");
+  if (!page.slug && document.querySelector("#ask-ai-menu")) fail(where, "the home page shows the Ask AI menu");
+  if (ask && !existsSync(file(ask.slice(base.length)))) fail(where, `Ask AI copies ${ask}, which is missing`);
   for (const n of graph.filter((n: { "@type": string; name?: string }) => n["@type"] === "Person" && n.name === AUTHOR.name)) authorIds.add(n["@id"]);
 
   for (const [seen, value, what] of [[titles, title, "title"], [descriptions, description, "description"]] as const) {

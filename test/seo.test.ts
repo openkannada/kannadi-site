@@ -125,3 +125,27 @@ test("hreflang links appear only for pages with a twin, both ways, with x-defaul
   assert.deepEqual(twinProblems([{ slug: "a", twin: "b" }, { slug: "b", twin: "a" }]), ["a: twin b is in the same language", "b: twin a is in the same language"]);
   assert.deepEqual(twinProblems([{ slug: "a", twin: "z" }]), ["a: twin z does not exist"]);
 });
+
+test("the live check finds a missing canonical, noindex in the wrong state, a closed crawler and a bad redirect", async () => {
+  const { liveSeoProblems } = await import("../src/lib/live.ts");
+  const good = {
+    home: '<link rel="canonical" href="https://k.org/"><link rel="alternate" type="text/markdown" href="/index.md"><script type="application/ld+json">{}</script>',
+    robotsTag: "noindex",
+    robotsTxt: "User-agent: GPTBot\nAllow: /\n\nUser-agent: *\nAllow: /\n\nSitemap: https://k.org/sitemap.xml\n",
+    sitemap: "<url><loc>https://k.org/</loc><lastmod>2026-11-17T10:00:00Z</lastmod></url>",
+    aliases: [{ host: "www.k.org", status: 301, location: "https://k.org/" }],
+  };
+  assert.deepEqual(liveSeoProblems(good, "https://k.org", false, ["GPTBot"]), []);
+  assert.deepEqual(liveSeoProblems(good, "https://k.org", true, ["GPTBot"]), ["/: X-Robots-Tag is still noindex after launch"]);
+  const bad = { ...good, home: "", robotsTag: null, robotsTxt: "User-agent: *\nAllow: /\n", sitemap: "<url><loc>https://k.org/</loc></url>", aliases: [{ host: "www.k.org", status: 200, location: null }] };
+  assert.deepEqual(liveSeoProblems(bad, "https://k.org", false, ["GPTBot"]), [
+    "/: no canonical link to https://k.org/",
+    "/: no JSON-LD",
+    "/: no link to its markdown mirror",
+    "/: X-Robots-Tag is not noindex before launch",
+    "/robots.txt: does not allow GPTBot",
+    "/robots.txt: does not link the sitemap",
+    "/sitemap.xml: no URL with a lastmod",
+    "www.k.org: answers 200 to nowhere, expected a 301 to https://k.org/",
+  ]);
+});

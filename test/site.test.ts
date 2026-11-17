@@ -170,3 +170,11 @@ test("the site is named Open Kannada, and the editor and library kannadi", () =>
   const base = readFileSync(new URL("../src/layouts/Base.astro", import.meta.url), "utf8");
   assert.match(base, /<meta property="og:site_name" content=\{ORG\.name\} \/>/);
 });
+
+test("the people of Open Kannada carry a role label, and no page text ranks them as founders", async () => {
+  const { ABOUT } = await import("../src/content/about.ts");
+  assert.deepEqual(ABOUT.people.map((p) => p.role), ["Founding member", "Founding member"]);
+  for (const p of ABOUT.people) assert.deepEqual(Object.keys(p).sort(), ["name", "role", "site", "url"]);
+  const shown = [JSON.stringify(ABOUT), readFileSync(new URL("../src/components/SiteFooter.astro", import.meta.url), "utf8")].join("\n");
+  assert.doesNotMatch(shown.replace(/founders@luminik\.io/g, ""), /co-founder|\bfounded\b|>Founders</i);
+});

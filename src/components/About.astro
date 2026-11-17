@@ -9,11 +9,17 @@ import { withBase } from "../lib/paths.ts";
   </section>
 ))}
 
-<section aria-labelledby="founders">
-  <h2 id="founders">Founders</h2>
-  {ABOUT.founders.map((f) => (
-    <p><b>{f.name}</b> <span set:html={f.line} /> <a href={f.url}>{f.site}</a></p>
-  ))}
+<section aria-labelledby="people">
+  <h2 id="people">Founding members</h2>
+  <ul class="people" role="list">
+    {ABOUT.people.map((p) => (
+      <li>
+        <b>{p.name}</b><span class="sr-only">, </span>
+        <span class="text-muted-foreground">{p.role}</span><span class="sr-only">, </span>
+        <a href={p.url}>{p.site}</a>
+      </li>
+    ))}
+  </ul>
 </section>
 
 <section aria-labelledby="dedication">
@@ -44,6 +50,22 @@ import { withBase } from "../lib/paths.ts";
 </section>
 
 <style>
+  .people {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .people li {
+    display: grid;
+    gap: 0.125rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+  }
   .dedication {
     border-left: 3px solid var(--primary);
     padding-left: 1.25rem;

@@ -444,7 +444,7 @@ export const PAGES: Page[] = [
     name: "Press kit",
     title: "Open Kannada press kit: logos, descriptions and facts",
     description:
-      "Logos, colors, short descriptions, founder bios, screenshots and sourced facts about Open Kannada and kannadi, for articles and talks.",
+      "Logos, colors, short descriptions, bios of the founding members, screenshots and sourced facts about Open Kannada and kannadi, for articles and talks.",
     h1: "Press kit",
     intro:
       "Logos, descriptions, bios, screenshots and facts about Open Kannada and its first project, the kannadi editor. Use them as they are, with no need to ask.",

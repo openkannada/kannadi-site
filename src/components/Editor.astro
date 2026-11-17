@@ -30,7 +30,7 @@ const counts = [
   { id: "count-chars", forms: t.counts.characters, narrow: "hidden sm:inline" },
 ];
 ---
-<section class="editor" aria-label={t.editor.label} data-md-skip data-default-mode={mode} data-ui-strings={JSON.stringify(t)}>
+<section class="editor" aria-label={t.editor.label} data-md-skip data-default-mode={mode} data-ui-strings={t === EDITOR_EN ? undefined : JSON.stringify(t)}>
   <div class="dock">
     <div class="toolbar glass" role="group" aria-label={t.toolbar.label}>
       <fieldset class="seg" aria-describedby="mode-help">

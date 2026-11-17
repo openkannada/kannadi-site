@@ -82,6 +82,21 @@ test("the fix writes the vowel letter and clears the mark", () => {
   assert.equal(issues.total, 0);
 });
 
+test("ra with a virama before the vowel letter ಋ is a likely typo, and the fix keeps ಋ", () => {
+  const { editor, issues, pop, press } = setup("ನೈರ್ಋತ್ಯ");
+  assert.deepEqual(issues.items(), [{ kind: "typo", start: 2, end: 5 }]);
+  issues.popover(issues.items()[0]!, false);
+  assert.match(pop.textContent ?? "", /ನೈಋತ್ಯ/);
+  assert.match(pop.textContent ?? "", /letter ಋ alone/);
+  press("Use ಋ");
+  assert.equal(editor.text, "ನೈಋತ್ಯ");
+  assert.equal(issues.total, 0);
+});
+
+test("ra with a virama before other vowel letters is not a typo", () => {
+  for (const text of ["ಆರ್ಎನ್ಎ", "ಕುರ್ಆನ್", "ಪುನರ್ಏಕೀಕರಣ", "ನಿರ್\u200cಋತಿ"]) assert.equal(setup(text).issues.total, 0, text);
+});
+
 test("a kept spelling stays unmarked through edits elsewhere, and is marked again when retyped", () => {
   const { editor, issues, press } = setup("ನೈರೃತ್ಯ ರೃ");
   press("Keep it");

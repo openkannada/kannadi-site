@@ -39,6 +39,7 @@ const WHY: Record<Exclude<Problem["kind"], "typo">, string> = {
 };
 const TYPO_WHY: Record<string, string> = {
   "ra-vocalic-r": "Kannada writes this sound with the letter ಋ, as in ನೈಋತ್ಯ.",
+  "ra-virama-vocalic-r": "Kannada writes this sound with the letter ಋ alone, as in ನೈಋತ್ಯ.",
 };
 const FIX_LABELS: Record<string, string> = {
   normalize: "Use the standard spelling",

@@ -2,7 +2,7 @@
   "ci": {
     "collect": {
       "staticDistDir": "./dist",
-      "url": ["/", "/nudi-to-unicode/", "/kannada-typing/", "/english-to-kannada-typing/", "/kagunita/", "/about/", "/press/"],
+      "url": ["/", "/nudi-to-unicode/", "/kannada-typing/", "/english-to-kannada-typing/", "/kagunita/", "/about/", "/press/", "/kn/"],
       "numberOfRuns": 3,
       "settings": {
         "chromeFlags": "--no-sandbox --disable-dev-shm-usage --headless=new"

@@ -11,12 +11,19 @@ export interface Plural {
 
 /** The template with each {name} replaced by its value; unknown names are left as they are. */
 export function fmt(template: string, values: Record<string, string | number> = {}): string {
-  return template.replace(/\{(\w+)\}/g, (all, name: string) => (name in values ? String(values[name]) : all));
+  return template.replace(/\{(\w+)\}/g, (all, name: string) => (Object.hasOwn(values, name) ? String(values[name]) : all));
+}
+
+const RULES = new Map<Lang, Intl.PluralRules>();
+function rules(lang: Lang): Intl.PluralRules {
+  let r = RULES.get(lang);
+  if (!r) RULES.set(lang, (r = new Intl.PluralRules(lang === "kn" ? "kn-IN" : "en-IN")));
+  return r;
 }
 
 /** The form of `forms` for count `n` in `lang`, with {n} filled in. */
 export function plural(n: number, forms: Plural, lang: Lang): string {
-  const rule = new Intl.PluralRules(lang === "kn" ? "kn-IN" : "en-IN").select(n);
+  const rule = rules(lang).select(n);
   const form = (rule === "one" ? forms.one : undefined) ?? forms.other;
   return fmt(form, { n });
 }

@@ -6,7 +6,7 @@ export { fmt };
 export type { EditorStrings };
 
 /** The dictionary Editor.astro wrote into the page, or English where there is none, as in Node tests. */
-function pageStrings(doc: Document | undefined = globalThis.document): EditorStrings {
+export function pageStrings(doc: Document | undefined = globalThis.document): EditorStrings {
   const json = doc?.querySelector<HTMLElement>(".editor[data-ui-strings]")?.dataset.uiStrings;
   if (!json) return EDITOR_EN;
   try {
@@ -45,7 +45,7 @@ export function parts(template: string): Part[] {
 export function nodes(template: string, values: Record<string, string | Node>): (string | Node)[] {
   const out: (string | Node)[] = [];
   for (const p of parts(template)) {
-    const value = "text" in p ? p.text : (values[p.slot] ?? `{${p.slot}}`);
+    const value = "text" in p ? p.text : Object.hasOwn(values, p.slot) ? values[p.slot]! : `{${p.slot}}`;
     const last = out.length - 1;
     if (typeof value === "string" && typeof out[last] === "string") out[last] += value;
     else out.push(value);

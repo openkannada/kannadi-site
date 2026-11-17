@@ -1,0 +1,39 @@
+version = 1
+SPDX-PackageName = "kannadi-site"
+SPDX-PackageSupplier = "The Open Kannada Authors"
+SPDX-PackageDownloadLocation = "https://github.com/openkannada/kannadi-site"
+
+# Everything not listed below: code and configuration.
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 The Open Kannada Authors"
+SPDX-License-Identifier = "MIT OR Apache-2.0"
+
+# Words we write.
+[[annotations]]
+path = ["src/content/**", "src/i18n/**", "**/*.md"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 The Open Kannada Authors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# Images we make.
+[[annotations]]
+path = ["public/brand/**", "public/og/**", "public/press/**", "src/assets/**", "public/*.png", "public/*.svg", "scripts/og-mark.svg"]
+precedence = "override"
+SPDX-FileCopyrightText = "2026 The Open Kannada Authors"
+SPDX-License-Identifier = "CC-BY-4.0"
+
+# Derived from Kannada Wikipedia article text.
+[[annotations]]
+path = "data/words.tsv"
+precedence = "override"
+SPDX-FileCopyrightText = "Kannada Wikipedia contributors"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+# Noto fonts, unmodified subsets.
+[[annotations]]
+path = ["src/fonts/**", "public/fonts/**"]
+precedence = "override"
+SPDX-FileCopyrightText = "2022 The Noto Project Authors"
+SPDX-License-Identifier = "OFL-1.1"

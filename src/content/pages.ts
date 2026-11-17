@@ -53,7 +53,7 @@ export interface ReferencePage extends PageBase {
 /** A page about Open Kannada itself, with no editor or chart. */
 export interface InfoPage extends PageBase {
   kind: "info";
-  body: "about" | "press";
+  body: "about" | "press" | "brand";
 }
 
 export type Page = ToolPage | ReferencePage | InfoPage;
@@ -459,6 +459,22 @@ export const PAGES: Page[] = [
     og: { from: "Open Kannada", to: "ಕನ್ನಡ" },
     keywords: "",
   },
+  {
+    slug: "names-and-logos",
+    twin: "kn/names-and-logos",
+    kind: "info",
+    name: "Names and logos",
+    title: "Open Kannada names and logos: how to refer to the project",
+    description:
+      "Anyone may say their work is built with kannadi. Here is how to use the Open Kannada and kannadi names and logos, and which license covers each part.",
+    h1: "Names and logos",
+    intro:
+      "Anyone may use our code and data, and the fonts we ship, under their licenses, and say that their work is built with kannadi. The names and logos say who made something, so they stay with this project.",
+    body: "brand",
+    faq: [],
+    og: { from: "kannadi", to: "ಕನ್ನಡಿ" },
+    keywords: "",
+  },
   // Kannada pages: a draft for Prasad's read, so each is marked needsReview until he approves it.
   {
     slug: "kn",
@@ -548,6 +564,24 @@ export const PAGES: Page[] = [
     body: "press",
     faq: [],
     og: { from: "Open Kannada", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
+  {
+    slug: "kn/names-and-logos",
+    lang: "kn",
+    twin: "names-and-logos",
+    needsReview: true,
+    kind: "info",
+    name: "ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು",
+    title: "ಓಪನ್ ಕನ್ನಡದ ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು: ಯೋಜನೆಯನ್ನು ಉಲ್ಲೇಖಿಸುವ ವಿಧಾನ",
+    description:
+      "ತಮ್ಮ ಕೆಲಸ ಕನ್ನಡಿಯಿಂದ ಮಾಡಿದ್ದು ಎಂದು ಯಾರು ಬೇಕಾದರೂ ಹೇಳಬಹುದು. ಓಪನ್ ಕನ್ನಡ ಮತ್ತು ಕನ್ನಡಿಯ ಹೆಸರು, ಲೋಗೊಗಳನ್ನು ಬಳಸುವ ರೀತಿ ಮತ್ತು ಯಾವ ಭಾಗಕ್ಕೆ ಯಾವ ಲೈಸೆನ್ಸ್ ಎಂಬುದು ಇಲ್ಲಿದೆ.",
+    h1: "ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು",
+    intro:
+      "ನಮ್ಮ ಕೋಡ್, ಡೇಟಾ ಮತ್ತು ನಾವು ಬಳಸುವ ಫಾಂಟ್‌ಗಳನ್ನು ಅವುಗಳ ಲೈಸೆನ್ಸ್‌ಗಳ ಅಡಿಯಲ್ಲಿ ಯಾರು ಬೇಕಾದರೂ ಬಳಸಬಹುದು, ಮತ್ತು ತಮ್ಮ ಕೆಲಸ ಕನ್ನಡಿಯಿಂದ ಮಾಡಿದ್ದು ಎಂದು ಹೇಳಬಹುದು. ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು ಯಾರು ಮಾಡಿದ್ದು ಎಂದು ಹೇಳುತ್ತವೆ, ಹೀಗಾಗಿ ಅವು ಈ ಯೋಜನೆಯಲ್ಲೇ ಉಳಿಯುತ್ತವೆ.",
+    body: "brand",
+    faq: [],
+    og: { from: "kannadi", to: "ಕನ್ನಡಿ" },
     keywords: "",
   },
 ];

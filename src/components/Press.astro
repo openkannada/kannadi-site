@@ -37,7 +37,7 @@ const T = SITE_STRINGS[lang].press;
       </figure>
     ))}
   </div>
-  <p>{T.logosNote}</p>
+  <p set:html={fmt(T.logosNote, { names: `<a href="${href(lang === "kn" ? "/kn/names-and-logos/" : "/names-and-logos/")}">${T.namesPage}</a>` })} />
 </section>
 
 <section aria-labelledby="colors">

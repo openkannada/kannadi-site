@@ -1,4 +1,5 @@
-import type { Page } from "../content/pages.ts";
+import { isHome, type Page } from "../content/pages.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
 import { AUTHOR, ORG, SITE, pagePath } from "../content/site.ts";
 
 type Node = Record<string, unknown>;
@@ -135,7 +136,7 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
     {
       "@type": "WebApplication",
       "@id": id("app"),
-      name: page.slug ? `${page.h1} by ${SITE.name}` : `${SITE.name} ${SITE.tagline}`,
+      name: isHome(page) ? SITE_STRINGS[page.lang ?? "en"].appName : `${page.h1} by ${SITE.name}`,
       url,
       description: plainText(page.intro),
       applicationCategory: "UtilitiesApplication",
@@ -144,17 +145,7 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
       inLanguage: ["kn", "en"],
       isAccessibleForFree: true,
       offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
-      featureList: [
-        "Nudi, Baraha and Akruti to Unicode",
-        "Unicode to Nudi and Baraha ANSI",
-        "Opens TXT, DOCX and HTML files",
-        "Marks unknown glyphs and malformed syllables with fixes",
-        "Kannada typing in English letters with word suggestions, Baraha and ISO 15919",
-        "Voice typing in Kannada where the browser supports it",
-        "Akshara and word counts",
-        "Saves DOCX, HTML, TXT and Nudi text",
-        "Runs offline in the browser",
-      ],
+      featureList: SITE_STRINGS[page.lang ?? "en"].features,
       author,
       isBasedOn: { "@id": id("library", root) },
     },

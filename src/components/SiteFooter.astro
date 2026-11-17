@@ -28,6 +28,7 @@ const pageLink = "text-muted-foreground no-underline hover:text-foreground hover
       </p>
       <p set:html={fmt(T.madeBy, { author: link(AUTHOR.url, named(ORG.founders[0]!)), library: link(SITE.repository, "kannadi") })} />
       <p set:html={fmt(T.started, { founders, supporter: link(ORG.supporter.url, ORG.supporter.label) })} />
+      <p set:html={fmt(T.owns, { org: ORG.name, supporter: ORG.supporter.label, names: link(href(pagePath(lang === "kn" ? "kn/names-and-logos" : "names-and-logos")), T.names) })} />
       <p set:html={fmt(T.credit, { site: link(AUTHOR.url, "prasad.tech") })} />
       <p set:html={fmt(T.words, { wikipedia: link("https://kn.wikipedia.org", T.wikipedia), license: link("https://creativecommons.org/licenses/by-sa/4.0/", "CC BY-SA 4.0") })} />
     </div>

@@ -176,8 +176,8 @@ test("every Kannada page has an English twin that names it back, and waits for P
   const { twinProblems, alternates } = await import("../src/lib/seo.ts");
   assert.deepEqual(twinProblems(PAGES), []);
   const kn = PAGES.filter((p) => p.lang === "kn");
-  assert.deepEqual(kn.map((p) => p.slug), ["kn", "kn/about", "kn/press"]);
-  for (const p of kn) assert.equal(p.needsReview, true, p.slug);
+  assert.deepEqual(kn.map((p) => p.slug), ["kn", "kn/about", "kn/press", "kn/names-and-logos"]);
+  for (const p of PAGES.filter((p) => p.needsReview)) assert.equal(p.lang, "kn", `only Kannada drafts wait for a review: ${p.slug}`);
   const links = alternates(PAGES.find((p) => p.slug === "about"), PAGES, siteUrl("https://example.org/"));
   assert.deepEqual(links, [
     { hreflang: "en", href: "https://example.org/about/" },
@@ -204,4 +204,43 @@ test("the people of Open Kannada carry a role label, and no page text ranks them
   for (const p of [...ABOUT.en.people, ...ABOUT.kn.people]) assert.deepEqual(Object.keys(p).sort(), ["name", "role", "site", "url"]);
   const shown = [JSON.stringify(ABOUT.en), JSON.stringify(SITE_STRINGS.en)].join("\n");
   assert.doesNotMatch(shown.replace(/founders@luminik\.io/g, ""), /co-founder|\bfounded\b|>Founders</i);
+});
+
+test("the code is MIT OR Apache-2.0 from The Open Kannada Authors, and every page says who holds the names", () => {
+  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
+  assert.equal(JSON.parse(read("package.json")).license, "MIT OR Apache-2.0");
+  assert.match(read("LICENSE-MIT"), /Copyright \(c\) 2026 The Open Kannada Authors/);
+  assert.match(read("LICENSE-APACHE"), /Apache License\s+Version 2\.0/);
+  assert.match(read("REUSE.toml"), /path = "data\/words\.tsv"[\s\S]*?SPDX-License-Identifier = "CC-BY-SA-4\.0"/);
+  const footer = read("src/components/SiteFooter.astro");
+  assert.match(read("src/i18n/site.en.ts"), /belong to the project\. \{supporter\} supports it and holds none of them\./);
+  assert.match(footer, /fmt\(T\.owns,[^\n]*names-and-logos/);
+  assert.ok(PAGES.some((p) => p.slug === "names-and-logos"));
+});
+
+test("each Kannada dictionary has every key and every {slot} of its English twin", async () => {
+  const { EDITOR_STRINGS } = await import("../src/i18n/editor.ts");
+  const { SITE_STRINGS } = await import("../src/i18n/site.ts");
+  const slots = (v) => [...String(v).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(",");
+  const walk = (en, kn, path) => {
+    if (typeof en === "string") return assert.equal(slots(kn), slots(en), path);
+    if (Array.isArray(en)) return assert.equal(kn.length, en.length, path);
+    for (const key of Object.keys(en)) {
+      assert.ok(Object.hasOwn(kn, key), `${path}.${key} is missing in Kannada`);
+      walk(en[key], kn[key], `${path}.${key}`);
+    }
+  };
+  walk(EDITOR_STRINGS.en, EDITOR_STRINGS.kn, "editor");
+  walk(SITE_STRINGS.en, SITE_STRINGS.kn, "site");
+});
+
+test("the editor reads its words from the page, and falls back to English on bad or missing data", async () => {
+  const { parseHTML } = await import("linkedom");
+  const { pageStrings } = await import("../src/editor/strings.ts");
+  const { EDITOR_STRINGS } = await import("../src/i18n/editor.ts");
+  const page = (attr) => parseHTML(`<html><body><section class="editor"${attr}></section></body></html>`).document;
+  const kn = JSON.stringify(EDITOR_STRINGS.kn).replace(/'/g, "&#39;");
+  assert.equal(pageStrings(page(` data-ui-strings='${kn}'`)).toolbar.save, "ಉಳಿಸು");
+  assert.equal(pageStrings(page(" data-ui-strings='{not json'")), EDITOR_STRINGS.en);
+  assert.equal(pageStrings(page("")), EDITOR_STRINGS.en);
 });

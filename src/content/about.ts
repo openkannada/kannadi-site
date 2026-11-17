@@ -49,7 +49,7 @@ const ABOUT_KN: About = {
   ],
   supporter: '<a href="https://www.luminik.io">DataRavel Inc. (dba Luminik)</a>, ಪ್ರಸಾದ್ ಅವರ ಕಂಪನಿ, ಓಪನ್ ಕನ್ನಡಕ್ಕೆ ನೆರವು ನೀಡುತ್ತದೆ.',
   contact: [
-    'ದೋಷಗಳು ಮತ್ತು ಫೈಲ್ ಮಾದರಿಗಳಿಗೆ: <a href="https://github.com/openkannada">GitHub</a> ನಲ್ಲಿ issue ತೆರೆಯಿರಿ. ಸಾರ್ವಜನಿಕವಾಗಿ ಹಂಚಿಕೊಳ್ಳಲಾಗದ ದಾಖಲೆಗಳಿಗೆ <a href="mailto:support@luminik.io">support@luminik.io</a> ಗೆ ಬರೆಯಿರಿ.',
+    'ದೋಷಗಳು ಮತ್ತು ಫೈಲ್ ಮಾದರಿಗಳಿಗೆ: <a href="https://github.com/openkannada">GitHub</a> ನಲ್ಲಿ ಸಮಸ್ಯೆಯನ್ನು (issue) ದಾಖಲಿಸಿ. ಸಾರ್ವಜನಿಕವಾಗಿ ಹಂಚಿಕೊಳ್ಳಲಾಗದ ದಾಖಲೆಗಳಿಗೆ <a href="mailto:support@luminik.io">support@luminik.io</a> ಗೆ ಬರೆಯಿರಿ.',
     'ಪತ್ರಿಕೆಗಳು, ಸಹಭಾಗಿತ್ವ ಮತ್ತು ಸರ್ಕಾರಿ ಕಚೇರಿಗಳಿಗೆ: <a href="mailto:founders@luminik.io">founders@luminik.io</a>.',
     'ಭದ್ರತಾ ಸಮಸ್ಯೆಗಳಿಗೆ: <a href="mailto:prasad@luminik.io">prasad@luminik.io</a>.',
   ],

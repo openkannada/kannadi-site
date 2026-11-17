@@ -16,10 +16,10 @@ const RULES: [RegExp, string][] = [
   [/\b\w+(ise|ised|ising|isation)s?\b/i, "British spelling"],
   [/\b(colour|behaviour|favour|honour|centre|analyse|analysing|modelling|labelled|travelled|catalogue|licence)s?\b/i, "British spelling"],
   [/\b(two|three|four|five|six|seven|eight|nine|ten|twenty|hundred|thousand)\b/i, "number in words"],
-  [/, not (a |an |the )?\w+\b/i, '"X, not Y" construction'],
+  [/, not (?!only\b)(a |an |the )?\w+\b/i, '"X, not Y" construction'],
 ];
 // Words the rules would catch that are right here.
-const ALLOWED = [/\b(precise|wise|otherwise|likewise|rise|surprise|exercise|advise|devise|revise|promise|premise|expertise|enterprise|concise|noise|raise|praise|franchise|merchandise|compromise|demise|despise)\b/gi];
+const ALLOWED = [/\b(precise|wise|otherwise|likewise|rise|surprise|exercise|advise|devise|revise|promise|premise|expertise|enterprise|concise|noise|raise|praise|franchise|merchandise|compromise|demise|despise)\b|\bvery few\b/gi];
 
 const dist = process.argv[2] ?? "dist";
 const files = readdirSync(dist, { recursive: true, withFileTypes: true })

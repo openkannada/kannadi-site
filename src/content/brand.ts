@@ -1,5 +1,4 @@
-// Copy for the names and logos page, from the licensing policy Prasad approved on 17 November 2026.
-// Strings are trusted HTML.
+// Copy for the names and logos page. Strings are trusted HTML.
 
 export const BRAND = {
   sections: [

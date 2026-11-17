@@ -1,5 +1,5 @@
-// Open Kannada's story, approved by Prasad on 17 November 2026. The About page opens with it
-// and the press kit carries it as the boilerplate. Strings are trusted HTML.
+// Open Kannada's story. The About page opens with it and the press kit carries it as the
+// boilerplate. Strings are trusted HTML.
 
 export const TAGLINE = "Kannada should be as easy to use on a computer as English.";
 

@@ -37,4 +37,4 @@ for (const step of deploySteps(url)) {
   const run = spawnSync(step.command, step.args, { stdio: "inherit", env });
   if (run.status !== 0) stop(`Stopped: ${step.label} failed.`);
 }
-console.log(`\nPublished. Check ${url.href} once Cloudflare reports the deployment.`);
+console.log(`\nPublished and checked live at ${url.href}.`);

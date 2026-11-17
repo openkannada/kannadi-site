@@ -6,9 +6,9 @@ import { join, relative, sep } from "node:path";
 import { parseHTML } from "linkedom";
 
 import { PAGES } from "../src/content/pages.ts";
-import { pagePath } from "../src/content/site.ts";
+import { AUTHOR, pagePath } from "../src/content/site.ts";
 import { readPage } from "../src/lib/agent-text.ts";
-import { contentHash, type PageDates, staleDates } from "../src/lib/freshness.ts";
+import { contentHash, HASH_FILE, type PageHashes, staleHashes } from "../src/lib/freshness.ts";
 import { plainText, twinProblems } from "../src/lib/seo.ts";
 
 const dist = process.argv[2] ?? "dist";
@@ -89,7 +89,7 @@ for (const page of PAGES) {
   const crumbs = graph.find((n: { "@type": string }) => n["@type"] === "BreadcrumbList")?.itemListElement?.map((i: { name: string }) => i.name) ?? [];
   if (page.slug && JSON.stringify(trail) !== JSON.stringify(crumbs)) fail(where, `visible breadcrumbs ${JSON.stringify(trail)} differ from JSON-LD ${JSON.stringify(crumbs)}`);
   if (!page.slug && trail.length) fail(where, "the home page shows a breadcrumb trail");
-  for (const n of graph.filter((n: { "@type": string; name?: string }) => n["@type"] === "Person" && n.name === "Prasad Subrahmanya")) authorIds.add(n["@id"]);
+  for (const n of graph.filter((n: { "@type": string; name?: string }) => n["@type"] === "Person" && n.name === AUTHOR.name)) authorIds.add(n["@id"]);
 
   for (const [seen, value, what] of [[titles, title, "title"], [descriptions, description, "description"]] as const) {
     if (seen.has(value)) fail(where, `same ${what} as ${seen.get(value)}`);
@@ -135,8 +135,8 @@ for (const [path, links] of hreflangs) {
     if (other !== path && !hreflangs.get(other)?.includes(new URL(path.slice(1), site ?? "http://site/").href)) fail(path, `hreflang ${href} does not link back`);
   }
 }
-const dates: PageDates = JSON.parse(readFileSync("data/page-dates.json", "utf8"));
-for (const path of staleDates(dates, hashes)) fail(path, "text changed since data/page-dates.json; run npm run build, then npm run page-dates, and commit it");
+const recorded: PageHashes = JSON.parse(readFileSync(HASH_FILE, "utf8"));
+for (const path of staleHashes(recorded, hashes)) fail(path, `text changed since ${HASH_FILE}; run npm run build, then npm run page-hashes, and commit it`);
 
 const llms = existsSync(file("/llms.txt")) ? readFileSync(file("/llms.txt"), "utf8") : "";
 const full = existsSync(file("/llms-full.txt")) ? readFileSync(file("/llms-full.txt"), "utf8") : "";
@@ -152,7 +152,7 @@ if (site !== null) {
   const map = existsSync(file("/sitemap.xml")) ? readFileSync(file("/sitemap.xml"), "utf8") : "";
   for (const page of PAGES) {
     const loc = new URL(pagePath(page.slug).slice(1), site).href;
-    if (!new RegExp(`<loc>${loc.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&")}</loc><lastmod>\\d{4}-\\d{2}-\\d{2}</lastmod>`).test(map)) fail("/sitemap.xml", `lacks ${loc} with its lastmod`);
+    if (!new RegExp(`<loc>${loc.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&")}</loc><lastmod>\\d{4}-\\d{2}-\\d{2}T[^<]+</lastmod>`).test(map)) fail("/sitemap.xml", `lacks ${loc} with its lastmod`);
   }
   const locs = [...map.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1] ?? "");
   if (locs.length !== PAGES.length) fail("/sitemap.xml", `${locs.length} URLs for ${PAGES.length} pages`);

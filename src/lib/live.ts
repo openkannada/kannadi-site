@@ -1,4 +1,5 @@
 // What a freshly published site must answer, checked after the deploy.
+import { INDEXNOW } from "../content/site.ts";
 
 export interface Expect {
   path: string;
@@ -19,6 +20,7 @@ export const LIVE: Expect[] = [
   { path: "/site.webmanifest", type: "application/manifest+json" },
   { path: "/favicon.svg", type: "image/svg+xml" },
   { path: "/og/home.png", type: "image/png" },
+  { path: `/${INDEXNOW.key}.txt`, type: "text/plain" },
 ];
 
 /** A line for each file that did not come back with status 200 and the expected type. */

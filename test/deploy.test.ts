@@ -15,6 +15,7 @@ test("the production URL needs a real https host at the domain root", () => {
   for (const host of ["example.org", "www.example.com", "localhost", "site.test", "site.invalid", "site.example"]) {
     assert.throws(() => productionUrl(`https://${host}/`), /placeholder/, host);
   }
+  assert.throws(() => productionUrl("https://kannadi.pages.dev/"), /own domain/);
 });
 
 test("only a clean main at origin/main is deployed", () => {

@@ -19,10 +19,12 @@ if (!INDEXNOW.enabled) {
 }
 
 if (mode === "snapshot") {
-  const res = await fetch(new URL("sitemap.xml", site));
+  // A live site that is down must not stop the deploy that may fix it: with no snapshot, every page counts as new.
+  const res = await fetch(new URL("sitemap.xml", site)).catch((e: Error) => e);
+  const text = res instanceof Response && res.ok ? await res.text() : "";
   mkdirSync(".deploy", { recursive: true });
-  writeFileSync(SNAPSHOT, res.ok ? await res.text() : "");
-  console.log(res.ok ? "Saved the live sitemap." : `No live sitemap (status ${res.status}); every page counts as new.`);
+  writeFileSync(SNAPSHOT, text);
+  console.log(text ? "Saved the live sitemap." : `No live sitemap (${res instanceof Response ? `status ${res.status}` : res.message}); every page counts as new.`);
 } else {
   const live = parseSitemap(existsSync(SNAPSHOT) ? readFileSync(SNAPSHOT, "utf8") : "");
   const urls = changedUrls(live, parseSitemap(readFileSync("dist/sitemap.xml", "utf8")), site.host);
@@ -35,7 +37,7 @@ if (mode === "snapshot") {
     headers: { "content-type": "application/json; charset=utf-8" },
     body: JSON.stringify(indexNowBody(site, INDEXNOW.key, urls)),
   });
-  if (!res.ok && res.status !== 202) {
+  if (!res.ok) {
     console.error(`IndexNow answered ${res.status}: ${await res.text()}`);
     process.exit(1);
   }

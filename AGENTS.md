@@ -10,10 +10,10 @@ Read `PRODUCT.md` for who the site is for, and `DESIGN.md` for the visual system
 - Pin every dependency to an exact version, checked on the registry.
 - Copy is in `src/content/pages.ts`. Plain American English, digits for numbers, no em dashes, no hype, no disclaimers. `npm run voice-lint` checks the built text.
 - Every new page needs an entry in `PAGES`; `npm run seo-smoke` fails on a built page without one.
-- A change to any page's text needs `npm run build && npm run page-dates`, with `data/page-dates.json` committed, so the sitemap's `lastmod` stays true; `npm run seo-smoke` fails until it is.
+- A change to any page's text needs `npm run build && npm run page-hashes`, with `data/page-hashes.json` committed in the same pull request, so the sitemap's `lastmod` stays true; `npm run seo-smoke` fails until it is.
 - The page CSP allows no inline style attributes. Put styles in CSS.
 - Library changes go to openkannada/kannadi as pull requests; then update `kannadi.rev`.
 
 ## Commands
 
-`npm run wasm`, `npm run build`, `npm run check`, `npm test`, `npm run seo-smoke`, `npm run voice-lint`, `npm run page-dates`, `npm run lighthouse`. `npm run deploy` publishes; Prasad runs it.
+`npm run wasm`, `npm run build`, `npm run check`, `npm test`, `npm run seo-smoke`, `npm run voice-lint`, `npm run page-hashes`, `npm run lighthouse`. `npm run deploy` publishes; Prasad runs it.

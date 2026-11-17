@@ -23,6 +23,8 @@ export function productionUrl(value: string | undefined): URL {
   if (!url) throw new Error("Set SITE_URL to the production address, for example SITE_URL=https://your-domain/");
   if (url.protocol !== "https:") throw new Error(`SITE_URL must use https: ${url.href}`);
   if (PLACEHOLDER_HOSTS.test(url.hostname)) throw new Error(`SITE_URL is a placeholder host: ${url.href}`);
+  // pages.dev copies are served noindex, so a site published there would ask search engines to drop it.
+  if (/(^|\.)pages\.dev$/i.test(url.hostname)) throw new Error(`SITE_URL must be the site's own domain, not pages.dev: ${url.href}`);
   // Pages serves dist/ at the domain root; a base path would leave every link pointing at a missing folder.
   if (url.pathname !== "/") throw new Error(`SITE_URL must be the domain root, with no path: ${url.href}`);
   return url;

@@ -1,8 +1,11 @@
-// Sitemap lastmod dates that change only when a page's text changes.
+// Sitemap lastmod dates that change only when a page's text changes: each page's text
+// fingerprint is recorded in data/page-hashes.json, and its date is the commit that recorded it.
 import { createHash } from "node:crypto";
 
-/** The recorded fingerprint of each page path and the date its text last changed. */
-export type PageDates = Record<string, { hash: string; lastmod: string }>;
+export const HASH_FILE = "data/page-hashes.json";
+
+/** The recorded fingerprint of each page path. */
+export type PageHashes = Record<string, string>;
 
 /** A fingerprint of a page's text. Link and image targets are left out, so the site URL and base path do not change it. */
 export function contentHash(markdown: string): string {
@@ -10,17 +13,22 @@ export function contentHash(markdown: string): string {
   return createHash("sha256").update(text).digest("hex").slice(0, 16);
 }
 
-/** The dates after a build: a page keeps its date while its fingerprint is unchanged, and gets `today` when it changes or is new. */
-export function updateDates(dates: PageDates, pages: { path: string; hash: string }[], today: string): PageDates {
-  const next: PageDates = {};
-  for (const { path, hash } of [...pages].sort((a, b) => a.path.localeCompare(b.path))) {
-    const old = dates[path];
-    next[path] = old && old.hash === hash ? old : { hash, lastmod: today };
-  }
-  return next;
+/** The fingerprints of a build, sorted by path, for the hash file. */
+export function recordHashes(pages: { path: string; hash: string }[]): PageHashes {
+  return Object.fromEntries([...pages].sort((a, b) => a.path.localeCompare(b.path)).map((p) => [p.path, p.hash]));
 }
 
 /** Paths whose recorded fingerprint is missing or differs from the build, so their lastmod would be wrong. */
-export function staleDates(dates: PageDates, pages: { path: string; hash: string }[]): string[] {
-  return pages.filter(({ path, hash }) => dates[path]?.hash !== hash).map((p) => p.path);
+export function staleHashes(recorded: PageHashes, pages: { path: string; hash: string }[]): string[] {
+  return pages.filter(({ path, hash }) => recorded[path] !== hash).map((p) => p.path);
+}
+
+/**
+ * When a page's current text was committed: the date of the newest commit that added its fingerprint to the
+ * hash file, so on main it is the merge that brought the change. `git` runs git with the given arguments
+ * and returns its output; undefined when no commit has the fingerprint yet.
+ */
+export function lastmodOf(hash: string, git: (args: string[]) => string): string | undefined {
+  const date = git(["log", "-1", "--format=%cI", `-S"${hash}"`, "--", HASH_FILE]).trim();
+  return date || undefined;
 }

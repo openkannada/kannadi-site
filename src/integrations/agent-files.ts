@@ -1,5 +1,6 @@
 // After the build: a markdown mirror next to every page, llms.txt,
 // llms-full.txt, robots.txt and, once the site has a URL, sitemap.xml.
+import { execFileSync } from "node:child_process";
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import type { AstroIntegration } from "astro";
 
 import { SITE } from "../content/site.ts";
-import { contentHash, type PageDates } from "../lib/freshness.ts";
+import { contentHash, HASH_FILE, lastmodOf, type PageHashes } from "../lib/freshness.ts";
 import {
   type BuiltPage,
   llmsFull,
@@ -73,8 +74,12 @@ export function agentFiles(): AstroIntegration {
         const map = site ? url("/sitemap.xml") : null;
         await writeFile(join(dist, "robots.txt"), robots(map));
         if (site) {
-          const dates: PageDates = JSON.parse(await readFile(new URL("data/page-dates.json", root), "utf8"));
-          const lastmod = (p: BuiltPage) => (dates[p.path]?.hash === contentHash(p.markdown) ? dates[p.path]?.lastmod : undefined);
+          const hashes: PageHashes = JSON.parse(await readFile(new URL(HASH_FILE, root), "utf8"));
+          const git = (args: string[]) => execFileSync("git", args, { cwd: fileURLToPath(root), encoding: "utf8" });
+          const lastmod = (p: BuiltPage) => {
+            const hash = contentHash(p.markdown);
+            return hashes[p.path] === hash ? lastmodOf(hash, git) : undefined;
+          };
           await writeFile(join(dist, "sitemap.xml"), sitemap(pages.map((p) => ({ loc: url(p.path), lastmod: lastmod(p) }))));
         }
         logger.info(`${pages.length} markdown mirrors, llms.txt and llms-full.txt${site ? ", sitemap.xml" : ""}`);

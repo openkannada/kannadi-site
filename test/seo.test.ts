@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { INDEXNOW } from "../src/content/site.ts";
-import { contentHash, staleDates, updateDates } from "../src/lib/freshness.ts";
+import { contentHash, lastmodOf, recordHashes, staleHashes } from "../src/lib/freshness.ts";
 import { INDEXNOW_LIMIT, changedUrls, indexNowBody, parseSitemap } from "../src/lib/indexnow.ts";
 import { liveProblems } from "../src/lib/live.ts";
 
@@ -15,12 +15,21 @@ test("a page's fingerprint follows its text and ignores link targets and spacing
   assert.notEqual(contentHash("# Nudi\n\nSee [the converter](/)."), a);
 });
 
-test("a page keeps its lastmod until its text changes", () => {
-  const dates = { "/": { hash: "aaa", lastmod: "2026-11-01" }, "/gone/": { hash: "ccc", lastmod: "2026-11-01" } };
-  const next = updateDates(dates, [{ path: "/", hash: "aaa" }, { path: "/new/", hash: "bbb" }], "2026-11-17");
-  assert.deepEqual(next, { "/": { hash: "aaa", lastmod: "2026-11-01" }, "/new/": { hash: "bbb", lastmod: "2026-11-17" } });
-  assert.equal(updateDates(next, [{ path: "/", hash: "zzz" }], "2026-11-18")["/"]?.lastmod, "2026-11-18");
-  assert.deepEqual(staleDates(next, [{ path: "/", hash: "aaa" }, { path: "/new/", hash: "xxx" }, { path: "/other/", hash: "y" }]), ["/new/", "/other/"]);
+test("the hash file records each page, and a changed or new page is stale", () => {
+  const recorded = recordHashes([{ path: "/b/", hash: "bbb" }, { path: "/", hash: "aaa" }]);
+  assert.deepEqual(Object.keys(recorded), ["/", "/b/"]);
+  assert.deepEqual(staleHashes(recorded, [{ path: "/", hash: "aaa" }, { path: "/b/", hash: "xxx" }, { path: "/c/", hash: "c" }]), ["/b/", "/c/"]);
+});
+
+test("a page's lastmod is the commit that recorded its current fingerprint", () => {
+  const calls: string[][] = [];
+  const git = (args: string[]) => {
+    calls.push(args);
+    return args.includes('-S"aaa"') ? "2026-11-24T10:15:00+00:00\n" : "";
+  };
+  assert.equal(lastmodOf("aaa", git), "2026-11-24T10:15:00+00:00");
+  assert.equal(lastmodOf("zzz", git), undefined);
+  assert.deepEqual(calls[0], ["log", "-1", "--format=%cI", '-S"aaa"', "--", "data/page-hashes.json"]);
 });
 
 test("IndexNow gets only new or changed pages on the site's own host", () => {

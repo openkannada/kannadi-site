@@ -16,7 +16,7 @@ import Logo from "./Logo.astro";
         <a href={SITE.repository}>kannadi</a> library.
       </p>
       <p>
-        Founded by {ORG.founders.map((f, i) => (
+        Started by {ORG.founders.map((f, i) => (
           <>{i > 0 && " and "}<a href={f.url}>{f.name}</a></>
         ))}. Supported by <a href={ORG.supporter.url}>{ORG.supporter.label}</a>.
       </p>

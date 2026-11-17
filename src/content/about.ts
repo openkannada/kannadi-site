@@ -4,23 +4,14 @@ import { STORY } from "./story.ts";
 
 export const ABOUT = {
   sections: [{ heading: "Why", paragraphs: STORY }],
-  founders: [
-    {
-      name: "Prasad Subrahmanya",
-      url: "https://prasad.tech",
-      site: "prasad.tech",
-      line: "builds the software. Kannada is his mother tongue.",
-    },
-    {
-      name: "Neha Prasad",
-      url: "https://neha-prasad.com/",
-      site: "neha-prasad.com",
-      line: '<mark class="todo">PRASAD: 1 line on Neha\'s part in Open Kannada, in your words.</mark>',
-    },
+  /** The people of Open Kannada, in 1 list with 1 layout: a role is a label, never a rank. */
+  people: [
+    { name: "Prasad Subrahmanya", role: "Founding member", url: "https://prasad.tech", site: "prasad.tech" },
+    { name: "Neha Prasad", role: "Founding member", url: "https://neha-prasad.com/", site: "neha-prasad.com" },
   ],
   dedication: [
     'I dedicate this work to my parents, Veena and Subramanya. They were farmers, and the values and principles they lived by made my sister <a href="https://www.pramodinisubramanya.com/">Pramodini</a> and me who we are today.',
-    "And to Neha, my wife and co-founder, who backs every hour and every bit of money we put into this. She has been my other shoulder throughout.",
+    "And to Neha, my wife, who backs every hour and every bit of money we put into this. She has been my other shoulder throughout.",
   ],
   signature: "Prasad",
   help: [

@@ -22,13 +22,13 @@ export const DESCRIPTIONS = [
 export const BIOS = [
   {
     name: "Prasad Subrahmanya",
-    role: "Co-founder",
+    role: "Founding member",
     text: "Prasad Subrahmanya builds Open Kannada's software. He is the founder and CEO of Luminik. Before that, he was CTO of Aura at Bain's Founder's Studio, where he took a workforce-analytics platform from concept to $3.6M ARR in 15 months, and co-founder and CTO of Mainteny. He is based in Oslo, Norway.",
     source: "https://prasad.tech",
   },
   {
     name: "Neha Prasad",
-    role: "Co-founder",
+    role: "Founding member",
     text: '<mark class="todo">PRASAD: Neha\'s bio, about 60 words.</mark>',
     source: "https://neha-prasad.com/",
   },

@@ -374,8 +374,7 @@ function nextProblem(dir: number): void {
     return;
   }
   const sel = editor.selection();
-  const at = sel ? (dir > 0 ? sel.end : sel.start) : -1;
-  const item = issues.next(at, dir);
+  const item = sel ? issues.next(sel.start, sel.end, dir) : issues.next(-1, -1, dir);
   if (item) issues.show(item, true);
   else say("Nothing is marked.");
 }
@@ -632,8 +631,9 @@ function restore(): void {
   if (saved?.text) {
     ui.doc.textContent = saved.text;
     editor.sync("restore", false);
-    issues.addUnknown((saved.unknown ?? []).filter((o) => Number.isInteger(o) && o < saved.text.length));
-    issues.keep((saved.kept ?? []).filter(Number.isInteger));
+    const offsets = (list: unknown) => (Array.isArray(list) ? list.filter((o): o is number => Number.isInteger(o) && o < saved.text.length) : []);
+    issues.addUnknown(offsets(saved.unknown));
+    issues.keep(offsets(saved.kept));
     fileName = saved.fileName ?? "kannada";
     if (looksLegacy(saved.text)) say("Welcome back. Some of this still looks like Nudi, Baraha or Akruti: select it and choose Convert.");
   } else {

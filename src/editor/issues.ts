@@ -51,7 +51,7 @@ const FIX_LABELS: Record<string, string> = {
 export class Issues {
   unknown: Anchor[] = [];
   malformed: number[] = [];
-  typos: number[] = [];
+  typos: Typo[] = [];
   /** Likely typos the writer chose to keep, followed through edits. */
   kept: Anchor[] = [];
   open: Problem | null = null;
@@ -77,7 +77,7 @@ export class Issues {
   }
 
   get total(): number {
-    return this.unknown.length + (this.malformed.length + this.typos.length) / 2;
+    return this.unknown.length + this.malformed.length / 2 + this.typos.length;
   }
 
   /** Adds unknown glyphs at these text offsets. */
@@ -93,8 +93,10 @@ export class Issues {
 
   /** Stops marking the likely typos that start at these offsets, such as those kept in a saved draft. */
   keep(offsets: number[]): void {
+    if (!offsets.length) return;
+    this.flush();
     const text = this.editor.text;
-    for (const t of this.kannadi.typos(text)) {
+    for (const t of this.typos) {
       if (offsets.includes(t.start)) this.kept.push({ offset: t.start, glyph: text.slice(t.start, t.end) });
     }
     this.check();
@@ -102,6 +104,7 @@ export class Issues {
 
   clear(): void {
     this.unknown = [];
+    this.kept = [];
     this.check();
   }
 
@@ -109,7 +112,10 @@ export class Issues {
   edited(edit: Edit, after: string): void {
     this.unknown = shiftAnchors(this.unknown, edit, after);
     this.malformed = shiftRanges(this.malformed, edit);
-    this.typos = shiftRanges(this.typos, edit);
+    this.typos = this.typos.flatMap((t) => {
+      const [start, end] = shiftRanges([t.start, t.end], edit);
+      return start === undefined || end === undefined ? [] : [{ ...t, start, end }];
+    });
     this.kept = shiftAnchors(this.kept, edit, after);
     this.close(false);
     clearTimeout(this.timer);
@@ -123,10 +129,7 @@ export class Issues {
     this.timer = 0;
     const text = this.editor.text;
     this.malformed = Array.from(this.kannadi.malformed(text));
-    this.typos = this.kannadi
-      .typos(text)
-      .filter((t) => !this.kept.some((k) => k.offset === t.start))
-      .flatMap((t) => [t.start, t.end]);
+    this.typos = this.kannadi.typos(text).filter((t) => !this.kept.some((k) => k.offset === t.start));
     this.draw();
     this.list();
   }
@@ -141,7 +144,10 @@ export class Issues {
       this.unknown.flatMap((u) => [u.offset, u.offset + u.glyph.length]),
     );
     this.editor.highlight("malformed", this.malformed);
-    this.editor.highlight("typo", this.typos);
+    this.editor.highlight(
+      "typo",
+      this.typos.flatMap((t) => [t.start, t.end]),
+    );
     this.ui.onChange(this);
   }
 
@@ -151,9 +157,7 @@ export class Issues {
     for (let i = 0; i + 1 < this.malformed.length; i += 2) {
       out.push({ kind: "malformed", start: this.malformed[i]!, end: this.malformed[i + 1]! });
     }
-    for (let i = 0; i + 1 < this.typos.length; i += 2) {
-      out.push({ kind: "typo", start: this.typos[i]!, end: this.typos[i + 1]! });
-    }
+    for (const t of this.typos) out.push({ kind: "typo", start: t.start, end: t.end });
     return out.sort((a, b) => a.start - b.start);
   }
 
@@ -162,12 +166,16 @@ export class Issues {
     return this.items().find((i) => i.start <= offset && offset <= i.end) ?? null;
   }
 
-  /** The next problem after `offset`, wrapping around; backward when `dir` is -1. */
-  next(offset: number, dir = 1): Problem | null {
+  /**
+   * The next problem after the range start..end, wrapping around; backward when
+   * `dir` is -1. A problem exactly at the range counts as the current one, so
+   * problems that touch it are reached in turn.
+   */
+  next(start: number, end: number, dir = 1): Problem | null {
     const items = this.items();
     if (!items.length) return null;
-    if (dir > 0) return items.find((i) => i.start > offset) ?? items[0]!;
-    return [...items].reverse().find((i) => i.end < offset) ?? items[items.length - 1]!;
+    if (dir > 0) return items.find((i) => i.start > start || (i.start === start && i.end > end)) ?? items[0]!;
+    return [...items].reverse().find((i) => i.end < end || (i.end === end && i.start < start)) ?? items[items.length - 1]!;
   }
 
   list(): void {
@@ -244,7 +252,7 @@ export class Issues {
     title.append(`${PROBLEM_NAMES[item.kind]} `, sample, ` ${codePoints(bad)}`);
     const why = document.createElement("p");
     why.className = "pop-why";
-    const typo = item.kind === "typo" ? this.kannadi.typos(text).find((t) => t.start === item.start && t.end === item.end) : undefined;
+    const typo = item.kind === "typo" ? this.typos.find((t) => t.start === item.start && t.end === item.end) : undefined;
     why.textContent = item.kind === "typo" ? (TYPO_WHY[typo?.rule ?? ""] ?? "This spelling is usually a typing mistake.") : WHY[item.kind];
 
     const actions = document.createElement("div");
@@ -272,7 +280,7 @@ export class Issues {
     } else if (item.kind === "typo") {
       if (typo) {
         const word = wordAround(text, typo.start, typo.end, typo.replacement);
-        action("Use the usual spelling", word, () => this.apply(typo.start, typo.end, typo.replacement));
+        action(`Use ${typo.replacement}`, word, () => this.apply(typo.start, typo.end, typo.replacement));
       }
       action("Keep it", null, () => {
         this.close(true);

@@ -173,10 +173,10 @@ body.dragging .drop-hint {
   text-decoration-thickness: 1.5px;
   text-underline-offset: 0.35em;
 }
-/* A likely typo is softer than a broken syllable: a dotted line and no tint. */
+/* A likely typo is softer than a broken syllable: a dashed line and no tint, unlike the dotted typing mark. */
 ::highlight(typo) {
-  text-decoration: underline dotted var(--mark-malformed-line);
-  text-decoration-thickness: 2px;
+  text-decoration: underline dashed var(--mark-malformed-line);
+  text-decoration-thickness: 1.5px;
   text-underline-offset: 0.35em;
 }
 ::highlight(composing) {
@@ -284,6 +284,12 @@ body.dragging .drop-hint {
 }
 .issue-unknown .issue-sample {
   background: var(--mark-unknown);
+}
+.issue-typo .issue-sample,
+.pop-sample.pop-sample-typo {
+  background: none;
+  text-decoration: underline dashed var(--mark-malformed-line);
+  text-underline-offset: 0.35em;
 }
 
 /* Suggestions for the word being typed: above the word on desktop, a keyboard-style bar above the dock on phones. */

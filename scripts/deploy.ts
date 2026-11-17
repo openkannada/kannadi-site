@@ -11,7 +11,7 @@ function stop(message: string): never {
 
 function git(...args: string[]): string {
   const run = spawnSync("git", args, { encoding: "utf8" });
-  if (run.status !== 0) stop(`git ${args.join(" ")} failed: ${run.stderr.trim()}`);
+  if (run.status !== 0) stop(`git ${args.join(" ")} failed: ${run.error?.message ?? run.stderr.trim()}`);
   return run.stdout.trim();
 }
 

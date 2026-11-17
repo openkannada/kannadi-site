@@ -22,7 +22,7 @@ test("only a clean main at origin/main is deployed", () => {
   assert.equal(checkoutProblem(ok), null);
   assert.match(checkoutProblem({ ...ok, clean: false }) ?? "", /changes/);
   assert.match(checkoutProblem({ ...ok, branch: "feature" }) ?? "", /main branch/);
-  assert.match(checkoutProblem({ ...ok, head: "def" }) ?? "", /origin\/main/);
+  assert.match(checkoutProblem({ ...ok, head: "def" }) ?? "", /differs from origin\/main/);
 });
 
 test("the deploy builds the library from kannadi.rev, never from a local checkout", () => {

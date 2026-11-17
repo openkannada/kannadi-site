@@ -32,7 +32,7 @@ export function productionUrl(value: string | undefined): URL {
 export function checkoutProblem(checkout: Checkout): string | null {
   if (!checkout.clean) return "The working tree has changes. Deploy from a clean checkout of main.";
   if (checkout.branch !== "main") return "Deploy from the main branch.";
-  if (checkout.head !== checkout.originMain) return "main is not at origin/main. Deploy only merged commits: run git pull --ff-only first.";
+  if (checkout.head !== checkout.originMain) return "main differs from origin/main. Deploy only merged, pushed commits.";
   return null;
 }
 

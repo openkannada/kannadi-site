@@ -26,7 +26,7 @@ npm run build       # writes dist/
 npm run preview
 ```
 
-`npm run wasm` clones kannadi into `.kannadi`. Set `KANNADI_DIR` to use an existing checkout at the same commit.
+`npm run wasm` clones kannadi into `.kannadi`. Set `KANNADI_DIR` to use an existing checkout at the same commit, with no uncommitted changes.
 
 Set `SITE_URL` (for example `https://example.org/` or `https://example.org/kannada/`) to add canonical links, absolute Open Graph images and the sitemap. Local builds leave it unset, CI sets it only for a second smoke build at `example.org`, and the deploy sets the real address.
 

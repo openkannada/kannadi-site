@@ -257,7 +257,7 @@ export class Issues {
 
     const actions = document.createElement("div");
     actions.className = "pop-actions";
-    const action = (label: string, preview: string | null, run: () => void) => {
+    const action = (label: string | Node, preview: string | null, run: () => void) => {
       const b = document.createElement("button");
       b.type = "button";
       if (preview) {
@@ -280,7 +280,12 @@ export class Issues {
     } else if (item.kind === "typo") {
       if (typo) {
         const word = wordAround(text, typo.start, typo.end, typo.replacement);
-        action(`Use ${typo.replacement}`, word, () => this.apply(typo.start, typo.end, typo.replacement));
+        const letter = document.createElement("span");
+        letter.lang = "kn";
+        letter.textContent = typo.replacement;
+        const label = document.createDocumentFragment();
+        label.append("Use ", letter);
+        action(label, word, () => this.apply(typo.start, typo.end, typo.replacement));
       }
       action("Keep it", null, () => {
         this.close(true);

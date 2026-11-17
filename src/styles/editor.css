@@ -289,6 +289,7 @@ body.dragging .drop-hint {
 .pop-sample.pop-sample-typo {
   background: none;
   text-decoration: underline dashed var(--mark-malformed-line);
+  text-decoration-thickness: 1.5px;
   text-underline-offset: 0.35em;
 }
 

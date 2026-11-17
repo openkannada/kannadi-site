@@ -98,10 +98,10 @@ export function llmsFull(pages: BuiltPage[], site: SiteInfo): string {
 }
 
 /** sitemap.xml for absolute page URLs. */
-export function sitemap(urls: string[]): string {
+export function sitemap(entries: { loc: string; lastmod?: string | undefined }[]): string {
   const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-  const entries = urls.map((u) => `  <url><loc>${escape(u)}</loc></url>`).join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${entries}\n</urlset>\n`;
+  const lines = entries.map((e) => `  <url><loc>${escape(e.loc)}</loc>${e.lastmod ? `<lastmod>${e.lastmod}</lastmod>` : ""}</url>`).join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${lines}\n</urlset>\n`;
 }
 
 /** robots.txt that welcomes search and AI crawlers. */

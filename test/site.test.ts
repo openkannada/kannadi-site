@@ -106,7 +106,8 @@ test("llms.txt lists every page with its markdown, and llms-full.txt holds their
 test("robots.txt allows every crawler and names the sitemap once there is one", () => {
   assert.equal(robots(null), "User-agent: *\nAllow: /\n");
   assert.ok(robots("https://example.org/sitemap.xml").endsWith("\nSitemap: https://example.org/sitemap.xml\n"));
-  assert.ok(sitemap(["https://example.org/?a&b"]).includes("<loc>https://example.org/?a&amp;b</loc>"));
+  assert.ok(sitemap([{ loc: "https://example.org/?a&b" }]).includes("<url><loc>https://example.org/?a&amp;b</loc></url>"));
+  assert.ok(sitemap([{ loc: "https://example.org/", lastmod: "2026-11-17" }]).includes("<loc>https://example.org/</loc><lastmod>2026-11-17</lastmod>"));
 });
 
 test("no copy says the editor converts Unicode back to Akruti: it saves Nudi only", () => {

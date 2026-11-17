@@ -24,6 +24,15 @@ export const ORG = {
   ],
 } as const;
 
+/**
+ * IndexNow tells Bing and other engines which pages changed. The key is public by design and served as
+ * public/<key>.txt. Switch it on once the site is live at its own domain.
+ */
+export const INDEXNOW = {
+  enabled: false,
+  key: "3601f9fcb12d8a620b36768a880d87ae",
+} as const;
+
 export const AUTHOR = {
   name: "Prasad Subrahmanya",
   url: "https://prasad.tech",

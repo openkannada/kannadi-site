@@ -6,10 +6,10 @@ import latinFont from "../fonts/noto-sans-kannada-latin-wght-normal.woff2?url";
 
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
-import { HOME, type Page } from "../content/pages.ts";
+import { HOME, PAGES, type Page } from "../content/pages.ts";
 import { ORG, pagePath } from "../content/site.ts";
 import { href } from "../lib/paths.ts";
-import { jsonLd, scriptJson } from "../lib/seo.ts";
+import { alternates, jsonLd, scriptJson } from "../lib/seo.ts";
 
 interface Props {
   page: Page;
@@ -24,7 +24,7 @@ const ogImageUrl = site ? new URL(ogImage, site).href : null;
 
 ---
 <!doctype html>
-<html lang="en">
+<html lang={page.lang ?? "en"}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
@@ -32,6 +32,7 @@ const ogImageUrl = site ? new URL(ogImage, site).href : null;
     <meta name="description" content={page.description} />
     {noindex && <meta name="robots" content="noindex" />}
     {canonical && <link rel="canonical" href={canonical} />}
+    {alternates(page, PAGES, site).map((a) => <link rel="alternate" hreflang={a.hreflang} href={a.href} />)}
     {!noindex && <link rel="alternate" type="text/markdown" href={href(`${pagePath(page.slug)}index.md`)} />}
     <meta name="referrer" content="no-referrer" />
     <meta name="color-scheme" content="light dark" />

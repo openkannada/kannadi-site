@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import type { AstroIntegration } from "astro";
 
 import { SITE } from "../content/site.ts";
+import { contentHash, type PageDates } from "../lib/freshness.ts";
 import {
   type BuiltPage,
   llmsFull,
@@ -36,11 +37,13 @@ function pathOf(dist: string, file: string): string {
 
 export function agentFiles(): AstroIntegration {
   let site: URL | undefined;
+  let root: URL;
   return {
     name: "kannadi-agent-files",
     hooks: {
       "astro:config:done": ({ config }) => {
         site = config.site ? new URL(config.base, config.site) : undefined;
+        root = config.root;
       },
       "astro:build:done": async ({ dir, logger }) => {
         const dist = fileURLToPath(dir);
@@ -69,7 +72,11 @@ export function agentFiles(): AstroIntegration {
         await writeFile(join(dist, "llms-full.txt"), llmsFull(pages, info));
         const map = site ? url("/sitemap.xml") : null;
         await writeFile(join(dist, "robots.txt"), robots(map));
-        if (site) await writeFile(join(dist, "sitemap.xml"), sitemap(pages.map((p) => url(p.path))));
+        if (site) {
+          const dates: PageDates = JSON.parse(await readFile(new URL("data/page-dates.json", root), "utf8"));
+          const lastmod = (p: BuiltPage) => (dates[p.path]?.hash === contentHash(p.markdown) ? dates[p.path]?.lastmod : undefined);
+          await writeFile(join(dist, "sitemap.xml"), sitemap(pages.map((p) => ({ loc: url(p.path), lastmod: lastmod(p) }))));
+        }
         logger.info(`${pages.length} markdown mirrors, llms.txt and llms-full.txt${site ? ", sitemap.xml" : ""}`);
       },
     },

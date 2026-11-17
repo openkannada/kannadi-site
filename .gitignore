@@ -7,3 +7,4 @@ src/editor/wasm/
 .DS_Store
 dist-site/
 .wrangler/
+.deploy/

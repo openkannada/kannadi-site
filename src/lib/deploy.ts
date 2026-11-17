@@ -47,7 +47,7 @@ export function placeholders(text: string): string[] {
   return [...text.matchAll(/PRASAD:[^.?!<\n]*[.?!]?/g)].map((m) => m[0].trim());
 }
 
-/** The steps that build, check and publish the site at `url` to the Cloudflare Pages production branch. */
+/** The steps that build, check and publish the site at `url` to the Cloudflare Pages production branch, then check it live and notify IndexNow. */
 export function deploySteps(url: URL): Step[] {
   return [
     { label: "Build the WebAssembly package", command: "npm", args: ["run", "wasm"] },
@@ -57,6 +57,9 @@ export function deploySteps(url: URL): Step[] {
     { label: "Check the built pages", command: "node", args: ["scripts/seo-smoke.ts", "dist", url.href] },
     { label: "Check the writing", command: "npm", args: ["run", "voice-lint"] },
     { label: "Check that no placeholder is left", command: "node", args: ["scripts/placeholders.ts", "dist"] },
+    { label: "Save the live sitemap for IndexNow", command: "node", args: ["scripts/indexnow.ts", "snapshot", url.href] },
     { label: "Publish to Cloudflare Pages", command: "npx", args: ["--no", "--", "wrangler", "pages", "deploy", "--branch", "main"] },
+    { label: "Check the live site", command: "node", args: ["scripts/live-check.ts", url.href] },
+    { label: "Send the changed pages to IndexNow", command: "node", args: ["scripts/indexnow.ts", "submit", url.href] },
   ];
 }

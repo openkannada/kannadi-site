@@ -179,6 +179,35 @@ function organization(id: (name: string, base?: string) => string, author: Node,
   ];
 }
 
+/**
+ * hreflang links for a page with a twin in the other language: both pages and x-default (the English page),
+ * as absolute URLs. Empty when the page has no twin or the site has no URL yet.
+ */
+export function alternates(page: Page, pages: Page[], site: URL | null): { hreflang: string; href: string }[] {
+  const twin = page.twin === undefined ? undefined : pages.find((p) => p.slug === page.twin);
+  if (!site || !twin) return [];
+  const url = (p: Page) => absolute(pagePath(p.slug), site);
+  const lang = (p: Page) => p.lang ?? "en";
+  const english = lang(page) === "en" ? page : twin;
+  return [
+    { hreflang: lang(page), href: url(page) },
+    { hreflang: lang(twin), href: url(twin) },
+    { hreflang: "x-default", href: url(english) },
+  ].sort((a, b) => a.hreflang.localeCompare(b.hreflang));
+}
+
+/** Twins that do not name each other back, or that name a missing page or a page in the same language. */
+export function twinProblems(pages: Page[]): string[] {
+  return pages.flatMap((p) => {
+    if (p.twin === undefined) return [];
+    const twin = pages.find((q) => q.slug === p.twin);
+    if (!twin) return [`${p.slug || "home"}: twin ${p.twin} does not exist`];
+    if (twin.twin !== p.slug) return [`${p.slug || "home"}: ${twin.slug || "home"} does not name it back`];
+    if ((twin.lang ?? "en") === (p.lang ?? "en")) return [`${p.slug || "home"}: twin ${twin.slug || "home"} is in the same language`];
+    return [];
+  });
+}
+
 /** JSON for a script element: "<" is escaped so the text can never close the element. */
 export function scriptJson(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");

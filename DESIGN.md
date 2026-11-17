@@ -37,7 +37,7 @@ Rose and amber appear only in and about the text being edited. No other element 
 
 ### Type
 
-- 1 family: Noto Sans Kannada (`--type-sans`), self-hosted as variable woff2 subsets under the SIL Open Font License. Noto Serif Kannada (`--type-serif`) is the document's alternative face.
+- 1 family: Noto Sans Kannada for Kannada and Noto Sans for Latin (`--type-sans`), self-hosted as variable woff2 subsets under the SIL Open Font License. Noto Sans Kannada's own Latin glyphs keep 1 weight at every `wght`, so Latin text must come from Noto Sans, or headings and bold words render regular. Noto Serif Kannada (`--type-serif`) is the document's alternative face.
 - Kannada in a document: `--type-doc` 1.375rem on phones, `--type-doc-wide` 1.5rem from 768px, line height `--type-doc-leading` 1.95. Kannada anywhere else: line height `--type-kn-leading` 1.9.
 - Page headings: `--type-heading` 2rem, `--type-heading-wide` 2.75rem from 640px, weight 600, tracking `--type-heading-tracking`, balanced.
 - Controls: `--type-ui` 0.9375rem, medium weight.

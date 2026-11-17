@@ -28,7 +28,26 @@ npm run preview
 
 `npm run wasm` clones kannadi into `.kannadi`. Set `KANNADI_DIR` to use an existing checkout at the same commit.
 
-Set `SITE_URL` (for example `https://example.org/` or `https://example.org/kannada/`) to add canonical links, absolute Open Graph images and the sitemap. It stays unset until the domain is chosen.
+Set `SITE_URL` (for example `https://example.org/` or `https://example.org/kannada/`) to add canonical links, absolute Open Graph images and the sitemap. Local builds and CI leave it unset; the deploy sets it.
+
+## Deploy
+
+The site is built for Cloudflare Pages: static files in `dist/`, plus `functions/_middleware.ts` for markdown on request. `wrangler.jsonc` names the project `kannadi`.
+
+Once, on the machine that deploys:
+
+1. Sign in to the Cloudflare account: `npx wrangler login`.
+2. Create the project: `npx wrangler pages project create kannadi --production-branch main`.
+3. Add the domain to Cloudflare (Add a domain, then set the registrar's nameservers to the 2 Cloudflare gives).
+4. In Workers & Pages, open `kannadi`, then Custom domains, and add the domain and its `www` name. Add a redirect rule from `www` to the bare domain.
+
+Each deploy, from a clean checkout of `main`:
+
+```sh
+SITE_URL=https://openkannada.org/ npm run deploy
+```
+
+`scripts/deploy.ts` refuses a missing, plain http or placeholder `SITE_URL` and a checkout with changes. It then builds the WebAssembly package and the site, runs the SEO smoke check at the production address and the voice lint, and publishes `dist/` and `functions/` to the production branch. It stops at the first step that fails.
 
 ## Typing in English letters
 
@@ -59,6 +78,7 @@ CI runs all of them on every pull request.
 | `src/integrations/agent-files.ts` | Writes the markdown mirrors and llms files after the build |
 | `functions/_middleware.ts` | Cloudflare Pages: markdown on `Accept: text/markdown` |
 | `public/_headers` | Security and cache headers for Cloudflare Pages |
+| `wrangler.jsonc`, `scripts/deploy.ts` | Cloudflare Pages project and the deploy command |
 | `scripts/` | wasm build, Open Graph cards, SEO smoke, voice lint |
 
 ## License

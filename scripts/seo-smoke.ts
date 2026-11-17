@@ -49,7 +49,7 @@ for (const page of PAGES) {
   const csp = document.querySelector('meta[http-equiv="content-security-policy"]')?.getAttribute("content") ?? "";
   if (!csp.includes("default-src 'none'")) fail(where, "no strict Content-Security-Policy");
   if (document.querySelector("[style]")) fail(where, "an inline style attribute, which the CSP blocks");
-  if (!/<body[^>]*>\s*<!--\s*THESIS:/.test(html)) fail(where, "the design contract is not the first child of <body>");
+  if (html.includes("<!--")) fail(where, "an HTML comment, which reads as build notes in the page source");
 
   const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute("href") ?? null;
   const expected = site ? new URL(path.slice(1), site).href : null;

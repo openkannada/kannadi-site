@@ -1,5 +1,6 @@
 // Tests for the site's structured data and agent files: npm test
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { HOME, PAGES } from "../src/content/pages.ts";
@@ -107,12 +108,10 @@ test("robots.txt allows every crawler and names the sitemap once there is one", 
   assert.ok(sitemap(["https://example.org/?a&b"]).includes("<loc>https://example.org/?a&amp;b</loc>"));
 });
 
-test("the copy says the way back from Unicode is to Nudi only, which is what the editor saves", async () => {
-  const { readFile } = await import("node:fs/promises");
-  const files = ["src/content/pages.ts", "src/integrations/agent-files.ts", "README.md", "PRODUCT.md"];
+test("no copy says the editor converts back to Akruti or Baraha: it saves Unicode text as Nudi only", () => {
+  const files = ["src/content/pages.ts", "src/integrations/agent-files.ts", "src/lib/seo.ts", "README.md", "PRODUCT.md", "DESIGN.md"];
   for (const f of files) {
-    const text = await readFile(new URL(`../${f}`, import.meta.url), "utf8");
-    assert.doesNotMatch(text, /to Unicode and back/, f);
+    const text = readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
+    assert.doesNotMatch(text, /Unicode and back|(Unicode|back) to (Akruti|Baraha)\b/, f);
   }
-  assert.match(HOME.intro, /Unicode back to Nudi/);
 });

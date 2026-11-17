@@ -1,1 +1,46 @@
-{}
+{
+  "/": {
+    "hash": "2ff6365719014ca2",
+    "lastmod": "2026-11-17"
+  },
+  "/about/": {
+    "hash": "9026c679c97c8a95",
+    "lastmod": "2026-11-17"
+  },
+  "/akruti-to-unicode/": {
+    "hash": "11a8b91a9f45cef6",
+    "lastmod": "2026-11-17"
+  },
+  "/baraha-to-unicode/": {
+    "hash": "29e16750df66f79a",
+    "lastmod": "2026-11-17"
+  },
+  "/english-to-kannada-typing/": {
+    "hash": "91a5ce7a3c397d45",
+    "lastmod": "2026-11-17"
+  },
+  "/kagunita/": {
+    "hash": "5923df0a75bb1e04",
+    "lastmod": "2026-11-17"
+  },
+  "/kannada-alphabet/": {
+    "hash": "241577844f3c578f",
+    "lastmod": "2026-11-17"
+  },
+  "/kannada-typing/": {
+    "hash": "a1a503a9bda3505b",
+    "lastmod": "2026-11-17"
+  },
+  "/nudi-to-unicode/": {
+    "hash": "f28a6ce6aad2abe0",
+    "lastmod": "2026-11-17"
+  },
+  "/press/": {
+    "hash": "2354e42aa03af603",
+    "lastmod": "2026-11-17"
+  },
+  "/unicode-to-nudi/": {
+    "hash": "2dc89ee9ce57938a",
+    "lastmod": "2026-11-17"
+  }
+}

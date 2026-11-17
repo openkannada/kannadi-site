@@ -36,3 +36,12 @@ test("the middleware answers markdown requests with the mirror and marks pages a
   const missing = await onRequest({ request: new Request("https://x.org/b/", { headers: { accept: "text/markdown" } }), env: { ASSETS: assets }, next: html });
   assert.equal(await missing.text(), "<h1>A</h1>");
 });
+
+test("pages.dev copies of the site are marked noindex, and the real domain is not", async () => {
+  const preview = await onRequest({ request: new Request("https://abc123.kannadi-site.pages.dev/a/"), env: { ASSETS: assets }, next: html });
+  assert.equal(preview.headers.get("x-robots-tag"), "noindex");
+  assert.equal(preview.headers.get("vary"), "Accept");
+  assert.equal(await preview.text(), "<h1>A</h1>");
+  const live = await onRequest({ request: new Request("https://openkannada.org/a/"), env: { ASSETS: assets }, next: html });
+  assert.equal(live.headers.get("x-robots-tag"), null);
+});

@@ -62,3 +62,23 @@ test("the live check wants status 200 and the right content type for each file",
   assert.deepEqual(liveProblems([{ path: "/", status: 404, type: "text/html" }], expected.slice(0, 1)), ["/: status 404"]);
   assert.deepEqual(liveProblems([], expected.slice(0, 1)), ["/: not checked"]);
 });
+
+test("hreflang links appear only for pages with a twin, both ways, with x-default on English", async () => {
+  const { alternates, twinProblems } = await import("../src/lib/seo.ts");
+  const site = new URL("https://k.org/");
+  const en = { slug: "nudi-to-unicode", twin: "kn/nudi-to-unicode" };
+  const kn = { slug: "kn/nudi-to-unicode", lang: "kn", twin: "nudi-to-unicode" };
+  const pages = [en, kn, { slug: "kagunita" }];
+  assert.deepEqual(alternates(kn, pages, site), [
+    { hreflang: "en", href: "https://k.org/nudi-to-unicode/" },
+    { hreflang: "kn", href: "https://k.org/kn/nudi-to-unicode/" },
+    { hreflang: "x-default", href: "https://k.org/nudi-to-unicode/" },
+  ]);
+  assert.deepEqual(alternates(en, pages, site), alternates(kn, pages, site));
+  assert.deepEqual(alternates(pages[2], pages, site), []);
+  assert.deepEqual(alternates(en, pages, null), []);
+  assert.deepEqual(twinProblems(pages), []);
+  assert.deepEqual(twinProblems([en, { slug: "kn/nudi-to-unicode", lang: "kn" }]), ["nudi-to-unicode: kn/nudi-to-unicode does not name it back"]);
+  assert.deepEqual(twinProblems([{ slug: "a", twin: "b" }, { slug: "b", twin: "a" }]), ["a: twin b is in the same language", "b: twin a is in the same language"]);
+  assert.deepEqual(twinProblems([{ slug: "a", twin: "z" }]), ["a: twin z does not exist"]);
+});

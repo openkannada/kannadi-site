@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { colorValue, contrast, contrastProblems, oklchToRgba, over, toCss, type Tokens } from "../design/tokens.ts";
-import { canRefract, lightAt } from "../src/lib/light.ts";
+import { canRefract, followLight, lightAt } from "../src/lib/light.ts";
 
 const tokens: Tokens = JSON.parse(readFileSync(new URL("../design/tokens.json", import.meta.url), "utf8"));
 
@@ -16,10 +16,11 @@ test("every text color reads at 4.5:1 or more on each surface it is used on, gla
   assert.deepEqual(contrastProblems(tokens), []);
 });
 
-test("the contrast check catches a glass highlight too bright for the text under it", () => {
-  const bright = structuredClone(tokens);
-  (bright.color as Record<string, { $value: { light: string; dark: string } }>)["glass-specular"]!.$value.dark = "oklch(1 0 0 / 0.14)";
-  assert.ok(contrastProblems(bright).some((p) => p.startsWith("dark: primary on glass over field-turmeric")));
+test("the contrast check catches secondary text too dim for glass and the segmented track", () => {
+  const dim = structuredClone(tokens);
+  (dim.color as Record<string, { $value: { light: string; dark: string } }>)["muted-foreground"]!.$value.dark = "oklch(0.64 0.018 265)";
+  const problems = contrastProblems(dim);
+  assert.ok(problems.some((p) => p.startsWith("dark: muted-foreground on seg track on glass over")), problems.join("\n"));
 });
 
 test("colors convert as browsers draw them", () => {
@@ -47,15 +48,46 @@ test("the light follows the pointer from above: left to right, and never from be
   assert.deepEqual(lightAt(-50, 2000, 1000, 800), [-0.8, -0.2]);
 });
 
-test("glass bends the backdrop only in Chromium, and never when transparency is reduced", () => {
-  const fake = (brands: string[], supports: boolean, reduced: boolean) =>
-    ({
-      navigator: { userAgentData: brands.length ? { brands: brands.map((brand) => ({ brand })) } : undefined },
-      CSS: { supports: () => supports },
-      matchMedia: (q: string) => ({ matches: reduced && q.includes("reduced-transparency") }),
-    }) as unknown as Window & typeof globalThis;
-  assert.equal(canRefract(fake(["Chromium", "Google Chrome"], true, false)), true);
-  assert.equal(canRefract(fake([], true, false)), false, "Safari and Firefox have no Chromium brand");
-  assert.equal(canRefract(fake(["Chromium"], false, false)), false);
-  assert.equal(canRefract(fake(["Chromium"], true, true)), false);
+/** A window with the given Chromium brands, filter support and matching media queries. */
+function fakeWindow(brands: string[], supports: boolean, media: string[]) {
+  const listeners: Record<string, (e: unknown) => void> = {};
+  const props: Record<string, string> = {};
+  const frames: (() => void)[] = [];
+  const classes = new Set<string>();
+  const w = {
+    navigator: { userAgentData: brands.length ? { brands: brands.map((brand) => ({ brand })) } : undefined },
+    CSS: { supports: () => supports },
+    matchMedia: (q: string) => ({ matches: media.some((m) => q.includes(m)) }),
+    innerWidth: 1000,
+    innerHeight: 800,
+    addEventListener: (type: string, fn: (e: unknown) => void) => (listeners[type] = fn),
+    requestAnimationFrame: (fn: () => void) => frames.push(fn),
+    document: { documentElement: { classList: { add: (c: string) => classes.add(c) }, style: { setProperty: (k: string, v: string) => (props[k] = v) } } },
+  };
+  return { w: w as unknown as Window & typeof globalThis, listeners, props, frames, classes };
+}
+
+test("glass bends the backdrop only in Chromium with a fine pointer, and never when transparency is reduced", () => {
+  const can = (brands: string[], supports: boolean, media: string[]) => canRefract(fakeWindow(brands, supports, media).w);
+  assert.equal(can(["Chromium", "Google Chrome"], true, ["pointer: fine"]), true);
+  assert.equal(can([], true, ["pointer: fine"]), false, "Safari and Firefox have no Chromium brand");
+  assert.equal(can(["Chromium"], false, ["pointer: fine"]), false);
+  assert.equal(can(["Chromium"], true, []), false, "touch screens");
+  assert.equal(can(["Chromium"], true, ["pointer: fine", "reduced-transparency"]), false);
+});
+
+test("the light moves at most once a frame with a mouse, and never on touch or under reduced motion", () => {
+  const mouse = fakeWindow(["Chromium"], true, ["pointer: fine"]);
+  followLight(mouse.w);
+  assert.ok(mouse.classes.has("lg-refract"));
+  mouse.listeners["pointermove"]!({ clientX: 0, clientY: 0 });
+  mouse.listeners["pointermove"]!({ clientX: 1000, clientY: 800 });
+  assert.equal(mouse.frames.length, 1, "2 moves in 1 frame ask for 1 frame");
+  mouse.frames[0]!();
+  assert.deepEqual(mouse.props, { "--light-x": "0.8", "--light-y": "-0.2" }, "the frame uses the latest move");
+  for (const media of [[], ["pointer: fine", "reduced-motion"]]) {
+    const still = fakeWindow(["Chromium"], true, media);
+    followLight(still.w);
+    assert.equal(still.listeners["pointermove"], undefined);
+  }
 });

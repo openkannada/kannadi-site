@@ -34,10 +34,8 @@ export function toCss(tokens: Tokens): string {
     lines.push("", `  /* ${group} */`);
     for (const [name, t] of Object.entries(entries)) {
       const v = t.$value;
-      const css =
-        typeof v === "object"
-          ? `light-dark(${v.light}, ${v.dark})`
-          : (v.match(/^\{color\.([\w-]+)\}$/) ? `var(--${v.slice(7, -1)})` : v);
+      const ref = typeof v === "string" ? v.match(/^\{[\w-]+\.([\w-]+)\}$/)?.[1] : undefined;
+      const css = typeof v === "object" ? `light-dark(${v.light}, ${v.dark})` : ref ? `var(--${ref})` : v;
       lines.push(`  --${name}: ${css};`);
     }
   }
@@ -111,46 +109,62 @@ export function contrast(a: Rgb, b: Rgb): number {
 }
 
 /**
- * The surfaces text can sit on, in 1 theme: the solid ones, and glass over each place the page can show
- * through it (the plain canvas and each color field at full strength, saturated as the pane does), with
- * the specular highlight on top as the worst case.
+ * The surfaces text sits on, in 1 theme. Glass is measured over everything that can show through it: the
+ * canvas, the sheet, each color field, and turmeric over indigo where those fields meet, saturated as the
+ * pane does. The specular glow is left out: it lies within about 7px of the lit rim, inside the pane's
+ * padding, where no text sits. On glass, text also sits on the segmented track and on the problem tints.
  */
 export function surfaces(tokens: Tokens, theme: Theme): Record<string, Rgb> {
   const rgba = (name: string) => oklchToRgba(colorValue(tokens, name, theme));
   const opaque = (name: string): Rgb => rgba(name).slice(0, 3) as Rgb;
+  const tint = (name: string, alpha: number): [number, number, number, number] => [...opaque(name), alpha];
   const background = opaque("background");
+  const card = opaque("card");
   const sat = Number((tokens["glass"] as Record<string, Token>)["glass-saturate"]?.$value);
-  const out: Record<string, Rgb> = { background, card: opaque("card"), popover: opaque("popover"), "glass-solid": opaque("glass-solid") };
-  const backdrops: Record<string, Rgb> = { canvas: background };
+  const out: Record<string, Rgb> = {
+    background,
+    card,
+    popover: opaque("popover"),
+    "glass-solid": opaque("glass-solid"),
+    accent: opaque("accent"),
+    "mark-unknown over card": over(rgba("mark-unknown"), card),
+    "mark-malformed over card": over(rgba("mark-malformed"), card),
+  };
+  const backdrops: Record<string, Rgb> = { canvas: background, sheet: card };
   for (const field of ["field-turmeric", "field-kumkuma", "field-indigo"]) backdrops[field] = over(rgba(field), background);
+  backdrops["field-turmeric over field-indigo"] = over(rgba("field-turmeric"), backdrops["field-indigo"]!);
   for (const [where, backdrop] of Object.entries(backdrops)) {
-    out[`glass over ${where}`] = over(rgba("glass-specular"), over(rgba("glass"), saturate(backdrop, sat)));
+    const glass = over(rgba("glass"), saturate(backdrop, sat));
+    out[`glass over ${where}`] = glass;
+    out[`seg track on glass over ${where}`] = over(tint("foreground", 0.07), glass);
+    out[`mark-unknown on glass over ${where}`] = over(rgba("mark-unknown"), glass);
+    out[`mark-malformed on glass over ${where}`] = over(rgba("mark-malformed"), glass);
   }
   return out;
 }
 
-/** Text colors and the surfaces each must read on at 4.5:1 or more. */
+/** Text colors and the surfaces each is drawn on, by name or name prefix, which must read at 4.5:1 or more. */
 export const TEXT_ON: Record<string, string[]> = {
-  foreground: ["background", "card", "popover", "glass-solid", "glass"],
-  "muted-foreground": ["background", "card", "popover", "glass-solid", "glass"],
-  primary: ["background", "card", "glass-solid", "glass"],
-  "accent-foreground": ["glass-solid"],
+  foreground: ["background", "card", "popover", "glass-solid", "glass over", "mark-unknown", "mark-malformed"],
+  "muted-foreground": ["background", "card", "popover", "glass-solid", "glass over", "seg track"],
+  primary: ["background", "card", "glass-solid", "glass over", "accent"],
+  "accent-foreground": ["accent"],
 };
 
 /** Every text and surface pair below 4.5:1, with its ratio. */
 export function contrastProblems(tokens: Tokens): string[] {
   const problems: string[] = [];
+  const text = (name: string, theme: Theme) => oklchToRgba(colorValue(tokens, name, theme)).slice(0, 3) as Rgb;
   for (const theme of ["light", "dark"] as const) {
     const all = surfaces(tokens, theme);
-    for (const [text, on] of Object.entries(TEXT_ON)) {
-      const color = oklchToRgba(colorValue(tokens, text, theme)).slice(0, 3) as Rgb;
-      for (const [name, surface] of Object.entries(all)) {
-        if (!on.some((o) => name === o || name.startsWith(`${o} over`))) continue;
-        const ratio = contrast(color, surface);
-        if (ratio < 4.5) problems.push(`${theme}: ${text} on ${name} is ${ratio.toFixed(2)}:1`);
+    for (const [name, on] of Object.entries(TEXT_ON)) {
+      for (const [surface, rgb] of Object.entries(all)) {
+        if (!on.some((o) => surface === o || surface.startsWith(o))) continue;
+        const ratio = contrast(text(name, theme), rgb);
+        if (ratio < 4.5) problems.push(`${theme}: ${name} on ${surface} is ${ratio.toFixed(2)}:1`);
       }
     }
-    const onPrimary = contrast(oklchToRgba(colorValue(tokens, "primary-foreground", theme)).slice(0, 3) as Rgb, oklchToRgba(colorValue(tokens, "primary", theme)).slice(0, 3) as Rgb);
+    const onPrimary = contrast(text("primary-foreground", theme), text("primary", theme));
     if (onPrimary < 4.5) problems.push(`${theme}: primary-foreground on primary is ${onPrimary.toFixed(2)}:1`);
   }
   return problems;

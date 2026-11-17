@@ -54,17 +54,17 @@ Glass is for what floats over the writing: toolbars, their menus, fix cards, toa
 A pane (`@utility glass` on the site):
 
 - **Body:** `--glass` over a backdrop blurred by `--glass-blur` (22px) and saturated by `--glass-saturate` (1.9), with a 1px `--glass-edge` outline and `--shadow-float`.
-- **Light:** the light comes from above and follows a mouse or pen across the page. `--light-x` runs from -0.8 at the left to 0.8 at the right; `--light-y` runs from -1 (straight above) to -0.2, so the top rim stays lit. The rim facing the light is `--glass-rim`, the rim opposite is the fainter `--glass-rim-low`, and `--glass-specular` is a soft glow just inside the lit rim. The 2 properties are registered with `@property` and ease over `--duration-morph`, so the light glides. On touch screens and under reduced motion the light stays still, from above.
-- **Refraction:** in Chromium, the edges of a pane bend what is behind them by up to `--glass-refraction` (18px), through an SVG displacement filter in `backdrop-filter`. Other engines would drop the whole filter, blur included, so they get the blur alone. The site sets this up with `lg-refract` on `<html>`, from `src/lib/light.ts`.
-- **Morph:** a control under the pointer becomes a small bead of glass. Pressed, it gives to 94% in 90ms and springs back on `--ease-spring` over `--duration-morph`. The pane it sits on gives to 98.5% with it.
-- **Fallbacks:** with reduced transparency, or where `backdrop-filter` is missing, a pane is the solid `--glass-solid`, with no refraction. Reduced motion stops the morph and the moving light, and every transition is cut to near zero.
-- **Contrast:** text on glass is checked against the worst case: the pane over each color field at full strength, saturated as the pane does, with the specular glow on top. Every text color must reach 4.5:1 there, in both themes, or the tokens are not written.
+- **Light:** the light comes from above and follows a mouse or pen across the page, updated at most once a frame. `--light-x` runs from -0.8 at the left to 0.8 at the right; `--light-y` runs from -1 (straight above) to -0.2, so the top rim stays lit. The rim facing the light is `--glass-rim`, the rim opposite is the fainter `--glass-rim-low`, and `--glass-specular` is a soft glow within about 7px of the lit rim. The 2 properties are registered with `@property`; where that is missing, the light stays above. On touch screens and under reduced motion the light stays still, from above.
+- **Refraction:** in Chromium with a mouse or pen, the edges of a pane bend the blurred backdrop inward, like the rim of a lens, by up to 9px (half of `--glass-refraction`), through an SVG displacement filter that runs after the blur in `backdrop-filter`. WebKit, Gecko and touch screens get the blur without refraction. The site sets this up with `lg-refract` on `<html>`, from `src/lib/light.ts`.
+- **Morph:** with a mouse or pen, a control under the pointer becomes a small bead of glass. Pressed, it gives to 94% in 90ms and springs back on `--ease-spring` over `--duration-morph`. The pane it sits on gives to 98.5% with it.
+- **Fallbacks:** with reduced transparency, or where `backdrop-filter` is missing, a pane is the solid `--glass-solid`, with no refraction. Reduced motion stills the light and cuts every transition to near zero, so a press changes size at once, with no spring.
+- **Contrast:** `npm run tokens` measures every text color on the surfaces it is drawn on, in both themes, and writes nothing below 4.5:1. Glass is measured over the canvas, the sheet, each color field at full strength and turmeric over indigo, saturated as the pane does, and so are the segmented track and the problem tints on glass. The specular glow is left out, since it stays inside the pane's padding.
 
 ## Motion
 
-- `--duration-quick` (150ms) on `--ease-out`: hover colors.
-- `--duration-lift` (220ms) on `--ease-settle`: menus, cards and toasts lift from 6px below, out of a 6px blur. The problem chip settles in from 60% scale.
-- `--duration-morph` (450ms) on `--ease-spring`: glass springing back after a press, and the light moving across rims.
+- `--duration-quick` (150ms) on `--ease-standard`: hover colors.
+- `--duration-lift` (220ms) on `--ease-settle`: menus, cards and toasts lift 6px into place out of a 6px blur, downward from the toolbar on desktop and upward from the dock on phones. The problem chip settles in from 60% scale.
+- `--duration-morph` (450ms) on `--ease-spring`: glass springing back after a press.
 - Nothing loops, except the microphone's slow breath while it listens, and that stops under reduced motion.
 
 ## Logo
@@ -89,7 +89,7 @@ A pane (`@utility glass` on the site):
 
 1. Copy `design/tokens.css` and load it before the surface's own CSS. Keep the token names; map any older names onto them.
 2. Self-host Noto Sans Kannada; load nothing from another host.
-3. Make only floating tools glass, with the rim, the specular glow and the solid fallback. Refraction and the moving light are optional; the fallbacks are not.
+3. Make only floating tools glass, with the rim, the specular glow and the solid fallback. Refraction and the moving light are optional, and the fallbacks are required.
 4. Use the logo files from the press kit, and follow the voice rules for every word on the page.
 5. When the tokens change here, copy the new `tokens.css` across in the same week.
 

@@ -12,7 +12,8 @@
     "test": "node --test 'test/**/*.test.ts'",
     "seo-smoke": "node scripts/seo-smoke.ts",
     "voice-lint": "node scripts/voice-lint.ts",
-    "lighthouse": "lhci autorun"
+    "lighthouse": "lhci autorun",
+    "deploy": "node scripts/deploy.ts"
   },
   "dependencies": {
     "astro": "7.4.12"
@@ -25,6 +26,7 @@
     "linkedom": "0.18.15",
     "node-html-markdown": "2.0.0",
     "tailwindcss": "4.3.5",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "wrangler": "4.163.0"
   }
 }

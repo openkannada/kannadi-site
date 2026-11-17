@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { HOME, PAGES } from "../src/content/pages.ts";
+import { HOME, HOMES, PAGES } from "../src/content/pages.ts";
 import { pagePath, siteUrl } from "../src/content/site.ts";
 import { llmsFull, llmsIndex, markdownPath, mirror, readPage, robots, sitemap } from "../src/lib/agent-text.ts";
-import { absolute, jsonLd, plainText, scriptJson } from "../src/lib/seo.ts";
+import { absolute, graphemes, jsonLd, plainText, scriptJson } from "../src/lib/seo.ts";
 
 const types = (graph) => graph["@graph"].map((n) => n["@type"]);
 
@@ -64,8 +64,9 @@ test("page slugs and titles are unique, and descriptions fit a search result", (
   assert.equal(new Set(PAGES.map((p) => p.slug)).size, PAGES.length);
   assert.equal(new Set(PAGES.map((p) => p.title)).size, PAGES.length);
   for (const p of PAGES) {
-    assert.ok(p.description.length >= 70 && p.description.length <= 160, `${p.slug}: ${p.description.length}`);
-    assert.ok(p.title.length <= 70, `${p.slug}: ${p.title.length}`);
+    const d = graphemes(p.description);
+    assert.ok(d >= 70 && d <= 160, `${p.slug}: ${d}`);
+    assert.ok(graphemes(p.title) <= 70, `${p.slug}: ${graphemes(p.title)}`);
   }
 });
 
@@ -169,4 +170,29 @@ test("the site is named Open Kannada, and the editor and library kannadi", () =>
   assert.equal(graph.find((n) => n["@type"] === "SoftwareSourceCode").name, "kannadi");
   const base = readFileSync(new URL("../src/layouts/Base.astro", import.meta.url), "utf8");
   assert.match(base, /<meta property="og:site_name" content=\{ORG\.name\} \/>/);
+});
+
+test("every Kannada page has an English twin that names it back, and waits for Prasad's read", async () => {
+  const { twinProblems, alternates } = await import("../src/lib/seo.ts");
+  assert.deepEqual(twinProblems(PAGES), []);
+  const kn = PAGES.filter((p) => p.lang === "kn");
+  assert.deepEqual(kn.map((p) => p.slug), ["kn", "kn/about", "kn/press"]);
+  for (const p of kn) assert.equal(p.needsReview, true, p.slug);
+  const links = alternates(PAGES.find((p) => p.slug === "about"), PAGES, siteUrl("https://example.org/"));
+  assert.deepEqual(links, [
+    { hreflang: "en", href: "https://example.org/about/" },
+    { hreflang: "kn", href: "https://example.org/kn/about/" },
+    { hreflang: "x-default", href: "https://example.org/about/" },
+  ]);
+  assert.equal(graphemes("ಕನ್ನಡ"), 4, "ಕ ನ್ ನ ಡ: a virama ends a cluster in Kannada");
+});
+
+test("a Kannada page's structured data is in Kannada and its trail starts at the Kannada home", () => {
+  const page = PAGES.find((p) => p.slug === "kn/about");
+  const graph = jsonLd(page, siteUrl("https://example.org/"), HOMES.kn)["@graph"];
+  assert.equal(graph.find((n) => n["@type"] === "WebPage").inLanguage, "kn-IN");
+  const crumbs = graph.find((n) => n["@type"] === "BreadcrumbList").itemListElement;
+  assert.deepEqual(crumbs.map((c) => c.item), ["https://example.org/kn/", "https://example.org/kn/about/"]);
+  const home = jsonLd(HOMES.kn, siteUrl("https://example.org/"), HOMES.kn)["@graph"].find((n) => n["@type"] === "BreadcrumbList");
+  assert.equal(home.itemListElement.length, 1);
 });

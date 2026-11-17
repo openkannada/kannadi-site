@@ -5,11 +5,11 @@ import { join, relative, sep } from "node:path";
 
 import { parseHTML } from "linkedom";
 
-import { PAGES } from "../src/content/pages.ts";
+import { PAGES, isHome } from "../src/content/pages.ts";
 import { AUTHOR, pagePath } from "../src/content/site.ts";
 import { readPage } from "../src/lib/agent-text.ts";
 import { contentHash, HASH_FILE, type PageHashes, staleHashes } from "../src/lib/freshness.ts";
-import { plainText, twinProblems } from "../src/lib/seo.ts";
+import { graphemes, plainText, twinProblems } from "../src/lib/seo.ts";
 
 const dist = process.argv[2] ?? "dist";
 const site = process.argv[3] ? new URL(process.argv[3]) : null;
@@ -55,7 +55,7 @@ for (const page of PAGES) {
   const title = document.querySelector("title")?.textContent ?? "";
   if (title !== page.title) fail(where, `title is "${title}"`);
   const description = document.querySelector('meta[name="description"]')?.getAttribute("content") ?? "";
-  if (description.length < 70 || description.length > 160) fail(where, `description is ${description.length} characters`);
+  if (graphemes(description) < 70 || graphemes(description) > 160) fail(where, `description is ${graphemes(description)} characters`);
   const h1 = document.querySelectorAll("h1");
   if (h1.length !== 1) fail(where, `${h1.length} h1 elements`);
 
@@ -85,10 +85,10 @@ for (const page of PAGES) {
   const markedAnswers = faq.map((q: { acceptedAnswer: { text: string } }) => q.acceptedAnswer.text);
   if (JSON.stringify(answers) !== JSON.stringify(markedAnswers)) fail(where, "FAQ answers on the page and in JSON-LD differ");
 
-  const trail = [...document.querySelectorAll('nav[aria-label="Breadcrumb"] li')].map((li) => li.textContent?.trim());
+  const trail = [...document.querySelectorAll("nav.crumbs li")].map((li) => li.textContent?.trim());
   const crumbs = graph.find((n: { "@type": string }) => n["@type"] === "BreadcrumbList")?.itemListElement?.map((i: { name: string }) => i.name) ?? [];
-  if (page.slug && JSON.stringify(trail) !== JSON.stringify(crumbs)) fail(where, `visible breadcrumbs ${JSON.stringify(trail)} differ from JSON-LD ${JSON.stringify(crumbs)}`);
-  if (!page.slug && trail.length) fail(where, "the home page shows a breadcrumb trail");
+  if (!isHome(page) && JSON.stringify(trail) !== JSON.stringify(crumbs)) fail(where, `visible breadcrumbs ${JSON.stringify(trail)} differ from JSON-LD ${JSON.stringify(crumbs)}`);
+  if (isHome(page) && (trail.length || crumbs.length !== 1)) fail(where, "a home page shows a breadcrumb trail");
   for (const n of graph.filter((n: { "@type": string; name?: string }) => n["@type"] === "Person" && n.name === AUTHOR.name)) authorIds.add(n["@id"]);
 
   for (const [seen, value, what] of [[titles, title, "title"], [descriptions, description, "description"]] as const) {

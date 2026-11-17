@@ -3,6 +3,7 @@
 // Each problem is highlighted inline and listed; selecting one offers fixes.
 import type { DocEditor } from "./editor.ts";
 import type { Fix, Scheme, Typo } from "./kannadi.ts";
+import { fmt, nodes, num, S } from "./strings.ts";
 import { type Anchor, codePoints, type Edit, shiftAnchors, shiftRanges } from "./text.ts";
 
 export interface Problem {
@@ -28,25 +29,7 @@ export interface IssuesUi {
 
 const LIST_LIMIT = 200;
 
-export const PROBLEM_NAMES: Record<Problem["kind"], string> = {
-  unknown: "Unknown glyph",
-  malformed: "Malformed syllable",
-  typo: "Likely typo",
-};
-const WHY: Record<Exclude<Problem["kind"], "typo">, string> = {
-  unknown: "The converter has no Kannada letter for this glyph. It was kept so nothing is lost.",
-  malformed: "These marks cannot form a Kannada syllable here.",
-};
-const TYPO_WHY: Record<string, string> = {
-  "ra-vocalic-r": "Kannada writes this sound with the letter ಋ, as in ನೈಋತ್ಯ.",
-};
-const FIX_LABELS: Record<string, string> = {
-  normalize: "Use the standard spelling",
-  join: "Join to the letter before",
-  remove: "Remove the stray sign",
-  "keep-first": "Keep the first vowel sign",
-  "keep-last": "Keep the second vowel sign",
-};
+const NAMES = S.problems.names;
 
 export class Issues {
   unknown: Anchor[] = [];
@@ -200,23 +183,23 @@ export class Issues {
       button.className = `issue issue-${item.kind}`;
       const line = document.createElement("span");
       line.className = "issue-line";
-      line.textContent = `Line ${lineOf(item.start)}`;
+      line.textContent = fmt(S.problems.line, { line: lineOf(item.start) });
       const what = document.createElement("span");
       what.className = "issue-what";
-      what.textContent = PROBLEM_NAMES[item.kind];
+      what.textContent = NAMES[item.kind];
       const sample = document.createElement("span");
       sample.className = "issue-sample";
       sample.lang = "kn";
       sample.textContent = text.slice(item.start, item.end);
       button.append(line, what, sample);
-      button.setAttribute("aria-label", `Line ${lineOf(item.start)}: ${what.textContent} ${codePoints(sample.textContent)}`);
+      button.setAttribute("aria-label", fmt(S.problems.itemLabel, { line: lineOf(item.start), problem: NAMES[item.kind], codes: codePoints(sample.textContent) }));
       button.addEventListener("click", () => this.show(item, true));
       li.append(button);
       return li;
     });
     this.ui.list.replaceChildren(...nodes);
     this.ui.more.hidden = items.length <= LIST_LIMIT;
-    this.ui.more.textContent = `Showing the first ${LIST_LIMIT} of ${items.length.toLocaleString("en-IN")}.`;
+    this.ui.more.textContent = fmt(S.problems.more, { shown: LIST_LIMIT, total: num(items.length) });
   }
 
   /** Selects a problem and opens its fixes. */
@@ -249,11 +232,11 @@ export class Issues {
     sample.lang = "kn";
     sample.className = `pop-sample pop-sample-${item.kind}`;
     sample.textContent = bad;
-    title.append(`${PROBLEM_NAMES[item.kind]} `, sample, ` ${codePoints(bad)}`);
+    title.append(...nodes(S.fix.title, { problem: NAMES[item.kind], sample, codes: codePoints(bad) }));
     const why = document.createElement("p");
     why.className = "pop-why";
     const typo = item.kind === "typo" ? this.typos.find((t) => t.start === item.start && t.end === item.end) : undefined;
-    why.textContent = item.kind === "typo" ? (TYPO_WHY[typo?.rule ?? ""] ?? "This spelling is usually a typing mistake.") : WHY[item.kind];
+    why.textContent = item.kind === "typo" ? (S.fix.typoWhy[typo?.rule ?? ""] ?? S.fix.why.typo) : S.fix.why[item.kind];
 
     const actions = document.createElement("div");
     actions.className = "pop-actions";
@@ -275,7 +258,7 @@ export class Issues {
     if (item.kind === "malformed") {
       for (const f of this.kannadi.fixes(text, item.start, item.end)) {
         const word = wordAround(text, f.start, f.end, f.replacement);
-        action(FIX_LABELS[f.kind] ?? "Fix", word, () => this.apply(f.start, f.end, f.replacement));
+        action(S.fix.actions[f.kind] ?? S.fix.fallback, word, () => this.apply(f.start, f.end, f.replacement));
       }
     } else if (item.kind === "typo") {
       if (typo) {
@@ -284,16 +267,16 @@ export class Issues {
         letter.lang = "kn";
         letter.textContent = typo.replacement;
         const label = document.createDocumentFragment();
-        label.append("Use ", letter);
+        label.append(...nodes(S.fix.use, { letter }));
         action(label, word, () => this.apply(typo.start, typo.end, typo.replacement));
       }
-      action("Keep it", null, () => {
+      action(S.fix.keep, null, () => {
         this.close(true);
         this.keep([item.start]);
       });
     } else {
-      action("Delete the glyph", wordAround(text, item.start, item.end, ""), () => this.apply(item.start, item.end, ""));
-      action("Keep it", null, () => {
+      action(S.fix.deleteGlyph, wordAround(text, item.start, item.end, ""), () => this.apply(item.start, item.end, ""));
+      action(S.fix.keep, null, () => {
         this.unknown = this.unknown.filter((u) => u.offset !== item.start);
         this.close(true);
         this.draw();
@@ -306,12 +289,12 @@ export class Issues {
     const label = document.createElement("label");
     const id = "pop-input";
     label.htmlFor = id;
-    label.textContent = "Replace with";
+    label.textContent = S.fix.replaceWith;
     const input = document.createElement("input");
     input.id = id;
     input.autocomplete = "off";
     input.spellcheck = false;
-    input.placeholder = "jna or ಜ್ಞ";
+    input.placeholder = S.fix.placeholder;
     const preview = document.createElement("output");
     preview.lang = "kn";
     preview.htmlFor = id;
@@ -322,7 +305,7 @@ export class Issues {
     });
     const submit = document.createElement("button");
     submit.type = "submit";
-    submit.textContent = "Replace";
+    submit.textContent = S.fix.replace;
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       if (input.value) this.apply(item.start, item.end, kannadaFor(input.value));
@@ -332,7 +315,7 @@ export class Issues {
     const close = document.createElement("button");
     close.type = "button";
     close.className = "pop-close";
-    close.setAttribute("aria-label", "Close");
+    close.setAttribute("aria-label", S.fix.close);
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("viewBox", "0 0 16 16");
     svg.setAttribute("aria-hidden", "true");

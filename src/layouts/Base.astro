@@ -6,7 +6,8 @@ import latinFont from "../fonts/noto-sans-latin-wght-normal.woff2?url";
 
 import SiteFooter from "../components/SiteFooter.astro";
 import SiteHeader from "../components/SiteHeader.astro";
-import { HOME, PAGES, type Page } from "../content/pages.ts";
+import { HOMES, PAGES, type Page } from "../content/pages.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
 import { ORG, pagePath } from "../content/site.ts";
 import { href } from "../lib/paths.ts";
 import { alternates, jsonLd, scriptJson } from "../lib/seo.ts";
@@ -47,6 +48,7 @@ const ogImageUrl = site ? new URL(ogImage, site).href : null;
     <link rel="preload" href={latinFont} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={kannadaFont} as="font" type="font/woff2" crossorigin />
     <meta property="og:type" content="website" />
+    <meta property="og:locale" content={page.lang === "kn" ? "kn_IN" : "en_IN"} />
     <meta property="og:site_name" content={ORG.name} />
     <meta property="og:title" content={page.h1} />
     <meta property="og:description" content={page.description} />
@@ -56,7 +58,7 @@ const ogImageUrl = site ? new URL(ogImage, site).href : null;
     {ogImageUrl && <meta property="og:image:height" content="630" />}
     {ogImageUrl && <meta property="og:image:alt" content={page.kind === "tool" ? `${page.og.from} becomes ${page.og.to}` : `${page.h1}: ${page.og.to}`} />}
     <meta name="twitter:card" content="summary_large_image" />
-    {!noindex && <script type="application/ld+json" set:html={scriptJson(jsonLd(page, site, HOME))} />}
+    {!noindex && <script type="application/ld+json" set:html={scriptJson(jsonLd(page, site, HOMES[page.lang ?? "en"]))} />}
     <script is:inline>
       try {
         const t = localStorage.getItem("kannadi.theme");
@@ -65,11 +67,11 @@ const ogImageUrl = site ? new URL(ogImage, site).href : null;
     </script>
   </head>
   <body class="flex min-h-dvh flex-col">
-    <a href="#main" class="sr-only z-50 rounded-md bg-primary px-3 py-2 text-primary-foreground no-underline focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
-    <SiteHeader current={page.slug} />
+    <a href="#main" class="sr-only z-50 rounded-md bg-primary px-3 py-2 text-primary-foreground no-underline focus:not-sr-only focus:fixed focus:top-3 focus:left-3">{SITE_STRINGS[page.lang ?? "en"].skip}</a>
+    <SiteHeader page={page} />
     <main id="main" class="w-full flex-1">
       <slot />
     </main>
-    <SiteFooter />
+    <SiteFooter lang={page.lang ?? "en"} />
   </body>
 </html>

@@ -1,22 +1,33 @@
 ---
-import { STORY, TAGLINE } from "../content/story.ts";
-import { BIOS, COLORS, CONTACT, DESCRIPTIONS, FACTS, LOGOS, PHOTOS, SCREENSHOTS } from "../content/press.ts";
+import { PRESS } from "../content/press.ts";
+import { STORY as STORIES, TAGLINE as TAGLINES } from "../content/story.ts";
+import { fmt, type Lang } from "../i18n/core.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
 import { href } from "../lib/paths.ts";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const { bios: BIOS, colors: COLORS, contact: CONTACT, descriptions: DESCRIPTIONS, facts: FACTS, logos: LOGOS, photos: PHOTOS, screenshots: SCREENSHOTS } = PRESS[lang];
+const STORY = STORIES[lang];
+const TAGLINE = TAGLINES[lang];
+const T = SITE_STRINGS[lang].press;
 ---
 <section aria-labelledby="story">
-  <h2 id="story">Tagline and story</h2>
+  <h2 id="story">{T.story}</h2>
   <p class="press-tagline">{TAGLINE}</p>
   {STORY.map((p) => <p set:html={p} />)}
 </section>
 
 <section aria-labelledby="logos">
-  <h2 id="logos">Logos</h2>
-  <p>Open ka is the mark of Open Kannada. The mirror is the mark of kannadi, its editor and library. Each comes as SVG and as a 1024 px PNG, for light and dark backgrounds.</p>
+  <h2 id="logos">{T.logos}</h2>
+  <p>{T.logosIntro}</p>
   <div class="logos">
     {LOGOS.map((l) => (
       <figure class="logo-card">
-        <div class="logo-preview light"><img src={href(`/brand/${l.mark}-wordmark-light.svg`)} alt={`${l.name} logo on a light background`} width={l.width} height="48" /></div>
-        <div class="logo-preview dark"><img src={href(`/brand/${l.mark}-wordmark-dark.svg`)} alt={`${l.name} logo on a dark background`} width={l.width} height="48" /></div>
+        <div class="logo-preview light"><img src={href(`/brand/${l.mark}-wordmark-light.svg`)} alt={fmt(T.logoLight, { name: l.name })} width={l.width} height="48" /></div>
+        <div class="logo-preview dark"><img src={href(`/brand/${l.mark}-wordmark-dark.svg`)} alt={fmt(T.logoDark, { name: l.name })} width={l.width} height="48" /></div>
         <figcaption>
           <b>{l.name}</b>
           <ul class="files" role="list">
@@ -26,11 +37,11 @@ import { href } from "../lib/paths.ts";
       </figure>
     ))}
   </div>
-  <p>The letters are Noto Sans Kannada, under the SIL Open Font License. Please keep the marks as they are: no new colors, outlines or effects.</p>
+  <p>{T.logosNote}</p>
 </section>
 
 <section aria-labelledby="colors">
-  <h2 id="colors">Colors</h2>
+  <h2 id="colors">{T.colors}</h2>
   <ul class="colors" role="list">
     {COLORS.map((c) => (
       <li>
@@ -42,21 +53,21 @@ import { href } from "../lib/paths.ts";
 </section>
 
 <section aria-labelledby="descriptions">
-  <h2 id="descriptions">Descriptions</h2>
+  <h2 id="descriptions">{T.descriptions}</h2>
   {DESCRIPTIONS.map((d) => (
     <>
-      <h3>In {d.words} words</h3>
+      <h3>{fmt(T.inWords, { n: d.words })}</h3>
       <p>{d.text}</p>
     </>
   ))}
 </section>
 
 <section aria-labelledby="founders">
-  <h2 id="founders">Founders</h2>
+  <h2 id="founders">{T.founders}</h2>
   <div class="bios">
     {BIOS.map((b, i) => (
       <article class="bio">
-        <div class="photo"><mark class="todo">PRASAD: photo of {PHOTOS[i]}, from Prasad.</mark></div>
+        <div class="photo"><mark class="todo">{fmt(T.photo, { name: PHOTOS[i] ?? "" })}</mark></div>
         <h3>{b.name}</h3>
         <p class="text-muted-foreground">{b.role}</p>
         <p set:html={b.text} />
@@ -67,25 +78,25 @@ import { href } from "../lib/paths.ts";
 </section>
 
 <section aria-labelledby="screenshots">
-  <h2 id="screenshots">Screenshots</h2>
+  <h2 id="screenshots">{T.screenshots}</h2>
   <div class="shots">
     {SCREENSHOTS.map((s) => (
       <a href={href(`/press/${s.file}`)} download>
-        <span class="sr-only">Download </span><img src={href(`/press/${s.file}`)} alt={s.alt} width={s.width} height={s.height} loading="lazy" decoding="async" />
+        <span class="sr-only">{T.download} </span><img src={href(`/press/${s.file}`)} alt={s.alt} width={s.width} height={s.height} loading="lazy" decoding="async" />
       </a>
     ))}
   </div>
 </section>
 
 <section aria-labelledby="facts">
-  <h2 id="facts">Facts</h2>
+  <h2 id="facts">{T.facts}</h2>
   <ul class="facts">
     {FACTS.map((f) => <li>{f.fact} <a href={f.source.startsWith("/") ? href(f.source) : f.source}>{f.label}</a></li>)}
   </ul>
 </section>
 
 <section aria-labelledby="contact">
-  <h2 id="contact">Contact</h2>
+  <h2 id="contact">{T.contact}</h2>
   <p set:html={CONTACT} />
 </section>
 

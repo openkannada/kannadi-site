@@ -56,6 +56,11 @@ export function placeholders(text: string): string[] {
   return [...notes, ...marks];
 }
 
+/** Pages whose copy still waits for a native reader, by path. */
+export function unreviewed(pages: { slug: string; needsReview?: true }[]): string[] {
+  return pages.filter((p) => p.needsReview).map((p) => (p.slug ? `/${p.slug}/` : "/"));
+}
+
 /** The steps that build, check and publish the site at `url` to the Cloudflare Pages production branch, then check it live and notify IndexNow. */
 export function deploySteps(url: URL): Step[] {
   return [

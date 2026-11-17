@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { checkoutProblem, deployEnv, deploySteps, placeholders, productionUrl } from "../src/lib/deploy.ts";
+import { checkoutProblem, deployEnv, deploySteps, placeholders, productionUrl, unreviewed } from "../src/lib/deploy.ts";
 
 const URL_ROOT = "https://kannada.example.com.au/";
 
@@ -59,4 +59,9 @@ test("placeholders for Prasad's words are found in built HTML and markdown", () 
   assert.deepEqual(placeholders('<p><mark class="todo">Neha designs the fonts.</mark></p>'), ["highlighted as a placeholder: Neha designs the fonts."]);
   assert.deepEqual(placeholders('<mark class="todo" data-astro-cid-x>Photo by <a href="/">Neha</a>.</mark>'), ["highlighted as a placeholder: Photo by Neha."]);
   assert.deepEqual(placeholders('<mark class="todo" data-astro-cid-x>PRASAD: photo of Neha Prasad, from Prasad.</mark>'), ["PRASAD: photo of Neha Prasad, from Prasad."]);
+});
+
+test("the deploy lists every page that waits for a native reader", () => {
+  assert.deepEqual(unreviewed([{ slug: "" }, { slug: "kn", needsReview: true }, { slug: "kn/about", needsReview: true }]), ["/kn/", "/kn/about/"]);
+  assert.deepEqual(unreviewed([{ slug: "about" }]), []);
 });

@@ -1,5 +1,6 @@
 // DOCX to text segments, and text to DOCX. Only the main document text is
 // read: headers, footers, notes, images and formatting are left out.
+import { S } from "./strings.ts";
 import { escapeMarkup, legacyLayout, type Layout, type Segment } from "./text.ts";
 import { readZip, writeZip } from "./zip.ts";
 
@@ -96,7 +97,7 @@ function styleLegacy(styles: Map<string, Style>, id: string | null): Layout | fa
 export async function readDocx(bytes: Uint8Array): Promise<Segment[]> {
   const entries = await readZip(bytes, ["word/document.xml", "word/styles.xml"]);
   const documentXml = entries.get("word/document.xml");
-  if (!documentXml) throw new Error("This file has no Word document inside.");
+  if (!documentXml) throw new Error(S.files.errors.noDocument);
   const decoder = new TextDecoder();
   const stylesXml = entries.get("word/styles.xml");
   const styles = readStyles(stylesXml ? decoder.decode(stylesXml) : "");

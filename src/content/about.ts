@@ -1,9 +1,11 @@
 // Copy for the About page, from Prasad's draft. Strings are trusted HTML.
 // "PRASAD:" marks words only Prasad can supply; the deploy stops while any remain.
+// The Kannada is a draft for Prasad's read.
+import type { Lang } from "../i18n/core.ts";
 import { STORY } from "./story.ts";
 
-export const ABOUT = {
-  sections: [{ heading: "Why", paragraphs: STORY }],
+const ABOUT_EN = {
+  sections: [{ heading: "Why", paragraphs: STORY.en }],
   founders: [
     {
       name: "Prasad Subrahmanya",
@@ -34,4 +36,42 @@ export const ABOUT = {
     'Press, partnerships and government offices: <a href="mailto:founders@luminik.io">founders@luminik.io</a>.',
     'Security issues: <a href="mailto:prasad@luminik.io">prasad@luminik.io</a>.',
   ],
-} as const;
+};
+
+type About = typeof ABOUT_EN;
+
+const ABOUT_KN: About = {
+  sections: [{ heading: "ಯಾಕೆ", paragraphs: STORY.kn }],
+  founders: [
+    {
+      name: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ",
+      url: "https://prasad.tech",
+      site: "prasad.tech",
+      line: "ತಂತ್ರಾಂಶವನ್ನು ಕಟ್ಟುತ್ತಾರೆ. ಕನ್ನಡ ಅವರ ಮಾತೃಭಾಷೆ.",
+    },
+    {
+      name: "ನೇಹಾ ಪ್ರಸಾದ್",
+      url: "https://neha-prasad.com/",
+      site: "neha-prasad.com",
+      line: '<mark class="todo">PRASAD: ಓಪನ್ ಕನ್ನಡದಲ್ಲಿ ನೇಹಾ ಅವರ ಪಾತ್ರದ ಬಗ್ಗೆ 1 ಸಾಲು, ನಿಮ್ಮ ಮಾತಿನಲ್ಲಿ.</mark>',
+    },
+  ],
+  dedication: [
+    'ಈ ಕೆಲಸವನ್ನು ನನ್ನ ತಂದೆ ತಾಯಿ, ವೀಣಾ ಮತ್ತು ಸುಬ್ರಮಣ್ಯ ಅವರಿಗೆ ಅರ್ಪಿಸುತ್ತೇನೆ. ಅವರು ರೈತರು. ಅವರು ಬದುಕಿದ ಮೌಲ್ಯಗಳು ಮತ್ತು ತತ್ವಗಳೇ ನನ್ನ ತಂಗಿ <a href="https://www.pramodinisubramanya.com/">ಪ್ರಮೋದಿನಿ</a> ಮತ್ತು ನನ್ನನ್ನು ಇಂದು ಇರುವಂತೆ ರೂಪಿಸಿವೆ.',
+    "ಮತ್ತು ನೇಹಾಗೆ: ನನ್ನ ಪತ್ನಿ ಮತ್ತು ಸಹಸ್ಥಾಪಕಿ. ಇದಕ್ಕೆ ನಾವು ಕೊಡುವ ಪ್ರತಿ ಗಂಟೆ, ಪ್ರತಿ ರೂಪಾಯಿಯ ಹಿಂದೆ ಅವಳಿದ್ದಾಳೆ. ಇಡೀ ದಾರಿಯಲ್ಲಿ ಅವಳು ನನ್ನ ಇನ್ನೊಂದು ಹೆಗಲಾಗಿದ್ದಾಳೆ.",
+  ],
+  signature: "ಪ್ರಸಾದ್",
+  help: [
+    "<b>ತಪ್ಪಾಗಿ ಪರಿವರ್ತನೆಯಾಗುವ ಹಳೆಯ ನುಡಿ, ಬರಹ ಅಥವಾ ಶ್ರೀಲಿಪಿ ಫೈಲ್ ನಿಮ್ಮ ಬಳಿ ಇದ್ದರೆ,</b> ಅದರ ಸಣ್ಣ ಭಾಗವನ್ನು ಕಳುಹಿಸಿ. ಸರಿಪಡಿಸಿದ ಪ್ರತಿ ಉದಾಹರಣೆಯೂ ಪರೀಕ್ಷೆಯಾಗಿ ಉಳಿಯುತ್ತದೆ.",
+    "<b>ಕನ್ನಡ ಚೆನ್ನಾಗಿ ಓದುವವರಾದರೆ,</b> ಪರಿವರ್ತಿಸಿದ ಪಠ್ಯವನ್ನು ಮೂಲದೊಂದಿಗೆ ಹೋಲಿಸಲು ನೆರವಾಗಿ. ಅದು ನಮ್ಮ ಫಲಿತಾಂಶಗಳನ್ನು ಖಚಿತಪಡಿಸುತ್ತದೆ.",
+    "<b>ಅಕ್ಷರವಿನ್ಯಾಸ ಮಾಡುವವರಾದರೆ,</b> ಹಲವು ಮುಕ್ತ ಕನ್ನಡ ಫಾಂಟ್‌ಗಳಲ್ಲಿ ಕೆಲವು ಅಕ್ಷರಗಳು ಮತ್ತು ದಪ್ಪ ತೂಕಗಳು ಇಲ್ಲ. ಅವುಗಳನ್ನು ಸೇರಿಸಲು ನೆರವಾಗಿ.",
+  ],
+  supporter: '<a href="https://www.luminik.io">DataRavel Inc. (dba Luminik)</a>, ಪ್ರಸಾದ್ ಅವರ ಕಂಪನಿ, ಓಪನ್ ಕನ್ನಡಕ್ಕೆ ನೆರವು ನೀಡುತ್ತದೆ.',
+  contact: [
+    'ದೋಷಗಳು ಮತ್ತು ಫೈಲ್ ಮಾದರಿಗಳಿಗೆ: <a href="https://github.com/openkannada">GitHub</a> ನಲ್ಲಿ issue ತೆರೆಯಿರಿ. ಸಾರ್ವಜನಿಕವಾಗಿ ಹಂಚಿಕೊಳ್ಳಲಾಗದ ದಾಖಲೆಗಳಿಗೆ <a href="mailto:support@luminik.io">support@luminik.io</a> ಗೆ ಬರೆಯಿರಿ.',
+    'ಪತ್ರಿಕೆಗಳು, ಸಹಭಾಗಿತ್ವ ಮತ್ತು ಸರ್ಕಾರಿ ಕಚೇರಿಗಳಿಗೆ: <a href="mailto:founders@luminik.io">founders@luminik.io</a>.',
+    'ಭದ್ರತಾ ಸಮಸ್ಯೆಗಳಿಗೆ: <a href="mailto:prasad@luminik.io">prasad@luminik.io</a>.',
+  ],
+};
+
+export const ABOUT: Record<Lang, About> = { en: ABOUT_EN, kn: ABOUT_KN };

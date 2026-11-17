@@ -13,8 +13,8 @@ export const ORG = {
   name: "Open Kannada",
   github: "https://github.com/openkannada",
   founders: [
-    { name: "Prasad Subrahmanya", url: "https://prasad.tech" },
-    { name: "Neha Prasad", url: "https://neha-prasad.com/" },
+    { name: "Prasad Subrahmanya", nameKn: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ", url: "https://prasad.tech" },
+    { name: "Neha Prasad", nameKn: "ನೇಹಾ ಪ್ರಸಾದ್", url: "https://neha-prasad.com/" },
   ],
   supporter: { name: "DataRavel Inc.", alternateName: "Luminik", label: "DataRavel Inc. (dba Luminik)", url: "https://www.luminik.io" },
   contacts: [

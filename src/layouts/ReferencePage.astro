@@ -21,6 +21,6 @@ const { page } = Astro.props;
   <div class="prose-kn mx-auto max-w-[54rem] px-4 sm:px-6">
     {page.table === "alphabet" && <AlphabetTables />}
     {page.table === "kagunita" && <KagunitaTable />}
-    <Faq faq={page.faq} />
+    <Faq faq={page.faq} lang={page.lang ?? "en"} />
   </div>
 </Base>

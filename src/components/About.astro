@@ -1,6 +1,15 @@
 ---
-import { ABOUT } from "../content/about.ts";
+import { ABOUT as ALL } from "../content/about.ts";
+import type { Lang } from "../i18n/core.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
 import { withBase } from "../lib/paths.ts";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const ABOUT = ALL[lang];
+const T = SITE_STRINGS[lang].about;
 ---
 {ABOUT.sections.map((s) => (
   <section>
@@ -10,14 +19,14 @@ import { withBase } from "../lib/paths.ts";
 ))}
 
 <section aria-labelledby="founders">
-  <h2 id="founders">Founders</h2>
+  <h2 id="founders">{T.founders}</h2>
   {ABOUT.founders.map((f) => (
     <p><b>{f.name}</b> <span set:html={f.line} /> <a href={f.url}>{f.site}</a></p>
   ))}
 </section>
 
 <section aria-labelledby="dedication">
-  <h2 id="dedication">Dedication</h2>
+  <h2 id="dedication">{T.dedication}</h2>
   <div class="dedication">
     {ABOUT.dedication.map((p) => <p set:html={p} />)}
     <p class="signature">{ABOUT.signature}</p>
@@ -25,19 +34,19 @@ import { withBase } from "../lib/paths.ts";
 </section>
 
 <section aria-labelledby="supported">
-  <h2 id="supported">Supported by</h2>
+  <h2 id="supported">{T.supported}</h2>
   <p set:html={ABOUT.supporter} />
 </section>
 
 <section aria-labelledby="help">
-  <h2 id="help">How you can help</h2>
+  <h2 id="help">{T.help}</h2>
   <ul class="help">
     {ABOUT.help.map((h) => <li set:html={h} />)}
   </ul>
 </section>
 
 <section aria-labelledby="contact">
-  <h2 id="contact">Contact</h2>
+  <h2 id="contact">{T.contact}</h2>
   <ul class="help">
     {ABOUT.contact.map((c) => <li set:html={c} />)}
   </ul>

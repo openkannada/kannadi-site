@@ -16,6 +16,13 @@ export function plainText(html: string): string {
     .trim();
 }
 
+const SEGMENTER = new Intl.Segmenter("kn", { granularity: "grapheme" });
+
+/** Length as a reader sees it: a Kannada letter with its vowel sign counts once, where .length counts every code unit. */
+export function graphemes(text: string): number {
+  return [...SEGMENTER.segment(text)].length;
+}
+
 /** Resolves a site path against the site URL; relative to the site root while no URL is set. */
 export function absolute(path: string, site: URL | null): string {
   return site ? new URL(path.replace(/^\//, ""), site).href : path;
@@ -40,7 +47,7 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
       url,
       name: page.title,
       description: page.description,
-      inLanguage: SITE.language,
+      inLanguage: page.lang === "kn" ? "kn-IN" : SITE.language,
       isPartOf: { "@id": id("website", root) },
       mainEntity: { "@id": page.kind === "info" ? id("organization", root) : id(page.kind === "tool" ? "app" : "resource") },
       breadcrumb: { "@id": id("breadcrumb") },
@@ -64,8 +71,8 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
       "@type": "BreadcrumbList",
       "@id": id("breadcrumb"),
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: home.name, item: root },
-        ...(page.slug ? [{ "@type": "ListItem", position: 2, name: page.name, item: url }] : []),
+        { "@type": "ListItem", position: 1, name: home.name, item: absolute(pagePath(home.slug), site) },
+        ...(page.slug !== home.slug ? [{ "@type": "ListItem", position: 2, name: page.name, item: url }] : []),
       ],
     },
     {

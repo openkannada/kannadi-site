@@ -86,10 +86,19 @@ test("ra with a virama before the vowel letter ಋ is a likely typo, and the fix
   const { editor, issues, pop, press } = setup("ನೈರ್ಋತ್ಯ");
   assert.deepEqual(issues.items(), [{ kind: "typo", start: 2, end: 5 }]);
   issues.popover(issues.items()[0]!, false);
-  assert.match(pop.textContent ?? "", /ನೈಋತ್ಯ/);
-  assert.match(pop.textContent ?? "", /letter ಋ alone/);
+  assert.match(pop.textContent ?? "", /single letter ಋ/);
   press("Use ಋ");
   assert.equal(editor.text, "ನೈಋತ್ಯ");
+  assert.equal(issues.total, 0);
+});
+
+test("ra with a virama before ಋ can be kept as typed", () => {
+  const { editor, issues, press } = setup("ನೈರ್ಋತ್ಯ");
+  press("Keep it");
+  assert.equal(editor.text, "ನೈರ್ಋತ್ಯ");
+  assert.equal(issues.total, 0);
+  editor.replace(0, 0, "ಆ ");
+  issues.check();
   assert.equal(issues.total, 0);
 });
 

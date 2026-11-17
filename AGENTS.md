@@ -4,7 +4,7 @@ Read `PRODUCT.md` for who the site is for, and `DESIGN.md` for the visual system
 
 ## Rules
 
-- Commit as Prasad, signed: `git -c user.name="Prasad Subrahmanya" -c user.email=prasadus92@gmail.com commit -S`. No AI attribution in commits, PR bodies or review replies.
+- Commit as Prasad, signed and signed off for the DCO: `git -c user.name="Prasad Subrahmanya" -c user.email=prasadus92@gmail.com commit -S -s`. No AI attribution in commits, PR bodies or review replies. Other contributors sign off with `git commit -s` (see CONTRIBUTING.md).
 - Branch from `origin/main` and open a pull request. Never push `main` or force-push.
 - Only Prasad deploys, with `npm run deploy` on his Cloudflare account (see the README). Agents never run it. `SITE_URL` stays unset in CI except for the smoke build at `example.org`.
 - Pin every dependency to an exact version, checked on the registry.
@@ -16,4 +16,4 @@ Read `PRODUCT.md` for who the site is for, and `DESIGN.md` for the visual system
 
 ## Commands
 
-`npm run wasm`, `npm run build`, `npm run check`, `npm test`, `npm run seo-smoke`, `npm run voice-lint`, `npm run page-hashes`, `npm run lighthouse`. `npm run deploy` publishes; Prasad runs it.
+`uvx reuse lint` (every file has a license; see REUSE.toml and NOTICE.md), `npm run wasm`, `npm run build`, `npm run check`, `npm test`, `npm run seo-smoke`, `npm run voice-lint`, `npm run page-hashes`, `npm run lighthouse`. `npm run deploy` publishes; Prasad runs it.

@@ -20,6 +20,10 @@ import Logo from "./Logo.astro";
           <>{i > 0 && " and "}<a href={f.url}>{f.name}</a></>
         ))}. Supported by <a href={ORG.supporter.url}>{ORG.supporter.label}</a>.
       </p>
+      <p>
+        The licenses and names of {ORG.name} belong to the project. {ORG.supporter.label} supports it and holds none of them.{" "}
+        <a href={href("/names-and-logos/")}>Names and logos</a>.
+      </p>
       <p>If kannadi helps your project, a mention or a link to <a href={AUTHOR.url}>prasad.tech</a> is appreciated.</p>
       <p>Word suggestions use a list of words counted in the articles that <a href="https://kn.wikipedia.org">Kannada Wikipedia</a> contributors write, shared under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
     </div>

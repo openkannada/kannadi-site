@@ -1,0 +1,27 @@
+---
+import { BRAND } from "../content/brand.ts";
+import { withBase } from "../lib/paths.ts";
+---
+{BRAND.sections.map((s) => (
+  <section>
+    <h2>{s.heading}</h2>
+    <ul class="brand-list">
+      {s.items.map((i) => <li set:html={withBase(i)} />)}
+    </ul>
+  </section>
+))}
+
+<section aria-labelledby="owner">
+  <h2 id="owner">Who holds them</h2>
+  <p>{BRAND.owner}</p>
+  <p set:html={BRAND.removal} />
+</section>
+
+<style>
+  .brand-list {
+    display: grid;
+    gap: 0.75rem;
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+</style>

@@ -14,7 +14,8 @@ test("every page has the structured data the strategy asks for", () => {
   for (const page of PAGES) {
     const t = types(jsonLd(page, null, HOME));
     const main = { tool: ["WebApplication", "HowTo"], reference: ["LearningResource"], info: ["Organization"] }[page.kind];
-    const faq = page.faq.length ? ["FAQPage"] : [];
+    const faq = page.kind !== "info" || page.faq.length ? ["FAQPage"] : [];
+    if (page.kind !== "info") assert.ok(page.faq.length, `${page.slug || "home"} has no FAQ`);
     for (const want of ["WebPage", "BreadcrumbList", "Person", ...faq, ...main]) {
       assert.ok(t.includes(want), `${page.slug || "home"} lacks ${want}`);
     }

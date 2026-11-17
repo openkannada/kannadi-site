@@ -61,7 +61,7 @@ for (const page of PAGES) {
   if (scripts.length !== 1) fail(where, `${scripts.length} JSON-LD scripts`);
   const graph = JSON.parse(scripts[0]?.textContent ?? "{}")["@graph"] ?? [];
   const types = graph.map((n: { "@type": string }) => n["@type"]);
-  const faqNeeded = page.faq.length ? ["FAQPage"] : [];
+  const faqNeeded = page.kind !== "info" || page.faq.length ? ["FAQPage"] : [];
   for (const t of [...NEEDED, ...faqNeeded, ...BY_KIND[page.kind]]) if (!types.includes(t)) fail(where, `JSON-LD lacks ${t}`);
   if (!page.slug) for (const t of ["WebSite", "SoftwareSourceCode"]) if (!types.includes(t)) fail(where, `JSON-LD lacks ${t}`);
   const faq = graph.find((n: { "@type": string }) => n["@type"] === "FAQPage")?.mainEntity ?? [];

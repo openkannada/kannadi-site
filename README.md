@@ -48,7 +48,9 @@ Each deploy, from `main` once it matches `origin/main`, with no local changes:
 SITE_URL=https://your-domain/ npm run deploy
 ```
 
-`scripts/deploy.ts` refuses a missing, plain http, placeholder or sub-path `SITE_URL`, local changes, any branch other than `main`, and a `main` that differs from `origin/main`. It ignores `KANNADI_DIR`, so the WebAssembly package comes from kannadi at `kannadi.rev`. It then builds that package, checks types, runs the unit tests, builds the site, runs the SEO smoke check at the production address and the voice lint, and checks that no `PRASAD:` placeholder is left on the About and Press pages. It then publishes `dist/` and `functions/` to the production branch with the pinned Wrangler. It stops at the first step that fails.
+`scripts/deploy.ts` refuses a missing, plain http, placeholder or sub-path `SITE_URL`, local changes, any branch other than `main`, and a `main` that differs from `origin/main`. It ignores `KANNADI_DIR`, so the WebAssembly package comes from kannadi at `kannadi.rev`. It then builds that package, checks types, runs the unit tests, builds the site, runs the SEO smoke check at the production address and the voice lint, and checks that no `PRASAD:` placeholder is left on the About and Press pages. It saves the live sitemap, publishes `dist/` and `functions/` to the production branch with the pinned Wrangler, checks that the live site serves its key pages and files with the right content types, and sends the pages whose `lastmod` changed to IndexNow. IndexNow stays off until `INDEXNOW.enabled` is set in `src/content/site.ts`. It stops at the first step that fails.
+
+The sitemap's `lastmod` dates come from `data/page-dates.json`, which records a fingerprint of each page's text. After changing any page's text, run `npm run build && npm run page-dates` and commit the file; `npm run seo-smoke` fails until it matches. Copies of the site on `pages.dev` hosts are served with `X-Robots-Tag: noindex`.
 
 ## Typing in English letters
 

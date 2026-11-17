@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - id: kannadi
         run: echo "rev=$(tr -d '[:space:]' < kannadi.rev)" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v7

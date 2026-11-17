@@ -12,6 +12,7 @@
     "test": "node --test 'test/**/*.test.ts'",
     "seo-smoke": "node scripts/seo-smoke.ts",
     "voice-lint": "node scripts/voice-lint.ts",
+    "page-hashes": "node scripts/page-hashes.ts",
     "lighthouse": "lhci autorun",
     "deploy": "node scripts/deploy.ts"
   },

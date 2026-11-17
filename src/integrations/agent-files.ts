@@ -1,5 +1,6 @@
 // After the build: a markdown mirror next to every page, llms.txt,
 // llms-full.txt, robots.txt and, once the site has a URL, sitemap.xml.
+import { execFileSync } from "node:child_process";
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import type { AstroIntegration } from "astro";
 
 import { SITE } from "../content/site.ts";
+import { contentHash, HASH_FILE, lastmodOf, type PageHashes } from "../lib/freshness.ts";
 import {
   type BuiltPage,
   llmsFull,
@@ -36,11 +38,13 @@ function pathOf(dist: string, file: string): string {
 
 export function agentFiles(): AstroIntegration {
   let site: URL | undefined;
+  let root: URL;
   return {
     name: "kannadi-agent-files",
     hooks: {
       "astro:config:done": ({ config }) => {
         site = config.site ? new URL(config.base, config.site) : undefined;
+        root = config.root;
       },
       "astro:build:done": async ({ dir, logger }) => {
         const dist = fileURLToPath(dir);
@@ -69,7 +73,18 @@ export function agentFiles(): AstroIntegration {
         await writeFile(join(dist, "llms-full.txt"), llmsFull(pages, info));
         const map = site ? url("/sitemap.xml") : null;
         await writeFile(join(dist, "robots.txt"), robots(map));
-        if (site) await writeFile(join(dist, "sitemap.xml"), sitemap(pages.map((p) => url(p.path))));
+        if (site) {
+          const hashes: PageHashes = JSON.parse(await readFile(new URL(HASH_FILE, root), "utf8"));
+          const git = (args: string[]) => execFileSync("git", args, { cwd: fileURLToPath(root), encoding: "utf8" });
+          if (git(["rev-parse", "--is-shallow-repository"]).trim() === "true") {
+            logger.warn("Shallow git clone: every page's lastmod is the date of the newest commit. Deploy from a full clone.");
+          }
+          const lastmod = (p: BuiltPage) => {
+            const hash = contentHash(p.markdown);
+            return hashes[p.path] === hash ? lastmodOf(hash, git) : undefined;
+          };
+          await writeFile(join(dist, "sitemap.xml"), sitemap(pages.map((p) => ({ loc: url(p.path), lastmod: lastmod(p) }))));
+        }
         logger.info(`${pages.length} markdown mirrors, llms.txt and llms-full.txt${site ? ", sitemap.xml" : ""}`);
       },
     },

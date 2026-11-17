@@ -12,6 +12,10 @@ export interface Faq {
 interface PageBase {
   /** URL path without slashes; "" is the home page. */
   slug: string;
+  /** The language the page is written in; English when unset. */
+  lang?: "en" | "kn";
+  /** The slug of the same page in the other language, once it exists. Both pages must name each other. */
+  twin?: string;
   /** Short name for navigation and breadcrumbs. */
   name: string;
   title: string;

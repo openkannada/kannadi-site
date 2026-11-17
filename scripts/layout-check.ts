@@ -42,7 +42,11 @@ try {
     for (const scheme of ["light", "dark"] as const) {
       for (const width of WIDTHS) {
         const page = await browser.newPage();
-        await page.emulateMediaFeatures([{ name: "prefers-color-scheme", value: scheme }]);
+        // Screenshots show each illustration's final frame, as reduced motion does.
+        await page.emulateMediaFeatures([
+          { name: "prefers-color-scheme", value: scheme },
+          ...(shots ? [{ name: "prefers-reduced-motion", value: "reduce" }] : []),
+        ]);
         await page.setViewport({ width, height: 900, deviceScaleFactor: 1 });
         await page.evaluateOnNewDocument(() => {
           (globalThis as unknown as { __cls: number }).__cls = 0;

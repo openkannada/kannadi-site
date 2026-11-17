@@ -242,32 +242,6 @@
     @apply mx-2 my-1.5 h-px bg-border;
   }
 
-  /* A page heading with its illustration beside it: on wide screens for tool pages, from tablets elsewhere. */
-  .hero {
-    display: grid;
-    align-items: center;
-    gap: 1.5rem 2.5rem;
-  }
-  .hero-illo {
-    display: none;
-  }
-  @media (min-width: 64rem) {
-    .hero {
-      grid-template-columns: minmax(0, 1fr) 15rem;
-    }
-    .hero-illo {
-      display: block;
-    }
-  }
-  @media (min-width: 48rem) and (max-width: 63.99rem) {
-    .hero-reference {
-      grid-template-columns: minmax(0, 1fr) 12rem;
-    }
-    .hero-reference .hero-illo {
-      display: block;
-    }
-  }
-
   /* Prose sections under the editor. */
   .prose-kn {
     @apply text-[1.0625rem] leading-relaxed;
@@ -322,5 +296,32 @@
   *::after {
     transition-duration: 0.01ms !important;
     animation-duration: 0.01ms !important;
+  }
+}
+
+/* A page heading with its illustration beside it: on wide screens for tool pages, from tablets elsewhere.
+   Unlayered and 2 classes deep, to win over the illustration's own display rule. */
+.hero {
+  display: grid;
+  align-items: center;
+  gap: 1.5rem 2.5rem;
+}
+.hero .hero-illo {
+  display: none;
+}
+@media (min-width: 64rem) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) 15rem;
+  }
+  .hero .hero-illo {
+    display: block;
+  }
+}
+@media (min-width: 48rem) and (max-width: 63.99rem) {
+  .hero-reference {
+    grid-template-columns: minmax(0, 1fr) 12rem;
+  }
+  .hero-reference .hero-illo {
+    display: block;
   }
 }

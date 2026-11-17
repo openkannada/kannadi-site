@@ -67,6 +67,38 @@ A pane (`@utility glass` on the site):
 - `--duration-morph` (450ms) on `--ease-spring`: glass springing back after a press.
 - Nothing loops, except the microphone's slow breath while it listens, and that stops under reduced motion.
 
+## Icons
+
+- 1 set, drawn for Open Kannada in `src/icons/icons.ts` and rendered by `Icon.astro`: a 24 by 24 grid, everything inside 2 to 22, 1.75 strokes with round caps and joins, to match the logo's soft corners.
+- 2 states. Outline is the default. Filled adds a soft tint (18% of the current color) inside the shape, for headings and the chosen state.
+- Icons take `currentColor`, so they follow the text and the theme. They are decoration (`aria-hidden`); the words beside them carry the meaning.
+- `npm run icons` writes `design/icons.html`, the index of every icon in both states, in light and dark. A test fails when it is out of date, or when an icon leaves the grid.
+- No brand logos of other companies, and no icon from a general library where 1 of ours fits.
+
+## Illustration
+
+- Drawn from Kannada itself: letterforms and ottaksharas, on the turmeric, kumkuma and indigo fields, on a sheet like the editor's. Avoid stock "India" pictures. Old print and palm-leaf textures belong to the OCR and dictionary pages, when those exist.
+- Each tool has 1 hero illustration in `Illustration.astro`, as inline SVG colored only by tokens, so it themes in light and dark:
+  - `convert`: old Nudi glyphs settle into ಕನ್ನಡ;
+  - `typing`: "namaskara" becomes ನಮಸ್ಕಾರ;
+  - `letters`: the vowel-sign forms of ಕ arrive 1 by 1;
+  - `font`: ನ್ and ನ close in and become the conjunct ನ್ನ;
+  - `spell`: a likely typo, ಬಾಷೆ, is marked and becomes ಭಾಷೆ;
+  - `scan`: a beam passes over a printed page, and the text reads out.
+- Tool pages show theirs beside the heading from 1024px, so the editor stays in the first viewport on phones and tablets. Reference pages show theirs from 768px. The About page shows the 4 kinds of work as cards.
+
+## Motion in illustrations
+
+- 1 meaningful animation per illustration, short and calm: it settles within 4 seconds, on `--ease-settle` and `--ease-standard`. It runs once, when the illustration is first a third on screen (`inview.ts` adds `.is-in`).
+- The final frame is the resting state: it is what shows before the script runs, without JavaScript, and under reduced motion.
+- CSS animation only, with no animation library, video or Rive; nothing animates the heading or anything that could be the LCP element.
+
+## Pixel-perfect and responsive
+
+- Every page holds at 360, 390, 768, 1024, 1440 and 1920 pixels wide, in light and dark: no horizontal scroll, no layout shift above 0.05, and no Kannada clipped by its box. `npm run layout-check` measures all 3 in Chrome on every built page, in CI. `--shots DIR` saves a screenshot of each for review.
+- Kannada keeps its larger size and its line height everywhere, so ottaksharas never touch the line above or below.
+- The Lighthouse CI budgets (LCP 2.5 s, CLS 0.1, TBT 200 ms, and 95 or more in every category) hold with the illustrations: they are inline SVG of a few kilobytes, with no images to fetch.
+
 ## Logo
 
 - **Open Kannada** is Open ka: Noto Sans Kannada's ಕ at weight 640 on a rounded `--primary` tile, with a wedge cut from the right of its bowl. It marks the organization: site headers, favicons, app icons, Open Graph cards and avatars.

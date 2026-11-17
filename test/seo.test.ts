@@ -38,10 +38,11 @@ test("a page's lastmod is the commit that recorded its current fingerprint", () 
 test("with real git, a merged change is dated by the merge, and text changed back is dated by the commit that brought it back", () => {
   const dir = mkdtempSync(join(tmpdir(), "page-hashes-"));
   const run = (args: string[], date = "2026-04-01T09:00:00+00:00") =>
-    execFileSync("git", ["-c", "user.name=T", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", ...args], {
+    execFileSync("git", ["-c", "user.name=T", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", "-c", "core.hooksPath=/dev/null", ...args], {
       cwd: dir,
       encoding: "utf8",
-      env: { ...process.env, GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date },
+      // Without the caller's GIT_* variables, so a git hook running the tests cannot point these commands at its repository.
+      env: { ...Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_"))), GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date },
     });
   const record = (hash: string, date: string, message: string) => {
     mkdirSync(join(dir, "data"), { recursive: true });
@@ -57,9 +58,9 @@ test("with real git, a merged change is dated by the merge, and text changed bac
     run(["checkout", "-q", "main"]);
     run(["merge", "-q", "--no-ff", "-m", "merge", "copy"], "2026-04-10T09:00:00+00:00");
     const git = (args: string[]) => run(args);
-    assert.equal(lastmodOf("bbb", git), "2026-04-10T09:00:00Z");
+    assert.equal(Date.parse(lastmodOf("bbb", git) ?? ""), Date.parse("2026-04-10T09:00:00Z"));
     record("aaa", "2026-04-20T09:00:00+00:00", "back");
-    assert.equal(lastmodOf("aaa", git), "2026-04-20T09:00:00Z");
+    assert.equal(Date.parse(lastmodOf("aaa", git) ?? ""), Date.parse("2026-04-20T09:00:00Z"));
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

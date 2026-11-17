@@ -39,6 +39,12 @@ The certificates can take a few minutes, so the live check retries for up to 5 m
 
 Pages and other files run the Worker first, so it can redirect and set noindex. Hashed scripts, styles and fonts under `/_astro/` and `/fonts/` go straight to the asset server, which does not count as a Worker request; `_headers` marks them noindex. The Workers free plan allows 100,000 Worker requests a day.
 
+## Build files across a deploy
+
+Build files under `/_astro/` are named by a hash of their content, and a deploy replaces them. A page already open, or HTML a cache still holds, asks for the previous names, so before each publish `scripts/keep-assets.ts` copies every build file the live pages name, and the files those name, into the new upload. They stay until the deploy after, so a tab opened 2 deploys back can still miss them. The live check then fails if a build file named by the pages it checks, or kept by the deploy, does not answer 200.
+
+Build files get the asset server's own `Cache-Control: public, max-age=0, must-revalidate` with an ETag, so a repeat visit costs a 304 per file. A year-long `immutable` header would also apply to a 404, and a browser would keep that 404 for a file that exists moments later; that is how a page stayed unstyled after a deploy until a hard reload.
+
 ## Rolling back
 
 `npx wrangler rollback` returns to the previous version of the Worker, with its files. A revert merged to `main` then makes it permanent.

@@ -12,6 +12,10 @@ export const SITE = {
 export const ORG = {
   name: "Open Kannada",
   github: "https://github.com/openkannada",
+  founders: [
+    { name: "Prasad Subrahmanya", url: "https://prasad.tech" },
+    { name: "Neha Prasad", url: "https://neha-prasad.com/" },
+  ],
 } as const;
 
 export const AUTHOR = {

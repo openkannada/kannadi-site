@@ -163,7 +163,7 @@ if (site !== null) {
 
 for (const css of readdirSync(join(dist, "_astro")).filter((n) => n.endsWith(".css"))) {
   for (const [, ref] of readFileSync(join(dist, "_astro", css), "utf8").matchAll(/url\(["']?([^"')]+)["']?\)/g)) {
-    if (!ref || ref.startsWith("data:")) continue;
+    if (!ref || ref.startsWith("data:") || ref.startsWith("#")) continue;
     const t = target(ref, "/_astro/");
     if (t && !existsSync(file(t))) fail(`/_astro/${css}`, `broken url(${ref})`);
   }

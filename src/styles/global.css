@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../../design/tokens.css";
 
 @font-face {
   font-family: "Noto Sans Kannada";
@@ -41,65 +42,9 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/*
- * Tokens follow shadcn's names. Each holds its light and dark value in 1
- * light-dark() pair, so the 2 themes cannot drift apart; data-theme pins one.
- */
-:root {
-  color-scheme: light dark;
-
-  --background: light-dark(oklch(0.972 0.006 262), oklch(0.165 0.014 268));
-  --foreground: light-dark(oklch(0.2 0.025 268), oklch(0.95 0.006 262));
-  --card: light-dark(oklch(1 0 0), oklch(0.205 0.016 268));
-  --card-foreground: var(--foreground);
-  --popover: light-dark(oklch(0.995 0.002 262), oklch(0.23 0.016 268));
-  --popover-foreground: var(--foreground);
-  --primary: light-dark(oklch(0.46 0.19 277), oklch(0.74 0.13 277));
-  --primary-foreground: light-dark(oklch(0.99 0 0), oklch(0.17 0.03 277));
-  --secondary: light-dark(oklch(0.94 0.012 270), oklch(0.27 0.02 270));
-  --secondary-foreground: var(--foreground);
-  --muted: light-dark(oklch(0.955 0.006 262), oklch(0.24 0.014 268));
-  --muted-foreground: light-dark(oklch(0.46 0.022 268), oklch(0.74 0.018 265));
-  --accent: light-dark(oklch(0.93 0.03 277), oklch(0.3 0.05 277));
-  --accent-foreground: light-dark(oklch(0.3 0.12 277), oklch(0.92 0.04 277));
-  --border: light-dark(oklch(0.895 0.01 265), oklch(0.31 0.016 268));
-  --input: var(--border);
-  --ring: light-dark(oklch(0.55 0.19 277), oklch(0.78 0.12 277));
-  --radius: 1rem;
-
-  /* Glass: a tinted pane, its rim light, and the solid fallback. */
-  --glass: light-dark(oklch(0.99 0.004 262 / 0.66), oklch(0.26 0.018 268 / 0.62));
-  --glass-solid: light-dark(oklch(0.985 0.004 262), oklch(0.25 0.018 268));
-  --glass-rim: light-dark(oklch(1 0 0 / 0.85), oklch(1 0 0 / 0.12));
-  --glass-edge: light-dark(oklch(0.25 0.03 268 / 0.1), oklch(0 0 0 / 0.45));
-  --shadow-float: 0 1px 1px -0.5px oklch(0.2 0.03 268 / 0.08), 0 6px 12px -4px oklch(0.2 0.03 268 / 0.12),
-    0 18px 40px -12px light-dark(oklch(0.2 0.04 268 / 0.22), oklch(0 0 0 / 0.6));
-  --shadow-sheet: 0 1px 2px oklch(0.2 0.03 268 / 0.05), 0 12px 48px -24px light-dark(oklch(0.2 0.04 268 / 0.25), oklch(0 0 0 / 0.7));
-
-  /* The canvas behind the sheet: turmeric, kumkuma and indigo, so the glass has something to bend. */
-  --field-turmeric: light-dark(oklch(0.86 0.15 85 / 0.7), oklch(0.62 0.13 75 / 0.22));
-  --field-kumkuma: light-dark(oklch(0.75 0.15 20 / 0.32), oklch(0.5 0.15 20 / 0.2));
-  --field-indigo: light-dark(oklch(0.7 0.14 277 / 0.5), oklch(0.45 0.17 277 / 0.32));
-
-  /* Problem marks in the text. */
-  --mark-unknown: light-dark(oklch(0.66 0.21 18 / 0.2), oklch(0.62 0.2 18 / 0.32));
-  --mark-unknown-line: light-dark(oklch(0.53 0.2 20), oklch(0.75 0.15 20));
-  --mark-malformed: light-dark(oklch(0.84 0.15 80 / 0.38), oklch(0.72 0.14 75 / 0.3));
-  --mark-malformed-line: light-dark(oklch(0.56 0.13 60), oklch(0.82 0.13 80));
-
-  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
-  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1);
-}
-:root[data-theme="light"] {
-  color-scheme: light;
-}
-:root[data-theme="dark"] {
-  color-scheme: dark;
-}
-
 @theme inline {
-  --font-sans: "Noto Sans Kannada", "Nirmala UI", "Tunga", system-ui, sans-serif;
-  --font-serif: "Noto Serif Kannada", "Noto Sans Kannada", serif;
+  --font-sans: var(--type-sans);
+  --font-serif: var(--type-serif);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -194,34 +139,80 @@
   }
 }
 
-/* A pane of glass: blur and saturate what is behind, light the top rim. */
+/* The light on glass: a direction from -1 to 1, set from the pointer by light.ts and eased here. */
+@property --light-x {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+@property --light-y {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: -1;
+}
+:root {
+  transition:
+    --light-x var(--duration-morph) var(--ease-out),
+    --light-y var(--duration-morph) var(--ease-out);
+}
+.lg-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+/*
+ * A pane of Liquid Glass: blur and saturate what is behind; light the rim on the side facing the light,
+ * with a soft specular glow inside it and a faint rim opposite. In Chromium the edge also bends what is
+ * behind (lg-refract, from light.ts). Solid when transparency is off or backdrop filters are missing.
+ */
 @utility glass {
   background: var(--glass);
-  -webkit-backdrop-filter: blur(22px) saturate(1.9);
-  backdrop-filter: blur(22px) saturate(1.9);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   border: 1px solid var(--glass-edge);
-  box-shadow: inset 0 1px 0 var(--glass-rim), var(--shadow-float);
+  box-shadow:
+    inset calc(var(--light-x) * -1.25px) calc(var(--light-y) * -1.25px) 0 var(--glass-rim),
+    inset calc(var(--light-x) * 1px) calc(var(--light-y) * 1px) 0 var(--glass-rim-low),
+    inset calc(var(--light-x) * -12px) calc(var(--light-y) * -12px) 22px -16px var(--glass-specular),
+    var(--shadow-float);
   color: var(--popover-foreground);
+  :root.lg-refract & {
+    backdrop-filter: url(#lg-refract) blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     background: var(--glass-solid);
   }
   @media (prefers-reduced-transparency: reduce) {
     background: var(--glass-solid);
+    -webkit-backdrop-filter: none;
     backdrop-filter: none;
+    :root.lg-refract & {
+      backdrop-filter: none;
+    }
   }
 }
 
 @layer components {
   .btn {
     @apply inline-flex h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full px-3.5 text-[0.9375rem] font-medium whitespace-nowrap select-none;
-    @apply text-foreground transition-[background-color,color,box-shadow,transform] duration-150;
+    @apply text-foreground;
+    transition:
+      background-color var(--duration-quick) var(--ease-out),
+      color var(--duration-quick) var(--ease-out),
+      box-shadow var(--duration-quick) var(--ease-out),
+      transform var(--duration-morph) var(--ease-spring);
     -webkit-tap-highlight-color: transparent;
   }
+  /* On hover a control becomes a small bead of glass; pressed, it gives a little and springs back. */
   .btn:hover {
     background: oklch(from var(--foreground) l c h / 0.07);
+    box-shadow: inset 0 1px 0 var(--glass-rim-low);
   }
   .btn:active {
-    transform: scale(0.97);
+    transform: scale(0.94);
+    transition-duration: var(--duration-quick), var(--duration-quick), var(--duration-quick), 90ms;
   }
   .btn:disabled {
     @apply cursor-not-allowed opacity-45;

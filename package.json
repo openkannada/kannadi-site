@@ -13,6 +13,7 @@
     "seo-smoke": "node scripts/seo-smoke.ts",
     "voice-lint": "node scripts/voice-lint.ts",
     "page-hashes": "node scripts/page-hashes.ts",
+    "tokens": "node scripts/tokens.ts",
     "lighthouse": "lhci autorun",
     "deploy": "node scripts/deploy.ts"
   },

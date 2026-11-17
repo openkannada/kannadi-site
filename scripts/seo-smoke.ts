@@ -49,7 +49,6 @@ for (const page of PAGES) {
   const csp = document.querySelector('meta[http-equiv="content-security-policy"]')?.getAttribute("content") ?? "";
   if (!csp.includes("default-src 'none'")) fail(where, "no strict Content-Security-Policy");
   if (document.querySelector("[style]")) fail(where, "an inline style attribute, which the CSP blocks");
-  if (!/<body[^>]*>\s*<!--\s*THESIS:/.test(html)) fail(where, "the design contract is not the first child of <body>");
 
   const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute("href") ?? null;
   const expected = site ? new URL(path.slice(1), site).href : null;
@@ -110,8 +109,15 @@ for (const css of readdirSync(join(dist, "_astro")).filter((n) => n.endsWith(".c
   }
 }
 
-const built = readdirSync(dist, { recursive: true, withFileTypes: true })
-  .filter((e) => e.isFile() && e.name === "index.html")
+const htmlFiles = readdirSync(dist, { recursive: true, withFileTypes: true }).filter((e) => e.isFile() && e.name.endsWith(".html"));
+for (const e of htmlFiles) {
+  const where = `/${relative(dist, join(e.parentPath, e.name)).split(sep).join("/")}`;
+  const markup = readFileSync(join(e.parentPath, e.name), "utf8").replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/g, "");
+  if (markup.includes("<!--")) fail(where, "an HTML comment, which reads as build notes in the page source");
+}
+
+const built = htmlFiles
+  .filter((e) => e.name === "index.html")
   .map((e) => `/${relative(dist, e.parentPath).split(sep).join("/")}/`.replace("//", "/"));
 for (const path of built) if (!PAGES.some((p) => pagePath(p.slug) === path)) fail(path, "built page with no entry in PAGES");
 

@@ -22,15 +22,6 @@ const canonical = site ? new URL(pagePath(page.slug).slice(1), site).href : null
 const ogImage = href(`/og/${page.slug || "home"}.png`);
 const ogImageUrl = site ? new URL(ogImage, site).href : null;
 
-// The build keeps this comment as the first child of <body>; see DESIGN.md.
-const contract = `<!--
-THESIS: The page is a sheet of paper you can write Kannada on at once; every tool floats above it on 1 pane of glass and gets out of the way. It refuses the converter page of 2 text boxes, a button and ads.
-OWN-WORLD: Cool paper sheet on a canvas lit by turmeric, kumkuma and indigo fields; glass panes with a lit rim; indigo for action; rose and amber only for problems in the text; Noto Sans Kannada throughout, Kannada set large.
-STORY: Arrive from a search, read 1 sentence that answers it, type or drop a file into the sheet, fix what is marked, save.
-FIRST VIEWPORT: Brand and page links on the canvas, the heading and 1-sentence answer, then the sheet with its 1-line welcome; the glass toolbar floats at the sheet's top edge on desktop and at the thumb on phones; Save is the 1 solid button.
-FORM: Brief-pinned glass over a writing surface (seed f6311fac rolled; the brief wins).
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md
--->`;
 ---
 <!doctype html>
 <html lang="en">
@@ -69,7 +60,6 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     </script>
   </head>
   <body class="flex min-h-dvh flex-col">
-    <Fragment set:html={contract} />
     <a href="#main" class="sr-only z-50 rounded-md bg-primary px-3 py-2 text-primary-foreground no-underline focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
     <SiteHeader current={page.slug} />
     <main id="main" class="w-full flex-1">

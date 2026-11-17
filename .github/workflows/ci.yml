@@ -21,7 +21,7 @@ jobs:
         run: echo "rev=$(tr -d '[:space:]' < kannadi.rev)" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v7
         with:
-          repository: prasadus92/kannadi
+          repository: openkannada/kannadi
           ref: ${{ steps.kannadi.outputs.rev }}
           path: .kannadi
       - uses: dtolnay/rust-toolchain@stable

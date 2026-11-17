@@ -1,60 +1,97 @@
-# Design
+# Open Kannada design language
 
-The visual system of the kannadi site, recorded from the built pages on 16 November 2026. Tokens live in `src/styles/global.css`; the editor's own rules are in `src/styles/editor.css`.
+The design every Open Kannada surface shares: this site, kannadi's own editor page in openkannada/kannadi, the press kit, and whatever comes next. The tokens are in `design/tokens.json`, and `npm run tokens` writes `design/tokens.css` from it. The site's own rules are in `src/styles/global.css` and `src/styles/editor.css`.
+
+The brand line is "Kannada should be as easy to use on a computer as English."
 
 ## Idea
 
-The page is a sheet of paper you can write Kannada on at once. Every tool floats above it on 1 pane of glass and gets out of the way. The converter page this replaces in the category is 2 text boxes, a button and ads; this site has 1 surface and 1 toolbar.
+The page is a sheet of paper you can write Kannada on at once. Every tool floats above it on 1 pane of Liquid Glass and gets out of the way. Behind the sheet, soft fields of turmeric, kumkuma and indigo give the glass something to bend and give the page its warmth.
 
-## Direction
+- **Calm surface, live glass.** The sheet, the page and the reading sections are solid and still. Only what floats over the writing is glass, and only glass moves with the light.
+- **Kannada first and large.** Kannada is set large, with the line height its stacked conjuncts need.
+- **1 action color.** Indigo means "do this" or "this is chosen". Rose and amber mean only "look at this in your text".
+- **Light and dark are 1 design.** Every color is 1 `light-dark()` pair, so the 2 themes cannot drift apart.
 
-The brief the design was built and reviewed against. It lives here only; the built pages carry no HTML comments, and `npm run seo-smoke` fails if one appears.
+## Tokens
 
-- **World:** a cool paper sheet on a canvas lit by turmeric, kumkuma and indigo fields. Glass panes with a lit rim. Indigo for action; rose and amber only for problems in the text. Noto Sans Kannada throughout, with Kannada set large.
-- **Story:** arrive from a search, read 1 sentence that answers it, type or drop a file into the sheet, fix what is marked, save.
-- **First viewport:** brand and page links on the canvas, the heading and 1-sentence answer, then the sheet with its 1-line welcome. The glass toolbar floats at the sheet's top edge on desktop and at the thumb on phones. Save is the 1 solid button.
+`design/tokens.json` is the source of truth, in groups: `color`, `shadow`, `radius`, `glass`, `motion` and `type`. Each token has a `$value` and a `$description`. A color's value is a `{ light, dark }` pair of `oklch()` colors, or a `{color.name}` reference. `design/tokens.css` turns them into custom properties on `:root`, with the same names, and pins a theme with `data-theme="light"` or `"dark"` on `<html>`. With no attribute the page follows the system.
 
-## Color
+`npm run tokens` refuses to write the CSS when any text color falls below 4.5:1 on a surface it is used on. A test fails if `tokens.css` is out of date.
 
-Restrained: neutrals, 1 action color, and 2 problem colors that appear only in the text.
+### Color
 
-| Token | Role | Light | Dark |
-|---|---|---|---|
-| `--background` | The canvas | cool off-white | deep ink |
-| `--card` | The sheet | white | raised ink |
-| `--foreground`, `--muted-foreground` | Text, secondary text (4.5:1 or more) | ink, slate | near white, light slate |
-| `--primary` | Actions, the current choice, links, the caret | indigo `oklch(0.46 0.19 277)` | light indigo |
-| `--mark-unknown`, `--mark-unknown-line` | Glyphs with no Kannada letter | rose tint and wavy line | |
-| `--mark-malformed`, `--mark-malformed-line` | Signs that cannot form a syllable | amber tint and wavy line | |
-| `--mark-malformed-line`, dashed | Likely typos, such as ರೃ written for ಋ | dashed amber line, no tint | |
-| `--field-turmeric`, `--field-kumkuma`, `--field-indigo` | Blurred color fields fixed behind the page, so the glass has something to bend | | |
+| Token | Role |
+|---|---|
+| `--background` | The canvas: cool off-white, or deep ink |
+| `--card` | The sheet: white, or raised ink |
+| `--foreground`, `--muted-foreground` | Text and secondary text, 4.5:1 or more on every surface, glass included |
+| `--primary`, `--primary-foreground` | Indigo `oklch(0.46 0.19 277)`, light indigo in dark mode: actions, the current choice, links, the caret, the logo tile |
+| `--accent`, `--secondary`, `--muted`, `--border`, `--ring` | Hovered items, quiet fills, wells, hairlines, focus |
+| `--field-turmeric`, `--field-kumkuma`, `--field-indigo` | Blurred fields fixed behind the page. Turmeric at the top right, indigo at the left, kumkuma at the bottom |
+| `--mark-unknown`, `--mark-unknown-line` | Rose: a glyph with no Kannada letter |
+| `--mark-malformed`, `--mark-malformed-line` | Amber: a sign that cannot form a syllable; dashed, a likely typo |
+| `--glass`, `--glass-solid`, `--glass-rim`, `--glass-rim-low`, `--glass-specular`, `--glass-edge` | The pane, its solid fallback, its lit and unlit rims, its inner highlight and its outline |
 
-Every token is 1 `light-dark()` pair in a single `:root` block, so the 2 themes cannot drift apart. `data-theme="light"` or `"dark"` on `<html>` pins a theme; with no attribute the page follows the system. Tailwind reads the tokens through `@theme inline` under shadcn's names (`bg-background`, `text-muted-foreground`, `bg-primary` and so on).
+Rose and amber appear only in and about the text being edited. No other element may use them.
 
-## Glass
+### Type
 
-`@utility glass`: a translucent pane (`--glass`), `backdrop-filter: blur(22px) saturate(1.9)`, a 1px edge, a lit top rim (`inset 0 1px 0 var(--glass-rim)`) and a soft float shadow. It falls back to the solid `--glass-solid` when `backdrop-filter` is missing or the user asks for reduced transparency.
+- 1 family: Noto Sans Kannada for Kannada and Noto Sans for Latin (`--type-sans`), self-hosted as variable woff2 subsets under the SIL Open Font License. Noto Sans Kannada's own Latin glyphs keep 1 weight at every `wght`, so Latin text must come from Noto Sans, or headings and bold words render regular. Noto Serif Kannada (`--type-serif`) is the document's alternative face.
+- Kannada in a document: `--type-doc` 1.375rem on phones, `--type-doc-wide` 1.5rem from 768px, line height `--type-doc-leading` 1.95. Kannada anywhere else: line height `--type-kn-leading` 1.9.
+- Page headings: `--type-heading` 2rem, `--type-heading-wide` 2.75rem from 640px, weight 600, tracking `--type-heading-tracking`, balanced.
+- Controls: `--type-ui` 0.9375rem, medium weight.
 
-Glass is used only for things that float over the writing: the toolbar, its menus, the fix card, the toast and the shortcuts dialog. The sheet, the page and the content sections are solid.
+### Shape and depth
 
-## Type
+- Radius from `--radius` (1rem). The sheet is 1.75rem; menus and cards are `--radius` plus 6px; buttons, chips and segmented controls are full pills.
+- 2 shadows: `--shadow-sheet`, a low, wide lift for the sheet, and `--shadow-float`, 3 stacked offsets under glass. Neither is a zero-offset halo.
 
-- 1 family for everything: Noto Sans Kannada, self-hosted as variable woff2 in Kannada, Latin and Latin Extended subsets. Noto Serif Kannada is the alternative for the document only (Tools menu, Typeface).
-- The 2 Sans subsets used on every page are preloaded. `font-display: swap`.
-- The document is set large: 1.375rem on phones and 1.5rem from 768px, with line-height 1.95 for stacked conjuncts. Kannada elsewhere uses line-height 1.9.
-- Page headings: 2rem on phones and 2.75rem from 640px, weight 600, tracking -0.02em, balanced. UI text: 0.9375rem, medium weight for controls.
+## Liquid Glass
+
+Glass is for what floats over the writing: toolbars, their menus, fix cards, toasts, suggestion strips and dialogs. Never for the sheet, the page or content sections.
+
+A pane (`@utility glass` on the site):
+
+- **Body:** `--glass` over a backdrop blurred by `--glass-blur` (22px) and saturated by `--glass-saturate` (1.9), with a 1px `--glass-edge` outline and `--shadow-float`.
+- **Light:** the light comes from above and follows a mouse or pen across the page, updated at most once a frame. `--light-x` runs from -0.8 at the left to 0.8 at the right; `--light-y` runs from -1 (straight above) to -0.2, so the top rim stays lit. The rim facing the light is `--glass-rim`, the rim opposite is the fainter `--glass-rim-low`, and `--glass-specular` is a soft glow within about 7px of the lit rim. The 2 properties are registered with `@property`; where that is missing, the light stays above. On touch screens and under reduced motion the light stays still, from above.
+- **No refraction yet:** an SVG displacement in `backdrop-filter` was built and measured. After a 22px blur it changed no pixel by more than 17 of 255, even at 30px of displacement; before the blur it let sharp text show through the pane. Visible lensing needs a lighter blur at the edges, which is a design change of its own.
+- **Morph:** with a mouse or pen, a control under the pointer becomes a small bead of glass. Pressed, it gives to 94% in 90ms and springs back on `--ease-spring` over `--duration-morph`. The pane it sits on gives to 98.5% with it.
+- **Fallbacks:** with reduced transparency, or where `backdrop-filter` is missing, a pane is the solid `--glass-solid`, with no refraction. Reduced motion stills the light and cuts every transition to near zero, so a press changes size at once, with no spring.
+- **Contrast:** `npm run tokens` measures every text color on the surfaces it is drawn on, in both themes, and writes nothing below 4.5:1. Glass is measured over the canvas, the sheet, each color field at full strength and turmeric over indigo, saturated as the pane does, and so are the segmented track and the problem tints on glass. The specular glow is left out, since it stays inside the pane's padding.
+
+## Motion
+
+- `--duration-quick` (150ms) on `--ease-standard`: hover colors.
+- `--duration-lift` (220ms) on `--ease-settle`: menus, cards and toasts lift 6px into place out of a 6px blur, downward from the toolbar on desktop and upward from the dock on phones. The problem chip settles in from 60% scale.
+- `--duration-morph` (450ms) on `--ease-spring`: glass springing back after a press.
+- Nothing loops, except the microphone's slow breath while it listens, and that stops under reduced motion.
 
 ## Logo
 
-- **Open Kannada** is Open ka: Noto Sans Kannada's ಕ at weight 640 on a rounded primary tile, with a wedge cut from the right of its bowl. It sits in the header, the favicons, the app icons and the Open Graph cards.
-- **kannadi** is the mirror: ಕ and its lighter reflection meeting at a line of glass. It marks the places that name kannadi the tool, such as the footer.
-- `src/components/Logo.astro` inlines either mark from `src/assets/brand/`, colored by the `--primary` and `--primary-foreground` tokens, so it follows the theme. The favicon SVG switches colors with the system theme; the PNG icons use the light colors.
+- **Open Kannada** is Open ka: Noto Sans Kannada's ಕ at weight 640 on a rounded `--primary` tile, with a wedge cut from the right of its bowl. It marks the organization: site headers, favicons, app icons, Open Graph cards and avatars.
+- **kannadi** is the mirror: ಕ and its lighter reflection meeting at a line of glass. It marks only the places that name kannadi the tool or library.
+- Use the files as they are. Color them only with the light and dark pairs; add no outline, shadow, gradient or effect, and never stretch or rotate them. On a page, inline the mark from `src/assets/brand/` through `Logo.astro`, so `--primary` and `--primary-foreground` color it.
+- Keep clear space of a quarter of the mark's width on every side. The smallest size is 16px for Open ka and 28px for the mirror.
+- The wordmarks set the name in Noto Sans at weight 620 to the right of the mark; kannadi's adds ಕನ್ನಡಿ in `--muted-foreground`.
 - The SVG sources and PNGs at every size, including `scripts/og-mark.svg` for the Open Graph cards, are generated from the font outlines outside this repository. Replace the files here from that set rather than editing the paths.
 
-## Shape and depth
+## Voice
 
-- Radius scale from `--radius: 1rem`. The sheet is 1.75rem, menus and cards 1.375rem, buttons and segmented controls are full pills.
-- 2 shadows: `--shadow-sheet` (a low, wide lift for the sheet) and `--shadow-float` (3 stacked offsets for glass). Neither is a zero-offset halo.
+- Answer first: a page opens with 1 sentence that answers the question it was found for.
+- Plain American English, short sentences, digits for numbers.
+- No em dashes, no hype words, no disclaimers, no rhetorical questions, no "X, not Y".
+- Say what is true and what is not done; never claim a feature before it ships.
+- Kannada words appear in Kannada script, with `lang="kn"`.
+- `npm run voice-lint` checks the built text and the editor's messages.
+
+## Using it on another surface
+
+1. Copy `design/tokens.css` and load it before the surface's own CSS. Keep the token names; map any older names onto them.
+2. Self-host Noto Sans Kannada; load nothing from another host.
+3. Make only floating tools glass, with the rim, the specular glow and the solid fallback. Refraction and the moving light are optional, and the fallbacks are required.
+4. Use the logo files from the press kit, and follow the voice rules for every word on the page.
+5. When the tokens change here, copy the new `tokens.css` across in the same week.
 
 ## Components
 
@@ -75,20 +112,13 @@ Glass is used only for things that float over the writing: the toolbar, its menu
 - **Marks**: drawn with the CSS Custom Highlight API. Unknown glyphs and malformed syllables get a tinted background and a wavy underline 1.5px thick, offset 0.35em. A likely typo gets only a dashed amber underline of the same weight, in the text, the list and the fix card. `composing` marks the word being typed in Baraha or ISO with a dotted indigo underline.
 - **Content sections**: numbered steps with accent discs, a letter chart of tiles (Kannada, the Baraha key, ISO), a 3-column word table, and an FAQ of `details` elements with a rotating chevron.
 
-## Motion
-
-One authored motion: menus, cards and toasts lift from 6px below with a 6px blur, over 0.18 to 0.22s, on `cubic-bezier(0.16, 1, 0.3, 1)`. The problem chip settles in from 60% scale. Everything else is a 150ms color change. `prefers-reduced-motion` cuts all transitions to near zero.
 
 ## Layout
 
 - Content column: 54rem for the heading and the editor, 46rem for prose. Side gutters are 16px on phones and 24px from 640px.
 - Below 768px the counts move from the sheet's foot to its top, because the dock covers the bottom edge.
 
-## Copy
-
-Answer first: every page opens with a 1-sentence definition, then the editor with a 1-sentence welcome, then the how-to and FAQ. Plain American English, digits for numbers, no em dashes, no hype, no disclaimers. `npm run voice-lint` checks the built text and the editor's messages.
-
 ## Constraints
 
-- The CSP forbids inline `style` attributes, so all styling is in CSS. Positions computed at run time are set through CSSOM.
-- Content pages ship only the theme script. The editor's WebAssembly loads after first paint, and the file readers load on first use.
+- The CSP forbids inline `style` attributes, so all styling is in CSS. Positions computed at run time, and the light direction, are set through CSSOM.
+- Content pages ship only the theme and light script. The editor's WebAssembly loads after first paint, and the file readers load on first use.

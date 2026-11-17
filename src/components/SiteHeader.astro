@@ -59,7 +59,10 @@ const groups = [
 </header>
 
 <script>
+  import { followLight } from "../lib/light.ts";
   import { applyTheme, nextTheme, readTheme } from "../lib/theme.ts";
+
+  followLight(window);
 
   const button = document.getElementById("theme");
   let theme = readTheme();

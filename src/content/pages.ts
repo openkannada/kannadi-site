@@ -69,7 +69,7 @@ const BACK_TO_NUDI: Faq = {
 };
 const OPEN_SOURCE: Faq = {
   q: "Who made this?",
-  a: 'Prasad Subrahmanya, on <a href="https://github.com/openkannada/kannadi">kannadi</a>, his open-source Rust library for Kannada text, released under the MIT license. The fonts are Noto Sans Kannada and Noto Serif Kannada, under the SIL Open Font License.',
+  a: 'Prasad Subrahmanya, on <a href="https://github.com/openkannada/kannadi">kannadi</a>, his open-source Rust library for Kannada text, released under the MIT license. The fonts are Noto Sans, Noto Sans Kannada and Noto Serif Kannada, under the SIL Open Font License.',
 };
 
 const CONVERT_STEPS = [

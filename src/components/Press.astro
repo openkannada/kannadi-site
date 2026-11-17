@@ -49,7 +49,7 @@ import { href, withBase } from "../lib/paths.ts";
   <div class="bios">
     {BIOS.map((b, i) => (
       <article class="bio">
-        <div class="photo"><mark class="todo">PRASAD: photo from Prasad of {PHOTOS[i]}.</mark></div>
+        <div class="photo"><mark class="todo">PRASAD: photo of {PHOTOS[i]}, from Prasad.</mark></div>
         <h3>{b.name}</h3>
         <p class="text-muted-foreground">{b.role}</p>
         <p set:html={b.text} />

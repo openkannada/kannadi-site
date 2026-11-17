@@ -155,9 +155,13 @@ test("the About page names Open Kannada with both founders", () => {
   assert.deepEqual(org.founder.map((f) => people[f["@id"]]), ["Prasad Subrahmanya", "Neha Prasad"]);
   assert.equal(graph.find((n) => n["@type"] === "WebPage").mainEntity["@id"], org["@id"]);
   assert.ok(!graph.some((n) => n["@type"] === "FAQPage"), "an empty FAQ adds no FAQPage");
+});
+
 test("the site is named Open Kannada, and the editor and library kannadi", () => {
   const graph = jsonLd(HOME, null, HOME)["@graph"];
-  assert.equal(graph.find((n) => n["@type"] === "WebSite").name, "Open Kannada");
+  const site = graph.find((n) => n["@type"] === "WebSite");
+  assert.equal(site.name, "Open Kannada");
+  assert.equal(site.publisher["@id"], graph.find((n) => n["@type"] === "Organization")["@id"]);
   assert.equal(graph.find((n) => n["@type"] === "SoftwareSourceCode").name, "kannadi");
   const base = readFileSync(new URL("../src/layouts/Base.astro", import.meta.url), "utf8");
   assert.match(base, /<meta property="og:site_name" content=\{ORG\.name\} \/>/);

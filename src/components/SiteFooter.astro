@@ -1,6 +1,6 @@
 ---
 import { PAGES } from "../content/pages.ts";
-import { AUTHOR, SITE } from "../content/site.ts";
+import { AUTHOR, ORG, SITE } from "../content/site.ts";
 import { href } from "../lib/paths.ts";
 import Logo from "./Logo.astro";
 ---
@@ -14,6 +14,11 @@ import Logo from "./Logo.astro";
       <p>
         Made by <a href={AUTHOR.url}>{AUTHOR.name}</a> with the open-source{" "}
         <a href={SITE.repository}>kannadi</a> library.
+      </p>
+      <p>
+        Founded by {ORG.founders.map((f, i) => (
+          <>{i > 0 && " and "}<a href={f.url}>{f.name}</a></>
+        ))}. Read <a href={href("/about/")}>about {ORG.name}</a> or get the <a href={href("/press/")}>press kit</a>.
       </p>
       <p>If kannadi helps your project, a mention or a link to <a href={AUTHOR.url}>prasad.tech</a> is appreciated.</p>
       <p>Word suggestions use a list of words counted in the articles that <a href="https://kn.wikipedia.org">Kannada Wikipedia</a> contributors write, shared under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>

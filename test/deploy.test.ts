@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { checkoutProblem, deployEnv, deploySteps, productionUrl } from "../src/lib/deploy.ts";
+import { checkoutProblem, deployEnv, deploySteps, placeholders, productionUrl } from "../src/lib/deploy.ts";
 
 const URL_ROOT = "https://kannada.example.com.au/";
 
@@ -42,8 +42,14 @@ test("the deploy checks the build at the production URL before it publishes", ()
   const publish = at("npx --no -- wrangler pages deploy --branch main");
   assert.equal(publish, lines.length - 1);
   assert.equal(at("npm run wasm"), 0);
-  for (const check of ["npm run check", "npm test", `node scripts/seo-smoke.ts dist ${URL_ROOT}`, "npm run voice-lint"]) {
+  for (const check of ["npm run check", "npm test", `node scripts/seo-smoke.ts dist ${URL_ROOT}`, "npm run voice-lint", "node scripts/placeholders.ts dist"]) {
     assert.ok(at(check) < publish, check);
   }
   assert.ok(at("npm run build") < at(`node scripts/seo-smoke.ts dist ${URL_ROOT}`));
+});
+
+test("placeholders for Prasad's words are found in built HTML and markdown", () => {
+  assert.deepEqual(placeholders('<p><mark class="todo">PRASAD: 1 line on Neha.</mark> <a href="/">x</a></p>'), ["PRASAD: 1 line on Neha."]);
+  assert.deepEqual(placeholders("Contact\n\nPRASAD: press contact, an email address or a form.\n"), ["PRASAD: press contact, an email address or a form."]);
+  assert.deepEqual(placeholders("Prasad: the founder."), []);
 });

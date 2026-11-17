@@ -85,8 +85,9 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
         url: root,
         name: ORG.name,
         inLanguage: SITE.language,
-        publisher: author,
+        publisher: { "@id": id("organization", root) },
       },
+      ...organization(id, author, root),
       {
         "@type": "SoftwareSourceCode",
         "@id": id("library", root),
@@ -105,22 +106,7 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
 
 /** The editor as a WebApplication with its how-to, or a reference page as a LearningResource. */
 function mainNodes(page: Page, url: string, id: (name: string, base?: string) => string, author: Node, root: string): Node[] {
-  if (page.kind === "info") {
-    const others = ORG.founders.filter((f) => f.name !== AUTHOR.name);
-    const personId = (name: string) => id(name.toLowerCase().replace(/\W+/g, "-"), root);
-    return [
-      {
-        "@type": "Organization",
-        "@id": id("organization", root),
-        name: ORG.name,
-        url: root,
-        logo: `${root}icon-512.png`,
-        sameAs: [ORG.github],
-        founder: ORG.founders.map((f) => (f.name === AUTHOR.name ? author : { "@id": personId(f.name) })),
-      },
-      ...others.map((f) => ({ "@type": "Person", "@id": personId(f.name), name: f.name, url: f.url })),
-    ];
-  }
+  if (page.kind === "info") return organization(id, author, root);
   if (page.kind === "reference") {
     return [
       {
@@ -171,6 +157,23 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
       name: page.howTitle,
       step: page.steps.map((text, i) => ({ "@type": "HowToStep", position: i + 1, text: plainText(text) })),
     },
+  ];
+}
+
+/** Open Kannada with its founders: Prasad is the page author, the others are added as people. */
+function organization(id: (name: string, base?: string) => string, author: Node, root: string): Node[] {
+  const personId = (name: string) => id(name.toLowerCase().replace(/\W+/g, "-"), root);
+  return [
+    {
+      "@type": "Organization",
+      "@id": id("organization", root),
+      name: ORG.name,
+      url: root,
+      logo: `${root}icon-512.png`,
+      sameAs: [ORG.github],
+      founder: ORG.founders.map((f) => (f.name === AUTHOR.name ? author : { "@id": personId(f.name) })),
+    },
+    ...ORG.founders.filter((f) => f.name !== AUTHOR.name).map((f) => ({ "@type": "Person", "@id": personId(f.name), name: f.name, url: f.url })),
   ];
 }
 

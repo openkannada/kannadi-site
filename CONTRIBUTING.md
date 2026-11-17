@@ -10,7 +10,7 @@ Open Kannada uses the Developer Certificate of Origin (https://developercertific
 git commit -s
 ```
 
-This adds a line such as `Signed-off-by: Your Name <you@example.com>`. It says that you wrote the change, or have the right to submit it, under the license of the files it touches.
+This adds a line such as `Signed-off-by: Your Name <you@example.com>`, with your real name and email address. It says that you wrote the change, or have the right to submit it, under the license of the files it touches.
 
 ## Licenses
 
@@ -21,7 +21,7 @@ You keep the copyright in what you contribute, and it is shared under the licens
 - `data/words.tsv`: CC BY-SA 4.0;
 - fonts: SIL Open Font License 1.1.
 
-`NOTICE.md` and `REUSE.toml` say which applies where, and `reuse lint` checks it.
+`LICENSING.md` and `REUSE.toml` say which applies where, and `reuse lint` checks it.
 
 ## Before you open a pull request
 

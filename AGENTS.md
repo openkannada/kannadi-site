@@ -16,4 +16,4 @@ Read `PRODUCT.md` for who the site is for, and `DESIGN.md` for the visual system
 
 ## Commands
 
-`uvx reuse lint` (every file has a license; see REUSE.toml and NOTICE.md), `npm run wasm`, `npm run build`, `npm run check`, `npm test`, `npm run seo-smoke`, `npm run voice-lint`, `npm run page-hashes`, `npm run lighthouse`. `npm run deploy` publishes; Prasad runs it.
+`uvx reuse lint` (every file has a license; see REUSE.toml and LICENSING.md), `npm run wasm`, `npm run build`, `npm run check`, `npm test`, `npm run seo-smoke`, `npm run voice-lint`, `npm run page-hashes`, `npm run lighthouse`. `npm run deploy` publishes; Prasad runs it.

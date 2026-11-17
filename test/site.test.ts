@@ -121,6 +121,7 @@ test("the web manifest and the page's icon links point at icons of the stated si
   const pub = (f) => new URL(`../public/${f}`, import.meta.url);
   const pngSize = (f) => {
     const b = readFileSync(pub(f));
+    assert.equal(b.toString("latin1", 1, 4), "PNG", f);
     return `${b.readUInt32BE(16)}x${b.readUInt32BE(20)}`;
   };
   const manifest = JSON.parse(readFileSync(pub("site.webmanifest"), "utf8"));
@@ -130,9 +131,13 @@ test("the web manifest and the page's icon links point at icons of the stated si
     else readFileSync(pub(icon.src));
   }
   const base = readFileSync(new URL("../src/layouts/Base.astro", import.meta.url), "utf8");
-  const links = [...base.matchAll(/<link rel="(?:icon|apple-touch-icon|manifest)" href=\{href\("\/([^"]+)"\)\}(?: type="[^"]+")?(?: sizes="(\d+x\d+)")?/g)];
+  const links = [...base.matchAll(/<link rel="(?:icon|apple-touch-icon|manifest)"[^>]*>/g)].map(([tag]) => ({
+    file: tag.match(/href=\{href\("\/([^"]+)"\)\}/)?.[1],
+    sizes: tag.match(/sizes="(\d+x\d+)"/)?.[1],
+  }));
   assert.equal(links.length, 5);
-  for (const [, file, sizes] of links) {
+  for (const { file, sizes } of links) {
+    assert.ok(file, "every icon link goes through href() for the base path");
     if (sizes) assert.equal(pngSize(file), sizes, file);
     else readFileSync(pub(file));
   }
@@ -150,4 +155,10 @@ test("the About page names Open Kannada with both founders", () => {
   assert.deepEqual(org.founder.map((f) => people[f["@id"]]), ["Prasad Subrahmanya", "Neha Prasad"]);
   assert.equal(graph.find((n) => n["@type"] === "WebPage").mainEntity["@id"], org["@id"]);
   assert.ok(!graph.some((n) => n["@type"] === "FAQPage"), "an empty FAQ adds no FAQPage");
+test("the site is named Open Kannada, and the editor and library kannadi", () => {
+  const graph = jsonLd(HOME, null, HOME)["@graph"];
+  assert.equal(graph.find((n) => n["@type"] === "WebSite").name, "Open Kannada");
+  assert.equal(graph.find((n) => n["@type"] === "SoftwareSourceCode").name, "kannadi");
+  const base = readFileSync(new URL("../src/layouts/Base.astro", import.meta.url), "utf8");
+  assert.match(base, /<meta property="og:site_name" content=\{ORG\.name\} \/>/);
 });

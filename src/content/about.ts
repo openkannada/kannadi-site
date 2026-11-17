@@ -1,5 +1,5 @@
-// Copy for the About page, from Prasad's draft. Strings are trusted HTML.
-// "PRASAD:" marks words only Prasad can supply; the deploy stops while any remain.
+// Copy for the About page. Strings are trusted HTML.
+// "PRASAD:" marks words still to come; once launched, the deploy fails while any remain.
 import { STORY } from "./story.ts";
 
 export const ABOUT = {
@@ -29,7 +29,7 @@ export const ABOUT = {
     "<b>Read Kannada well?</b> Help check converted text against the original. It turns our results into verified ones.",
     "<b>Design type?</b> Several open Kannada fonts are missing letters and heavier weights.",
   ],
-  supporter: '<a href="https://www.luminik.io">DataRavel Inc. (dba Luminik)</a>, Prasad\'s company, supports Open Kannada.',
+  supporter: '<a href="https://www.luminik.io">DataRavel Inc. (dba Luminik)</a> supports Open Kannada.',
   contact: [
     'Bugs and file samples: open an issue on <a href="https://github.com/openkannada">GitHub</a>. For documents you can\'t share publicly, write to <a href="mailto:support@luminik.io">support@luminik.io</a>.',
     'Press, partnerships and government offices: <a href="mailto:founders@luminik.io">founders@luminik.io</a>.',

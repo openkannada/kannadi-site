@@ -2,23 +2,48 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { deploySteps, productionUrl } from "../src/lib/deploy.ts";
+import { checkoutProblem, deployEnv, deploySteps, productionUrl } from "../src/lib/deploy.ts";
 
-test("the production URL needs a real https host", () => {
-  assert.equal(productionUrl("https://openkannada.org").href, "https://openkannada.org/");
-  assert.equal(productionUrl("https://openkannada.org/kannada").href, "https://openkannada.org/kannada/");
+const URL_ROOT = "https://kannada.example.com.au/";
+
+test("the production URL needs a real https host at the domain root", () => {
+  assert.equal(productionUrl("https://kannada.example.com.au").href, URL_ROOT);
   assert.throws(() => productionUrl(undefined), /Set SITE_URL/);
   assert.throws(() => productionUrl(""), /Set SITE_URL/);
-  assert.throws(() => productionUrl("http://openkannada.org/"), /https/);
-  assert.throws(() => productionUrl("https://example.org/kannada/"), /placeholder/);
-  assert.throws(() => productionUrl("https://localhost/"), /placeholder/);
+  assert.throws(() => productionUrl("http://kannada.example.com.au/"), /https/);
+  assert.throws(() => productionUrl("https://kannada.example.com.au/kannada/"), /domain root/);
+  for (const host of ["example.org", "www.example.com", "localhost", "site.test", "site.invalid", "site.example"]) {
+    assert.throws(() => productionUrl(`https://${host}/`), /placeholder/, host);
+  }
+});
+
+test("only a clean main at origin/main is deployed", () => {
+  const ok = { clean: true, branch: "main", head: "abc", originMain: "abc" };
+  assert.equal(checkoutProblem(ok), null);
+  assert.match(checkoutProblem({ ...ok, clean: false }) ?? "", /changes/);
+  assert.match(checkoutProblem({ ...ok, branch: "feature" }) ?? "", /main branch/);
+  assert.match(checkoutProblem({ ...ok, head: "def" }) ?? "", /origin\/main/);
+});
+
+test("the deploy builds the library from kannadi.rev, never from a local checkout", () => {
+  const env = deployEnv({ KANNADI_DIR: "/somewhere", PATH: "/bin" }, new URL(URL_ROOT));
+  assert.equal(env.KANNADI_DIR, undefined);
+  assert.equal(env.SITE_URL, URL_ROOT);
+  assert.equal(env.PATH, "/bin");
 });
 
 test("the deploy checks the build at the production URL before it publishes", () => {
-  const steps = deploySteps(new URL("https://openkannada.org/"));
-  const lines = steps.map((s) => [s.command, ...s.args].join(" "));
-  assert.equal(lines[0], "npm run wasm");
-  assert.ok(lines.includes("node scripts/seo-smoke.ts dist https://openkannada.org/"));
-  assert.equal(lines.at(-1), "npx wrangler pages deploy --branch main");
-  assert.ok(lines.indexOf("npm run build") < lines.indexOf("node scripts/seo-smoke.ts dist https://openkannada.org/"));
+  const lines = deploySteps(new URL(URL_ROOT)).map((s) => [s.command, ...s.args].join(" "));
+  const at = (line: string) => {
+    const i = lines.indexOf(line);
+    assert.ok(i >= 0, `missing step: ${line}`);
+    return i;
+  };
+  const publish = at("npx --no -- wrangler pages deploy --branch main");
+  assert.equal(publish, lines.length - 1);
+  assert.equal(at("npm run wasm"), 0);
+  for (const check of ["npm run check", "npm test", `node scripts/seo-smoke.ts dist ${URL_ROOT}`, "npm run voice-lint"]) {
+    assert.ok(at(check) < publish, check);
+  }
+  assert.ok(at("npm run build") < at(`node scripts/seo-smoke.ts dist ${URL_ROOT}`));
 });

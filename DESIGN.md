@@ -10,7 +10,6 @@ The page is a sheet of paper you can write Kannada on at once. Every tool floats
 
 The brief the design was built and reviewed against. It lives here only; the built pages carry no HTML comments, and `npm run seo-smoke` fails if one appears.
 
-- **Thesis:** the page is a sheet of paper you can write Kannada on at once. Every tool floats above it on 1 pane of glass and gets out of the way.
 - **World:** a cool paper sheet on a canvas lit by turmeric, kumkuma and indigo fields. Glass panes with a lit rim. Indigo for action; rose and amber only for problems in the text. Noto Sans Kannada throughout, with Kannada set large.
 - **Story:** arrive from a search, read 1 sentence that answers it, type or drop a file into the sheet, fix what is marked, save.
 - **First viewport:** brand and page links on the canvas, the heading and 1-sentence answer, then the sheet with its 1-line welcome. The glass toolbar floats at the sheet's top edge on desktop and at the thumb on phones. Save is the 1 solid button.

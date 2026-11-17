@@ -28,26 +28,27 @@ npm run preview
 
 `npm run wasm` clones kannadi into `.kannadi`. Set `KANNADI_DIR` to use an existing checkout at the same commit.
 
-Set `SITE_URL` (for example `https://example.org/` or `https://example.org/kannada/`) to add canonical links, absolute Open Graph images and the sitemap. Local builds and CI leave it unset; the deploy sets it.
+Set `SITE_URL` (for example `https://example.org/` or `https://example.org/kannada/`) to add canonical links, absolute Open Graph images and the sitemap. Local builds leave it unset, CI sets it only for a second smoke build at `example.org`, and the deploy sets the real address.
 
 ## Deploy
 
-The site is built for Cloudflare Pages: static files in `dist/`, plus `functions/_middleware.ts` for markdown on request. `wrangler.jsonc` names the project `kannadi`.
+The site is built for Cloudflare Pages: static files in `dist/`, plus `functions/_middleware.ts` for markdown on request. `wrangler.jsonc` names the project `kannadi`. Run every command below from the repository root.
 
 Once, on the machine that deploys:
 
 1. Sign in to the Cloudflare account: `npx wrangler login`.
 2. Create the project: `npx wrangler pages project create kannadi --production-branch main`.
 3. Add the domain to Cloudflare (Add a domain, then set the registrar's nameservers to the 2 Cloudflare gives).
-4. In Workers & Pages, open `kannadi`, then Custom domains, and add the domain and its `www` name. Add a redirect rule from `www` to the bare domain.
+4. In Workers & Pages, open `kannadi`, then Custom domains, and add the bare domain.
+5. Send `www` to the bare domain: add a proxied DNS record `www` (type A, `192.0.2.1`), then a redirect rule from the "Redirect from WWW to root" template (301, keeping the path and query string).
 
-Each deploy, from a clean checkout of `main`:
+Each deploy, from `main` once it matches `origin/main`, with no local changes:
 
 ```sh
-SITE_URL=https://openkannada.org/ npm run deploy
+SITE_URL=https://your-domain/ npm run deploy
 ```
 
-`scripts/deploy.ts` refuses a missing, plain http or placeholder `SITE_URL` and a checkout with changes. It then builds the WebAssembly package and the site, runs the SEO smoke check at the production address and the voice lint, and publishes `dist/` and `functions/` to the production branch. It stops at the first step that fails.
+`scripts/deploy.ts` refuses a missing, plain http, placeholder or sub-path `SITE_URL`, local changes, any branch other than `main`, and a `main` that differs from `origin/main`. It ignores `KANNADI_DIR`, so the WebAssembly package comes from kannadi at `kannadi.rev`. It then builds that package, checks types, runs the unit tests, builds the site, runs the SEO smoke check at the production address and the voice lint, and publishes `dist/` and `functions/` to the production branch with the pinned Wrangler. It stops at the first step that fails.
 
 ## Typing in English letters
 

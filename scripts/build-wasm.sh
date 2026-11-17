@@ -22,6 +22,11 @@ if [ "$have" != "$rev" ]; then
   exit 1
 fi
 
+if [ -n "$(git -C "$src" status --porcelain --untracked-files=no)" ]; then
+  echo "$src has uncommitted changes; build from a clean checkout." >&2
+  exit 1
+fi
+
 want=$(awk '/^name = "wasm-bindgen"$/ { getline; gsub(/version = |"/, ""); print }' "$src/Cargo.lock")
 found=$(wasm-bindgen --version 2>/dev/null | awk '{ print $2 }' || true)
 if [ "$found" != "$want" ]; then

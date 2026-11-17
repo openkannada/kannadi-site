@@ -1,16 +1,18 @@
 // Builds, checks and publishes the site to Cloudflare Pages production:
-// SITE_URL=https://openkannada.org/ npm run deploy
+// SITE_URL=https://your-domain/ npm run deploy
 import { spawnSync } from "node:child_process";
 
-import { deploySteps, productionUrl } from "../src/lib/deploy.ts";
-
-function git(...args: string[]): string {
-  return spawnSync("git", args, { encoding: "utf8" }).stdout.trim();
-}
+import { checkoutProblem, deployEnv, deploySteps, productionUrl } from "../src/lib/deploy.ts";
 
 function stop(message: string): never {
   console.error(message);
   process.exit(1);
+}
+
+function git(...args: string[]): string {
+  const run = spawnSync("git", args, { encoding: "utf8" });
+  if (run.status !== 0) stop(`git ${args.join(" ")} failed: ${run.stderr.trim()}`);
+  return run.stdout.trim();
 }
 
 let url: URL;
@@ -19,10 +21,17 @@ try {
 } catch (e) {
   stop((e as Error).message);
 }
-if (git("status", "--porcelain")) stop("The working tree has changes. Deploy from a clean checkout of main.");
-if (git("branch", "--show-current") !== "main") stop("Deploy from the main branch.");
 
-const env = { ...process.env, SITE_URL: url.href };
+git("fetch", "--quiet", "origin", "main");
+const problem = checkoutProblem({
+  clean: git("status", "--porcelain") === "",
+  branch: git("branch", "--show-current"),
+  head: git("rev-parse", "HEAD"),
+  originMain: git("rev-parse", "origin/main"),
+});
+if (problem) stop(problem);
+
+const env = deployEnv(process.env, url);
 for (const step of deploySteps(url)) {
   console.log(`\n${step.label}`);
   const run = spawnSync(step.command, step.args, { stdio: "inherit", env });

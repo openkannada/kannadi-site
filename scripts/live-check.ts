@@ -1,9 +1,12 @@
-// After a deploy, checks the live site: its key files and their content types, every build file its pages name, then what search engines and
-// AI assistants read there, and that every other address redirects to it. A new custom domain can take minutes
-// to get its certificate, so the check retries: node scripts/live-check.ts <site URL> [attempts] [seconds apart]
+// After a deploy, checks the live site: its key files and their content types, every build file its pages name
+// and every one the deploy kept, then what search engines and AI assistants read there, and that every other
+// address redirects to it. A new custom domain can take minutes to get its certificate, so the check retries:
+// node scripts/live-check.ts <site URL> [attempts] [seconds apart]
 import { LIVE as SITE } from "../src/content/site.ts";
 import { AI_CRAWLERS } from "../src/lib/agent-text.ts";
-import { assetProblems, assetRefs } from "../src/lib/assets.ts";
+import { existsSync, readFileSync } from "node:fs";
+
+import { assetProblems, assetRefs, KEPT_FILE } from "../src/lib/assets.ts";
 import { LIVE, liveProblems, liveSeoProblems } from "../src/lib/live.ts";
 
 const site = new URL(process.argv[2] ?? `${SITE.origin}/`);
@@ -30,9 +33,10 @@ async function check(): Promise<string[]> {
       return { path, status: res?.status ?? 0, type: res?.headers.get("content-type") ?? null };
     }),
   );
-  // Every build file the live pages name must load, or those pages show unstyled.
+  // Every build file the live pages name must load, or those pages show unstyled; so must the files kept for pages already open.
+  const kept: string[] = existsSync(KEPT_FILE) ? JSON.parse(readFileSync(KEPT_FILE, "utf8")) : [];
   const assets = await Promise.all(
-    [...new Set(pages.flatMap((html) => assetRefs(html)))].map(async (ref) => {
+    [...new Set([...pages.flatMap((html) => assetRefs(html)), ...kept])].map(async (ref) => {
       const res = await get(new URL(ref.slice(1), site));
       await res?.arrayBuffer();
       return { ref, status: res?.status ?? 0 };

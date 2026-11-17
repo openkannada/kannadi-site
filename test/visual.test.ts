@@ -6,7 +6,8 @@ import { test } from "node:test";
 import { PAGES } from "../src/content/pages.ts";
 import { ICONS } from "../src/icons/icons.ts";
 import { illustrationFor } from "../src/lib/illustrations.ts";
-import { MAX_CLS, WIDTHS, layoutProblems } from "../src/lib/layout.ts";
+import { MAX_CLS, WIDTHS, frameDrift, isClipped, layoutProblems } from "../src/lib/layout.ts";
+import { watchInView } from "../src/lib/inview.ts";
 import { iconsPage } from "../scripts/icons.ts";
 
 /** Every point an SVG path reaches (end points and control points), in absolute coordinates. */
@@ -39,7 +40,7 @@ function pathPoints(d) {
 test("every icon is drawn inside the 24 by 24 grid, from 2 to 22, and says what it is for", () => {
   for (const [name, icon] of Object.entries(ICONS)) {
     assert.ok(icon.use.length > 2, name);
-    for (const [x, y] of pathPoints(icon.d)) {
+    for (const [x, y] of [icon.d, icon.fill ?? ""].flatMap(pathPoints)) {
       assert.ok(x >= 2 && x <= 22 && y >= 2 && y <= 22, `${name}: (${x}, ${y}) is outside 2 to 22`);
     }
   }
@@ -51,10 +52,13 @@ test("design/icons.html shows every icon and is up to date", () => {
 
 test("tool pages get the illustration of their tool, and reference pages the letters", () => {
   const by = (slug) => illustrationFor(PAGES.find((p) => p.slug === slug));
-  assert.equal(by(""), "convert");
-  assert.equal(by("nudi-to-unicode"), "convert");
-  assert.equal(by("english-to-kannada-typing"), "typing");
-  assert.equal(by("kagunita"), "letters");
+  assert.deepEqual(by(""), { name: "convert", from: "PÀ£ÀßqÀ", to: "ಕನ್ನಡ" });
+  assert.deepEqual(by("nudi-to-unicode"), { name: "convert", from: "PÀ£ÀßqÀ", to: "ಕನ್ನಡ" });
+  // Each converter shows its own direction and encoding.
+  assert.deepEqual(by("unicode-to-nudi"), { name: "convert", from: "ಕನ್ನಡ", to: "PÀ£ÀßqÀ" });
+  assert.equal(by("baraha-to-unicode").from, "¸ÀPÁðj");
+  assert.deepEqual(by("english-to-kannada-typing"), { name: "typing" });
+  assert.deepEqual(by("kagunita"), { name: "letters" });
   assert.equal(by("about"), null);
 });
 
@@ -66,4 +70,54 @@ test("a page breaks when it scrolls sideways, shifts, or clips Kannada", () => {
     "layout shift 0.060",
     "clipped Kannada: ಕನ್ನಡ",
   ]);
+});
+
+test("Kannada counts as clipped only when an ancestor that hides overflow cuts it", () => {
+  const box = { left: 0, top: 0, right: 100, bottom: 40 };
+  const clip = (b, x = true, y = true) => ({ box: b, x, y });
+  assert.equal(isClipped({ left: 10, top: 5, right: 90, bottom: 35 }, [clip(box)]), false);
+  assert.equal(isClipped({ left: 10, top: 5, right: 90, bottom: 48 }, [clip(box)]), true, "cut at the bottom");
+  assert.equal(isClipped({ left: 10, top: 5, right: 130, bottom: 35 }, [clip(box)]), true, "cut on the right");
+  assert.equal(isClipped({ left: 10, top: 5, right: 130, bottom: 35 }, [clip(box, false, true)]), false, "only y is hidden");
+  assert.equal(isClipped({ left: 10, top: 5, right: 100.8, bottom: 35 }, [clip(box)]), false, "within 1px");
+  assert.equal(isClipped({ left: 10, top: 5, right: 90, bottom: 35 }, [clip({ left: 0, top: 0, right: 1, bottom: 1 })]), false, "visually hidden text");
+});
+
+test("an illustration drifts when any part ends away from its rest frame", () => {
+  assert.deepEqual(frameDrift(["a|1", "b|1"], ["a|1", "b|1"]), []);
+  assert.deepEqual(frameDrift(["a|1", "b|0.45"], ["a|1", "b|0.18"]), ["b|0.18"]);
+  assert.deepEqual(frameDrift(["t|1|none|none"], ["t|1|matrix(1, 0, 0, 1, 0, 0)|blur(0px)"]), [], "an identity transform and a zero blur look like none");
+  assert.deepEqual(frameDrift(["t|1|none"], ["t|1|matrix(1, 0, 0, 1, 0, -6)"]), ["t|1|matrix(1, 0, 0, 1, 0, -6)"]);
+  assert.deepEqual(frameDrift(["t|0|1|none"], ["t|0|1|matrix(1, 0, 0, 1, 14, 0)"]), [], "a hidden part may end anywhere");
+});
+
+test("illustrations start once each, in view, and show at once where they cannot be watched", () => {
+  const classes = (list = []) => ({ list, add(c) { if (!list.includes(c)) list.push(c); }, remove(c) { const i = list.indexOf(c); if (i >= 0) list.splice(i, 1); }, contains: (c) => list.includes(c) });
+  const fakeDoc = (n) => {
+    const items = Array.from({ length: n }, () => ({ classList: classes() }));
+    return { documentElement: { classList: classes(["illo-wait"]) }, querySelectorAll: () => items, items };
+  };
+  const saved = globalThis.IntersectionObserver;
+  try {
+    delete globalThis.IntersectionObserver;
+    const plain = fakeDoc(1);
+    watchInView(plain);
+    assert.equal(plain.documentElement.classList.contains("illo-wait"), false, "no observer: nothing stays hidden");
+
+    let callback;
+    const unobserved = [];
+    globalThis.IntersectionObserver = class {
+      constructor(cb) { callback = cb; }
+      observe() {}
+      unobserve(t) { unobserved.push(t); }
+    };
+    const doc = fakeDoc(2);
+    watchInView(doc);
+    assert.equal(doc.documentElement.classList.contains("illo-ready"), true);
+    callback([{ isIntersecting: false, target: doc.items[0] }, { isIntersecting: true, target: doc.items[1] }]);
+    assert.deepEqual(doc.items.map((i) => i.classList.contains("is-in")), [false, true]);
+    assert.deepEqual(unobserved, [doc.items[1]], "each starts once");
+  } finally {
+    globalThis.IntersectionObserver = saved;
+  }
 });

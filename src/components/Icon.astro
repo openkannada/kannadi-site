@@ -12,7 +12,7 @@ const icon: { d: string; fill?: string } = ICONS[name];
 ---
 <svg class:list={["icon", className]} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
   {filled && icon.fill && <path class="icon-fill" d={icon.fill} fill="currentColor" stroke="none" />}
-  <path d={icon.d} />
+  <path d={icon.d} vector-effect="non-scaling-stroke" />
 </svg>
 
 <style is:global>

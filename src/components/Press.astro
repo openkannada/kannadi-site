@@ -5,7 +5,7 @@ import { href } from "../lib/paths.ts";
 import Icon from "./Icon.astro";
 ---
 <section aria-labelledby="story">
-  <h2 id="story" class="icon-heading"><Icon name="quote" filled class="size-6 text-primary" />Tagline and story</h2>
+  <h2 id="story" class="icon-heading"><Icon name="book" filled class="size-6 text-primary" />Tagline and story</h2>
   <p class="press-tagline">{TAGLINE}</p>
   {STORY.map((p) => <p set:html={p} />)}
 </section>
@@ -31,7 +31,7 @@ import Icon from "./Icon.astro";
 </section>
 
 <section aria-labelledby="colors">
-  <h2 id="colors" class="icon-heading"><Icon name="sparkle" filled class="size-6 text-primary" />Colors</h2>
+  <h2 id="colors" class="icon-heading"><Icon name="palette" filled class="size-6 text-primary" />Colors</h2>
   <ul class="colors" role="list">
     {COLORS.map((c) => (
       <li>

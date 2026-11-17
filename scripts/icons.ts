@@ -6,7 +6,7 @@ import { ICONS } from "../src/icons/icons.ts";
 
 export function iconsPage(): string {
   const svg = (d: string, fill?: string) =>
-    `<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${fill ? `<path d="${fill}" fill="currentColor" fill-opacity="0.18" stroke="none"/>` : ""}<path d="${d}"/></svg>`;
+    `<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${fill ? `<path d="${fill}" fill="currentColor" fill-opacity="0.18" stroke="none"/>` : ""}<path d="${d}" vector-effect="non-scaling-stroke"/></svg>`;
   const cells = Object.entries(ICONS)
     .map(([name, i]) => {
       const fill = "fill" in i ? i.fill : undefined;

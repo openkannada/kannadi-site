@@ -20,3 +20,41 @@ export function layoutProblems(m: Measure): string[] {
   for (const t of m.clippedKannada) out.push(`clipped Kannada: ${t}`);
   return out;
 }
+
+export interface Box {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+/** An ancestor that hides overflow, on the axes it hides. */
+export interface Clipper {
+  box: Box;
+  x: boolean;
+  y: boolean;
+}
+
+/** Whether text drawn in `text` is cut by any clipping ancestor, by more than 1px. Clippers of 1px or less are visually hidden text, not cuts. */
+export function isClipped(text: Box, clippers: Clipper[]): boolean {
+  return clippers.some(({ box, x, y }) => {
+    if (box.right - box.left <= 1 || box.bottom - box.top <= 1) return false;
+    const cutX = x && (text.left < box.left - 1 || text.right > box.right + 1);
+    const cutY = y && (text.top < box.top - 1 || text.bottom > box.bottom + 1);
+    return cutX || cutY;
+  });
+}
+
+/**
+ * What a snapshot "class|opacity|..." looks like: a finished animation reports an identity transform or a zero blur
+ * where the rest frame says none, and a part at opacity 0 looks the same wherever it sits.
+ */
+function looksSame(style: string): string {
+  const parts = style.replace(/matrix\(1, 0, 0, 1, 0, 0\)|blur\(0px\)/g, "none").split("|");
+  return parts[1] === "0" ? parts.slice(0, 2).join("|") : parts.join("|");
+}
+
+/** The parts of an illustration whose final frame differs from its rest frame, from 1 style snapshot per part. */
+export function frameDrift(rest: string[], final: string[]): string[] {
+  return final.filter((f, i) => looksSame(f) !== looksSame(rest[i] ?? ""));
+}

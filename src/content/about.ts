@@ -1,15 +1,9 @@
 // Copy for the About page, from Prasad's draft. Strings are trusted HTML.
 // "PRASAD:" marks words only Prasad can supply; the deploy stops while any remain.
+import { STORY } from "./story.ts";
 
 export const ABOUT = {
-  sections: [
-    {
-      heading: "Why",
-      paragraphs: [
-        "Years of Kannada writing are stuck in old font encodings that computers can't search or read aloud. Many everyday tools still get Kannada wrong: missing letters, broken conjuncts, no spell check. We build the missing pieces, measure them on real text, and fix problems at the source, in the fonts and libraries everyone uses.",
-      ],
-    },
-  ],
+  sections: [{ heading: "Why", paragraphs: STORY }],
   founders: [
     {
       name: "Prasad Subrahmanya",

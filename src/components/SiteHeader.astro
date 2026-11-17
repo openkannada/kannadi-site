@@ -16,7 +16,8 @@ const lang = page.lang ?? "en";
 const T = SITE_STRINGS[lang];
 const other = lang === "en" ? "kn" : "en";
 const twinPage = PAGES.find((p) => p.slug === page.twin);
-const twin = twinPage ?? HOMES[other];
+// With no page in the other language built yet, there is no switch.
+const twin = twinPage ?? PAGES.find((p) => p.slug === HOMES[other].slug);
 const label = twinPage ? T.language.switchLabel : T.language.homeLabel;
 const english = (p: Page) => (p.lang ?? "en") === "en";
 const converters = PAGES.filter((p) => english(p) && (p.slug.endsWith("-to-unicode") || p.slug === "unicode-to-nudi"));
@@ -47,9 +48,11 @@ const themeLabels = JSON.stringify({ ...T.theme });
       </>
     ))}
   </nav>
-  <a class="btn lang-switch" href={href(pagePath(twin.slug))} hreflang={other}>
-    <span lang={other}>{T.language.switchTo}</span><span class="sr-only">: {label}</span>
-  </a>
+  {twin && (
+    <a class="btn lang-switch" href={href(pagePath(twin.slug))} hreflang={other}>
+      <span lang={other}>{T.language.switchTo}</span><span class="sr-only">: {label}</span>
+    </a>
+  )}
   <button type="button" class="btn btn-icon" id="theme" aria-label={fmt(T.theme.change, { label: T.theme.auto })} data-theme="auto" data-labels={themeLabels}>
     <Icon name="auto" class="theme-auto" />
     <Icon name="sun" class="theme-light" />

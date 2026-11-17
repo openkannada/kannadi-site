@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { HOME, HOMES, PAGES } from "../src/content/pages.ts";
+import { ALL_PAGES, HOME, HOMES, PAGES, published } from "../src/content/pages.ts";
 import { pagePath, siteUrl } from "../src/content/site.ts";
 import { llmsFull, llmsIndex, markdownPath, mirror, readPage, robots, sitemap } from "../src/lib/agent-text.ts";
 import { absolute, graphemes, jsonLd, plainText, scriptJson } from "../src/lib/seo.ts";
@@ -172,13 +172,14 @@ test("the site is named Open Kannada, and the editor and library kannadi", () =>
   assert.match(base, /<meta property="og:site_name" content=\{ORG\.name\} \/>/);
 });
 
-test("every Kannada page has an English twin that names it back, and waits for Prasad's read", async () => {
+test("every Kannada page has an English twin that names it back, and waits for a native reader", async () => {
   const { twinProblems, alternates } = await import("../src/lib/seo.ts");
-  assert.deepEqual(twinProblems(PAGES), []);
-  const kn = PAGES.filter((p) => p.lang === "kn");
+  const drafts = published(ALL_PAGES, true);
+  assert.deepEqual(twinProblems(drafts), []);
+  const kn = drafts.filter((p) => p.lang === "kn");
   assert.deepEqual(kn.map((p) => p.slug), ["kn", "kn/about", "kn/press", "kn/names-and-logos"]);
-  for (const p of PAGES.filter((p) => p.needsReview)) assert.equal(p.lang, "kn", `only Kannada drafts wait for a review: ${p.slug}`);
-  const links = alternates(PAGES.find((p) => p.slug === "about"), PAGES, siteUrl("https://example.org/"));
+  for (const p of drafts.filter((p) => p.needsReview)) assert.equal(p.lang, "kn", `only Kannada drafts wait for a review: ${p.slug}`);
+  const links = alternates(drafts.find((p) => p.slug === "about"), drafts, siteUrl("https://example.org/"));
   assert.deepEqual(links, [
     { hreflang: "en", href: "https://example.org/about/" },
     { hreflang: "kn", href: "https://example.org/kn/about/" },
@@ -187,8 +188,20 @@ test("every Kannada page has an English twin that names it back, and waits for P
   assert.equal(graphemes("ಕನ್ನಡ"), 4, "ಕ ನ್ ನ ಡ: a virama ends a cluster in Kannada");
 });
 
+test("pages that wait for a native reader stay out of the build, and so do links to them", async () => {
+  const { twinProblems, alternates } = await import("../src/lib/seo.ts");
+  assert.deepEqual(PAGES.filter((p) => p.needsReview), []);
+  assert.ok(!PAGES.some((p) => p.lang === "kn"), "every Kannada page is still a draft");
+  assert.deepEqual(twinProblems(PAGES), []);
+  const about = PAGES.find((p) => p.slug === "about");
+  assert.equal(about.twin, undefined);
+  assert.deepEqual(alternates(about, PAGES, siteUrl("https://example.org/")), []);
+  const checked = ALL_PAGES.map((p) => (p.slug === "kn/about" || p.slug === "about" ? { ...p, needsReview: undefined } : p));
+  assert.equal(published(checked, false).find((p) => p.slug === "about").twin, "kn/about", "a checked twin is kept");
+});
+
 test("a Kannada page's structured data is in Kannada and its trail starts at the Kannada home", () => {
-  const page = PAGES.find((p) => p.slug === "kn/about");
+  const page = ALL_PAGES.find((p) => p.slug === "kn/about");
   const graph = jsonLd(page, siteUrl("https://example.org/"), HOMES.kn)["@graph"];
   assert.equal(graph.find((n) => n["@type"] === "WebPage").inLanguage, "kn-IN");
   const crumbs = graph.find((n) => n["@type"] === "BreadcrumbList").itemListElement;

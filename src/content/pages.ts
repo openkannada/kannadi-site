@@ -17,7 +17,7 @@ interface PageBase {
   lang?: "en" | "kn";
   /** The slug of the same page in the other language, once it exists. Both pages must name each other. */
   twin?: string;
-  /** Copy that waits for a native reader; the deploy refuses the site while any page has it. */
+  /** Copy that waits for a native reader; the page is left out of the build until the mark is removed. */
   needsReview?: true;
   /** Short name for navigation and breadcrumbs. */
   name: string;
@@ -83,7 +83,8 @@ const CONVERT_STEPS = [
 
 const TYPING_LINK = '<a href="/english-to-kannada-typing/">English to Kannada typing</a>';
 
-export const PAGES: Page[] = [
+/** Every page, drafts included. */
+export const ALL_PAGES: Page[] = [
   {
     slug: "",
     twin: "kn",
@@ -475,7 +476,7 @@ export const PAGES: Page[] = [
     og: { from: "kannadi", to: "ಕನ್ನಡಿ" },
     keywords: "",
   },
-  // Kannada pages: a draft for Prasad's read, so each is marked needsReview until he approves it.
+  // Kannada pages: drafts that wait for a native reader, so each is marked needsReview until checked.
   {
     slug: "kn",
     lang: "kn",
@@ -586,12 +587,29 @@ export const PAGES: Page[] = [
   },
 ];
 
+/**
+ * The pages to build: drafts that wait for a native reader are left out, and so are links to them from their twins.
+ * KANNADA_DRAFTS=1 keeps them, to read them in a local build.
+ */
+export function published(pages: Page[], drafts: boolean): Page[] {
+  if (drafts) return pages;
+  const kept = pages.filter((p) => !p.needsReview);
+  const slugs = new Set(kept.map((p) => p.slug));
+  return kept.map((p) => {
+    if (p.twin === undefined || slugs.has(p.twin)) return p;
+    const { twin: _, ...rest } = p;
+    return rest as Page;
+  });
+}
+
+export const PAGES: Page[] = published(ALL_PAGES, typeof process !== "undefined" && process.env?.KANNADA_DRAFTS === "1");
+
 export const HOME = PAGES.find((p): p is ToolPage => p.kind === "tool" && p.slug === "")!;
 
-/** The home page in each language. */
+/** The home page in each language, built or not. */
 export const HOMES: Record<Lang, ToolPage> = {
   en: HOME,
-  kn: PAGES.find((p): p is ToolPage => p.kind === "tool" && p.slug === "kn")!,
+  kn: ALL_PAGES.find((p): p is ToolPage => p.kind === "tool" && p.slug === "kn")!,
 };
 
 /** Whether the page is the home page of its language. */

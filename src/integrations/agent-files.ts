@@ -76,6 +76,9 @@ export function agentFiles(): AstroIntegration {
         if (site) {
           const hashes: PageHashes = JSON.parse(await readFile(new URL(HASH_FILE, root), "utf8"));
           const git = (args: string[]) => execFileSync("git", args, { cwd: fileURLToPath(root), encoding: "utf8" });
+          if (git(["rev-parse", "--is-shallow-repository"]).trim() === "true") {
+            logger.warn("Shallow git clone: every page's lastmod is the date of the newest commit. Deploy from a full clone.");
+          }
           const lastmod = (p: BuiltPage) => {
             const hash = contentHash(p.markdown);
             return hashes[p.path] === hash ? lastmodOf(hash, git) : undefined;

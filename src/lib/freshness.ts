@@ -29,6 +29,7 @@ export function staleHashes(recorded: PageHashes, pages: { path: string; hash: s
  * and returns its output; undefined when no commit has the fingerprint yet.
  */
 export function lastmodOf(hash: string, git: (args: string[]) => string): string | undefined {
-  const date = git(["log", "-1", "--format=%cI", `-S"${hash}"`, "--", HASH_FILE]).trim();
+  // --first-parent -m dates a change by the merge that brought it to the branch, not the branch's own commit.
+  const date = git(["log", "-1", "--first-parent", "-m", "--format=%cI", `-S"${hash}"`, "--", HASH_FILE]).trim();
   return date || undefined;
 }

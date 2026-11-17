@@ -152,7 +152,7 @@ if (site !== null) {
   const map = existsSync(file("/sitemap.xml")) ? readFileSync(file("/sitemap.xml"), "utf8") : "";
   for (const page of PAGES) {
     const loc = new URL(pagePath(page.slug).slice(1), site).href;
-    if (!new RegExp(`<loc>${loc.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&")}</loc><lastmod>\\d{4}-\\d{2}-\\d{2}T[^<]+</lastmod>`).test(map)) fail("/sitemap.xml", `lacks ${loc} with its lastmod`);
+    if (!new RegExp(`<loc>${loc.replace(/[.?*+^$[\]\\(){}|-]/g, "\\$&")}</loc><lastmod>\\d{4}-\\d{2}-\\d{2}T[^<]+</lastmod>`).test(map)) fail("/sitemap.xml", `lacks ${loc} with its lastmod; a lastmod needs ${HASH_FILE} committed with the page's current fingerprint`);
   }
   const locs = [...map.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1] ?? "");
   if (locs.length !== PAGES.length) fail("/sitemap.xml", `${locs.length} URLs for ${PAGES.length} pages`);

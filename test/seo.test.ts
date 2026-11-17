@@ -1,6 +1,9 @@
 // Tests for sitemap dates, IndexNow and the live check: npm test
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 
 import { INDEXNOW } from "../src/content/site.ts";
@@ -29,7 +32,37 @@ test("a page's lastmod is the commit that recorded its current fingerprint", () 
   };
   assert.equal(lastmodOf("aaa", git), "2026-11-24T10:15:00+00:00");
   assert.equal(lastmodOf("zzz", git), undefined);
-  assert.deepEqual(calls[0], ["log", "-1", "--format=%cI", '-S"aaa"', "--", "data/page-hashes.json"]);
+  assert.deepEqual(calls[0], ["log", "-1", "--first-parent", "-m", "--format=%cI", '-S"aaa"', "--", "data/page-hashes.json"]);
+});
+
+test("with real git, a merged change is dated by the merge, and text changed back is dated by the commit that brought it back", () => {
+  const dir = mkdtempSync(join(tmpdir(), "page-hashes-"));
+  const run = (args: string[], date = "2026-04-01T09:00:00+00:00") =>
+    execFileSync("git", ["-c", "user.name=T", "-c", "user.email=t@t", "-c", "commit.gpgsign=false", ...args], {
+      cwd: dir,
+      encoding: "utf8",
+      env: { ...process.env, GIT_AUTHOR_DATE: date, GIT_COMMITTER_DATE: date },
+    });
+  const record = (hash: string, date: string, message: string) => {
+    mkdirSync(join(dir, "data"), { recursive: true });
+    writeFileSync(join(dir, "data/page-hashes.json"), `{\n  "/": "${hash}"\n}\n`);
+    run(["add", "."], date);
+    run(["commit", "-q", "-m", message], date);
+  };
+  try {
+    run(["init", "-q", "-b", "main"]);
+    record("aaa", "2026-04-01T09:00:00+00:00", "a");
+    run(["checkout", "-q", "-b", "copy"]);
+    record("bbb", "2026-04-02T09:00:00+00:00", "b");
+    run(["checkout", "-q", "main"]);
+    run(["merge", "-q", "--no-ff", "-m", "merge", "copy"], "2026-04-10T09:00:00+00:00");
+    const git = (args: string[]) => run(args);
+    assert.equal(lastmodOf("bbb", git), "2026-04-10T09:00:00Z");
+    record("aaa", "2026-04-20T09:00:00+00:00", "back");
+    assert.equal(lastmodOf("aaa", git), "2026-04-20T09:00:00Z");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("IndexNow gets only new or changed pages on the site's own host", () => {

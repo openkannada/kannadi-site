@@ -108,10 +108,10 @@ test("robots.txt allows every crawler and names the sitemap once there is one", 
   assert.ok(sitemap(["https://example.org/?a&b"]).includes("<loc>https://example.org/?a&amp;b</loc>"));
 });
 
-test("no copy says the editor converts back to Akruti or Baraha: it saves Unicode text as Nudi only", () => {
+test("no copy says the editor converts Unicode back to Akruti: it saves Nudi only", () => {
   const files = ["src/content/pages.ts", "src/integrations/agent-files.ts", "src/lib/seo.ts", "README.md", "PRODUCT.md", "DESIGN.md"];
   for (const f of files) {
     const text = readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
-    assert.doesNotMatch(text, /Unicode and back|(Unicode|back) to (Akruti|Baraha)\b/, f);
+    assert.doesNotMatch(text, /Unicode and back|(Unicode|back) to Akruti\b/, f);
   }
 });

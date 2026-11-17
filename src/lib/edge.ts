@@ -35,7 +35,11 @@ export async function handle(request: Request, assets: Assets, options: EdgeOpti
   const target = canonicalRedirect(url, options.host);
   if (target) return new Response(null, { status: 301, headers: { location: target } });
 
-  const response = await respond(request, url, assets);
+  let response = await respond(request, url, assets);
+  // The asset server adds a page's trailing slash with a 307; a permanent move is what search engines should keep.
+  if (response.status === 307 && response.headers.has("location")) {
+    response = new Response(null, { status: 308, headers: { location: response.headers.get("location") ?? "/" } });
+  }
   return options.launched ? response : withHeaders(response, { "x-robots-tag": "noindex" });
 }
 

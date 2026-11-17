@@ -4,8 +4,11 @@ export async function copyMarkdown(url: string): Promise<boolean> {
     if (!r.ok) throw new Error(`${r.status} ${url}`);
     return r.text();
   });
+  // A failed fetch is reported through the clipboard write below; this keeps it from also going unhandled.
+  text.catch(() => {});
   try {
-    if (typeof ClipboardItem !== "undefined" && navigator.clipboard?.write) {
+    if (!navigator.clipboard) return false;
+    if (typeof ClipboardItem !== "undefined" && navigator.clipboard.write) {
       await navigator.clipboard.write([new ClipboardItem({ "text/plain": text.then((t) => new Blob([t], { type: "text/plain" })) })]);
     } else {
       await navigator.clipboard.writeText(await text);

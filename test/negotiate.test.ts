@@ -22,6 +22,7 @@ const assets = {
     const path = new URL(input instanceof Request ? input.url : String(input)).pathname;
     if (path === "/a/index.md") return new Response("# A", { headers: { "content-type": "application/octet-stream" } });
     if (path === "/a/" || path === "/b/") return new Response("<h1>A</h1>", { headers: { "content-type": "text/html" } });
+    if (path === "/a") return new Response(null, { status: 307, headers: { location: "/a/" } });
     return new Response("", { status: 404 });
   },
 };
@@ -62,8 +63,19 @@ test("before launch every response says noindex, and after launch none does", as
   assert.equal(after.headers.get("x-robots-tag"), null);
 });
 
-test("the site is not launched yet", async () => {
+test("a page's missing trailing slash is a permanent redirect", async () => {
+  const res = await get("https://openkannada.org/a");
+  assert.equal(res.status, 308);
+  assert.equal(res.headers.get("location"), "/a/");
+});
+
+test("the site is not launched yet, and the Worker serves it that way", async () => {
   const { LIVE: live } = await import("../src/content/site.ts");
-  assert.equal(live.launched, false, "launching is Prasad's call: set LIVE.launched in a pull request");
+  assert.equal(live.launched, false, "launching is 1 line: set LIVE.launched in a pull request");
   assert.equal(live.origin, `https://${live.host}`);
+  const { default: worker } = await import("../worker/index.ts");
+  const res = await worker.fetch(new Request("https://openkannada.org/a/"), { ASSETS: assets });
+  assert.equal(res.headers.get("x-robots-tag"), "noindex");
+  const moved = await worker.fetch(new Request("https://www.openkannada.org/a/?q=1"), { ASSETS: assets });
+  assert.equal(moved.headers.get("location"), "https://openkannada.org/a/?q=1");
 });

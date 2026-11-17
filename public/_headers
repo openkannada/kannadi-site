@@ -9,6 +9,10 @@
 
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
+  X-Robots-Tag: noindex
+
+/fonts/*
+  X-Robots-Tag: noindex
 
 /*.md
   Content-Type: text/markdown; charset=utf-8

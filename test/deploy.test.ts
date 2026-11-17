@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { checkoutProblem, deployEnv, deploySteps, placeholders, productionUrl } from "../src/lib/deploy.ts";
+import { checkoutProblem, deployEnv, deploySteps, launchSteps, placeholders, productionUrl } from "../src/lib/deploy.ts";
 
 const URL_ROOT = "https://kannada.example.com.au/";
 
@@ -60,7 +60,15 @@ test("before launch the deploy publishes and checks the noindex site, with no pl
   assert.ok(!lines.some((l) => l.includes("placeholders.ts") || l.includes("indexnow.ts")));
 });
 
-test("placeholders for Prasad's words are found in built HTML and markdown", () => {
+test("CI runs the launch-only steps on the right side of its publish, and none before launch", () => {
+  const url = new URL(URL_ROOT);
+  const line = (s: { command: string; args: string[] }) => [s.command, ...s.args].join(" ");
+  assert.deepEqual(launchSteps(url, true, "before").map(line), ["node scripts/placeholders.ts dist", `node scripts/indexnow.ts snapshot ${URL_ROOT}`]);
+  assert.deepEqual(launchSteps(url, true, "after").map(line), [`node scripts/indexnow.ts submit ${URL_ROOT}`]);
+  assert.deepEqual([...launchSteps(url, false, "before"), ...launchSteps(url, false, "after")], []);
+});
+
+test("placeholders for words still to be written are found in built HTML and markdown", () => {
   assert.deepEqual(placeholders('<p><mark class="todo">PRASAD: 1 line on Neha.</mark> <a href="/">x</a></p>'), ["PRASAD: 1 line on Neha."]);
   assert.deepEqual(placeholders("Contact\n\nPRASAD: press contact, an email address or a form.\n"), ["PRASAD: press contact, an email address or a form."]);
   assert.deepEqual(placeholders("Prasad: the founder."), []);

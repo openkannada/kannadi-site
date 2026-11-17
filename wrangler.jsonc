@@ -13,9 +13,12 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    // The Worker sees every request: it redirects other hosts and sets noindex before launch.
-    "run_worker_first": true
+    // The Worker sees pages and files, to redirect other hosts and set noindex before launch. Hashed scripts,
+    // styles and fonts go straight to the asset server, which bills no Worker request; _headers marks them noindex.
+    "run_worker_first": ["/*", "!/_astro/*", "!/fonts/*"]
   },
+  // wrangler dev rewrites requests to the first route's host over http; https keeps the redirect from looping.
+  "dev": { "upstream_protocol": "https" },
   "routes": [
     { "pattern": "openkannada.org", "custom_domain": true },
     { "pattern": "www.openkannada.org", "custom_domain": true },

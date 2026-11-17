@@ -5,6 +5,8 @@ export interface Step {
   label: string;
   command: string;
   args: string[];
+  /** Runs only once the site is launched, so CI runs it too, around its own publish step. */
+  launch?: "before" | "after";
 }
 
 /** What the deploy needs to know about the git checkout. */
@@ -45,7 +47,7 @@ export function deployEnv(env: NodeJS.ProcessEnv, url: URL): NodeJS.ProcessEnv {
 }
 
 /**
- * Placeholders for Prasad's own words or photos left in built text: each "PRASAD: ..." up to the end of its
+ * Placeholders for words or photos still to be written, left in built text: each "PRASAD: ..." up to the end of its
  * sentence, and any text still in the placeholder highlight after the "PRASAD:" note was replaced.
  */
 export function placeholders(text: string): string[] {
@@ -69,10 +71,15 @@ export function deploySteps(url: URL, launched: boolean): Step[] {
     { label: "Build the site", command: "npm", args: ["run", "build"] },
     { label: "Check the built pages", command: "node", args: ["scripts/seo-smoke.ts", "dist", url.href] },
     { label: "Check the writing", command: "npm", args: ["run", "voice-lint"] },
-    ...launch({ label: "Check that no placeholder is left", command: "node", args: ["scripts/placeholders.ts", "dist"] }),
-    ...launch({ label: "Save the live sitemap for IndexNow", command: "node", args: ["scripts/indexnow.ts", "snapshot", url.href] }),
+    ...launch({ label: "Check that no placeholder is left", command: "node", args: ["scripts/placeholders.ts", "dist"], launch: "before" }),
+    ...launch({ label: "Save the live sitemap for IndexNow", command: "node", args: ["scripts/indexnow.ts", "snapshot", url.href], launch: "before" }),
     { label: "Publish to Cloudflare Workers", command: "npx", args: ["--no", "--", "wrangler", "deploy"] },
     { label: "Check the live site", command: "node", args: ["scripts/live-check.ts", url.href] },
-    ...launch({ label: "Send the changed pages to IndexNow", command: "node", args: ["scripts/indexnow.ts", "submit", url.href] }),
+    ...launch({ label: "Send the changed pages to IndexNow", command: "node", args: ["scripts/indexnow.ts", "submit", url.href], launch: "after" }),
   ];
+}
+
+/** The launch-only steps on 1 side of the publish, for CI, which builds and publishes with its own steps. */
+export function launchSteps(url: URL, launched: boolean, side: "before" | "after"): Step[] {
+  return deploySteps(url, launched).filter((s) => s.launch === side);
 }

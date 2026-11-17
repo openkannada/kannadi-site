@@ -4,10 +4,10 @@ Read `PRODUCT.md` for who the site is for, and `DESIGN.md` for the visual system
 
 ## Rules
 
-- Commit as Prasad, signed and signed off for the DCO: `git -c user.name="Prasad Subrahmanya" -c user.email=prasadus92@gmail.com commit -S -s`. No AI attribution in commits, PR bodies or review replies. Other contributors sign off with `git commit -s` (see CONTRIBUTING.md).
+- Commit with my identity, signed and signed off for the DCO: `git -c user.name="Prasad Subrahmanya" -c user.email=prasadus92@gmail.com commit -S -s`. No AI attribution in commits, PR bodies or review replies. Other contributors sign off with `git commit -s` (see CONTRIBUTING.md).
 - Branch from `origin/main` and open a pull request. Never push `main` or force-push.
-- Every push to `main` deploys to https://openkannada.org from CI (see `infra/README.md`), so a merge is a release. Agents never run `npm run deploy`, `wrangler deploy`, `wrangler login` or `wrangler logout`; only Prasad deploys by hand. `SITE_URL` stays unset in CI except for the smoke build at `example.org` and the deploy job.
-- The site stays noindex until Prasad launches it: `LIVE.launched` in `src/content/site.ts` changes only on his word.
+- Every push to `main` deploys to https://openkannada.org from CI (see `infra/README.md`), so a merge is a release. Agents never run `npm run deploy`, `wrangler deploy`, `wrangler login` or `wrangler logout`; only I deploy by hand. `SITE_URL` stays unset in CI except for the smoke build at `example.org` and the deploy job.
+- The site stays noindex until I launch it: `LIVE.launched` in `src/content/site.ts` changes only when I say so.
 - Pin every dependency to an exact version, checked on the registry.
 - Copy is in `src/content/pages.ts`. Plain American English, digits for numbers, no em dashes, no hype, no disclaimers. `npm run voice-lint` checks the built text.
 - Every new page needs an entry in `PAGES`; `npm run seo-smoke` fails on a built page without one.
@@ -17,4 +17,4 @@ Read `PRODUCT.md` for who the site is for, and `DESIGN.md` for the visual system
 
 ## Commands
 
-`uvx reuse lint` (every file has a license; see REUSE.toml and LICENSING.md), `npm run wasm`, `npm run build`, `npm run check`, `npm test`, `npm run seo-smoke`, `npm run voice-lint`, `npm run page-hashes`, `npm run lighthouse`. `npm run deploy` publishes from Prasad's Mac; CI deploys every push to `main`.
+`uvx reuse lint` (every file has a license; see REUSE.toml and LICENSING.md), `npm run wasm`, `npm run build`, `npm run check`, `npm test`, `npm run seo-smoke`, `npm run voice-lint`, `npm run page-hashes`, `npm run lighthouse`. `npm run deploy` publishes from my Mac; CI deploys every push to `main`.

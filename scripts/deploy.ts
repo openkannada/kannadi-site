@@ -1,5 +1,5 @@
 // Builds, checks and publishes the site to Cloudflare Workers at https://openkannada.org: npm run deploy
-// CI runs the same steps on every push to main; this is for a deploy from Prasad's Mac. The API token comes
+// CI runs the same steps on every push to main; this is for a deploy by hand from my Mac. The API token comes
 // from CLOUDFLARE_API_TOKEN, or else from the macOS keychain, and is never printed.
 import { spawnSync } from "node:child_process";
 

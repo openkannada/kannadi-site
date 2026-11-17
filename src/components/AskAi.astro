@@ -18,10 +18,10 @@ const links = askLinks(new URL(markdownPath, Astro.site ?? LIVE.origin).href, AS
     {ASK_AI.label}
   </button>
   <div id="ask-ai-menu" popover class="menu ask-ai-menu" role="group" aria-label={ASK_AI.label}>
-    <button type="button" class="menu-item" data-copy-markdown={markdownPath} data-copied={ASK_AI.copied}>
+    <a class="menu-item" href={markdownPath} data-copy-markdown data-copied={ASK_AI.copied}>
       <Icon name="copy" class="size-5 shrink-0" />
-      <span data-label>{ASK_AI.copy}</span>
-    </button>
+      <span data-label aria-live="polite">{ASK_AI.copy}</span>
+    </a>
     <div class="menu-sep" role="separator"></div>
     {links.map((l) => (
       <a class="menu-item" href={l.href} target="_blank" rel="noopener noreferrer">
@@ -35,19 +35,20 @@ const links = askLinks(new URL(markdownPath, Astro.site ?? LIVE.origin).href, AS
 <script>
   import { copyMarkdown } from "../lib/copy-markdown.ts";
 
-  for (const button of document.querySelectorAll<HTMLButtonElement>("[data-copy-markdown]")) {
-    const label = button.querySelector<HTMLElement>("[data-label]");
+  // The item is a link to the markdown; with script it copies instead, and opens the markdown only if copying fails.
+  for (const link of document.querySelectorAll<HTMLAnchorElement>("[data-copy-markdown]")) {
+    const label = link.querySelector<HTMLElement>("[data-label]");
     const idle = label?.textContent ?? "";
-    button.addEventListener("click", async () => {
-      const url = button.dataset.copyMarkdown ?? "";
-      if (await copyMarkdown(url)) {
-        if (label) label.textContent = button.dataset.copied ?? idle;
+    link.addEventListener("click", async (event) => {
+      event.preventDefault();
+      if (await copyMarkdown(link.href)) {
+        if (label) label.textContent = link.dataset.copied ?? idle;
         setTimeout(() => {
           if (label) label.textContent = idle;
-          button.closest<HTMLElement>("[popover]")?.hidePopover();
+          link.closest<HTMLElement>("[popover]")?.hidePopover();
         }, 1200);
       } else {
-        window.open(url, "_blank", "noopener");
+        location.href = link.href;
       }
     });
   }

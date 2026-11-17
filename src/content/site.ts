@@ -35,8 +35,8 @@ export const INDEXNOW = {
 } as const;
 
 /**
- * Where the site lives, and whether it is launched. Until Prasad says "launch", every response is sent with
- * X-Robots-Tag: noindex and IndexNow stays quiet; launching is this 1 flag, set to true in a pull request.
+ * Where the site lives, and whether it is launched. Until launch, every response is sent with X-Robots-Tag: noindex
+ * and IndexNow stays quiet; launching is this 1 flag, set to true in a pull request.
  */
 export const LIVE = {
   origin: "https://openkannada.org",

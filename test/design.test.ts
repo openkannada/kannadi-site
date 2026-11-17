@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { colorValue, contrast, contrastProblems, oklchToRgba, over, toCss, type Tokens } from "../design/tokens.ts";
-import { canRefract, followLight, lightAt } from "../src/lib/light.ts";
+import { followLight, lightAt } from "../src/lib/light.ts";
 
 const tokens: Tokens = JSON.parse(readFileSync(new URL("../design/tokens.json", import.meta.url), "utf8"));
 
@@ -48,7 +48,7 @@ test("the light follows the pointer from above: left to right, and never from be
   assert.deepEqual(lightAt(-50, 2000, 1000, 800), [-0.8, -0.2]);
 });
 
-/** A window with the given Chromium brands, filter support and matching media queries. */
+/** A window whose media queries match the given strings. */
 function fakeWindow(brands: string[], supports: boolean, media: string[]) {
   const listeners: Record<string, (e: unknown) => void> = {};
   const props: Record<string, string> = {};
@@ -67,19 +67,9 @@ function fakeWindow(brands: string[], supports: boolean, media: string[]) {
   return { w: w as unknown as Window & typeof globalThis, listeners, props, frames, classes };
 }
 
-test("glass bends the backdrop only in Chromium with a fine pointer, and never when transparency is reduced", () => {
-  const can = (brands: string[], supports: boolean, media: string[]) => canRefract(fakeWindow(brands, supports, media).w);
-  assert.equal(can(["Chromium", "Google Chrome"], true, ["pointer: fine"]), true);
-  assert.equal(can([], true, ["pointer: fine"]), false, "Safari and Firefox have no Chromium brand");
-  assert.equal(can(["Chromium"], false, ["pointer: fine"]), false);
-  assert.equal(can(["Chromium"], true, []), false, "touch screens");
-  assert.equal(can(["Chromium"], true, ["pointer: fine", "reduced-transparency"]), false);
-});
-
 test("the light moves at most once a frame with a mouse, and never on touch or under reduced motion", () => {
   const mouse = fakeWindow(["Chromium"], true, ["pointer: fine"]);
   followLight(mouse.w);
-  assert.ok(mouse.classes.has("lg-refract"));
   mouse.listeners["pointermove"]!({ clientX: 0, clientY: 0 });
   mouse.listeners["pointermove"]!({ clientX: 1000, clientY: 800 });
   assert.equal(mouse.frames.length, 1, "2 moves in 1 frame ask for 1 frame");

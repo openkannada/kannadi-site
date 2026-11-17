@@ -11,24 +11,9 @@ export function lightAt(x: number, y: number, width: number, height: number): [n
   return [Math.round(lx * 100) / 100, Math.round(ly * 100) / 100];
 }
 
-/**
- * Whether glass may bend what is behind it: only Chromium draws SVG filters in backdrop-filter (other engines would
- * drop the blur too), and only with a mouse or pen, so phones scroll without the extra filter work.
- */
-export function canRefract(w: Window & typeof globalThis): boolean {
-  const brands = (w.navigator as Navigator & { userAgentData?: { brands: { brand: string }[] } }).userAgentData?.brands ?? [];
-  return (
-    brands.some((b) => b.brand === "Chromium") &&
-    w.CSS.supports("backdrop-filter", "blur(1px) url(#lg-refract)") &&
-    w.matchMedia("(pointer: fine)").matches &&
-    !w.matchMedia("(prefers-reduced-transparency: reduce)").matches
-  );
-}
-
 /** Moves the light with a fine pointer, at most once a frame, unless the visitor asks for reduced motion. */
 export function followLight(w: Window & typeof globalThis): void {
   const root = w.document.documentElement;
-  if (canRefract(w)) root.classList.add("lg-refract");
   if (!w.matchMedia("(pointer: fine)").matches || w.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   let frame = 0;
   let last: PointerEvent | null = null;

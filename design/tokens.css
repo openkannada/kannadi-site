@@ -47,7 +47,6 @@
   /* glass */
   --glass-blur: 22px;
   --glass-saturate: 1.9;
-  --glass-refraction: 18;
 
   /* motion */
   --ease-standard: cubic-bezier(0.22, 1, 0.36, 1);

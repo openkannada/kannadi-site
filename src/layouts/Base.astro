@@ -9,7 +9,6 @@ import SiteHeader from "../components/SiteHeader.astro";
 import { HOME, PAGES, type Page } from "../content/pages.ts";
 import { ORG, pagePath } from "../content/site.ts";
 import { href } from "../lib/paths.ts";
-import TOKENS from "../../design/tokens.json";
 import { alternates, jsonLd, scriptJson } from "../lib/seo.ts";
 
 interface Props {
@@ -18,8 +17,6 @@ interface Props {
   noindex?: boolean;
 }
 const { page, noindex = false } = Astro.props;
-// Where glass bends what is behind it: near each edge, red and green pull the sample inward, sideways and up or down, like the rim of a lens.
-const REFRACTION_MAP = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100' preserveAspectRatio='none'%3E%3ClinearGradient id='x'%3E%3Cstop offset='0' stop-color='%23f00'/%3E%3Cstop offset='.1' stop-color='%23800000'/%3E%3Cstop offset='.9' stop-color='%23800000'/%3E%3Cstop offset='1' stop-color='%23000'/%3E%3C/linearGradient%3E%3ClinearGradient id='y' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%230f0'/%3E%3Cstop offset='.18' stop-color='%23008000'/%3E%3Cstop offset='.82' stop-color='%23008000'/%3E%3Cstop offset='1' stop-color='%23000'/%3E%3C/linearGradient%3E%3Crect width='100' height='100' fill='url%28%23x%29'/%3E%3Crect width='100' height='100' fill='url%28%23y%29' style='mix-blend-mode:screen'/%3E%3C/svg%3E";
 const site = Astro.site ? new URL(import.meta.env.BASE_URL, Astro.site) : null;
 const canonical = site ? new URL(pagePath(page.slug).slice(1), site).href : null;
 const ogImage = href(`/og/${page.slug || "home"}.png`);
@@ -69,12 +66,6 @@ const ogImageUrl = site ? new URL(ogImage, site).href : null;
   </head>
   <body class="flex min-h-dvh flex-col">
     <a href="#main" class="sr-only z-50 rounded-md bg-primary px-3 py-2 text-primary-foreground no-underline focus:not-sr-only focus:fixed focus:top-3 focus:left-3">Skip to content</a>
-    <svg class="lg-defs" width="0" height="0" aria-hidden="true" focusable="false">
-      <filter id="lg-refract" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
-        <feImage href={REFRACTION_MAP} preserveAspectRatio="none" result="map" />
-        <feDisplacementMap in="SourceGraphic" in2="map" scale={TOKENS.glass["glass-refraction"].$value} xChannelSelector="R" yChannelSelector="G" />
-      </filter>
-    </svg>
     <SiteHeader current={page.slug} />
     <main id="main" class="w-full flex-1">
       <slot />

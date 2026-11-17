@@ -151,17 +151,11 @@
   inherits: true;
   initial-value: -1;
 }
-.lg-defs {
-  position: absolute;
-  width: 0;
-  height: 0;
-  overflow: hidden;
-}
 
 /*
  * A pane of Liquid Glass: blur and saturate what is behind; light the rim on the side facing the light,
- * with a soft specular glow inside it and a faint rim opposite. In Chromium the edge also bends what is
- * behind (lg-refract, from light.ts). Solid when transparency is off or backdrop filters are missing.
+ * with a soft specular glow inside it and a faint rim opposite. Solid when transparency is off or backdrop
+ * filters are missing.
  */
 @utility glass {
   background: var(--glass);
@@ -174,10 +168,6 @@
     inset calc(var(--light-x, 0) * -12px) calc(var(--light-y, -1) * -12px) 22px -16px var(--glass-specular),
     var(--shadow-float);
   color: var(--popover-foreground);
-  /* The displacement runs last, on the blurred backdrop: run first, it clips to the pane and the blur pulls in transparency. */
-  :root.lg-refract & {
-    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate)) url(#lg-refract);
-  }
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     background: var(--glass-solid);
   }
@@ -185,9 +175,6 @@
     background: var(--glass-solid);
     -webkit-backdrop-filter: none;
     backdrop-filter: none;
-    :root.lg-refract & {
-      backdrop-filter: none;
-    }
   }
 }
 

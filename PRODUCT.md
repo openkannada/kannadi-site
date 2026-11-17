@@ -19,11 +19,11 @@ Astro 7 for static pages, Tailwind CSS 4 with design tokens as CSS variables, an
 
 ## Product Purpose
 
-A free Kannada editor that works in the browser with nothing uploaded. It converts legacy font text to Unicode and back, types Kannada from English letters, marks what could not be converted and offers fixes, counts aksharas and words, and saves Word, web and text files. Success: someone who arrives from a search finishes their document on the page, on any device.
+A free Kannada editor that works in the browser with nothing uploaded. It converts legacy font text to Unicode, types Kannada from English letters, marks what could not be converted and offers fixes, counts aksharas and words, and saves Word, web, text and Nudi files. Success: someone who arrives from a search finishes their document on the page, on any device.
 
 ## Positioning
 
-The pages that rank today are old, ad-funded wrappers around Google's transliteration service or 1-page jQuery converters. kannadi converts whole Word, HTML and text files, shows exactly which glyphs and syllables failed with checked fixes, works in both directions, and runs offline from its own WebAssembly library (inferred from the competitor report).
+The pages that rank today are old, ad-funded wrappers around Google's transliteration service or 1-page jQuery converters. kannadi converts whole Word, HTML and text files, shows exactly which glyphs and syllables failed with checked fixes, converts Unicode back to Nudi, and runs offline from its own WebAssembly library (inferred from the competitor report).
 
 ## Operating Context
 

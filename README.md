@@ -1,6 +1,6 @@
 # kannadi-site
 
-The kannadi website: a Kannada editor and converter that runs in the browser. It converts text typed in the old Nudi, Baraha and Akruti fonts to Unicode and back, types Kannada from English letters, marks what could not be converted with fixes, and saves Word, web and text files. Nothing leaves the visitor's device.
+The kannadi website: a Kannada editor and converter that runs in the browser. It converts text typed in the old Nudi, Baraha and Akruti fonts to Unicode, types Kannada from English letters, marks what could not be converted with fixes, and saves Word, web, text and Nudi files. Nothing leaves the visitor's device.
 
 The conversion runs on [kannadi](https://github.com/prasadus92/kannadi), a Rust library compiled to WebAssembly.
 

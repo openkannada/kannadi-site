@@ -1,6 +1,6 @@
 ---
 import { BIOS, COLORS, CONTACT, DESCRIPTIONS, FACTS, LOGOS, PHOTOS, SCREENSHOTS } from "../content/press.ts";
-import { href, withBase } from "../lib/paths.ts";
+import { href } from "../lib/paths.ts";
 ---
 <section aria-labelledby="logos">
   <h2 id="logos">Logos</h2>
@@ -73,7 +73,7 @@ import { href, withBase } from "../lib/paths.ts";
 <section aria-labelledby="facts">
   <h2 id="facts">Facts</h2>
   <ul class="facts">
-    {FACTS.map((f) => <li>{f.fact} <a href={withBase(f.source).replace(/^"|"$/g, "")}>{f.label}</a></li>)}
+    {FACTS.map((f) => <li>{f.fact} <a href={f.source.startsWith("/") ? href(f.source) : f.source}>{f.label}</a></li>)}
   </ul>
 </section>
 

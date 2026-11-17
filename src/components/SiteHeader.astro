@@ -47,7 +47,7 @@ const themeLabels = JSON.stringify({ ...T.theme });
       </>
     ))}
   </nav>
-  <a class="btn lang-switch" href={href(pagePath(twin.slug))} hreflang={other} title={label}>
+  <a class="btn lang-switch" href={href(pagePath(twin.slug))} hreflang={other}>
     <span lang={other}>{T.language.switchTo}</span><span class="sr-only">: {label}</span>
   </a>
   <button type="button" class="btn btn-icon" id="theme" aria-label={fmt(T.theme.change, { label: T.theme.auto })} data-theme="auto" data-labels={themeLabels}>

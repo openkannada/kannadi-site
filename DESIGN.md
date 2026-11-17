@@ -20,6 +20,7 @@ Restrained: neutrals, 1 action color, and 2 problem colors that appear only in t
 | `--primary` | Actions, the current choice, links, the caret | indigo `oklch(0.46 0.19 277)` | light indigo |
 | `--mark-unknown`, `--mark-unknown-line` | Glyphs with no Kannada letter | rose tint and wavy line | |
 | `--mark-malformed`, `--mark-malformed-line` | Signs that cannot form a syllable | amber tint and wavy line | |
+| `--mark-malformed-line`, dotted | Likely typos, such as ರೃ written for ಋ | dotted amber line, no tint | |
 | `--field-turmeric`, `--field-kumkuma`, `--field-indigo` | Blurred color fields fixed behind the page, so the glass has something to bend | | |
 
 Every token is 1 `light-dark()` pair in a single `:root` block, so the 2 themes cannot drift apart. `data-theme="light"` or `"dark"` on `<html>` pins a theme; with no attribute the page follows the system. Tailwind reads the tokens through `@theme inline` under shadcn's names (`bg-background`, `text-muted-foreground`, `bg-primary` and so on).

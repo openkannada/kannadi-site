@@ -64,7 +64,7 @@ const OPEN_SOURCE: Faq = {
 
 const CONVERT_STEPS = [
   "Choose <b>Open</b> and pick the Word, text or web page file, or paste the text. Word and web files keep their fonts, so only the text set in a legacy font is converted.",
-  "Look over the marks. Rose is a glyph with no Kannada letter; amber is a sign that cannot form a syllable. Select one, or press <kbd>F8</kbd>, and pick a fix.",
+  "Look over the marks. Rose is a glyph with no Kannada letter, amber is a sign that cannot form a syllable, and a dotted line is a likely typo, such as <span lang=\"kn\">ರೃ</span> for <span lang=\"kn\">ಋ</span>. Select one, or press <kbd>F8</kbd>, and pick a fix.",
   "Choose <b>Save</b> for a Word file, plain text or a web page.",
 ];
 

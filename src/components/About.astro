@@ -1,5 +1,6 @@
 ---
 import { ABOUT } from "../content/about.ts";
+import Illustration from "./Illustration.astro";
 import { withBase } from "../lib/paths.ts";
 ---
 {ABOUT.sections.map((s) => (
@@ -8,6 +9,18 @@ import { withBase } from "../lib/paths.ts";
     {s.paragraphs.map((p) => <p set:html={withBase(p)} />)}
   </section>
 ))}
+
+<section aria-labelledby="work">
+  <h2 id="work">{ABOUT.work.heading}</h2>
+  <ul class="work" role="list">
+    {ABOUT.work.items.map((w) => (
+      <li>
+        <Illustration name={w.illustration} />
+        <span>{w.label}</span>
+      </li>
+    ))}
+  </ul>
+</section>
 
 <section aria-labelledby="people">
   <h2 id="people">Founding members</h2>
@@ -50,6 +63,24 @@ import { withBase } from "../lib/paths.ts";
 </section>
 
 <style>
+  .work {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .work li {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0.75rem 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    font-weight: 600;
+    line-height: 1.35;
+  }
   .people {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));

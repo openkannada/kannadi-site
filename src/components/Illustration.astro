@@ -1,0 +1,162 @@
+---
+// Hero illustrations drawn from Kannada itself, in the design tokens. Each tells its tool in 1 short
+// animation that runs once when it comes into view (inview.ts adds .is-in); without that, and under
+// reduced motion, the final frame shows.
+export type IllustrationName = "convert" | "typing" | "letters" | "font" | "spell" | "scan";
+
+interface Props {
+  name: IllustrationName;
+  class?: string;
+}
+const { name, class: className } = Astro.props;
+const id = `illo-${name}`;
+---
+<svg class:list={["illo", `illo-${name}`, className]} viewBox="0 0 320 240" role="presentation" aria-hidden="true" focusable="false" data-inview>
+  <defs>
+    <radialGradient id={`${id}-t`}><stop offset="0" class="stop-turmeric" /><stop offset="1" class="stop-clear" /></radialGradient>
+    <radialGradient id={`${id}-i`}><stop offset="0" class="stop-indigo" /><stop offset="1" class="stop-clear" /></radialGradient>
+    <radialGradient id={`${id}-k`}><stop offset="0" class="stop-kumkuma" /><stop offset="1" class="stop-clear" /></radialGradient>
+  </defs>
+  <circle cx="250" cy="52" r="92" fill={`url(#${id}-t)`} />
+  <circle cx="62" cy="190" r="96" fill={`url(#${id}-i)`} />
+  <circle cx="232" cy="214" r="64" fill={`url(#${id}-k)`} />
+  <rect class="sheet" x="18" y="28" width="284" height="184" rx="30" />
+
+  {name === "convert" && (
+    <g>
+      <text class="legacy a1" x="160" y="94" text-anchor="middle">PÀ£ÀßqÀ</text>
+      <path class="rule a2" d="M92 116h136" />
+      <text class="kn big a3" x="150" y="176" text-anchor="middle" lang="kn">ಕನ್ನಡ</text>
+      <path class="tick a4" d="M246 158l8 8 15-16" />
+    </g>
+  )}
+  {name === "typing" && (
+    <g>
+      <g class="keys a1">
+        {["na", "ma", "skā", "ra"].map((k, i) => (
+          <g transform={`translate(${46 + i * 58} 58)`}>
+            <rect class="key" width="52" height="40" rx="11" />
+            <text class="latin" x="26" y="26" text-anchor="middle">{k}</text>
+          </g>
+        ))}
+      </g>
+      <text class="kn big reveal a2" x="150" y="176" text-anchor="middle" lang="kn">ನಮಸ್ಕಾರ</text>
+      <path class="caret a3" d="M258 142v44" />
+    </g>
+  )}
+  {name === "letters" && (
+    <g>
+      {["ಕ", "ಕಾ", "ಕಿ", "ಕೀ"].map((l, i) => (
+        <g class={`tile a${i + 1}`} transform={`translate(${36 + i * 64} 74)`}>
+          <rect width="56" height="92" rx="14" class="tile-bg" />
+          <text class="kn big" x="28" y="60" text-anchor="middle" lang="kn">{l}</text>
+        </g>
+      ))}
+    </g>
+  )}
+  {name === "font" && (
+    <g>
+      <text class="kn huge broken-a a1" x="122" y="150" text-anchor="middle" lang="kn">ನ್</text>
+      <text class="kn huge broken-b a1" x="200" y="150" text-anchor="middle" lang="kn">ನ</text>
+      <text class="kn huge joined a2" x="156" y="150" text-anchor="middle" lang="kn">ನ್ನ</text>
+      <path class="tick a3" d="M232 168l8 8 15-16" />
+    </g>
+  )}
+  {name === "spell" && (
+    <g>
+      <text class="kn mid" x="44" y="132" lang="kn">ಕನ್ನಡ</text>
+      <text class="kn mid wrong a1" x="146" y="132" lang="kn">ಬಾಷೆ</text>
+      <text class="kn mid right a2" x="146" y="132" lang="kn">ಭಾಷೆ</text>
+      <path class="squiggle a1" d="M146 150q5-5 10 0t10 0 10 0 10 0 10 0 10 0 10 0" />
+      <path class="tick a3" d="M246 112l8 8 15-16" />
+    </g>
+  )}
+  {name === "scan" && (
+    <g>
+      {[52, 72, 92, 112].map((y, i) => <rect class={`ink-line a1 l${i}`} x="48" y={y} width={[224, 190, 210, 140][i]} height="9" rx="4.5" />)}
+      <rect class="beam a2" x="38" y="46" width="244" height="4" rx="2" />
+      <text class="kn mid read a3" x="160" y="182" text-anchor="middle" lang="kn">ಕನ್ನಡ ಪುಸ್ತಕ</text>
+    </g>
+  )}
+</svg>
+
+<style is:global>
+  .illo {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  .illo .stop-turmeric { stop-color: var(--field-turmeric); }
+  .illo .stop-indigo { stop-color: var(--field-indigo); }
+  .illo .stop-kumkuma { stop-color: var(--field-kumkuma); }
+  .illo .stop-clear { stop-color: var(--field-indigo); stop-opacity: 0; }
+  .illo .sheet { fill: var(--card); stroke: var(--border); }
+  .illo text { font-family: var(--type-sans); }
+  .illo .kn { fill: var(--foreground); }
+  .illo .big { font-size: 52px; font-weight: 650; fill: var(--primary); }
+  .illo-typing .big { font-size: 44px; }
+  .illo .huge { font-size: 80px; font-weight: 650; fill: var(--primary); }
+  .illo .mid { font-size: 36px; font-weight: 600; }
+  .illo .legacy { font-size: 32px; fill: var(--muted-foreground); letter-spacing: 0.04em; }
+  .illo .latin { font-size: 16px; font-weight: 600; fill: var(--muted-foreground); }
+  .illo .key { fill: var(--muted); stroke: var(--border); }
+  .illo .tile-bg { fill: var(--accent); }
+  .illo .tile .kn { fill: var(--accent-foreground); }
+  .illo .rule { stroke: var(--border); stroke-width: 2; stroke-linecap: round; stroke-dasharray: 4 6; }
+  .illo .tick { fill: none; stroke: var(--primary); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+  .illo .caret { stroke: var(--primary); stroke-width: 3; stroke-linecap: round; }
+  .illo .squiggle { fill: none; stroke: var(--mark-malformed-line); stroke-width: 2.5; stroke-linecap: round; }
+  .illo .ink-line { fill: var(--muted-foreground); opacity: 0.35; }
+  .illo .beam { fill: var(--primary); opacity: 0.5; }
+  .illo .read { fill: var(--primary); }
+  /* The final frame, which is also what shows without motion: */
+  .illo .wrong, .illo .broken-a, .illo .broken-b, .illo .beam { opacity: 0; }
+  .illo-spell .squiggle { opacity: 0; }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .illo.is-in .a1, .illo.is-in .a2, .illo.is-in .a3, .illo.is-in .a4 {
+      animation-duration: 0.9s;
+      animation-timing-function: var(--ease-settle);
+      animation-fill-mode: both;
+    }
+    /* convert: the old glyphs fade out as the Kannada settles in, then a tick. */
+    .illo-convert.is-in .legacy { animation-name: illo-fade-out-up; animation-delay: 0.6s; animation-fill-mode: forwards; }
+    .illo-convert.is-in .rule { animation-name: illo-fade-in; animation-delay: 0.3s; }
+    .illo-convert.is-in .kn { animation-name: illo-settle; animation-delay: 0.9s; transform-origin: 150px 158px; }
+    .illo-convert.is-in .tick { stroke-dasharray: 32; animation-name: illo-draw; animation-delay: 1.6s; }
+    /* typing: keys are pressed, the word appears from the left, the caret blinks twice. */
+    .illo-typing.is-in .keys { animation-name: illo-press; animation-duration: 0.6s; }
+    .illo-typing.is-in .reveal { animation-name: illo-wipe; animation-duration: 1.4s; animation-delay: 0.4s; animation-timing-function: steps(7, end); }
+    .illo-typing.is-in .caret { animation-name: illo-blink; animation-duration: 0.5s; animation-iteration-count: 4; animation-delay: 1.8s; }
+    /* letters: the vowel-sign forms arrive 1 by 1. */
+    .illo-letters.is-in .tile { animation-name: illo-settle; transform-box: fill-box; transform-origin: center; }
+    .illo-letters.is-in .tile.a2 { animation-delay: 0.15s; }
+    .illo-letters.is-in .tile.a3 { animation-delay: 0.3s; }
+    .illo-letters.is-in .tile.a4 { animation-delay: 0.45s; }
+    /* font: a consonant with its virama and the next consonant close in and become 1 conjunct. */
+    .illo-font.is-in .broken-a { animation-name: illo-join-a; animation-duration: 1s; }
+    .illo-font.is-in .broken-b { animation-name: illo-join-b; animation-duration: 1s; }
+    .illo-font.is-in .joined { animation-name: illo-fade-in; animation-delay: 0.85s; animation-duration: 0.5s; }
+    .illo-font.is-in .tick { stroke-dasharray: 32; animation-name: illo-draw; animation-delay: 1.3s; }
+    /* spell: the likely typo is marked, then replaced. */
+    .illo-spell.is-in .wrong { animation-name: illo-shown-then-gone; animation-duration: 1.6s; }
+    .illo-spell.is-in .squiggle { animation-name: illo-shown-then-gone; animation-duration: 1.6s; }
+    .illo-spell.is-in .right { animation-name: illo-fade-in; animation-delay: 1.3s; animation-duration: 0.5s; }
+    .illo-spell.is-in .tick { stroke-dasharray: 32; animation-name: illo-draw; animation-delay: 1.7s; }
+    /* scan: a beam passes over the page, and the text reads out below. */
+    .illo-scan.is-in .beam { animation-name: illo-scan; animation-duration: 1.4s; animation-timing-function: var(--ease-standard); }
+    .illo-scan.is-in .read { animation-name: illo-settle; animation-delay: 1.3s; transform-origin: 160px 172px; }
+  }
+  @keyframes illo-fade-in { from { opacity: 0; } }
+  @keyframes illo-fade-out-up { from { opacity: 1; transform: none; } to { opacity: 0.18; transform: translateY(-6px); filter: blur(1px); } }
+  @keyframes illo-settle { from { opacity: 0; transform: translateY(10px) scale(0.96); filter: blur(4px); } }
+  @keyframes illo-draw { from { stroke-dashoffset: 32; } to { stroke-dashoffset: 0; } }
+  @keyframes illo-press { 50% { transform: translateY(2px); } }
+  @keyframes illo-wipe { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+  @keyframes illo-blink { 50% { opacity: 0; } }
+  @keyframes illo-join-a { from { opacity: 1; transform: translateX(-14px); } 80% { opacity: 1; transform: translateX(10px); } to { opacity: 0; transform: translateX(14px); } }
+  @keyframes illo-join-b { from { opacity: 1; transform: translateX(14px); } 80% { opacity: 1; transform: translateX(-12px); } to { opacity: 0; transform: translateX(-16px); } }
+  @keyframes illo-shown-then-gone { 0%, 70% { opacity: 1; } to { opacity: 0; } }
+  @keyframes illo-scan { from { opacity: 0.6; transform: translateY(0); } 90% { opacity: 0.6; transform: translateY(74px); } to { opacity: 0; transform: translateY(78px); } }
+</style>

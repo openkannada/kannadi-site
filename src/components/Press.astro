@@ -2,15 +2,16 @@
 import { STORY, TAGLINE } from "../content/story.ts";
 import { BIOS, COLORS, CONTACT, DESCRIPTIONS, FACTS, LOGOS, PHOTOS, SCREENSHOTS } from "../content/press.ts";
 import { href } from "../lib/paths.ts";
+import Icon from "./Icon.astro";
 ---
 <section aria-labelledby="story">
-  <h2 id="story">Tagline and story</h2>
+  <h2 id="story" class="icon-heading"><Icon name="quote" filled class="size-6 text-primary" />Tagline and story</h2>
   <p class="press-tagline">{TAGLINE}</p>
   {STORY.map((p) => <p set:html={p} />)}
 </section>
 
 <section aria-labelledby="logos">
-  <h2 id="logos">Logos</h2>
+  <h2 id="logos" class="icon-heading"><Icon name="image" filled class="size-6 text-primary" />Logos</h2>
   <p>Open ka is the mark of Open Kannada. The mirror is the mark of kannadi, its editor and library. Each comes as SVG and as a 1024 px PNG, for light and dark backgrounds.</p>
   <div class="logos">
     {LOGOS.map((l) => (
@@ -20,7 +21,7 @@ import { href } from "../lib/paths.ts";
         <figcaption>
           <b>{l.name}</b>
           <ul class="files" role="list">
-            {l.files.map((f) => <li><a href={href(`/brand/${l.mark}-${f}`)} download><span class="sr-only">{l.name} </span>{f}</a></li>)}
+            {l.files.map((f) => <li><a class="file-link" href={href(`/brand/${l.mark}-${f}`)} download><Icon name="save" class="size-4" /><span class="sr-only">{l.name} </span>{f}</a></li>)}
           </ul>
         </figcaption>
       </figure>
@@ -30,7 +31,7 @@ import { href } from "../lib/paths.ts";
 </section>
 
 <section aria-labelledby="colors">
-  <h2 id="colors">Colors</h2>
+  <h2 id="colors" class="icon-heading"><Icon name="sparkle" filled class="size-6 text-primary" />Colors</h2>
   <ul class="colors" role="list">
     {COLORS.map((c) => (
       <li>
@@ -42,7 +43,7 @@ import { href } from "../lib/paths.ts";
 </section>
 
 <section aria-labelledby="descriptions">
-  <h2 id="descriptions">Descriptions</h2>
+  <h2 id="descriptions" class="icon-heading"><Icon name="quote" filled class="size-6 text-primary" />Descriptions</h2>
   {DESCRIPTIONS.map((d) => (
     <>
       <h3>In {d.words} words</h3>
@@ -52,7 +53,7 @@ import { href } from "../lib/paths.ts";
 </section>
 
 <section aria-labelledby="people">
-  <h2 id="people">Founding members</h2>
+  <h2 id="people" class="icon-heading"><Icon name="people" filled class="size-6 text-primary" />Founding members</h2>
   <div class="bios">
     {BIOS.map((b, i) => (
       <article class="bio">
@@ -67,7 +68,7 @@ import { href } from "../lib/paths.ts";
 </section>
 
 <section aria-labelledby="screenshots">
-  <h2 id="screenshots">Screenshots</h2>
+  <h2 id="screenshots" class="icon-heading"><Icon name="image" filled class="size-6 text-primary" />Screenshots</h2>
   <div class="shots">
     {SCREENSHOTS.map((s) => (
       <a href={href(`/press/${s.file}`)} download>
@@ -78,18 +79,28 @@ import { href } from "../lib/paths.ts";
 </section>
 
 <section aria-labelledby="facts">
-  <h2 id="facts">Facts</h2>
+  <h2 id="facts" class="icon-heading"><Icon name="info" filled class="size-6 text-primary" />Facts</h2>
   <ul class="facts">
     {FACTS.map((f) => <li>{f.fact} <a href={f.source.startsWith("/") ? href(f.source) : f.source}>{f.label}</a></li>)}
   </ul>
 </section>
 
 <section aria-labelledby="contact">
-  <h2 id="contact">Contact</h2>
+  <h2 id="contact" class="icon-heading"><Icon name="mail" filled class="size-6 text-primary" />Contact</h2>
   <p set:html={CONTACT} />
 </section>
 
 <style>
+  .icon-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .file-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
   .press-tagline {
     font-size: 1.25rem;
     font-weight: 600;

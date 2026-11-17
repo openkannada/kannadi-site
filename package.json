@@ -2,7 +2,9 @@
   "name": "kannadi-site",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "wasm": "scripts/build-wasm.sh",
     "dev": "astro dev",
@@ -14,6 +16,8 @@
     "voice-lint": "node scripts/voice-lint.ts",
     "page-hashes": "node scripts/page-hashes.ts",
     "tokens": "node scripts/tokens.ts",
+    "icons": "node scripts/icons.ts",
+    "layout-check": "node scripts/layout-check.ts",
     "lighthouse": "lhci autorun",
     "deploy": "node scripts/deploy.ts"
   },
@@ -27,6 +31,7 @@
     "@types/node": "26.6.6",
     "linkedom": "0.18.15",
     "node-html-markdown": "2.0.0",
+    "puppeteer-core": "25.17.0",
     "tailwindcss": "4.3.5",
     "typescript": "6.0.3",
     "wrangler": "4.163.0"

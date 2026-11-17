@@ -1,5 +1,6 @@
 ---
 import AlphabetTables from "../components/AlphabetTables.astro";
+import Illustration from "../components/Illustration.astro";
 import KagunitaTable from "../components/KagunitaTable.astro";
 import type { ReferencePage } from "../content/pages.ts";
 import { withBase } from "../lib/paths.ts";
@@ -13,10 +14,13 @@ interface Props {
 const { page } = Astro.props;
 ---
 <Base page={page}>
-  <div class="mx-auto max-w-[54rem] px-4 pt-6 pb-2 sm:px-6 sm:pt-10">
+  <div class="hero hero-reference mx-auto max-w-[54rem] px-4 pt-6 pb-2 sm:px-6 sm:pt-10">
+    <div>
     <Breadcrumbs page={page} />
     <h1 class="text-[length:var(--type-heading)] leading-[1.15] font-semibold tracking-[var(--type-heading-tracking)] sm:text-[length:var(--type-heading-wide)]">{page.h1}</h1>
     <p class="mt-3 max-w-[62ch] text-[1.0625rem] leading-relaxed text-muted-foreground sm:text-lg" set:html={withBase(page.intro)} />
+    </div>
+    <Illustration name="letters" class="hero-illo" />
   </div>
   <div class="prose-kn mx-auto max-w-[54rem] px-4 sm:px-6">
     {page.table === "alphabet" && <AlphabetTables />}

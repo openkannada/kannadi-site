@@ -28,8 +28,8 @@ const groups = [
 ];
 const themeLabels = JSON.stringify({ ...T.theme });
 ---
-<header class="mx-auto flex w-full max-w-6xl items-center gap-2 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-6">
-  <a href={href(pagePath(HOMES[lang].slug))} class="mr-auto flex items-center gap-2.5 rounded-full py-1 pr-2 text-foreground no-underline">
+<header class="site-header mx-auto flex w-full max-w-6xl items-center gap-2 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-6">
+  <a href={href(pagePath(HOMES[lang].slug))} class="brand mr-auto flex items-center gap-2.5 rounded-full py-1 pr-2 text-foreground no-underline">
     <Logo mark="open-kannada" />
     <span class="text-lg leading-none font-semibold tracking-tight whitespace-nowrap">{ORG.name}</span>
   </a>
@@ -97,6 +97,18 @@ const themeLabels = JSON.stringify({ ...T.theme });
     font-size: 0.9375rem;
     text-decoration: none;
     color: var(--foreground);
+  }
+  /* The narrowest phones fit the logo, the switch and 2 buttons with the gaps and padding tightened. */
+  @media (max-width: 399.98px) {
+    .site-header {
+      gap: 0.25rem;
+    }
+    .brand {
+      padding-right: 0;
+    }
+    .lang-switch {
+      padding-inline: 0.5rem;
+    }
   }
   #theme :global(svg) {
     display: none;

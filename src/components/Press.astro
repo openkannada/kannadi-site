@@ -1,7 +1,14 @@
 ---
+import { STORY, TAGLINE } from "../content/story.ts";
 import { BIOS, COLORS, CONTACT, DESCRIPTIONS, FACTS, LOGOS, PHOTOS, SCREENSHOTS } from "../content/press.ts";
 import { href } from "../lib/paths.ts";
 ---
+<section aria-labelledby="story">
+  <h2 id="story">Tagline and story</h2>
+  <p class="press-tagline">{TAGLINE}</p>
+  {STORY.map((p) => <p set:html={p} />)}
+</section>
+
 <section aria-labelledby="logos">
   <h2 id="logos">Logos</h2>
   <p>Open ka is the mark of Open Kannada. The mirror is the mark of kannadi, its editor and library. Each comes as SVG and as a 1024 px PNG, for light and dark backgrounds.</p>
@@ -83,6 +90,11 @@ import { href } from "../lib/paths.ts";
 </section>
 
 <style>
+  .press-tagline {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
   .logos, .bios {
     display: grid;
     gap: 1rem;

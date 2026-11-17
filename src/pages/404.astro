@@ -3,9 +3,10 @@ import { HOME, PAGES } from "../content/pages.ts";
 import Base from "../layouts/Base.astro";
 import { href } from "../lib/paths.ts";
 
+// No twin: the switch goes to the Kannada home page.
+const { twin: _twin, ...home } = HOME;
 const page = {
-  ...HOME,
-  twin: undefined,
+  ...home,
   title: "Page not found: Open Kannada",
   description: "This page does not exist. The Kannada editor, converters and typing pages are listed here instead.",
 };

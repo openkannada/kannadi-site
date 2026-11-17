@@ -303,6 +303,7 @@
    Unlayered and 2 classes deep, to win over the illustration's own display rule. */
 .hero {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   align-items: center;
   gap: 1.5rem 2.5rem;
 }

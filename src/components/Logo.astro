@@ -1,0 +1,26 @@
+---
+import KannadiMark from "../assets/brand/kannadi-mark.svg";
+import OpenKannadaMark from "../assets/brand/open-kannada-mark.svg";
+
+interface Props {
+  /** Open ka for Open Kannada, or the mirror where kannadi the tool is named. */
+  mark: "open-kannada" | "kannadi";
+  class?: string;
+}
+const { mark, class: className } = Astro.props;
+const Mark = mark === "kannadi" ? KannadiMark : OpenKannadaMark;
+---
+<Mark class:list={["brand-mark", className]} aria-hidden="true" focusable="false" />
+
+<style is:global>
+  @layer components {
+    .brand-mark {
+      flex: none;
+      width: 2.25rem;
+      height: 2.25rem;
+    }
+    .brand-mark .logo-tile { fill: var(--primary); }
+    .brand-mark .logo-on { fill: var(--primary-foreground); }
+    .brand-mark .logo-on-line { stroke: var(--primary-foreground); }
+  }
+</style>

@@ -18,9 +18,7 @@ body {
     oklch(0.972 0.006 262);
 }
 .brand { display: flex; align-items: center; gap: 18px; font-size: 34px; font-weight: 600; }
-.disc { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; color: #fff; font-size: 36px; padding-bottom: 4px;
-  background: radial-gradient(circle at 30% 25%, oklch(1 0 0 / 0.45), transparent 55%), oklch(0.46 0.19 277); box-shadow: 0 10px 24px -10px oklch(0.46 0.19 277 / 0.8); }
-.kn { color: oklch(0.46 0.022 268); font-size: 28px; font-weight: 400; }
+.mark { width: 64px; height: 64px; filter: drop-shadow(0 10px 14px oklch(0.46 0.19 277 / 0.35)); }
 h1 { align-self: end; margin: 0 0 32px; font-size: 72px; line-height: 1.08; font-weight: 650; letter-spacing: -0.02em; max-width: 1000px; }
 .pane { display: flex; align-items: center; gap: 32px; padding: 26px 36px; border-radius: 999px; font-size: 44px;
   background: oklch(0.99 0.004 262 / 0.7); border: 1px solid oklch(0.25 0.03 268 / 0.1);
@@ -32,7 +30,7 @@ h1 { align-self: end; margin: 0 0 32px; font-size: 72px; line-height: 1.08; font
 </style>
 </head>
 <body>
-<div class="brand"><span class="disc">ಕ</span><span>kannadi <span class="kn">ಕನ್ನಡಿ</span></span></div>
+<div class="brand"><img class="mark" src="og-mark.svg" alt=""><span>Open Kannada</span></div>
 <h1 id="title"></h1>
 <div class="pane"><span class="from" id="from"></span><span class="arrow"></span><span class="to" id="to" lang="kn"></span></div>
 <script>

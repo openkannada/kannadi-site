@@ -44,6 +44,13 @@ Glass is used only for things that float over the writing: the toolbar, its menu
 - The document is set large: 1.375rem on phones and 1.5rem from 768px, with line-height 1.95 for stacked conjuncts. Kannada elsewhere uses line-height 1.9.
 - Page headings: 2rem on phones and 2.75rem from 640px, weight 600, tracking -0.02em, balanced. UI text: 0.9375rem, medium weight for controls.
 
+## Logo
+
+- **Open Kannada** is Open ka: Noto Sans Kannada's ಕ at weight 640 on a rounded primary tile, with a wedge cut from the right of its bowl. It sits in the header, the favicons, the app icons and the Open Graph cards.
+- **kannadi** is the mirror: ಕ and its lighter reflection meeting at a line of glass. It marks the places that name kannadi the tool, such as the footer.
+- `src/components/Logo.astro` inlines either mark from `src/assets/brand/`, colored by the `--primary` and `--primary-foreground` tokens, so it follows the theme. The favicon SVG switches colors with the system theme; the PNG icons use the light colors.
+- The SVG sources and PNGs at every size, including `scripts/og-mark.svg` for the Open Graph cards, are generated from the font outlines outside this repository. Replace the files here from that set rather than editing the paths.
+
 ## Shape and depth
 
 - Radius scale from `--radius: 1rem`. The sheet is 1.75rem, menus and cards 1.375rem, buttons and segmented controls are full pills.

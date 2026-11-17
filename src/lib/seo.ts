@@ -1,5 +1,5 @@
 import type { Page } from "../content/pages.ts";
-import { AUTHOR, SITE, pagePath } from "../content/site.ts";
+import { AUTHOR, ORG, SITE, pagePath } from "../content/site.ts";
 
 type Node = Record<string, unknown>;
 
@@ -78,8 +78,7 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
         "@type": "WebSite",
         "@id": id("website", root),
         url: root,
-        name: SITE.name,
-        alternateName: SITE.nameKn,
+        name: ORG.name,
         inLanguage: SITE.language,
         publisher: author,
       },

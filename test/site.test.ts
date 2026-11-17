@@ -115,3 +115,38 @@ test("no copy says the editor converts Unicode back to Akruti: it saves Nudi onl
     assert.doesNotMatch(text, /Unicode and back|(Unicode|back) to Akruti\b/, f);
   }
 });
+
+test("the web manifest and the page's icon links point at icons of the stated size", () => {
+  const pub = (f) => new URL(`../public/${f}`, import.meta.url);
+  const pngSize = (f) => {
+    const b = readFileSync(pub(f));
+    assert.equal(b.toString("latin1", 1, 4), "PNG", f);
+    return `${b.readUInt32BE(16)}x${b.readUInt32BE(20)}`;
+  };
+  const manifest = JSON.parse(readFileSync(pub("site.webmanifest"), "utf8"));
+  assert.ok(manifest.icons.some((i) => i.purpose === "maskable"));
+  for (const icon of manifest.icons) {
+    if (icon.type === "image/png") assert.equal(pngSize(icon.src), icon.sizes, icon.src);
+    else readFileSync(pub(icon.src));
+  }
+  const base = readFileSync(new URL("../src/layouts/Base.astro", import.meta.url), "utf8");
+  const links = [...base.matchAll(/<link rel="(?:icon|apple-touch-icon|manifest)"[^>]*>/g)].map(([tag]) => ({
+    file: tag.match(/href=\{href\("\/([^"]+)"\)\}/)?.[1],
+    sizes: tag.match(/sizes="(\d+x\d+)"/)?.[1],
+  }));
+  assert.equal(links.length, 5);
+  for (const { file, sizes } of links) {
+    assert.ok(file, "every icon link goes through href() for the base path");
+    if (sizes) assert.equal(pngSize(file), sizes, file);
+    else readFileSync(pub(file));
+  }
+  assert.equal(pngSize("apple-touch-icon.png"), "180x180");
+});
+
+test("the site is named Open Kannada, and the editor and library kannadi", () => {
+  const graph = jsonLd(HOME, null, HOME)["@graph"];
+  assert.equal(graph.find((n) => n["@type"] === "WebSite").name, "Open Kannada");
+  assert.equal(graph.find((n) => n["@type"] === "SoftwareSourceCode").name, "kannadi");
+  const base = readFileSync(new URL("../src/layouts/Base.astro", import.meta.url), "utf8");
+  assert.match(base, /<meta property="og:site_name" content=\{ORG\.name\} \/>/);
+});

@@ -1,8 +1,9 @@
 ---
 import { PAGES } from "../content/pages.ts";
-import { SITE } from "../content/site.ts";
+import { ORG } from "../content/site.ts";
 import { href } from "../lib/paths.ts";
 import Icon from "./Icon.astro";
+import Logo from "./Logo.astro";
 
 interface Props {
   current: string;
@@ -17,11 +18,8 @@ const groups = [
 ---
 <header class="mx-auto flex w-full max-w-6xl items-center gap-2 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-6">
   <a href={href("/")} class="mr-auto flex items-center gap-2.5 rounded-full py-1 pr-2 text-foreground no-underline">
-    <span class="brand-disc" aria-hidden="true" lang="kn">ಕ</span>
-    <span class="flex items-baseline gap-2">
-      <span class="text-lg leading-none font-semibold tracking-tight">{SITE.name}</span>
-      <span class="text-sm leading-none text-muted-foreground" lang="kn">{SITE.nameKn}</span>
-    </span>
+    <Logo mark="open-kannada" />
+    <span class="text-lg leading-none font-semibold tracking-tight">{ORG.name}</span>
   </a>
   <nav aria-label="Pages" class="hidden items-center gap-1 md:flex">
     {groups.map((g) => (
@@ -73,22 +71,6 @@ const groups = [
 </script>
 
 <style>
-  .brand-disc {
-    display: grid;
-    place-items: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 9999px;
-    font-size: 1.25rem;
-    line-height: 1;
-    font-weight: 650;
-    color: var(--primary-foreground);
-    background:
-      radial-gradient(circle at 30% 25%, oklch(1 0 0 / 0.45), transparent 55%),
-      var(--primary);
-    box-shadow: inset 0 -2px 4px oklch(0 0 0 / 0.18), 0 4px 10px -4px oklch(from var(--primary) l c h / 0.7);
-    padding-bottom: 0.1rem;
-  }
   #theme :global(svg) {
     display: none;
   }

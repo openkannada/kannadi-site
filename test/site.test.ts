@@ -192,6 +192,12 @@ test("every Kannada page has an English twin that names it back, and waits for a
   assert.equal(graphemes("ಕನ್ನಡ"), 4, "ಕ ನ್ ನ ಡ: a virama ends a cluster in Kannada");
 });
 
+test("Lighthouse checks only pages that are built", () => {
+  const urls = JSON.parse(readFileSync(new URL("../lighthouserc.json", import.meta.url), "utf8")).ci.collect.url;
+  const built = new Set(PAGES.map((p) => (p.slug ? `/${p.slug}/` : "/")));
+  for (const u of urls) assert.ok(built.has(u), `${u} is not built`);
+});
+
 test("pages that wait for a native reader stay out of the build, and so do links to them", async () => {
   const { twinProblems, alternates } = await import("../src/lib/seo.ts");
   assert.deepEqual(PAGES.filter((p) => p.needsReview), []);

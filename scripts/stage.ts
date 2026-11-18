@@ -35,7 +35,8 @@ if (step === "stage") {
   const staged: string[] = [];
   let unpublished = 0;
   for (const dir of pages) {
-    const res = await get(dir ? `${dir}/` : "./");
+    const path = dir ? `${dir}/` : "./";
+    const res = (await get(path)) ?? (await get(path));
     const file = join(stage, dir, "index.html");
     if (res?.ok && res.headers.get("content-type")?.startsWith("text/html")) {
       writeFileSync(file, await res.text());
@@ -48,7 +49,12 @@ if (step === "stage") {
   }
   const missing = await get("__a-page-that-does-not-exist__/");
   if (!missing || missing.status !== 404 || !missing.headers.get("content-type")?.startsWith("text/html")) {
-    stop("Could not read the live 404 page, so step 1 would name build files the edge may not serve.");
+    if (staged.length) stop("Could not read the live 404 page, so step 1 would name build files the edge may not serve.");
+    // Nothing live answers: a first deploy, or a site that is down. The new build goes out as is.
+    rmSync(stage, { recursive: true, force: true });
+    cpSync(dist, stage, { recursive: true });
+    console.warn("Warning: no live page answered, so step 1 publishes the new build as is.");
+    process.exit(0);
   }
   writeFileSync(join(stage, "404.html"), await missing.text());
   staged.push(join(stage, "404.html"));

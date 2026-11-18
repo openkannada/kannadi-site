@@ -34,6 +34,10 @@ export class DocEditor {
   readonly el: HTMLElement;
   private readonly onEdit: EditListener;
   private before: string;
+  /** Whether the element ends with the extra "\n" that gives an empty last line its place. */
+  private tail = false;
+  /** Whether a keyboard is composing; some send input events mid-composition without saying so. */
+  composing = false;
   undoStack: Step[] = [];
   private redoStack: Step[] = [];
 
@@ -46,9 +50,15 @@ export class DocEditor {
 
     el.addEventListener("beforeinput", (e) => this.beforeInput(e));
     el.addEventListener("input", (e) => {
-      if (!(e as InputEvent).isComposing) this.sync((e as InputEvent).inputType);
+      if (!(e as InputEvent).isComposing && !this.composing) this.sync((e as InputEvent).inputType);
     });
-    el.addEventListener("compositionend", () => this.sync("insertCompositionText"));
+    el.addEventListener("compositionstart", () => {
+      this.composing = true;
+    });
+    el.addEventListener("compositionend", () => {
+      this.composing = false;
+      this.sync("insertCompositionText");
+    });
     el.addEventListener("keydown", (e) => {
       const mod = e.ctrlKey || e.metaKey;
       if (!mod || e.altKey || e.isComposing) return;
@@ -93,7 +103,20 @@ export class DocEditor {
   }
 
   get text(): string {
-    return this.el.textContent ?? "";
+    const dom = this.el.textContent ?? "";
+    return this.tail && dom.endsWith("\n") ? dom.slice(0, -1) : dom;
+  }
+
+  /**
+   * A plain-text element gives no line, and no caret, to what follows a final "\n", so a line break typed at the
+   * end would leave the caret before it. While the text ends with "\n", 1 more "\n" follows it in the element only.
+   */
+  private keepTail(text: string): void {
+    const want = text.endsWith("\n");
+    const dom = this.el.textContent ?? "";
+    if (want && dom === text) this.node().appendData("\n");
+    else if (!want && dom.length > text.length) this.node().deleteData(text.length, dom.length - text.length);
+    this.tail = want;
   }
 
   node(): Text {
@@ -110,6 +133,7 @@ export class DocEditor {
   sync(inputType = "", record = true): void {
     this.flatten();
     const after = this.text;
+    this.keepTail(after);
     if (after === this.before) return;
     const sel = this.selection();
     const edit = diff(this.before, after, sel && sel.start === sel.end ? sel.start : -1);
@@ -212,8 +236,9 @@ export class DocEditor {
     if (!sel || sel.rangeCount === 0) return null;
     const range = sel.getRangeAt(0);
     if (!this.el.contains(range.startContainer) || !this.el.contains(range.endContainer)) return null;
-    const a = this.offsetOf(range.startContainer, range.startOffset);
-    const b = this.offsetOf(range.endContainer, range.endOffset);
+    const length = this.text.length;
+    const a = Math.min(this.offsetOf(range.startContainer, range.startOffset), length);
+    const b = Math.min(this.offsetOf(range.endContainer, range.endOffset), length);
     return { start: Math.min(a, b), end: Math.max(a, b) };
   }
 

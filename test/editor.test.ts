@@ -287,6 +287,7 @@ class FakeEditor {
   constructor() {
     this.text = "";
     this.caret = 0;
+    this.composing = false;
     this.onEdit = () => {};
   }
   type(chars) {
@@ -429,4 +430,53 @@ test("a word is reported done once, kept or put back in Latin letters", () => {
   c.revert();
   assert.deepEqual(done, [["ab", true], ["cd", false]]);
   assert.equal(editor.text, "AB cd");
+});
+
+/** A composer whose spelling shows the mode and the whole Latin word, so a word cut in 2 shows as 2. */
+function marked(mode) {
+  const editor = new FakeEditor();
+  const c = new Composer(editor, (latin, m) => `<${m}:${latin}>`, { onComposing: () => {} });
+  editor.onEdit = (edit, after, type) => c.handle(edit, after, type);
+  c.setMode(mode);
+  return { editor, c };
+}
+
+test("the first letter of a document and of a line is converted with the rest of its word, in every Latin mode", () => {
+  for (const mode of ["english", "baraha", "iso15919"]) {
+    const start = marked(mode);
+    start.editor.type("hello");
+    assert.equal(start.editor.text, `<${mode}:hello>`, mode);
+    const line = marked(mode);
+    line.editor.text = "ab\n";
+    line.editor.caret = 3;
+    line.editor.type("hello");
+    assert.equal(line.editor.text, `ab\n<${mode}:hello>`, mode);
+  }
+});
+
+test("a keyboard composing the rest of a word moves the caret, and the word goes on", () => {
+  const { editor, c } = marked("english");
+  editor.type("h");
+  // The composition shows "e" after the rendered letter, so the caret leaves the word's end.
+  editor.composing = true;
+  editor.caret = editor.text.length + 1;
+  c.selectionChanged();
+  editor.caret = editor.text.length;
+  editor.composing = false;
+  editor.commit("ello ");
+  assert.equal(editor.text, "<english:hello> ");
+});
+
+test("a keyboard that sends the word being typed again, whole and in Latin letters, keeps 1 word", () => {
+  const { editor } = marked("english");
+  editor.type("h");
+  editor.replace(0, editor.text.length, "hello ", "insertCompositionText");
+  assert.equal(editor.text, "<english:hello> ");
+});
+
+test("after a paste, the next word typed is converted from its first letter", () => {
+  const { editor } = marked("english");
+  editor.replace(0, 0, "ನಮಸ್ಕಾರ ", "insertFromPaste");
+  editor.type("hello");
+  assert.equal(editor.text, "ನಮಸ್ಕಾರ <english:hello>");
 });

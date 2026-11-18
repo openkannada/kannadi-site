@@ -2,34 +2,20 @@
 // Kannada text cut by an ancestor that hides overflow, or an illustration whose animation does not end
 // on its rest frame. With --shots DIR it also saves a screenshot of each:
 // node scripts/layout-check.ts [dist] [--shots DIR]
-import { existsSync, mkdirSync, readdirSync } from "node:fs";
-import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
-import { extname, join, relative, sep } from "node:path";
+import { mkdirSync, readdirSync } from "node:fs";
+import { join, relative, sep } from "node:path";
 
 import puppeteer from "puppeteer-core";
 
 import { WIDTHS, frameDrift, isClipped, layoutProblems, type Measure } from "../src/lib/layout.ts";
+import { chrome, serve } from "./browser.ts";
 
 const args = process.argv.slice(2);
 const dist = args.find((a) => !a.startsWith("--") && args[args.indexOf(a) - 1] !== "--shots") ?? "dist";
 const shots = args.includes("--shots") ? args[args.indexOf("--shots") + 1] : undefined;
 if (shots) mkdirSync(shots, { recursive: true });
-const CHROME = process.env.CHROME_PATH ?? ["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome", "/usr/bin/google-chrome", "/usr/bin/chromium"].find(existsSync);
-if (!CHROME) throw new Error("Set CHROME_PATH to a Chrome or Chromium binary.");
-
-const TYPES: Record<string, string> = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png", ".woff2": "font/woff2", ".wasm": "application/wasm", ".json": "application/json", ".tsv": "text/plain" };
-const server = createServer(async (req, res) => {
-  const path = decodeURIComponent(new URL(req.url ?? "/", "http://x").pathname);
-  const file = join(dist, path.endsWith("/") ? `${path}index.html` : path);
-  try {
-    const body = await readFile(file);
-    res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream" }).end(body);
-  } catch {
-    res.writeHead(404).end();
-  }
-}).listen(0);
-const port = (server.address() as { port: number }).port;
+const CHROME = chrome();
+const { server, port } = serve(dist);
 
 const pages = readdirSync(dist, { recursive: true, withFileTypes: true })
   .filter((e) => e.isFile() && e.name === "index.html")

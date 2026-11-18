@@ -72,6 +72,16 @@ export const ICONS = {
     fill: "M6.0 4.5h2.5a1.5 1.5 0 0 1 1.5 1.5v2.5a1.5 1.5 0 0 1-1.5 1.5h-2.5a1.5 1.5 0 0 1-1.5-1.5v-2.5a1.5 1.5 0 0 1 1.5-1.5z",
     use: "Alphabet and kagunita",
   },
+  edit: {
+    d: "M4.5 19.5h4L19 9l-4-4L4.5 15.5zM13 7l4 4M13 19.5h6.5",
+    fill: "M4.5 19.5h4L19 9l-4-4L4.5 15.5z",
+    use: "The editor",
+  },
+  chart: {
+    d: "M5.5 5H9a1.5 1.5 0 0 1 0 3H5.5a1.5 1.5 0 0 1 0-3zM5.5 10.5h13a1.5 1.5 0 0 1 0 3h-13a1.5 1.5 0 0 1 0-3zM5.5 16h7a1.5 1.5 0 0 1 0 3h-7a1.5 1.5 0 0 1 0-3z",
+    fill: "M5.5 10.5h13a1.5 1.5 0 0 1 0 3h-13a1.5 1.5 0 0 1 0-3z",
+    use: "AI benchmark, tokens per text",
+  },
   book: { d: "M5 5.5A1.5 1.5 0 0 1 6.5 4H19v13H6.5A1.5 1.5 0 0 0 5 18.5zM5 18.5A1.5 1.5 0 0 0 6.5 20H19", fill: "M5 5.5A1.5 1.5 0 0 1 6.5 4H19v13H6.5A1.5 1.5 0 0 0 5 18.5z", use: "Dictionary, documents" },
   people: { d: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM3.5 19a5.5 5.5 0 0 1 11 0M16 5.5a3 3 0 0 1 0 5.5M17.5 14a5.5 5.5 0 0 1 3 5", use: "People, community" },
   mail: {

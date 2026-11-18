@@ -78,14 +78,16 @@ A pane (`@utility glass` on the site):
 ## Illustration
 
 - Drawn from Kannada itself: letterforms and ottaksharas, on the turmeric, kumkuma and indigo fields, on a sheet like the editor's. Avoid stock "India" pictures. Old print and palm-leaf textures belong to the OCR and dictionary pages, when those exist.
-- 6 illustrations in `Illustration.astro`, as inline SVG colored only by tokens, so they theme in light and dark. Tool and reference pages show 1 each, and the About page uses the rest:
+- 8 illustrations in `Illustration.astro`, as inline SVG colored only by tokens, so they theme in light and dark. Tool, project and reference pages show 1 each, the home page shows 1 on each tool's card, and the About page shows 4:
   - `convert`: a converter's own sample settles into its result, in the direction that page converts (Nudi to ಕನ್ನಡ, or ಕನ್ನಡ to Nudi);
   - `typing`: the keys na, ma, skA and ra are pressed, and ನಮಸ್ಕಾರ appears 1 letter cluster at a time, never half a letter;
   - `letters`: the vowel-sign forms of ಕ arrive 1 by 1;
   - `font`: ನ್ and ನ close in and become the conjunct ನ್ನ;
   - `spell`: a likely typo, ಬಾಷೆ, gets the editor's dashed amber line and becomes ಭಾಷೆ;
-  - `scan`: a beam passes over a printed page, and the text reads out.
-- Tool pages show theirs beside the heading from 1024px, so the editor stays in the first viewport on phones and tablets. Reference pages show theirs from 768px. The About page shows the 4 kinds of work as cards.
+  - `scan`: a beam passes over a printed page, and the text reads out;
+  - `dictionary`: the English word *water* dims as its entry, ನೀರು, settles in, then its ISO 15919 and Baraha spellings and a line of meaning appear;
+  - `benchmark`: the same sentence counted in tokens, 3 for English, then 7 for Kannada, 1 at a time.
+- Tool pages show theirs beside the heading from 1024px, so the editor stays in the first viewport on phones and tablets. Reference and project pages show theirs from 768px. The About page shows the 4 kinds of work as cards. On the home page each tool card shows its illustration: small beside the words on phones, above them from 640px, and beside them on the 2 wide cards.
 
 ## Motion in illustrations
 
@@ -144,7 +146,9 @@ A pane (`@utility glass` on the site):
 - **Suggestion strip** (`.suggest`): glass pill above the word being typed in English letters on desktop; on phones a keyboard-style bar above the dock. The picked word is a white bead with indigo text, like the segmented control.
 - **Microphone** (`.mic`): shown only where the browser has speech recognition. While it listens it turns rose and breathes slowly; reduced motion keeps it still.
 - **Marks**: drawn with the CSS Custom Highlight API. Unknown glyphs and malformed syllables get a tinted background and a wavy underline 1.5px thick, offset 0.35em. A likely typo gets only a dashed amber underline of the same weight, in the text, the list and the fix card. `composing` marks the word being typed in Baraha or ISO with a dotted indigo underline.
-- **Ask AI** (`AskAi.astro`): an outlined pill at the right end of the breadcrumb row, on every page but home and never on the editor. Its glass menu copies the page's markdown mirror or opens ChatGPT, Claude or Perplexity with a prompt to read it. On narrow screens the current crumb truncates so the row stays 1 line.
+- **Ask AI** (`AskAi.astro`): an outlined pill at the right end of the breadcrumb row, on every page but the home pages, and never inside the editor. Its glass menu copies the page's markdown mirror or opens ChatGPT, Claude or Perplexity with a prompt to read it. On narrow screens the current crumb truncates so the row stays 1 line.
+- **Home page**: a solid page with no glass of its own. The tagline is the heading, large, beside a solid card with the paste box (below it on phones). Then the story in short, a grid of tool cards (each a solid card with its icon, illustration, 1 line and a quiet "Coming soon" pill when it is not released), and how to help.
+- **Project pages**: the same sections in the same order on every project: what it does, result, how it was measured, limits, downloads, license. A result can be large figures on cards, or a table of ratios with a bar in each row.
 - **Content sections**: numbered steps with accent discs, a letter chart of tiles (Kannada, the Baraha key, ISO), a 3-column word table, and an FAQ of `details` elements with a rotating chevron.
 
 

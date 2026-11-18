@@ -1,4 +1,4 @@
-import { isHome, type Page } from "../content/pages.ts";
+import { isEditor, isHome, type Page, type ProjectPage } from "../content/pages.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
 import { AUTHOR, ORG, SITE, pagePath } from "../content/site.ts";
 
@@ -29,17 +29,21 @@ export function absolute(path: string, site: URL | null): string {
   return site ? new URL(path.replace(/^\//, ""), site).href : path;
 }
 
+/** What a page is about, by kind: its main node's id in the page. */
+const MAIN: Record<Page["kind"], string> = { tool: "app", reference: "resource", project: "project", info: "", home: "" };
+
 /**
  * The page's JSON-LD graph: the page, what it offers (the editor with its
- * how-to, a reference chart, or on the About and Press pages the organization
- * and its founders), FAQ, breadcrumbs, author, and on the home page the site
- * and the library's source code.
+ * how-to, a reference chart, a project, or on the home, About and Press pages
+ * the organization and its founders), FAQ, breadcrumbs, author, on the home
+ * page the site, and on the editor the library's source code.
  */
 export function jsonLd(page: Page, site: URL | null, home: Page): Node {
   const url = absolute(pagePath(page.slug), site);
   const root = absolute("/", site);
   const id = (name: string, base = url) => `${base}#${name}`;
   const author = { "@id": id("author", root) };
+  const library = id("library", absolute(pagePath("editor"), site));
 
   const graph: Node[] = [
     {
@@ -50,11 +54,11 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
       description: page.description,
       inLanguage: page.lang === "kn" ? "kn-IN" : SITE.language,
       isPartOf: { "@id": id("website", root) },
-      mainEntity: { "@id": page.kind === "info" ? id("organization", root) : id(page.kind === "tool" ? "app" : "resource") },
+      mainEntity: { "@id": MAIN[page.kind] ? id(MAIN[page.kind]) : id("organization", root) },
       breadcrumb: { "@id": id("breadcrumb") },
       author,
     },
-    ...mainNodes(page, url, id, author, root),
+    ...mainNodes(page, url, id, author, root, library),
     ...(page.faq.length
       ? [
           {
@@ -71,10 +75,12 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
     {
       "@type": "BreadcrumbList",
       "@id": id("breadcrumb"),
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: home.name, item: absolute(pagePath(home.slug), site) },
-        ...(page.slug !== home.slug ? [{ "@type": "ListItem", position: 2, name: page.name, item: url }] : []),
-      ],
+      itemListElement: isHome(page)
+        ? [{ "@type": "ListItem", position: 1, name: page.name, item: url }]
+        : [
+            { "@type": "ListItem", position: 1, name: home.name, item: absolute(pagePath(home.slug), site) },
+            { "@type": "ListItem", position: 2, name: page.name, item: url },
+          ],
     },
     {
       "@type": "Person",
@@ -85,20 +91,21 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
     },
   ];
 
-  if (!page.slug) {
+  if (page.kind === "home") {
+    graph.push({
+      "@type": "WebSite",
+      "@id": id("website", root),
+      url: root,
+      name: ORG.name,
+      inLanguage: SITE.language,
+      publisher: { "@id": id("organization", root) },
+    });
+  }
+  if (page.slug === "editor") {
     graph.push(
       {
-        "@type": "WebSite",
-        "@id": id("website", root),
-        url: root,
-        name: ORG.name,
-        inLanguage: SITE.language,
-        publisher: { "@id": id("organization", root) },
-      },
-      ...organization(id, author, root),
-      {
         "@type": "SoftwareSourceCode",
-        "@id": id("library", root),
+        "@id": library,
         name: "kannadi",
         description: "An open-source Rust library for Kannada text: legacy font conversion, transliteration, normalization and akshara segmentation.",
         codeRepository: SITE.repository,
@@ -112,9 +119,10 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
   return { "@context": "https://schema.org", "@graph": graph };
 }
 
-/** The editor as a WebApplication with its how-to, or a reference page as a LearningResource. */
-function mainNodes(page: Page, url: string, id: (name: string, base?: string) => string, author: Node, root: string): Node[] {
-  if (page.kind === "info") return organization(id, author, root);
+/** The editor as a WebApplication with its how-to, a reference page as a LearningResource, or a project as itself. */
+function mainNodes(page: Page, url: string, id: (name: string, base?: string) => string, author: Node, root: string, library: string): Node[] {
+  if (page.kind === "info" || page.kind === "home") return organization(id, author, root);
+  if (page.kind === "project") return [project(page, url, id, author, root)];
   if (page.kind === "reference") {
     return [
       {
@@ -128,7 +136,7 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
         inLanguage: ["kn", "en"],
         isAccessibleForFree: true,
         author,
-        isBasedOn: { "@id": id("library", root) },
+        isBasedOn: { "@id": library },
       },
     ];
   }
@@ -136,7 +144,7 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
     {
       "@type": "WebApplication",
       "@id": id("app"),
-      name: isHome(page) ? SITE_STRINGS[page.lang ?? "en"].appName : `${page.h1} by ${SITE.name}`,
+      name: isEditor(page) ? SITE_STRINGS[page.lang ?? "en"].appName : `${page.h1} by ${SITE.name}`,
       url,
       description: plainText(page.intro),
       applicationCategory: "UtilitiesApplication",
@@ -147,7 +155,7 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
       offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
       featureList: SITE_STRINGS[page.lang ?? "en"].features,
       author,
-      isBasedOn: { "@id": id("library", root) },
+      isBasedOn: { "@id": library },
     },
     {
       "@type": "HowTo",
@@ -156,6 +164,25 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
       step: page.steps.map((text, i) => ({ "@type": "HowToStep", position: i + 1, text: plainText(text) })),
     },
   ];
+}
+
+/** A project page's subject: a dataset of measured results, or a work still to be released, with its licenses. */
+function project(page: ProjectPage, url: string, id: (name: string, base?: string) => string, author: Node, root: string): Node {
+  const text = (p: ProjectPage["sections"][number]) => [...(p.paragraphs ?? []), ...(p.items ?? [])].map(plainText).join(" ");
+  const method = page.sections.find((p) => p.id === "method");
+  return {
+    "@type": page.schema,
+    "@id": id("project"),
+    name: page.h1,
+    url,
+    description: plainText(page.intro),
+    inLanguage: page.lang === "kn" ? "kn-IN" : SITE.language,
+    license: page.licenses.length === 1 ? page.licenses[0] : page.licenses,
+    isAccessibleForFree: true,
+    creator: { "@type": "Organization", "@id": id("organization", root), name: ORG.name, url: root },
+    author,
+    ...(page.schema === "Dataset" && method ? { measurementTechnique: text(method) } : {}),
+  };
 }
 
 /** Open Kannada with its founders: the page author is reused by id, the others are added as people. */

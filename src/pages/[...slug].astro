@@ -2,6 +2,8 @@
 import type { GetStaticPaths } from "astro";
 
 import { PAGES, type Page } from "../content/pages.ts";
+import HomePage from "../layouts/HomePage.astro";
+import ProjectPage from "../layouts/ProjectPage.astro";
 import ReferencePage from "../layouts/ReferencePage.astro";
 import InfoPage from "../layouts/InfoPage.astro";
 import ToolPage from "../layouts/ToolPage.astro";
@@ -14,4 +16,8 @@ interface Props {
 }
 const { page } = Astro.props;
 ---
-{page.kind === "tool" ? <ToolPage page={page} /> : page.kind === "reference" ? <ReferencePage page={page} /> : <InfoPage page={page} />}
+{page.kind === "tool" && <ToolPage page={page} />}
+{page.kind === "reference" && <ReferencePage page={page} />}
+{page.kind === "info" && <InfoPage page={page} />}
+{page.kind === "home" && <HomePage page={page} />}
+{page.kind === "project" && <ProjectPage page={page} />}

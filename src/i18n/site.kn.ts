@@ -5,10 +5,11 @@ export const SITE_KN: SiteStrings = {
   skip: "ಮುಖ್ಯ ವಿಷಯಕ್ಕೆ ಹೋಗಿ",
   nav: {
     pages: "ಪುಟಗಳು",
+    tools: "ಸಾಧನಗಳು",
     converters: "ಪರಿವರ್ತಕಗಳು",
     typing: "ಟೈಪಿಂಗ್ ಮತ್ತು ಅಕ್ಷರಗಳು",
+    org: "ಓಪನ್ ಕನ್ನಡ",
     allPages: "ಎಲ್ಲ ಪುಟಗಳು",
-    otherLanguage: "ಇತರ ಪುಟಗಳು, ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿ",
   },
   theme: {
     auto: "ಥೀಮ್: ಸಿಸ್ಟಮ್‌ನಂತೆಯೇ",
@@ -62,6 +63,18 @@ export const SITE_KN: SiteStrings = {
   },
   brand: {
     owner: "ಇವು ಯಾರಿಗೆ ಸೇರಿದ್ದು",
+  },
+  project: {
+    what: "ಇದು ಏನು ಮಾಡುತ್ತದೆ",
+    result: "ಫಲಿತಾಂಶ",
+    method: "ಅಳೆದ ವಿಧಾನ",
+    limits: "ಮಿತಿಗಳು",
+    downloads: "ಡೌನ್‌ಲೋಡ್‌ಗಳು",
+    license: "ಲೈಸೆನ್ಸ್",
+    name: "ಟೋಕನೈಸರ್",
+    ratio: "ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಟೋಕನ್‌ಗೆ ಕನ್ನಡ ಟೋಕನ್‌ಗಳು",
+    interval: "95% ವಿಶ್ವಾಸಾಂತರ",
+    range: "{low} ರಿಂದ {high}",
   },
   press: {
     story: "ಘೋಷವಾಕ್ಯ ಮತ್ತು ಕಥೆ",

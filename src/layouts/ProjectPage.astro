@@ -1,0 +1,91 @@
+---
+import Illustration from "../components/Illustration.astro";
+import PageTop from "../components/PageTop.astro";
+import RatioTable from "../components/RatioTable.astro";
+import type { ProjectPage } from "../content/pages.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
+import { illustrationFor } from "../lib/illustrations.ts";
+import { withBase } from "../lib/paths.ts";
+import Base from "./Base.astro";
+
+interface Props {
+  page: ProjectPage;
+}
+const { page } = Astro.props;
+const lang = page.lang ?? "en";
+const T = SITE_STRINGS[lang].project;
+const illo = illustrationFor(page);
+---
+<Base page={page}>
+  <div class="hero hero-reference mx-auto max-w-[54rem] px-4 pt-6 pb-2 sm:px-6 sm:pt-10">
+    <div>
+    <PageTop page={page} />
+    <h1 class="text-[length:var(--type-heading)] leading-[1.15] font-semibold tracking-[var(--type-heading-tracking)] sm:text-[length:var(--type-heading-wide)]">{page.h1}</h1>
+    <p class="mt-3 max-w-[62ch] text-[1.0625rem] leading-relaxed text-muted-foreground sm:text-lg" set:html={withBase(page.intro)} />
+    </div>
+    {illo && <Illustration {...illo} class="hero-illo" />}
+  </div>
+  <div class="prose-kn mx-auto max-w-[46rem] px-4 sm:px-6">
+    {page.sections.map((s) => (
+      <section aria-labelledby={`${s.id}-heading`}>
+        <h2 id={`${s.id}-heading`}>{T[s.id]}</h2>
+        {s.stats && (
+          <dl class="stats">
+            {s.stats.map((x, i) => (
+              <div class:list={["stat", i === 0 && "stat-lead"]}>
+                <dt>{x.label}</dt>
+                <dd>{x.value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+        {s.paragraphs?.map((p) => <p set:html={withBase(p)} />)}
+        {s.table && <RatioTable table={s.table} lang={lang} />}
+        {s.items && (
+          <ul class="project-list">
+            {s.items.map((i) => <li set:html={withBase(i)} />)}
+          </ul>
+        )}
+      </section>
+    ))}
+  </div>
+</Base>
+
+<style>
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+  }
+  .stat {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 0.25rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+  }
+  .stat dd {
+    margin: 0;
+    font-size: 2.25rem;
+    line-height: 1.1;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    color: var(--muted-foreground);
+  }
+  .stat-lead dd {
+    color: var(--primary);
+  }
+  .stat dt {
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+  }
+  .project-list {
+    display: grid;
+    gap: 0.75rem;
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+</style>

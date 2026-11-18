@@ -50,9 +50,13 @@ test("design/icons.html shows every icon and is up to date", () => {
   assert.equal(readFileSync(new URL("../design/icons.html", import.meta.url), "utf8"), iconsPage(), "run npm run icons");
 });
 
-test("tool pages get the illustration of their tool, and reference pages the letters", () => {
+test("tool and project pages get the illustration of their tool, and reference pages the letters", () => {
   const by = (slug) => illustrationFor(PAGES.find((p) => p.slug === slug));
-  assert.deepEqual(by(""), { name: "convert", from: "PÀ£ÀßqÀ", to: "ಕನ್ನಡ" });
+  assert.deepEqual(by("editor"), { name: "convert", from: "PÀ£ÀßqÀ", to: "ಕನ್ನಡ" });
+  assert.equal(by(""), null, "the home page shows each tool's own illustration instead");
+  assert.deepEqual(by("dictionary"), { name: "dictionary" });
+  assert.deepEqual(by("ai-benchmark"), { name: "benchmark" });
+  assert.deepEqual(by("fonts"), { name: "font" });
   assert.deepEqual(by("nudi-to-unicode"), { name: "convert", from: "PÀ£ÀßqÀ", to: "ಕನ್ನಡ" });
   // Each converter shows its own direction and encoding.
   assert.deepEqual(by("unicode-to-nudi"), { name: "convert", from: "ಕನ್ನಡ", to: "PÀ£ÀßqÀ" });

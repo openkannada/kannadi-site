@@ -1,6 +1,6 @@
 # kannadi-site
 
-The kannadi website: a Kannada editor and converter that runs in the browser. It converts text typed in the old Nudi, Baraha and Akruti fonts to Unicode, types Kannada from English letters, marks what could not be converted with fixes, and saves Word, web, text and Nudi files. Nothing leaves the visitor's device.
+The Open Kannada website, with kannadi, a Kannada editor and converter that runs in the browser. It converts text typed in the old Nudi, Baraha and Akruti fonts to Unicode, types Kannada from English letters, marks what could not be converted with fixes, and saves Word, web, text and Nudi files. Nothing leaves the visitor's device.
 
 The conversion runs on [kannadi](https://github.com/openkannada/kannadi), a Rust library compiled to WebAssembly.
 
@@ -8,13 +8,16 @@ The conversion runs on [kannadi](https://github.com/openkannada/kannadi), a Rust
 
 | Path | What |
 |---|---|
-| `/` | The editor |
+| `/` | The Open Kannada home page: the tagline, the story in short, a box that hands pasted Nudi or Baraha text to the editor through `sessionStorage`, every tool, and how to help |
+| `/editor/` | The editor |
 | `/nudi-to-unicode/`, `/unicode-to-nudi/`, `/baraha-to-unicode/`, `/akruti-to-unicode/` | Converter pages, each with the editor |
 | `/kannada-typing/`, `/english-to-kannada-typing/` | Typing pages, opening in English letters with word suggestions |
 | `/kannada-alphabet/`, `/kagunita/` | Reference pages: every letter, and every consonant with every vowel sign, spelled by the library at build time |
-| `/kn/`, `/kn/about/`, `/kn/press/`, `/kn/names-and-logos/` | The Kannada pages, each the twin of an English page. A new Kannada page can be marked `needsReview` in `src/content/pages.ts` to keep it out of the build until a native reader has checked it; `KANNADA_DRAFTS=1 npm run build` (or `npm run dev`) includes it for reading. |
+| `/fonts/`, `/spell-check/`, `/dictionary/`, `/ocr/`, `/ai-benchmark/` | Project pages: what each tool does, its measured result, downloads and license |
+| `/about/`, `/contribute/`, `/press/`, `/brand/` | Open Kannada itself. `/names-and-logos/` answers with a 301 to `/brand/` (`REDIRECTS` in `src/lib/edge.ts`) |
+| `/kn/`, `/kn/about/`, `/kn/press/`, `/kn/brand/` | The Kannada pages, each the twin of an English page; `/kn/` is the Kannada editor, the twin of `/editor/`. A new Kannada page can be marked `needsReview` in `src/content/pages.ts` to keep it out of the build until a native reader has checked it; `KANNADA_DRAFTS=1 npm run build` (or `npm run dev`) includes it for reading. |
 
-Every page also has a markdown mirror at `<page>index.md`. In browsers with WebMCP, the editor registers 4 read-only tools (`convert_legacy_to_unicode`, `convert_unicode_to_legacy`, `transliterate`, `count_aksharas`) on `document.modelContext`, or the older `navigator.modelContext`, after the page is idle. The build writes `llms.txt`, `llms-full.txt` and `robots.txt`, and `sitemap.xml` once a site URL is set.
+Every page also has a markdown mirror at `<page>index.md`. In browsers with WebMCP, every page with the editor registers 4 read-only tools (`convert_legacy_to_unicode`, `convert_unicode_to_legacy`, `transliterate`, `count_aksharas`) on `document.modelContext`, or the older `navigator.modelContext`, after the page is idle. The build writes `llms.txt`, `llms-full.txt` and `robots.txt`, and `sitemap.xml` once a site URL is set.
 
 ## Build
 
@@ -71,7 +74,7 @@ CI runs all of them on every pull request.
 | `src/content/` | Page copy and site facts |
 | `src/editor/` | The editor island: document, typing, problems, files |
 | `src/components/`, `src/layouts/` | Astro components |
-| `src/lib/` | JSON-LD, agent files, content negotiation |
+| `src/lib/` | JSON-LD, agent files, content negotiation, the home page's handoff to the editor |
 | `src/integrations/agent-files.ts` | Writes the markdown mirrors and llms files after the build |
 | `worker/index.ts`, `src/lib/edge.ts` | The Worker: the canonical-host redirect, markdown on `Accept: text/markdown`, noindex until launch |
 | `public/_headers` | Security and cache headers |

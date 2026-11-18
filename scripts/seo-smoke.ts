@@ -5,7 +5,7 @@ import { join, relative, sep } from "node:path";
 
 import { parseHTML } from "linkedom";
 
-import { PAGES, isHome } from "../src/content/pages.ts";
+import { PAGES, isHome, type Page } from "../src/content/pages.ts";
 import { AUTHOR, LIVE, pagePath } from "../src/content/site.ts";
 import { fmt } from "../src/i18n/core.ts";
 import { SITE_STRINGS } from "../src/i18n/site.ts";
@@ -32,7 +32,7 @@ function pngSize(path: string): [number, number] | null {
   const b = readFileSync(path);
   return b.toString("latin1", 1, 4) === "PNG" ? [b.readUInt32BE(16), b.readUInt32BE(20)] : null;
 }
-const BY_KIND = { tool: ["WebApplication", "HowTo"], reference: ["LearningResource"], info: ["Organization"] };
+const BY_KIND: Record<Page["kind"], string[]> = { tool: ["WebApplication", "HowTo"], reference: ["LearningResource"], info: ["Organization"], home: ["Organization", "WebSite"], project: [] };
 
 /** The dist file a site link points at, or null for links that leave the site. */
 function target(href: string, from: string): string | null {
@@ -77,9 +77,10 @@ for (const page of PAGES) {
   if (scripts.length !== 1) fail(where, `${scripts.length} JSON-LD scripts`);
   const graph = JSON.parse(scripts[0]?.textContent ?? "{}")["@graph"] ?? [];
   const types = graph.map((n: { "@type": string }) => n["@type"]);
-  const faqNeeded = page.kind !== "info" || page.faq.length ? ["FAQPage"] : [];
-  for (const t of [...NEEDED, ...faqNeeded, ...BY_KIND[page.kind]]) if (!types.includes(t)) fail(where, `JSON-LD lacks ${t}`);
-  if (!page.slug) for (const t of ["WebSite", "SoftwareSourceCode"]) if (!types.includes(t)) fail(where, `JSON-LD lacks ${t}`);
+  const faqNeeded = page.kind === "tool" || page.kind === "reference" || page.faq.length ? ["FAQPage"] : [];
+  const subject = page.kind === "project" ? [page.schema] : [];
+  const library = page.slug === "editor" ? ["SoftwareSourceCode"] : [];
+  for (const t of [...NEEDED, ...faqNeeded, ...BY_KIND[page.kind], ...subject, ...library]) if (!types.includes(t)) fail(where, `JSON-LD lacks ${t}`);
   const faq = graph.find((n: { "@type": string }) => n["@type"] === "FAQPage")?.mainEntity ?? [];
   const visible = [...document.querySelectorAll(".faq summary")].map((s) => plainText(s.innerHTML));
   const marked = faq.map((q: { name: string }) => q.name);

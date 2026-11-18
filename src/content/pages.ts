@@ -3,6 +3,8 @@
 
 import type { TypingMode } from "../editor/text.ts";
 import type { Lang } from "../i18n/core.ts";
+import type { IllustrationName } from "../lib/illustrations.ts";
+import { TAGLINE } from "./story.ts";
 import { CONSONANTS, SIGNS, VOWELS, YOGAVAHAS } from "./letters.ts";
 
 export interface Faq {
@@ -53,10 +55,46 @@ export interface ReferencePage extends PageBase {
 /** A page about Open Kannada itself, with no editor or chart. */
 export interface InfoPage extends PageBase {
   kind: "info";
-  body: "about" | "press" | "brand";
+  body: "about" | "press" | "brand" | "contribute";
 }
 
-export type Page = ToolPage | ReferencePage | InfoPage;
+/** The Open Kannada home page: the tagline, the story in short, the paste box and every tool. */
+export interface HomePage extends PageBase {
+  kind: "home";
+}
+
+/** A measured figure shown large, with what it measures. */
+export interface Stat {
+  value: string;
+  label: string;
+}
+
+/** A ratio with its 95% interval, for each thing measured. */
+export interface RatioTable {
+  rows: { name: string; ratio: number; low: number; high: number }[];
+}
+
+/** 1 part of a project page; its heading comes from the site strings, so every project page reads alike. */
+export interface ProjectSection {
+  id: "what" | "result" | "method" | "limits" | "downloads" | "license";
+  paragraphs?: string[];
+  items?: string[];
+  stats?: Stat[];
+  table?: RatioTable;
+}
+
+/** A project of Open Kannada beyond the editor: what it does, what it measured, where to get it, its license. */
+export interface ProjectPage extends PageBase {
+  kind: "project";
+  art: IllustrationName;
+  /** The schema.org type of what the page is about. */
+  schema: "Dataset" | "CreativeWork";
+  /** License URLs for the structured data. */
+  licenses: string[];
+  sections: ProjectSection[];
+}
+
+export type Page = ToolPage | ReferencePage | InfoPage | HomePage | ProjectPage;
 
 const PRIVATE: Faq = {
   q: "Is my text uploaded anywhere?",
@@ -83,10 +121,33 @@ const CONVERT_STEPS = [
 
 const TYPING_LINK = '<a href="/english-to-kannada-typing/">English to Kannada typing</a>';
 
+const SOON = "Coming soon.";
+const SOON_KN = "ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ.";
+const MIT = "https://opensource.org/license/mit";
+const APACHE = "https://www.apache.org/licenses/LICENSE-2.0";
+const ODBL = "https://opendatacommons.org/licenses/odbl/1-0/";
+const CC_BY = "https://creativecommons.org/licenses/by/4.0/";
+const OFL = "https://openfontlicense.org/open-font-license-official-text/";
+
 /** Every page, drafts included. */
 export const ALL_PAGES: Page[] = [
   {
     slug: "",
+    twin: "kn/home",
+    kind: "home",
+    name: "Home",
+    title: "Open Kannada: free, open-source tools for Kannada on computers",
+    description:
+      "Free, open-source tools so that Kannada works properly on computers: an editor that converts Nudi and Baraha text, fonts, spell check, a dictionary and OCR.",
+    h1: TAGLINE.en,
+    intro:
+      "Open Kannada makes free, open-source tools so that Kannada works properly on computers. The editor and its converters work in your browser today, and the fonts, spell checker, dictionary and OCR are on the way.",
+    faq: [],
+    og: { from: "Kannada", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
+  {
+    slug: "editor",
     twin: "kn",
     kind: "tool",
     name: "Editor",
@@ -224,7 +285,7 @@ export const ALL_PAGES: Page[] = [
       },
       {
         q: "Old Karnataka government pages look like PÀ£ÀßqÀ. Can I convert them?",
-        a: 'Yes. Open the saved page, or copy its text and paste it here. The editor reads the font names in the page and converts only the Kannada parts. Try the 2002 sample in the <a href="/">editor</a> to see it work.',
+        a: 'Yes. Open the saved page, or copy its text and paste it here. The editor reads the font names in the page and converts only the Kannada parts. Try the 2002 sample in the <a href="/editor/">editor</a> to see it work.',
       },
       {
         q: "Is this the same as Baraha phonetic typing?",
@@ -429,6 +490,206 @@ export const ALL_PAGES: Page[] = [
     keywords: "kannada kagunita 27,100; kagunita 8,100",
   },
   {
+    slug: "fonts",
+    twin: "kn/fonts",
+    kind: "project",
+    name: "Fonts",
+    title: "Kannada fonts: Neha Sans, Neha Serif and Gari",
+    description:
+      "3 open Kannada fonts under the SIL Open Font License: Neha Sans and Neha Serif, built from Noto, and Gari, a handwriting-style font based on Navilu.",
+    h1: "Kannada fonts",
+    intro:
+      "Neha Sans and Neha Serif are Kannada fonts built from Noto Sans Kannada and Noto Serif Kannada by Google, with letters fixed and added. Gari is a handwriting-style font based on Navilu by Aravinda VK.",
+    art: "font",
+    schema: "CreativeWork",
+    licenses: [OFL],
+    sections: [
+      {
+        id: "what",
+        items: [
+          '<b>Neha Sans</b> and <b>Neha Serif</b> fix <span lang="kn">ರೃ</span>, ra with the vocalic R sign, which Noto drew as <span lang="kn">ಋ</span> with a reph. They also draft U+0CDC, the Kannada archaic shrii.',
+          "They are named for Neha Prasad, a founding member of Open Kannada. Each credits its source, such as “Based on Noto Sans Kannada by Google.”",
+          "<b>Gari</b> is a handwriting-style font based on Navilu by Aravinda VK. It adds new-order Kannada shaping and the newer letters U+0CDC, U+0CDD and U+0CF3.",
+        ],
+      },
+      { id: "downloads", paragraphs: [SOON] },
+      { id: "license", paragraphs: ["All 3 fonts are under the SIL Open Font License 1.1."] },
+    ],
+    faq: [],
+    og: { from: "Neha Sans", to: "ರೃ" },
+    keywords: "",
+  },
+  {
+    slug: "spell-check",
+    twin: "kn/spell-check",
+    kind: "project",
+    name: "Spell check",
+    title: "Kannada spell check: a Hunspell dictionary for LibreOffice and Firefox",
+    description:
+      "A Kannada Hunspell dictionary that accepts 88.9% of held-out Wikipedia words, against 65.7% for the 2009 dictionary most systems ship.",
+    h1: "Kannada spell check",
+    intro:
+      "A Kannada Hunspell dictionary for LibreOffice and Firefox, with an analyzer, a stemmer and sound-alike keys generated from the same paradigm rules.",
+    art: "spell",
+    schema: "CreativeWork",
+    licenses: [MIT, APACHE, ODBL, CC_BY],
+    sections: [
+      {
+        id: "what",
+        paragraphs: [
+          "The dictionary checks Kannada spelling in LibreOffice and Firefox. The analyzer, the stemmer and the sound-alike keys are generated from the same paradigm rules as the dictionary.",
+        ],
+      },
+      {
+        id: "result",
+        paragraphs: ["It accepts 88.9% of held-out words. hunspell-kn 1.0.3, the dictionary most systems ship, from 2009, accepts 65.7%."],
+        stats: [
+          { value: "88.9%", label: "Open Kannada kn_IN" },
+          { value: "65.7%", label: "hunspell-kn 1.0.3, from 2009" },
+        ],
+      },
+      {
+        id: "method",
+        paragraphs: [
+          "Every 10th article of the Kannada Wikipedia dump of 1 November 2026 is held out, 2.2 million words, and the dictionaries are built from the other articles.",
+        ],
+      },
+      { id: "downloads", paragraphs: [SOON] },
+      {
+        id: "license",
+        items: [
+          "Code: MIT OR Apache-2.0.",
+          "The dictionary, <code>kn_IN</code>: ODbL-1.0, derived from Alar by V. Krishna.",
+          "The Wikipedia word list: CC BY 4.0.",
+        ],
+      },
+    ],
+    faq: [],
+    og: { from: "ಬಾಷೆ", to: "ಭಾಷೆ" },
+    keywords: "",
+  },
+  {
+    slug: "dictionary",
+    twin: "kn/dictionary",
+    kind: "project",
+    name: "Dictionary",
+    title: "English to Kannada dictionary: Kannada words, spellings and meanings",
+    description:
+      "An English to Kannada dictionary with 1 page per English word: Kannada words with ISO 15919 and Baraha spellings, part of speech and meanings from Alar.",
+    h1: "English to Kannada dictionary",
+    intro:
+      "An English to Kannada dictionary, with 1 page per English word. Each page gives the Kannada words with their ISO 15919 and Baraha spellings, the part of speech, and meanings drawn from the Alar dictionary.",
+    art: "dictionary",
+    schema: "CreativeWork",
+    licenses: [ODBL, MIT],
+    sections: [
+      {
+        id: "what",
+        paragraphs: [
+          'Look up an English word, such as <i>water</i>, and its page lists the Kannada words for it, such as <span lang="kn">ನೀರು</span>, each with its ISO 15919 spelling, <kbd>nīru</kbd>, and the Baraha spelling to type it, <kbd>nIru</kbd>. The meanings come from the Alar dictionary by V. Krishna.',
+        ],
+      },
+      { id: "downloads", paragraphs: [SOON] },
+      { id: "license", items: ["Data: ODbL-1.0.", "Code: MIT."] },
+    ],
+    faq: [],
+    og: { from: "water", to: "ನೀರು" },
+    keywords: "",
+  },
+  {
+    slug: "ocr",
+    twin: "kn/ocr",
+    kind: "project",
+    name: "OCR",
+    title: "Kannada OCR: a Tesseract model for old Kannada print",
+    description:
+      "A fine-tuned Tesseract model that reads Kannada print, especially old print, into text, with a benchmark of 4 sets. Results come with the next release.",
+    h1: "Kannada OCR",
+    intro:
+      "A fine-tuned Tesseract model for Kannada print, especially old print, with a benchmark of 4 sets to measure how well it reads.",
+    art: "scan",
+    schema: "CreativeWork",
+    licenses: [MIT, APACHE],
+    sections: [
+      {
+        id: "what",
+        paragraphs: [
+          "OCR turns a scanned page into text you can search, copy and edit. This model is Tesseract, trained further on Kannada print, especially old print.",
+        ],
+      },
+      { id: "result", paragraphs: ["The results come with the next release, measured on all 4 sets of the benchmark."] },
+      { id: "downloads", paragraphs: [SOON] },
+      { id: "license", items: ["Code: MIT OR Apache-2.0.", "The model: Apache-2.0."] },
+    ],
+    faq: [],
+    og: { from: "Print", to: "ಕನ್ನಡ ಪುಸ್ತಕ" },
+    keywords: "",
+  },
+  {
+    slug: "ai-benchmark",
+    twin: "kn/ai-benchmark",
+    kind: "project",
+    name: "AI benchmark",
+    title: "The Kannada token tax: what Kannada costs in AI tokenizers",
+    description:
+      "The same text costs between 1.1 and 8.3 times as many tokens in Kannada as in English, measured on 960 professionally translated segments.",
+    h1: "The Kannada token tax",
+    intro:
+      "The token tax is how many tokens Kannada text costs compared with the same text in English. In public tokenizers, Kannada costs between 1.1 and 8.3 times as many.",
+    art: "benchmark",
+    schema: "Dataset",
+    licenses: [CC_BY],
+    sections: [
+      {
+        id: "what",
+        paragraphs: [
+          "AI models read and write text as tokens. This benchmark counts the tokens that public tokenizers spend on Kannada text and on the same text in English. The result is a ratio, Kannada tokens per English token: at 2, the Kannada text takes twice as many tokens.",
+        ],
+      },
+      {
+        id: "result",
+        paragraphs: [
+          "Kannada costs between 1.1 and 8.3 times as many tokens as English, depending on the tokenizer. The benchmark covers 12 distinct tokenizers; the table shows 7 of them, with the 95% interval of each ratio.",
+        ],
+        table: {
+          rows: [
+            { name: "cl100k", ratio: 8.27, low: 8.06, high: 8.48 },
+            { name: "Qwen 2.5", ratio: 6.52, low: 6.37, high: 6.68 },
+            { name: "Kimi", ratio: 3.42, low: 3.35, high: 3.5 },
+            { name: "o200k", ratio: 1.83, low: 1.8, high: 1.87 },
+            { name: "Gemma 4", ratio: 1.7, low: 1.65, high: 1.74 },
+            { name: "Sarvam", ratio: 1.35, low: 1.32, high: 1.38 },
+            { name: "Sarvam-1", ratio: 1.14, low: 1.12, high: 1.17 },
+          ],
+        },
+      },
+      {
+        id: "method",
+        items: [
+          "960 English segments from WMT24++, with professional Kannada translations, from 170 documents.",
+          "23,778 Kannada words and 32,262 English words.",
+          "Tokens are counted without special tokens.",
+          "The 95% intervals come from resampling whole documents.",
+          "Measured on 16 November 2026.",
+        ],
+      },
+      {
+        id: "limits",
+        items: [
+          "All the text comes from 1 source.",
+          "Tokens are not price.",
+          "Claude and Gemini are not measured, because their tokenizers are not public.",
+          "Llama 3.1, Llama 4, Gemma 3 and Tiny Aya are not measured, because their tokenizers are gated.",
+        ],
+      },
+      { id: "downloads", paragraphs: ["The test suite is coming soon."] },
+      { id: "license", paragraphs: ["The results: CC BY 4.0."] },
+    ],
+    faq: [],
+    og: { from: "English", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
+  {
     slug: "about",
     twin: "kn/about",
     kind: "info",
@@ -442,6 +703,22 @@ export const ALL_PAGES: Page[] = [
     body: "about",
     faq: [],
     og: { from: "Kannada", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
+  {
+    slug: "contribute",
+    twin: "kn/contribute",
+    kind: "info",
+    name: "Contribute",
+    title: "Contribute to Open Kannada: conversions, reading, type and code",
+    description:
+      "How to help Open Kannada: report a bad conversion, check Kannada text, draw letters for open fonts, or send code to kannadi on GitHub.",
+    h1: "Contribute",
+    intro:
+      "Open Kannada needs people who read, write, type and build in Kannada. Here is how to help, from a fix of 1 word to a new font.",
+    body: "contribute",
+    faq: [],
+    og: { from: "Help", to: "ನೆರವು" },
     keywords: "",
   },
   {
@@ -461,10 +738,10 @@ export const ALL_PAGES: Page[] = [
     keywords: "",
   },
   {
-    slug: "names-and-logos",
-    twin: "kn/names-and-logos",
+    slug: "brand",
+    twin: "kn/brand",
     kind: "info",
-    name: "Names and logos",
+    name: "Brand",
     title: "Open Kannada names and logos: how to refer to the project",
     description:
       "Anyone may say their work is built with kannadi. Here is how to use the Open Kannada and kannadi names and logos, and which license covers each part.",
@@ -480,7 +757,7 @@ export const ALL_PAGES: Page[] = [
   {
     slug: "kn",
     lang: "kn",
-    twin: "",
+    twin: "editor",
     kind: "tool",
     name: "ಸಂಪಾದಕ",
     title: "ಕನ್ನಡ ಸಂಪಾದಕ ಮತ್ತು ಪರಿವರ್ತಕ: ನುಡಿಯಿಂದ ಯೂನಿಕೋಡ್, ಟೈಪಿಂಗ್ ಮತ್ತು ಇನ್ನಷ್ಟು",
@@ -565,9 +842,9 @@ export const ALL_PAGES: Page[] = [
     keywords: "",
   },
   {
-    slug: "kn/names-and-logos",
+    slug: "kn/brand",
     lang: "kn",
-    twin: "names-and-logos",
+    twin: "brand",
     kind: "info",
     name: "ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು",
     title: "ಓಪನ್ ಕನ್ನಡದ ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು: ಯೋಜನೆಯನ್ನು ಉಲ್ಲೇಖಿಸುವ ವಿಧಾನ",
@@ -579,6 +856,252 @@ export const ALL_PAGES: Page[] = [
     body: "brand",
     faq: [],
     og: { from: "kannadi", to: "ಕನ್ನಡಿ" },
+    keywords: "",
+  },
+  // Drafts that wait for a native reader. Once read, the Kannada home takes /kn/ and the Kannada editor moves to /kn/editor/.
+  {
+    slug: "kn/home",
+    lang: "kn",
+    twin: "",
+    needsReview: true,
+    kind: "home",
+    name: "ಮುಖಪುಟ",
+    title: "ಓಪನ್ ಕನ್ನಡ: ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಕನ್ನಡಕ್ಕಾಗಿ ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳು",
+    description:
+      "ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಕನ್ನಡ ಸರಿಯಾಗಿ ಕೆಲಸ ಮಾಡಲು ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳು: ನುಡಿ ಮತ್ತು ಬರಹ ಪಠ್ಯವನ್ನು ಪರಿವರ್ತಿಸುವ ಸಂಪಾದಕ, ಫಾಂಟ್‌ಗಳು, ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ, ನಿಘಂಟು ಮತ್ತು OCR.",
+    h1: TAGLINE.kn,
+    intro:
+      "ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಕನ್ನಡ ಸರಿಯಾಗಿ ಕೆಲಸ ಮಾಡಲೆಂದು ಓಪನ್ ಕನ್ನಡ ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳನ್ನು ಮಾಡುತ್ತದೆ. ಸಂಪಾದಕ ಮತ್ತು ಅದರ ಪರಿವರ್ತಕಗಳು ಇಂದೇ ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತವೆ. ಫಾಂಟ್‌ಗಳು, ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ, ನಿಘಂಟು ಮತ್ತು OCR ಸಿದ್ಧವಾಗುತ್ತಿವೆ.",
+    faq: [],
+    og: { from: "Kannada", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
+  {
+    slug: "kn/fonts",
+    lang: "kn",
+    twin: "fonts",
+    needsReview: true,
+    kind: "project",
+    name: "ಫಾಂಟ್‌ಗಳು",
+    title: "ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು: Neha Sans, Neha Serif ಮತ್ತು Gari",
+    description:
+      "SIL Open Font License ಅಡಿಯಲ್ಲಿ 3 ಮುಕ್ತ ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು: Noto ಆಧರಿಸಿದ Neha Sans ಮತ್ತು Neha Serif, ಹಾಗೂ Navilu ಆಧರಿಸಿದ ಕೈಬರಹ ಶೈಲಿಯ Gari.",
+    h1: "ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು",
+    intro:
+      "Neha Sans ಮತ್ತು Neha Serif, Google ನ Noto Sans Kannada ಮತ್ತು Noto Serif Kannada ಆಧರಿಸಿ ಮಾಡಿದ ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು. ಇವುಗಳಲ್ಲಿ ಕೆಲವು ಅಕ್ಷರಗಳನ್ನು ಸರಿಪಡಿಸಲಾಗಿದೆ, ಕೆಲವನ್ನು ಸೇರಿಸಲಾಗಿದೆ. Gari, Aravinda VK ಅವರ Navilu ಆಧರಿಸಿದ ಕೈಬರಹ ಶೈಲಿಯ ಫಾಂಟ್.",
+    art: "font",
+    schema: "CreativeWork",
+    licenses: [OFL],
+    sections: [
+      {
+        id: "what",
+        items: [
+          "<b>Neha Sans</b> ಮತ್ತು <b>Neha Serif</b>, ರ ಜೊತೆ ಋ ಸ್ವರಚಿಹ್ನೆ ಸೇರಿದ ರೃ ಅನ್ನು ಸರಿಪಡಿಸುತ್ತವೆ. Noto ಅದನ್ನು ರೇಫ ಸಹಿತ ಋ ಆಗಿ ಬರೆದಿತ್ತು. ಕನ್ನಡದ ಪ್ರಾಚೀನ ಶ್ರೀ ಚಿಹ್ನೆ U+0CDC ಯ ಕರಡು ರೂಪವನ್ನೂ ಇವು ನೀಡುತ್ತವೆ.",
+          "ಓಪನ್ ಕನ್ನಡದ ಸ್ಥಾಪಕ ಸದಸ್ಯೆ ನೇಹಾ ಪ್ರಸಾದ್ ಅವರ ಹೆಸರನ್ನು ಇವುಗಳಿಗೆ ಇಡಲಾಗಿದೆ. ಪ್ರತಿಯೊಂದೂ ತನ್ನ ಮೂಲವನ್ನು ಉಲ್ಲೇಖಿಸುತ್ತದೆ, ಉದಾಹರಣೆಗೆ “Based on Noto Sans Kannada by Google.”",
+          "<b>Gari</b>, Aravinda VK ಅವರ Navilu ಆಧರಿಸಿದ ಕೈಬರಹ ಶೈಲಿಯ ಫಾಂಟ್. ಅದು ಹೊಸ ಕ್ರಮದ ಕನ್ನಡ ಶೇಪಿಂಗ್ ಅನ್ನು, ಮತ್ತು ಹೊಸ ಅಕ್ಷರಗಳಾದ U+0CDC, U+0CDD ಮತ್ತು U+0CF3 ಅನ್ನು ಸೇರಿಸುತ್ತದೆ.",
+        ],
+      },
+      { id: "downloads", paragraphs: [SOON_KN] },
+      { id: "license", paragraphs: ["3 ಫಾಂಟ್‌ಗಳೂ SIL Open Font License 1.1 ಅಡಿಯಲ್ಲಿವೆ."] },
+    ],
+    faq: [],
+    og: { from: "Neha Sans", to: "ರೃ" },
+    keywords: "",
+  },
+  {
+    slug: "kn/spell-check",
+    lang: "kn",
+    twin: "spell-check",
+    needsReview: true,
+    kind: "project",
+    name: "ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ",
+    title: "ಕನ್ನಡ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ: LibreOffice ಮತ್ತು Firefox ಗಾಗಿ Hunspell ನಿಘಂಟು",
+    description:
+      "ಹೊರಗಿಟ್ಟ ವಿಕಿಪೀಡಿಯ ಪದಗಳಲ್ಲಿ 88.9% ಅನ್ನು ಒಪ್ಪುವ ಕನ್ನಡ Hunspell ನಿಘಂಟು. ಹೆಚ್ಚಿನ ವ್ಯವಸ್ಥೆಗಳಲ್ಲಿರುವ 2009ರ ನಿಘಂಟು 65.7% ಒಪ್ಪುತ್ತದೆ.",
+    h1: "ಕನ್ನಡ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ",
+    intro:
+      "LibreOffice ಮತ್ತು Firefox ಗಾಗಿ ಕನ್ನಡ Hunspell ನಿಘಂಟು. ಅದರ ಜೊತೆಗೆ ಒಂದು ಪದ ವಿಶ್ಲೇಷಕ, ಒಂದು ಪದಮೂಲ ಶೋಧಕ ಮತ್ತು ಉಚ್ಚಾರ ಹೋಲಿಕೆಯ ಕೀಲಿಗಳು ಇವೆ, ಎಲ್ಲವೂ ಒಂದೇ ರೂಪನಿಯಮಗಳಿಂದ ರಚಿತವಾದವು.",
+    art: "spell",
+    schema: "CreativeWork",
+    licenses: [MIT, APACHE, ODBL, CC_BY],
+    sections: [
+      {
+        id: "what",
+        paragraphs: [
+          "ಈ ನಿಘಂಟು LibreOffice ಮತ್ತು Firefox ನಲ್ಲಿ ಕನ್ನಡ ಕಾಗುಣಿತವನ್ನು ಪರೀಕ್ಷಿಸುತ್ತದೆ. ಪದ ವಿಶ್ಲೇಷಕ, ಪದಮೂಲ ಶೋಧಕ ಮತ್ತು ಉಚ್ಚಾರ ಹೋಲಿಕೆಯ ಕೀಲಿಗಳು ನಿಘಂಟಿನ ರೂಪನಿಯಮಗಳಿಂದಲೇ ರಚಿತವಾಗಿವೆ.",
+        ],
+      },
+      {
+        id: "result",
+        paragraphs: ["ಇದು ಹೊರಗಿಟ್ಟ ಪದಗಳಲ್ಲಿ 88.9% ಅನ್ನು ಒಪ್ಪುತ್ತದೆ. ಹೆಚ್ಚಿನ ವ್ಯವಸ್ಥೆಗಳು ಬಳಸುವ 2009ರ ನಿಘಂಟು hunspell-kn 1.0.3, 65.7% ಒಪ್ಪುತ್ತದೆ."],
+        stats: [
+          { value: "88.9%", label: "ಓಪನ್ ಕನ್ನಡ kn_IN" },
+          { value: "65.7%", label: "hunspell-kn 1.0.3, 2009ರದ್ದು" },
+        ],
+      },
+      {
+        id: "method",
+        paragraphs: [
+          "1 ನವೆಂಬರ್ 2026ರ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯ ಡಂಪ್‌ನ ಪ್ರತಿ 10ನೇ ಲೇಖನವನ್ನು ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಡಲಾಗಿದೆ, ಒಟ್ಟು 22 ಲಕ್ಷ ಪದಗಳು. ನಿಘಂಟುಗಳನ್ನು ಉಳಿದ ಲೇಖನಗಳಿಂದ ಕಟ್ಟಲಾಗಿದೆ.",
+        ],
+      },
+      { id: "downloads", paragraphs: [SOON_KN] },
+      {
+        id: "license",
+        items: [
+          "ಕೋಡ್: MIT OR Apache-2.0.",
+          "ನಿಘಂಟು <code>kn_IN</code>: ODbL-1.0, ವಿ. ಕೃಷ್ಣ ಅವರ ಅಲರ್ ನಿಘಂಟಿನಿಂದ ಪಡೆದದ್ದು.",
+          "ವಿಕಿಪೀಡಿಯ ಪದಪಟ್ಟಿ: CC BY 4.0.",
+        ],
+      },
+    ],
+    faq: [],
+    og: { from: "ಬಾಷೆ", to: "ಭಾಷೆ" },
+    keywords: "",
+  },
+  {
+    slug: "kn/dictionary",
+    lang: "kn",
+    twin: "dictionary",
+    needsReview: true,
+    kind: "project",
+    name: "ನಿಘಂಟು",
+    title: "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ಕನ್ನಡ ಪದಗಳು, ಲಿಪ್ಯಂತರ ಮತ್ತು ಅರ್ಥಗಳು",
+    description:
+      "ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ 1 ಪುಟವಿರುವ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರದೊಂದಿಗೆ ಕನ್ನಡ ಪದಗಳು, ಪದವರ್ಗ, ಅಲರ್‌ನಿಂದ ಅರ್ಥಗಳು.",
+    h1: "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು",
+    intro:
+      "ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ 1 ಪುಟವಿರುವ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು. ಪ್ರತಿ ಪುಟದಲ್ಲಿ ಕನ್ನಡ ಪದಗಳು, ಅವುಗಳ ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರ, ಪದವರ್ಗ, ಮತ್ತು ಅಲರ್ ನಿಘಂಟಿನಿಂದ ತೆಗೆದ ಅರ್ಥಗಳು ಇರುತ್ತವೆ.",
+    art: "dictionary",
+    schema: "CreativeWork",
+    licenses: [ODBL, MIT],
+    sections: [
+      {
+        id: "what",
+        paragraphs: [
+          '<i lang="en">water</i> ನಂತಹ ಇಂಗ್ಲಿಷ್ ಪದವನ್ನು ಹುಡುಕಿದರೆ, ಅದರ ಪುಟದಲ್ಲಿ ನೀರು ನಂತಹ ಕನ್ನಡ ಪದಗಳು ಕಾಣುತ್ತವೆ. ಪ್ರತಿ ಪದದ ಜೊತೆ ಅದರ ISO 15919 ರೂಪ <kbd>nīru</kbd>, ಮತ್ತು ಅದನ್ನು ಟೈಪ್ ಮಾಡಲು ಬರಹ ರೂಪ <kbd>nIru</kbd> ಇರುತ್ತದೆ. ಅರ್ಥಗಳು ವಿ. ಕೃಷ್ಣ ಅವರ ಅಲರ್ ನಿಘಂಟಿನಿಂದ ಬಂದಿವೆ.',
+        ],
+      },
+      { id: "downloads", paragraphs: [SOON_KN] },
+      { id: "license", items: ["ಡೇಟಾ: ODbL-1.0.", "ಕೋಡ್: MIT."] },
+    ],
+    faq: [],
+    og: { from: "water", to: "ನೀರು" },
+    keywords: "",
+  },
+  {
+    slug: "kn/ocr",
+    lang: "kn",
+    twin: "ocr",
+    needsReview: true,
+    kind: "project",
+    name: "OCR",
+    title: "ಕನ್ನಡ OCR: ಹಳೆಯ ಕನ್ನಡ ಮುದ್ರಣಕ್ಕಾಗಿ Tesseract ಮಾದರಿ",
+    description:
+      "ಕನ್ನಡ ಮುದ್ರಣವನ್ನು, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣವನ್ನು, ಪಠ್ಯವಾಗಿ ಓದುವ Tesseract ಮಾದರಿ, 4 ಸೆಟ್‌ಗಳ ಮಾನದಂಡದೊಂದಿಗೆ. ಫಲಿತಾಂಶಗಳು ಮುಂದಿನ ಬಿಡುಗಡೆಯಲ್ಲಿ ಬರುತ್ತವೆ.",
+    h1: "ಕನ್ನಡ OCR",
+    intro:
+      "ಕನ್ನಡ ಮುದ್ರಣಕ್ಕಾಗಿ, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣಕ್ಕಾಗಿ, ಹೆಚ್ಚಿನ ತರಬೇತಿ ನೀಡಿದ Tesseract ಮಾದರಿ. ಅದು ಎಷ್ಟು ಚೆನ್ನಾಗಿ ಓದುತ್ತದೆ ಎಂದು ಅಳೆಯಲು 4 ಸೆಟ್‌ಗಳ ಮಾನದಂಡವೂ ಇದೆ.",
+    art: "scan",
+    schema: "CreativeWork",
+    licenses: [MIT, APACHE],
+    sections: [
+      {
+        id: "what",
+        paragraphs: [
+          "OCR ಸ್ಕ್ಯಾನ್ ಮಾಡಿದ ಪುಟವನ್ನು ಹುಡುಕಬಹುದಾದ, ನಕಲಿಸಬಹುದಾದ ಮತ್ತು ತಿದ್ದಬಹುದಾದ ಪಠ್ಯವಾಗಿ ಬದಲಿಸುತ್ತದೆ. ಈ ಮಾದರಿ, ಕನ್ನಡ ಮುದ್ರಣದ ಮೇಲೆ, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣದ ಮೇಲೆ, ಹೆಚ್ಚಿನ ತರಬೇತಿ ಪಡೆದ Tesseract.",
+        ],
+      },
+      { id: "result", paragraphs: ["ಫಲಿತಾಂಶಗಳು ಮುಂದಿನ ಬಿಡುಗಡೆಯಲ್ಲಿ ಬರುತ್ತವೆ, ಮಾನದಂಡದ 4 ಸೆಟ್‌ಗಳಲ್ಲೂ ಅಳೆದು."] },
+      { id: "downloads", paragraphs: [SOON_KN] },
+      { id: "license", items: ["ಕೋಡ್: MIT OR Apache-2.0.", "ಮಾದರಿ: Apache-2.0."] },
+    ],
+    faq: [],
+    og: { from: "Print", to: "ಕನ್ನಡ ಪುಸ್ತಕ" },
+    keywords: "",
+  },
+  {
+    slug: "kn/ai-benchmark",
+    lang: "kn",
+    twin: "ai-benchmark",
+    needsReview: true,
+    kind: "project",
+    name: "AI ಮಾನದಂಡ",
+    title: "ಕನ್ನಡದ ಟೋಕನ್ ತೆರಿಗೆ: AI ಟೋಕನೈಸರ್‌ಗಳಲ್ಲಿ ಕನ್ನಡಕ್ಕೆ ತಗಲುವ ವೆಚ್ಚ",
+    description:
+      "ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿರುವ ಪಠ್ಯಕ್ಕೆ ಹೋಲಿಸಿದರೆ ಅದೇ ಪಠ್ಯಕ್ಕೆ ಕನ್ನಡದಲ್ಲಿ 1.1 ರಿಂದ 8.3 ಪಟ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು. ವೃತ್ತಿಪರವಾಗಿ ಅನುವಾದಿಸಿದ 960 ಭಾಗಗಳ ಮೇಲೆ ಅಳೆದದ್ದು.",
+    h1: "ಕನ್ನಡದ ಟೋಕನ್ ತೆರಿಗೆ",
+    intro:
+      "ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿರುವ ಅದೇ ಪಠ್ಯಕ್ಕೆ ಹೋಲಿಸಿದರೆ ಕನ್ನಡ ಪಠ್ಯಕ್ಕೆ ಎಷ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು ಎಂಬುದೇ ಟೋಕನ್ ತೆರಿಗೆ. ಸಾರ್ವಜನಿಕ ಟೋಕನೈಸರ್‌ಗಳಲ್ಲಿ ಕನ್ನಡಕ್ಕೆ 1.1 ರಿಂದ 8.3 ಪಟ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು.",
+    art: "benchmark",
+    schema: "Dataset",
+    licenses: [CC_BY],
+    sections: [
+      {
+        id: "what",
+        paragraphs: [
+          "AI ಮಾದರಿಗಳು ಪಠ್ಯವನ್ನು ಟೋಕನ್‌ಗಳಾಗಿ ಓದುತ್ತವೆ ಮತ್ತು ಬರೆಯುತ್ತವೆ. ಸಾರ್ವಜನಿಕ ಟೋಕನೈಸರ್‌ಗಳು ಕನ್ನಡ ಪಠ್ಯಕ್ಕೂ, ಅದೇ ಪಠ್ಯದ ಇಂಗ್ಲಿಷ್ ರೂಪಕ್ಕೂ ಎಷ್ಟು ಟೋಕನ್‌ಗಳನ್ನು ಬಳಸುತ್ತವೆ ಎಂದು ಈ ಮಾನದಂಡ ಎಣಿಸುತ್ತದೆ. ಫಲಿತಾಂಶ ಒಂದು ಅನುಪಾತ: ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಟೋಕನ್‌ಗೆ ಎಷ್ಟು ಕನ್ನಡ ಟೋಕನ್‌ಗಳು. ಅನುಪಾತ 2 ಆದರೆ, ಕನ್ನಡ ಪಠ್ಯಕ್ಕೆ 2 ಪಟ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು.",
+        ],
+      },
+      {
+        id: "result",
+        paragraphs: [
+          "ಟೋಕನೈಸರ್‌ಗೆ ಅನುಗುಣವಾಗಿ, ಕನ್ನಡಕ್ಕೆ ಇಂಗ್ಲಿಷ್‌ಗಿಂತ 1.1 ರಿಂದ 8.3 ಪಟ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು. ಮಾನದಂಡದಲ್ಲಿ 12 ಬೇರೆ ಬೇರೆ ಟೋಕನೈಸರ್‌ಗಳಿವೆ; ಕೋಷ್ಟಕದಲ್ಲಿ ಅವುಗಳಲ್ಲಿ 7 ಇವೆ, ಪ್ರತಿ ಅನುಪಾತದ 95% ವಿಶ್ವಾಸಾಂತರದೊಂದಿಗೆ.",
+        ],
+        table: {
+          rows: [
+            { name: "cl100k", ratio: 8.27, low: 8.06, high: 8.48 },
+            { name: "Qwen 2.5", ratio: 6.52, low: 6.37, high: 6.68 },
+            { name: "Kimi", ratio: 3.42, low: 3.35, high: 3.5 },
+            { name: "o200k", ratio: 1.83, low: 1.8, high: 1.87 },
+            { name: "Gemma 4", ratio: 1.7, low: 1.65, high: 1.74 },
+            { name: "Sarvam", ratio: 1.35, low: 1.32, high: 1.38 },
+            { name: "Sarvam-1", ratio: 1.14, low: 1.12, high: 1.17 },
+          ],
+        },
+      },
+      {
+        id: "method",
+        items: [
+          "WMT24++ ನಿಂದ 170 ದಾಖಲೆಗಳ 960 ಇಂಗ್ಲಿಷ್ ಭಾಗಗಳು, ಅವುಗಳ ವೃತ್ತಿಪರ ಕನ್ನಡ ಅನುವಾದಗಳೊಂದಿಗೆ.",
+          "23,778 ಕನ್ನಡ ಪದಗಳು ಮತ್ತು 32,262 ಇಂಗ್ಲಿಷ್ ಪದಗಳು.",
+          "ವಿಶೇಷ ಟೋಕನ್‌ಗಳನ್ನು ಬಿಟ್ಟು ಟೋಕನ್‌ಗಳನ್ನು ಎಣಿಸಲಾಗಿದೆ.",
+          "95% ವಿಶ್ವಾಸಾಂತರಗಳು ಇಡೀ ದಾಖಲೆಗಳನ್ನು ಮರುಮಾದರಿ ಮಾಡುವುದರಿಂದ ಬಂದಿವೆ.",
+          "16 ನವೆಂಬರ್ 2026 ರಂದು ಅಳೆಯಲಾಗಿದೆ.",
+        ],
+      },
+      {
+        id: "limits",
+        items: [
+          "ಎಲ್ಲ ಪಠ್ಯವೂ 1 ಮೂಲದಿಂದ ಬಂದಿದೆ.",
+          "ಟೋಕನ್‌ಗಳ ಸಂಖ್ಯೆ ಬೆಲೆಯಲ್ಲ.",
+          "Claude ಮತ್ತು Gemini ಅನ್ನು ಅಳೆದಿಲ್ಲ, ಏಕೆಂದರೆ ಅವುಗಳ ಟೋಕನೈಸರ್‌ಗಳು ಸಾರ್ವಜನಿಕವಾಗಿಲ್ಲ.",
+          "Llama 3.1, Llama 4, Gemma 3 ಮತ್ತು Tiny Aya ಅನ್ನು ಅಳೆದಿಲ್ಲ, ಏಕೆಂದರೆ ಅವುಗಳ ಟೋಕನೈಸರ್‌ಗಳು ಅನುಮತಿ ಪಡೆದವರಿಗೆ ಮಾತ್ರ ಸಿಗುತ್ತವೆ.",
+        ],
+      },
+      { id: "downloads", paragraphs: ["ಪರೀಕ್ಷಾ ಸಂಗ್ರಹ ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ."] },
+      { id: "license", paragraphs: ["ಫಲಿತಾಂಶಗಳು: CC BY 4.0."] },
+    ],
+    faq: [],
+    og: { from: "English", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
+  {
+    slug: "kn/contribute",
+    lang: "kn",
+    twin: "contribute",
+    needsReview: true,
+    kind: "info",
+    name: "ಕೊಡುಗೆ ನೀಡಿ",
+    title: "ಓಪನ್ ಕನ್ನಡಕ್ಕೆ ಕೊಡುಗೆ ನೀಡಿ: ಪರಿವರ್ತನೆ, ಓದು, ಅಕ್ಷರವಿನ್ಯಾಸ ಮತ್ತು ಕೋಡ್",
+    description:
+      "ಓಪನ್ ಕನ್ನಡಕ್ಕೆ ನೆರವಾಗುವ ವಿಧಾನ: ತಪ್ಪು ಪರಿವರ್ತನೆಯನ್ನು ತಿಳಿಸಿ, ಕನ್ನಡ ಪಠ್ಯ ಪರಿಶೀಲಿಸಿ, ಮುಕ್ತ ಫಾಂಟ್‌ಗಳಿಗೆ ಅಕ್ಷರ ಬರೆಯಿರಿ, ಅಥವಾ GitHub ನಲ್ಲಿ ಕನ್ನಡಿಗೆ ಕೋಡ್ ಕಳುಹಿಸಿ.",
+    h1: "ಕೊಡುಗೆ ನೀಡಿ",
+    intro:
+      "ಕನ್ನಡದಲ್ಲಿ ಓದುವ, ಬರೆಯುವ, ಟೈಪ್ ಮಾಡುವ ಮತ್ತು ತಂತ್ರಾಂಶ ಕಟ್ಟುವ ಜನರು ಓಪನ್ ಕನ್ನಡಕ್ಕೆ ಬೇಕು. 1 ಪದದ ತಿದ್ದುಪಡಿಯಿಂದ ಹೊಸ ಫಾಂಟ್‌ವರೆಗೆ, ನೆರವಾಗುವ ವಿಧಾನ ಇಲ್ಲಿದೆ.",
+    body: "contribute",
+    faq: [],
+    og: { from: "Help", to: "ನೆರವು" },
     keywords: "",
   },
 ];
@@ -600,17 +1123,40 @@ export function published(pages: Page[], drafts: boolean): Page[] {
 
 export const PAGES: Page[] = published(ALL_PAGES, typeof process !== "undefined" && process.env?.KANNADA_DRAFTS === "1");
 
-export const HOME = PAGES.find((p): p is ToolPage => p.kind === "tool" && p.slug === "")!;
+export const HOME = PAGES.find((p): p is HomePage => p.kind === "home" && p.slug === "")!;
 
-/** The home page in each language, built or not. */
-export const HOMES: Record<Lang, ToolPage> = {
+/** The editor, where the home page sends pasted text. */
+export const EDITOR = PAGES.find((p): p is ToolPage => p.kind === "tool" && p.slug === "editor")!;
+
+/** The home page in each language, built or not. The Kannada editor stays the Kannada home until the Kannada home page is read. */
+export const HOMES: Record<Lang, Page> = {
   en: HOME,
-  kn: ALL_PAGES.find((p): p is ToolPage => p.kind === "tool" && p.slug === "kn")!,
+  kn: ALL_PAGES.find((p) => p.slug === "kn")!,
 };
 
-/** Whether the page is the home page of its language. */
+/** Whether the page is the home page of its language, which has no breadcrumb trail and no Ask AI menu. */
 export function isHome(page: Page): boolean {
-  return page.slug === "" || page.slug === "kn";
+  return page.kind === "home" || page.slug === "kn";
+}
+
+/** The editor in either language, named as the app in the structured data. */
+export function isEditor(page: Page): boolean {
+  return page.slug === "editor" || page.slug === "kn";
+}
+
+/** The English pages in each menu, in order. The header shows the first 3; the footer and the phone menu show all. */
+export const NAV = {
+  tools: ["editor", "fonts", "spell-check", "dictionary", "ocr", "ai-benchmark"],
+  converters: ["nudi-to-unicode", "unicode-to-nudi", "baraha-to-unicode", "akruti-to-unicode"],
+  typing: ["kannada-typing", "english-to-kannada-typing", "kannada-alphabet", "kagunita"],
+  org: ["about", "contribute", "press", "brand"],
+} as const satisfies Record<string, readonly string[]>;
+
+/** The page for an English slug in the reader's language: its Kannada twin once built, or else the English page. */
+export function inLanguage(slug: string, lang: Lang, pages: Page[] = PAGES): Page | undefined {
+  const page = pages.find((p) => p.slug === slug);
+  if (!page || lang === "en" || page.twin === undefined) return page;
+  return pages.find((p) => p.slug === page.twin) ?? page;
 }
 
 /** Kannada words shown with their Baraha and ISO 15919 spellings. */

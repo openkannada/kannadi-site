@@ -22,7 +22,7 @@ export const EDITOR_EN = {
     openTitle: "Open a TXT, Word or HTML file (Ctrl+O)",
     convert: "Convert",
     convertTitle: "Convert the selection, or the whole document, from Nudi, Baraha or Akruti",
-    voice: "Type by voice in Kannada",
+    voice: "Type by voice in Kannada, through your browser's speech service",
     more: "More tools",
     save: "Save",
     saveTitle: "Save a copy (Ctrl+S)",
@@ -183,7 +183,7 @@ export const EDITOR_EN = {
   },
   voice: {
     listening: "Listening",
-    started: "Listening. Speak in Kannada; select the microphone again to stop.",
+    started: "Listening through your browser's speech service. Speak in Kannada; select the microphone again to stop.",
     stopped: "Stopped listening.",
     errors: {
       "not-allowed": "Allow the microphone for this page to type by voice.",

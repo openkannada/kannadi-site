@@ -48,8 +48,18 @@ test("names end at their extension, and Vite's preload list counts", () => {
   assert.deepEqual(assetRefs("my_astro/x.js"), []);
 });
 
-test("build files are never cached for a year, since that would hold a 404 too", () => {
+test("build files are cached for a year only because a deploy serves them before any page names them", async () => {
   const headers = readFileSync(new URL("../public/_headers", import.meta.url), "utf8");
-  const block = headers.split(/\n(?=\S)/).find((b) => b.startsWith("/_astro/*")) ?? "";
-  assert.doesNotMatch(block, /max-age=[1-9]|immutable/);
+  const block = (path) => headers.split(/\n(?=\S)/).find((b) => b.startsWith(`${path}\n`)) ?? "";
+  assert.match(block("/_astro/*"), /Cache-Control: public, max-age=31536000, immutable/);
+  // A text/plain word list is compressed at the edge; tab-separated-values is not.
+  assert.match(block("/_astro/*.tsv"), /Content-Type: text\/plain; charset=utf-8/);
+  const { deploySteps } = await import("../src/lib/deploy.ts");
+  const lines = deploySteps(new URL("https://openkannada.org/"), false).map((s) => [s.command, ...s.args].join(" "));
+  const at = (start) => lines.findIndex((l) => l.startsWith(start));
+  const staged = at("npx --no -- wrangler deploy --assets .deploy/stage");
+  const waited = at("node scripts/stage.ts wait");
+  const published = lines.indexOf("npx --no -- wrangler deploy");
+  assert.ok(at("node scripts/keep-assets.ts") < at("node scripts/stage.ts stage") && at("node scripts/stage.ts stage") < staged);
+  assert.ok(staged >= 0 && staged < waited && waited < published, "the new files go out, are waited for, then the pages that name them");
 });

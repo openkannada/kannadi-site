@@ -75,6 +75,7 @@ export class EnglishTyping {
       const words = parseWords(await this.deps.loadWords());
       const k = { ...this.deps.kannadi, strict: (latin: string) => this.strict(latin) };
       this.suggester = await Suggester.create(k, words, validPicks(this.deps.picks.read()));
+      this.respellCurrent();
     })()
       .catch(() => {
         this.failedAt = Date.now();
@@ -83,6 +84,15 @@ export class EnglishTyping {
         this.loading = null;
       });
     return this.loading;
+  }
+
+  /** A word typed while the list loaded was spelled letter by letter; it gets its best spelling now. */
+  private respellCurrent(): void {
+    const word = this.composer?.current;
+    if (!word || !this.suggester) return;
+    const best = this.spell(word.latin);
+    if (best !== this.deps.text().slice(word.start, word.end)) this.composer?.respell(best);
+    this.typing(this.composer?.current ?? null);
   }
 
   /** Baraha spelling of loosely typed letters, where capitals carry no meaning. */

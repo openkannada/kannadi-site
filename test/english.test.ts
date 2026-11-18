@@ -153,3 +153,15 @@ test("the finished word's alternatives go when the caret moves away from it", as
   h.english.caretMoved(0);
   assert.equal(h.strip.shown, null);
 });
+
+test("a word typed while the word list loads gets its best spelling once the list arrives", async () => {
+  let arrive;
+  const { doc, english, type } = harness({ load: () => new Promise((resolve) => (arrive = resolve)) });
+  type("namaskara");
+  const literal = doc.text;
+  assert.equal(literal, transliterate("namaskara", "baraha", "kannada"), "letter by letter before the list arrives");
+  arrive(WORDS);
+  await english.prepare();
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(doc.text, "ನಮಸ್ಕಾರ");
+});

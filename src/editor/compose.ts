@@ -74,6 +74,10 @@ export class Composer {
     this.mode = mode;
   }
 
+  get composing(): boolean {
+    return this.editor.composing;
+  }
+
   end(): number {
     return this.word ? this.word.start + this.word.rendered.length : -1;
   }

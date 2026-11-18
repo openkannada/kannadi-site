@@ -38,6 +38,8 @@ function harness({ load = async () => WORDS, stored = [] } = {}) {
     doc.word.end = doc.word.start + kannada.length;
   };
   const composer = {
+    mode: "english",
+    composing: false,
     get current() {
       return doc.word && { ...doc.word };
     },
@@ -59,7 +61,7 @@ function harness({ load = async () => WORDS, stored = [] } = {}) {
     write(english.spell(latin));
     english.typing(composer.current);
   };
-  return { doc, english, picks, strip, type, finish };
+  return { doc, english, picks, strip, type, finish, composer };
 }
 
 test("a pick kept with space is remembered; one put back with Esc or undone is not", async () => {
@@ -154,6 +156,30 @@ test("the finished word's alternatives go when the caret moves away from it", as
   assert.equal(h.strip.shown, null);
 });
 
+test("a word typed while the word list loads gets its best spelling once the list arrives", async () => {
+  let arrive;
+  const { doc, english, type } = harness({ load: () => new Promise((resolve) => (arrive = resolve)) });
+  type("namaskara");
+  const literal = doc.text;
+  assert.equal(literal, transliterate("namaskara", "baraha", "kannada"), "letter by letter before the list arrives");
+  arrive(WORDS);
+  await english.prepare();
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(doc.text, "ನಮಸ್ಕಾರ");
+});
+
+test("a word typed in Baraha while the English word list loads is left as typed", async () => {
+  let arrive;
+  const { doc, english, type, composer } = harness({ load: () => new Promise((resolve) => (arrive = resolve)) });
+  type("namaskara");
+  composer.mode = "baraha";
+  const typed = doc.text;
+  arrive(WORDS);
+  await english.prepare();
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(doc.text, typed);
+});
+
 test("English x and q, which have no Baraha letter, read as ks and k", () => {
   const { english } = harness({ load: () => new Promise(() => {}) });
   assert.equal(english.spell("taxi"), transliterate("taksi", "baraha", "kannada"));
@@ -171,4 +197,29 @@ test("a word that ends in a ZWNJ before Kannada text keeps its alternatives on t
     finish(true);
     assert.ok(strip.shown, "the alternatives stay");
   });
+});
+
+test("prefetching fetches the word list once and builds nothing until it is used", async () => {
+  let fetches = 0;
+  const { english } = harness({ load: async () => (fetches++, WORDS) });
+  english.prefetch();
+  english.prefetch();
+  await new Promise((r) => setTimeout(r, 50));
+  assert.equal(fetches, 1);
+  assert.equal(english.ready, false, "nothing is built until the list is used");
+  await english.prepare();
+  assert.equal(fetches, 1, "the fetched list is used");
+  assert.equal(english.ready, true);
+});
+
+test("a word under a keyboard's composition is not respelled when the word list arrives", async () => {
+  let arrive;
+  const { doc, english, type, composer } = harness({ load: () => new Promise((resolve) => (arrive = resolve)) });
+  type("namaskara");
+  composer.composing = true;
+  const typed = doc.text;
+  arrive(WORDS);
+  await english.prepare();
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(doc.text, typed);
 });

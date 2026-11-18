@@ -63,7 +63,7 @@ export function agentFiles(): AstroIntegration {
           summary:
             "A free Kannada editor in the browser. It converts text typed in the Nudi, Baraha and Akruti fonts to Unicode, types Kannada from English letters, marks what could not be converted, and saves Word, web, text and Nudi files. It runs on the visitor's device with the open-source kannadi library compiled to WebAssembly.",
           details: [
-            `Source of the library: ${SITE.repository} (Rust, MIT license).`,
+            `Source of the library: ${SITE.repository} (Rust, MIT OR Apache-2.0).`,
             "Every page is also served as markdown at the same path plus index.md, and on requests that accept text/markdown.",
             "In browsers with WebMCP, every editor page registers 4 read-only tools that run the library on the page: convert_legacy_to_unicode, convert_unicode_to_legacy, transliterate and count_aksharas.",
           ],

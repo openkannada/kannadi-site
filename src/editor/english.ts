@@ -25,6 +25,10 @@ export interface EnglishDeps {
 /** What the composer offers this class: the word being typed and ways to change it. */
 export interface EnglishComposer {
   readonly current: ComposingWord | null;
+  /** The typing mode; only a word typed in English letters is respelled from the list. */
+  readonly mode: string;
+  /** Whether a keyboard is composing; text under a composition is never rewritten. */
+  readonly composing: boolean;
   respell: (kannada: string) => void;
   choose: (kannada: string) => void;
 }
@@ -48,6 +52,8 @@ export class EnglishTyping {
   private composer: EnglishComposer | null = null;
   private suggester: Suggester | null = null;
   private loading: Promise<void> | null = null;
+  /** The word list's text, fetched ahead of use; building the suggester waits for the first use. */
+  private fetched: Promise<string> | null = null;
   private failedAt = -Infinity;
   /** Suggestions for the word being typed. */
   private choices: string[] = [];
@@ -68,13 +74,21 @@ export class EnglishTyping {
     return this.suggester !== null;
   }
 
+  /** Fetches the word list without building anything, so a page that opens in English letters stays responsive. */
+  prefetch(): void {
+    if (this.suggester || this.fetched) return;
+    this.fetched = this.deps.loadWords();
+    this.fetched.catch(() => (this.fetched = null));
+  }
+
   /** Starts loading the word list, unless it is loaded, loading, or failed a moment ago. */
   prepare(now = Date.now()): Promise<void> | null {
     if (this.suggester || this.loading || now - this.failedAt < RETRY_MS) return this.loading;
     this.loading = (async () => {
-      const words = parseWords(await this.deps.loadWords());
+      const words = parseWords(await (this.fetched ?? this.deps.loadWords()));
       const k = { ...this.deps.kannadi, strict: (latin: string) => this.strict(latin) };
       this.suggester = await Suggester.create(k, words, validPicks(this.deps.picks.read()));
+      this.respellCurrent();
     })()
       .catch(() => {
         this.failedAt = Date.now();
@@ -83,6 +97,15 @@ export class EnglishTyping {
         this.loading = null;
       });
     return this.loading;
+  }
+
+  /** A word typed while the list loaded was spelled letter by letter; it gets its best spelling now. */
+  private respellCurrent(): void {
+    const word = this.composer?.current;
+    if (!word || !this.suggester || this.composer?.mode !== "english" || this.composer.composing) return;
+    const best = this.spell(word.latin);
+    if (best !== this.deps.text().slice(word.start, word.end).replace(/\u200C$/, "")) this.composer?.respell(best);
+    this.typing(this.composer?.current ?? null);
   }
 
   /** The literal spelling, where capitals carry no meaning; English x and q have no Baraha letter, so they read as ks and k. */

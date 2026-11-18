@@ -546,6 +546,69 @@ test("a no-break space the browser swaps for a space is not an edit, so the next
   assert.equal(editor.text, "ಹಿ <english:t>");
 });
 
+test("a word typed right before Kannada text ends in a ZWNJ while its rendering ends in a virama, and in nothing after", () => {
+  const editor = new FakeEditor();
+  const table = { h: "ಹ್", ho: "ಹೊ", hos: "ಹೊಸ್", hosa: "ಹೊಸ" };
+  const c = new Composer(editor, (latin) => table[latin] ?? `<${latin}>`, { onComposing: () => {} });
+  editor.onEdit = (edit, after, type) => c.handle(edit, after, type);
+  c.setMode("english");
+  editor.text = "ನಮಸ್ಕಾರ ಕನ್ನಡ";
+  editor.caret = 8;
+  editor.type("h");
+  assert.equal(editor.text, "ನಮಸ್ಕಾರ ಹ್\u200Cಕನ್ನಡ", "the virama cannot join ಕ");
+  assert.equal(editor.caret, 11, "the caret is after the ZWNJ, at the word's end");
+  editor.type("o");
+  assert.equal(editor.text, "ನಮಸ್ಕಾರ ಹೊಕನ್ನಡ", "a vowel ends the word, so nothing is added");
+  editor.type("s");
+  assert.equal(editor.text, "ನಮಸ್ಕಾರ ಹೊಸ್\u200Cಕನ್ನಡ");
+  editor.type("a ");
+  assert.equal(editor.text, "ನಮಸ್ಕಾರ ಹೊಸ ಕನ್ನಡ");
+  const end = new FakeEditor();
+  const e = new Composer(end, (latin) => table[latin] ?? `<${latin}>`, { onComposing: () => {} });
+  end.onEdit = (edit, after, type) => e.handle(edit, after, type);
+  e.setMode("english");
+  end.type("h");
+  assert.equal(end.text, "ಹ್", "at the end of the text nothing follows, so no ZWNJ");
+});
+
+test("letters typed over a selection start a word in its place", () => {
+  const { editor } = marked("english");
+  editor.text = "abc";
+  editor.replace(0, 3, "n", "insertText");
+  editor.type("u");
+  assert.equal(editor.text, "<english:nu>");
+});
+
+test("a ZWNJ stays only before a Kannada letter, in typed words and chosen suggestions", () => {
+  const table = { h: "ಹ್", hos: "ಹೊಸ್", hosa: "ಹೊಸ" };
+  const make = (text, caret) => {
+    const editor = new FakeEditor();
+    const c = new Composer(editor, (latin) => table[latin] ?? `<${latin}>`, { onComposing: () => {} });
+    editor.onEdit = (edit, after, type) => c.handle(edit, after, type);
+    c.setMode("english");
+    editor.text = text;
+    editor.caret = caret;
+    return { editor, c };
+  };
+  const spaced = make("ಕನ್ನಡ", 0);
+  spaced.editor.type("h ");
+  assert.equal(spaced.editor.text, "ಹ್ ಕನ್ನಡ", "before a typed space the ZWNJ goes");
+  const left = make("ಕನ್ನಡ", 0);
+  left.editor.type("h");
+  left.c.commit();
+  assert.equal(left.editor.text, "ಹ್‌ಕನ್ನಡ", "ended right before Kannada, it keeps its visible virama");
+  const chosen = make("ಕನ್ನಡ", 0);
+  chosen.editor.type("hosa");
+  chosen.c.respell("ಹೊಸ್");
+  assert.equal(chosen.editor.text, "ಹೊಸ್‌ಕನ್ನಡ", "a chosen suggestion that ends in a virama gets the ZWNJ too");
+  chosen.c.respell("ಹೊಸ");
+  assert.equal(chosen.editor.text, "ಹೊಸಕನ್ನಡ");
+  const moved = make("ನಮ ಕನ್ನಡ", 3);
+  moved.editor.type("h");
+  moved.editor.replace(0, 0, "XY", "insertFromPaste");
+  assert.equal(moved.editor.text, "XYನಮ ಹ್‌ಕನ್ನಡ", "a paste before the word removes nothing");
+});
+
 test("every layout the converter reports has a name in both languages", async () => {
   const { EDITOR_STRINGS } = await import("../src/i18n/editor.ts");
   for (const lang of ["en", "kn"]) {

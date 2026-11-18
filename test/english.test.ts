@@ -153,3 +153,22 @@ test("the finished word's alternatives go when the caret moves away from it", as
   h.english.caretMoved(0);
   assert.equal(h.strip.shown, null);
 });
+
+test("English x and q, which have no Baraha letter, read as ks and k", () => {
+  const { english } = harness({ load: () => new Promise(() => {}) });
+  assert.equal(english.spell("taxi"), transliterate("taksi", "baraha", "kannada"));
+  assert.equal(english.spell("Qatar"), transliterate("katar", "baraha", "kannada"));
+  assert.doesNotMatch(english.spell("xq"), /[a-z]/i);
+});
+
+test("a word that ends in a ZWNJ before Kannada text keeps its alternatives on the strip", () => {
+  const { doc, english, strip, type, finish } = harness();
+  return english.prepare().then(() => {
+    type("ma");
+    assert.ok(strip.shown && strip.shown.c.length > 1);
+    doc.text += "‌";
+    doc.word.end += 1;
+    finish(true);
+    assert.ok(strip.shown, "the alternatives stay");
+  });
+});

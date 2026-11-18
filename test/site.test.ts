@@ -77,7 +77,15 @@ test("project pages say what each tool does, its license and where to get it, wi
     assert.ok(p.licenses.length, p.slug);
   }
   const text = (slug) => JSON.stringify(PAGES.find((p) => p.slug === slug));
-  for (const slug of ["fonts", "dictionary", "ocr"]) assert.doesNotMatch(text(slug).replace(/U\+0C[0-9A-F]{2}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 /g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
+  const ocr = PAGES.find((p) => p.slug === "ocr").sections.find((s) => s.id === "result").items;
+  assert.deepEqual(ocr, [
+    "Old printed books, 60 Wikisource pages: 6.0%, against 8.7%.",
+    "Degraded words, 400: 17.0%, against 24.4%.",
+    "MILE pages, 30: 5.4%, against 7.3%.",
+    "MILE lines, 600: 2.8%, against 3.8%.",
+  ], "the v0.2 results as released, and no other");
+  assert.doesNotMatch(text("ocr"), /dots/i);
+  for (const slug of ["fonts", "dictionary"]) assert.doesNotMatch(text(slug).replace(/U\+0C[0-9A-F]{2}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 /g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
   const bench = PAGES.find((p) => p.slug === "ai-benchmark");
   const rows = bench.sections.find((s) => s.id === "result").table.rows;
   assert.deepEqual(rows.map((r) => [r.name, r.ratio, r.low, r.high]), [

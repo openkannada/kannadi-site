@@ -603,7 +603,7 @@ export const ALL_PAGES: Page[] = [
     name: "OCR",
     title: "Kannada OCR: a Tesseract model for old Kannada print",
     description:
-      "A fine-tuned Tesseract model that reads Kannada print, especially old print, into text, with a benchmark of 4 sets. Results come with the next release.",
+      "A Tesseract model for Kannada print. On old printed books it reads 6.0% of characters wrong, against 8.7% for stock Tesseract.",
     h1: "Kannada OCR",
     intro:
       "A fine-tuned Tesseract model for Kannada print, especially old print, with a benchmark of 4 sets to measure how well it reads.",
@@ -617,7 +617,20 @@ export const ALL_PAGES: Page[] = [
           "OCR turns a scanned page into text you can search, copy and edit. This model is Tesseract, trained further on Kannada print, especially old print.",
         ],
       },
-      { id: "result", paragraphs: ["The results come with the next release, measured on all 4 sets of the benchmark."] },
+      {
+        id: "result",
+        paragraphs: ["The share of characters read wrong, lower is better, for version 0.2 of the model against stock Tesseract for Kannada:"],
+        items: [
+          "Old printed books, 60 Wikisource pages: 6.0%, against 8.7%.",
+          "Degraded words, 400: 17.0%, against 24.4%.",
+          "MILE pages, 30: 5.4%, against 7.3%.",
+          "MILE lines, 600: 2.8%, against 3.8%.",
+        ],
+      },
+      {
+        id: "method",
+        items: ["Tesseract fine-tuned on Wikisource lines and on synthetic lines in openly licensed fonts, with the character error rate measured on held-out samples on 18 November 2026."],
+      },
       { id: "downloads", paragraphs: [SOON] },
       { id: "license", items: ["Code: MIT OR Apache-2.0.", "The model: Apache-2.0."] },
     ],
@@ -998,7 +1011,7 @@ export const ALL_PAGES: Page[] = [
     name: "OCR",
     title: "ಕನ್ನಡ OCR: ಹಳೆಯ ಕನ್ನಡ ಮುದ್ರಣಕ್ಕಾಗಿ Tesseract ಮಾದರಿ",
     description:
-      "ಕನ್ನಡ ಮುದ್ರಣವನ್ನು, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣವನ್ನು, ಪಠ್ಯವಾಗಿ ಓದುವ Tesseract ಮಾದರಿ, 4 ಸೆಟ್‌ಗಳ ಮಾನದಂಡದೊಂದಿಗೆ. ಫಲಿತಾಂಶಗಳು ಮುಂದಿನ ಬಿಡುಗಡೆಯಲ್ಲಿ ಬರುತ್ತವೆ.",
+      "ಕನ್ನಡ ಮುದ್ರಣವನ್ನು, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣವನ್ನು, ಪಠ್ಯವಾಗಿ ಓದುವ Tesseract ಮಾದರಿ, 4 ಸೆಟ್‌ಗಳ ಮಾನದಂಡದೊಂದಿಗೆ. ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳಲ್ಲಿ ಅದು 6.0% ಅಕ್ಷರಗಳನ್ನು ತಪ್ಪಾಗಿ ಓದುತ್ತದೆ, ಸಾಮಾನ್ಯ Tesseract ನಲ್ಲಿ 8.7%.",
     h1: "ಕನ್ನಡ OCR",
     intro:
       "ಕನ್ನಡ ಮುದ್ರಣಕ್ಕಾಗಿ, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣಕ್ಕಾಗಿ, ಹೆಚ್ಚಿನ ತರಬೇತಿ ನೀಡಿದ Tesseract ಮಾದರಿ. ಅದು ಎಷ್ಟು ಚೆನ್ನಾಗಿ ಓದುತ್ತದೆ ಎಂದು ಅಳೆಯಲು 4 ಸೆಟ್‌ಗಳ ಮಾನದಂಡವೂ ಇದೆ.",
@@ -1012,7 +1025,20 @@ export const ALL_PAGES: Page[] = [
           "OCR ಸ್ಕ್ಯಾನ್ ಮಾಡಿದ ಪುಟವನ್ನು ಹುಡುಕಬಹುದಾದ, ನಕಲಿಸಬಹುದಾದ ಮತ್ತು ತಿದ್ದಬಹುದಾದ ಪಠ್ಯವಾಗಿ ಬದಲಿಸುತ್ತದೆ. ಈ ಮಾದರಿ, ಕನ್ನಡ ಮುದ್ರಣದ ಮೇಲೆ, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣದ ಮೇಲೆ, ಹೆಚ್ಚಿನ ತರಬೇತಿ ಪಡೆದ Tesseract.",
         ],
       },
-      { id: "result", paragraphs: ["ಫಲಿತಾಂಶಗಳು ಮುಂದಿನ ಬಿಡುಗಡೆಯಲ್ಲಿ ಬರುತ್ತವೆ, ಮಾನದಂಡದ 4 ಸೆಟ್‌ಗಳಲ್ಲೂ ಅಳೆದು."] },
+      {
+        id: "result",
+        paragraphs: ["ತಪ್ಪಾಗಿ ಓದಿದ ಅಕ್ಷರಗಳ ಪ್ರಮಾಣ, ಕಡಿಮೆ ಇದ್ದಷ್ಟೂ ಒಳ್ಳೆಯದು, ಮಾದರಿಯ 0.2 ಆವೃತ್ತಿಗೆ, ಕನ್ನಡಕ್ಕಾಗಿ ಸಾಮಾನ್ಯ Tesseract ಗೆ ಹೋಲಿಸಿದರೆ:"],
+        items: [
+          "ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳು, ವಿಕಿಸೋರ್ಸ್‌ನ 60 ಪುಟಗಳು: 6.0%, ಸಾಮಾನ್ಯದಲ್ಲಿ 8.7%.",
+          "ಮಸುಕಾದ ಪದಗಳು, 400: 17.0%, ಸಾಮಾನ್ಯದಲ್ಲಿ 24.4%.",
+          "MILE ಪುಟಗಳು, 30: 5.4%, ಸಾಮಾನ್ಯದಲ್ಲಿ 7.3%.",
+          "MILE ಸಾಲುಗಳು, 600: 2.8%, ಸಾಮಾನ್ಯದಲ್ಲಿ 3.8%.",
+        ],
+      },
+      {
+        id: "method",
+        items: ["ವಿಕಿಸೋರ್ಸ್ ಸಾಲುಗಳ ಮೇಲೆ ಮತ್ತು ಮುಕ್ತ ಲೈಸೆನ್ಸ್‌ನ ಫಾಂಟ್‌ಗಳಲ್ಲಿ ರಚಿಸಿದ ಸಾಲುಗಳ ಮೇಲೆ Tesseract ಅನ್ನು ಮತ್ತಷ್ಟು ತರಬೇತಿಗೊಳಿಸಲಾಗಿದೆ; ತಪ್ಪು ಅಕ್ಷರಗಳ ಪ್ರಮಾಣವನ್ನು ತರಬೇತಿಗೆ ಬಳಸದ ಮಾದರಿಗಳ ಮೇಲೆ 18 ನವೆಂಬರ್ 2026 ರಂದು ಅಳೆಯಲಾಗಿದೆ."],
+      },
       { id: "downloads", paragraphs: [SOON_KN] },
       { id: "license", items: ["ಕೋಡ್: MIT OR Apache-2.0.", "ಮಾದರಿ: Apache-2.0."] },
     ],

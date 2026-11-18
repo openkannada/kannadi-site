@@ -78,6 +78,7 @@ export function deploySteps(url: URL, launched: boolean): Step[] {
     { label: "Check the writing", command: "npm", args: ["run", "voice-lint"] },
     ...launch({ label: "Check that no placeholder is left", command: "node", args: ["scripts/placeholders.ts", "dist"], launch: "before" }),
     ...launch({ label: "Save the live sitemap for IndexNow", command: "node", args: ["scripts/indexnow.ts", "snapshot", url.href], launch: "before" }),
+    { label: "Keep the live build files that pages still open may ask for", command: "node", args: ["scripts/keep-assets.ts", url.href, "dist"] },
     { label: "Publish to Cloudflare Workers", command: "npx", args: ["--no", "--", "wrangler", "deploy"] },
     { label: "Check the live site", command: "node", args: ["scripts/live-check.ts", url.href] },
     ...launch({ label: "Send the changed pages to IndexNow", command: "node", args: ["scripts/indexnow.ts", "submit", url.href], launch: "after" }),

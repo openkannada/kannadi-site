@@ -1,3 +1,5 @@
+import type { Layout } from "../editor/text.ts";
+
 // Every word the editor shows or announces. {name} slots are filled in by the code; {n} is a count.
 // Slots in Editor.astro and the fix card may become elements, such as a key or a Kannada sample.
 
@@ -112,7 +114,7 @@ export const EDITOR_EN = {
     close: "Close",
   },
   convert: {
-    layouts: { nudi: "Nudi or Baraha", akruti: "Akruti" },
+    layouts: { nudi: "Nudi or Baraha", akruti: "Akruti", "kan-eng": "Kan-Eng", "shree-lipi": "Shree-Lipi", "nudi-b": "Nudi B-Akshara" } satisfies Record<Layout, string>,
     /** Joins layout names after "converted from": "Nudi or Baraha, and from Akruti". */
     andFrom: "{first}, and from {second}",
     legacyFont: "a legacy font",
@@ -165,6 +167,12 @@ export const EDITOR_EN = {
     sampleName: "sample",
     nothingToConvert: "Opened {name}. Nothing in it needed converting.",
     openFailed: "Could not open {name}. {error}",
+    /** Files that are not text, and what to do instead. */
+    notText: {
+      doc: "Could not open {name}: Word 97-2003 .doc files cannot be opened here. Open it in Word and save it as .docx, then open that.",
+      pdf: "Could not open {name}: PDFs cannot be opened here. Copy the text from the PDF and paste it in.",
+      other: "Could not open {name}: it is not a text, HTML or Word .docx file.",
+    },
     saved: "Saved {name} to your downloads.",
     savedNudi: "Saved {name}. Set it in a Nudi or BRH font to read it. {notes}",
     saveFailed: "Could not save {name}. Reload the page and try again.",

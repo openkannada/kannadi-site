@@ -93,13 +93,13 @@ export class EnglishTyping {
     const word = this.composer?.current;
     if (!word || !this.suggester || this.composer?.mode !== "english") return;
     const best = this.spell(word.latin);
-    if (best !== this.deps.text().slice(word.start, word.end)) this.composer?.respell(best);
+    if (best !== this.deps.text().slice(word.start, word.end).replace(/\u200C$/, "")) this.composer?.respell(best);
     this.typing(this.composer?.current ?? null);
   }
 
-  /** Baraha spelling of loosely typed letters, where capitals carry no meaning. */
+  /** The literal spelling, where capitals carry no meaning; English x and q have no Baraha letter, so they read as ks and k. */
   private strict(latin: string): string {
-    return this.deps.kannadi.transliterate(latin.toLowerCase());
+    return this.deps.kannadi.transliterate(latin.toLowerCase().replace(/x/g, "ks").replace(/q/g, "k"));
   }
 
   /** The Kannada shown for `latin` while it is typed: the best suggestion. */
@@ -125,7 +125,8 @@ export class EnglishTyping {
   /** A word is done. Remembers a choice the user kept, and leaves its alternatives showing. */
   done(word: ComposingWord, kept: boolean): void {
     clearTimeout(this.announceTimer);
-    const shown = this.deps.text().slice(word.start, word.end);
+    // A ZWNJ that keeps a final virama from joining the next word is not part of the spelling.
+    const shown = this.deps.text().slice(word.start, word.end).replace(/\u200C$/, "");
     if (!kept || !word.latin || shown !== this.choices[this.chosen]) {
       this.hide();
       return;

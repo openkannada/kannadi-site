@@ -57,8 +57,8 @@
   --duration-morph: 450ms;
 
   /* type */
-  --type-sans: "Noto Sans Kannada", "Noto Sans", "Nirmala UI", "Tunga", system-ui, sans-serif;
-  --type-serif: "Noto Serif Kannada", "Noto Sans Kannada", serif;
+  --type-sans: "Neha Sans", "Noto Sans", "Nirmala UI", "Tunga", system-ui, sans-serif;
+  --type-serif: "Neha Serif", "Noto Serif Kannada", "Nirmala UI", "Tunga", serif;
   --type-doc: 1.375rem;
   --type-doc-wide: 1.5rem;
   --type-doc-leading: 1.95;

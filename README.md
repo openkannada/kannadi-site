@@ -86,7 +86,7 @@ CI runs all of them on every pull request.
 - Code: MIT OR Apache-2.0, at your choice (`LICENSE-MIT`, `LICENSE-APACHE`).
 - Page copy, documents and the images we make: CC BY 4.0.
 - `data/words.tsv`: CC BY-SA 4.0, as a work derived from Kannada Wikipedia. Its header gives the source and the changes.
-- Fonts: Noto Sans, Noto Sans Kannada and Noto Serif Kannada, under the SIL Open Font License (`public/fonts/OFL.txt`).
+- Fonts: Neha Sans, Neha Serif and Gari for Kannada, and Noto Sans and the Latin subset of Noto Serif Kannada for Latin, all under the SIL Open Font License (`public/fonts/OFL.txt`).
 
 `LICENSING.md` has the details and the third-party credits, and `REUSE.toml` records the license of every path. Contributions are signed off under the Developer Certificate of Origin; see `CONTRIBUTING.md`.
 

@@ -37,7 +37,9 @@ Rose and amber appear only in and about the text being edited. No other element 
 
 ### Type
 
-- 1 family: Noto Sans Kannada for Kannada and Noto Sans for Latin (`--type-sans`), self-hosted as variable woff2 subsets under the SIL Open Font License. Noto Sans Kannada's own Latin glyphs keep 1 weight at every `wght`, so Latin text must come from Noto Sans, or headings and bold words render regular. Noto Serif Kannada (`--type-serif`) is the document's alternative face.
+- 1 family: Neha Sans for Kannada and Noto Sans for Latin (`--type-sans`), self-hosted as variable woff2 files under the SIL Open Font License. Neha Sans carries only Kannada, so Latin comes from Noto Sans. Neha Serif (`--type-serif`), with the Latin subset of Noto Serif Kannada, is the document's alternative face. Gari loads only where a page sets it, as on the fonts page.
+- Every Kannada face uses the same `unicode-range`: U+0C80-0CFF, U+200C-200D, U+25CC and U+0964-0965. Only Neha Sans and the Latin Noto Sans are preloaded.
+- The Vedic signs and North Indic fractions the Neha fonts lack (U+1CD0 to U+1CF4, U+A830 to U+A835) come from the Kannada subsets of Noto Sans Kannada and Noto Serif Kannada, as extra "Neha Sans" and "Neha Serif" faces. The browser fetches them only for a page that shows one.
 - Kannada in a document: `--type-doc` 1.375rem on phones, `--type-doc-wide` 1.5rem from 768px, line height `--type-doc-leading` 1.95. Kannada anywhere else: line height `--type-kn-leading` 1.9.
 - Page headings: `--type-heading` 2rem, `--type-heading-wide` 2.75rem from 640px, weight 600, tracking `--type-heading-tracking`, balanced.
 - Controls: `--type-ui` 0.9375rem, medium weight.
@@ -124,7 +126,7 @@ A pane (`@utility glass` on the site):
 ## Using it on another surface
 
 1. Copy `design/tokens.css` and load it before the surface's own CSS. Keep the token names; map any older names onto them.
-2. Self-host Noto Sans Kannada; load nothing from another host.
+2. Self-host Neha Sans; load nothing from another host.
 3. Make only floating tools glass, with the rim, the specular glow and the solid fallback. Refraction and the moving light are optional, and the fallbacks are required.
 4. Use the logo files from the press kit, and follow the voice rules for every word on the page.
 5. When the tokens change here, copy the new `tokens.css` across in the same week.
@@ -148,7 +150,7 @@ A pane (`@utility glass` on the site):
 - **Marks**: drawn with the CSS Custom Highlight API. Unknown glyphs and malformed syllables get a tinted background and a wavy underline 1.5px thick, offset 0.35em. A likely typo gets only a dashed amber underline of the same weight, in the text, the list and the fix card. `composing` marks the word being typed in Baraha or ISO with a dotted indigo underline.
 - **Ask AI** (`AskAi.astro`): an outlined pill at the right end of the breadcrumb row, on every page but the home pages, and never inside the editor. Its glass menu copies the page's markdown mirror or opens ChatGPT, Claude or Perplexity with a prompt to read it. On narrow screens the current crumb truncates so the row stays 1 line.
 - **Home page**: a solid page with no glass of its own. The tagline is the heading, large, beside a solid card with the paste box (below it on phones). Then the story in short, a grid of tool cards (each a solid card with its icon, illustration, 1 line and a quiet "Coming soon" pill when it is not released), and how to help.
-- **Project pages**: the same sections in the same order on every project: what it does, result, how it was measured, limits, downloads, license. A result can be large figures on cards, or a table of ratios with a bar in each row.
+- **Project pages**: the same sections in the same order on every project: what it does, result, how it was measured, limits, downloads, license. A result can be large figures on cards, or a table of ratios with a bar in each row. The fonts page shows a specimen card per font, then what each is based on and what we fixed, in place of what it does.
 - **Content sections**: numbered steps with accent discs, a letter chart of tiles (Kannada, the Baraha key, ISO), a 3-column word table, and an FAQ of `details` elements with a rotating chevron.
 
 

@@ -39,6 +39,17 @@ const illo = illustrationFor(page);
             ))}
           </dl>
         )}
+        {s.specimen && (
+          <div class="specimens">
+            {s.specimen.faces.map((f) => (
+              <figure class="specimen">
+                <figcaption>{f.name}</figcaption>
+                <p lang="kn" class:list={["specimen-text", `face-${f.face}`]}>{s.specimen!.text}</p>
+                <p lang="kn" class:list={["specimen-clusters", `face-${f.face}`]}>{s.specimen!.clusters}</p>
+              </figure>
+            ))}
+          </div>
+        )}
         {s.paragraphs?.map((p) => <p set:html={withBase(p)} />)}
         {s.table && <RatioTable table={s.table} lang={lang} />}
         {s.items && (
@@ -81,6 +92,44 @@ const illo = illustrationFor(page);
   .stat dt {
     color: var(--muted-foreground);
     font-size: 0.9375rem;
+  }
+  .specimens {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0 0 1rem;
+  }
+  .specimen {
+    margin: 0;
+    padding: 1rem 1.25rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+  }
+  .specimen figcaption {
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+  .specimen .specimen-text {
+    margin: 0.5rem 0 0;
+    font-size: 1.25rem;
+    line-height: var(--type-kn-leading);
+  }
+  .specimen .specimen-clusters {
+    margin: 0.75rem 0 0;
+    font-size: 1.75rem;
+    line-height: var(--type-kn-leading);
+    word-spacing: 0.25em;
+  }
+  .face-neha-sans {
+    font-family: var(--type-sans);
+  }
+  .face-neha-serif {
+    font-family: var(--type-serif);
+  }
+  .face-gari {
+    font-family: "Gari", var(--type-sans);
+    font-weight: 400;
   }
   .project-list {
     display: grid;

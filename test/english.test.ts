@@ -153,3 +153,10 @@ test("the finished word's alternatives go when the caret moves away from it", as
   h.english.caretMoved(0);
   assert.equal(h.strip.shown, null);
 });
+
+test("English x and q, which have no Baraha letter, read as ks and k", () => {
+  const { english } = harness({ load: () => new Promise(() => {}) });
+  assert.equal(english.spell("taxi"), transliterate("taksi", "baraha", "kannada"));
+  assert.equal(english.spell("Qatar"), transliterate("katar", "baraha", "kannada"));
+  assert.doesNotMatch(english.spell("xq"), /[a-z]/i);
+});

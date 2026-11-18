@@ -86,8 +86,9 @@ export class EnglishTyping {
   }
 
   /** Baraha spelling of loosely typed letters, where capitals carry no meaning. */
+  /** The literal spelling; English x and q have no Baraha letter, so they are read as ks and k. */
   private strict(latin: string): string {
-    return this.deps.kannadi.transliterate(latin.toLowerCase());
+    return this.deps.kannadi.transliterate(latin.toLowerCase().replace(/x/g, "ks").replace(/q/g, "k"));
   }
 
   /** The Kannada shown for `latin` while it is typed: the best suggestion. */

@@ -504,3 +504,33 @@ test("a no-break space the browser swaps for a space is not an edit, so the next
   editor.replace(2, 3, " t", "insertText");
   assert.equal(editor.text, "ಹಿ <english:t>");
 });
+
+test("a word typed right before Kannada text keeps a space from it while typed, and leaves 1 space or none", () => {
+  const typed = (finish) => {
+    const { editor, c } = marked("english");
+    editor.text = "ನಮಸ್ಕಾರ ಕನ್ನಡ";
+    editor.caret = 8;
+    editor.type("ho");
+    assert.equal(editor.text, "ನಮಸ್ಕಾರ <english:ho> ಕನ್ನಡ", "a space keeps the rendering from joining ಕ");
+    assert.equal(editor.caret, 8 + "<english:ho>".length, "the caret stays before the space");
+    editor.type("sa");
+    finish(editor, c);
+    return editor.text;
+  };
+  assert.equal(typed((e) => e.type(" ")), "ನಮಸ್ಕಾರ <english:hosa> ಕನ್ನಡ", "the typed space takes its place");
+  assert.equal(typed((e, c) => c.commit()), "ನಮಸ್ಕಾರ <english:hosa>ಕನ್ನಡ", "ended another way, the word joins as typed");
+  assert.equal(typed((e, c) => c.revert()), "ನಮಸ್ಕಾರ hosaಕನ್ನಡ");
+  const plain = marked("english");
+  plain.editor.text = "ab";
+  plain.editor.caret = 2;
+  plain.editor.type("ho");
+  assert.equal(plain.editor.text, "ab<english:ho>", "no space before anything that is not Kannada");
+});
+
+test("letters typed over a selection start a word in its place", () => {
+  const { editor } = marked("english");
+  editor.text = "abc";
+  editor.replace(0, 3, "n", "insertText");
+  editor.type("u");
+  assert.equal(editor.text, "<english:nu>");
+});

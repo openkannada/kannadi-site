@@ -33,12 +33,19 @@ export interface ComposerEvents {
 const WORD_AND_BREAK = /^(.+?)([\s.,;:!?]+)$/u;
 
 /** The editor surface the composer needs; DocEditor provides it. */
-export type ComposerEditor = Pick<DocEditor, "replace" | "selection" | "select" | "composing">;
+export type ComposerEditor = Pick<DocEditor, "replace" | "selection" | "select" | "composing" | "text">;
+
+const KANNADA = /[\u0C80-\u0CFF]/u;
 
 interface Word {
   start: number;
   latin: string;
   rendered: string;
+  /**
+   * The word started right before Kannada text, so a space follows it while it is typed: a rendering that ends in a
+   * virama would otherwise join the next letter, and the browser would move the caret past both.
+   */
+  pad?: boolean;
 }
 
 export class Composer {
@@ -73,13 +80,23 @@ export class Composer {
     this.finish(true);
   }
 
-  private finish(kept: boolean): void {
+  /** Ends the word; `padAt` is where its space sits after an edit that ended it, if not right after it. */
+  private finish(kept: boolean, padAt = this.end()): void {
     const done = this.current;
     if (!done) return;
+    if (this.word?.pad) this.unpad(padAt);
     this.word = null;
     this.events.onComposing([]);
     this.events.onWord?.(null);
     this.events.onDone?.(done, kept);
+  }
+
+  /** Takes out the space a word kept from the text after it, leaving the caret where it was. */
+  private unpad(at: number): void {
+    if (this.editor.text[at] !== " ") return;
+    const sel = this.editor.selection();
+    this.write(at, at + 1, "");
+    if (sel) this.editor.select(sel.start > at ? sel.start - 1 : sel.start, sel.end > at ? sel.end - 1 : sel.end);
   }
 
   /** Writes the composer's own change, which must not start or extend a word. */
@@ -111,8 +128,13 @@ export class Composer {
     const w = this.word;
     if (!w || this.mode === "kannada") return;
     const out = w.latin ? this.spell(w.latin, this.mode) : "";
-    this.write(w.start, replaceEnd, out);
+    const pad = !w.pad && !w.rendered && out !== "" && KANNADA.test(this.editor.text[replaceEnd] ?? "");
+    this.write(w.start, replaceEnd, pad ? `${out} ` : out);
     w.rendered = out;
+    if (pad) {
+      w.pad = true;
+      this.editor.select(this.end());
+    }
     if (!out) {
       this.commit();
       return;
@@ -132,7 +154,9 @@ export class Composer {
     // A phone keyboard can take back the word being typed and send it again whole, in place of its Kannada.
     const retyped = this.word && edit.start === this.word.start && edit.oldEnd === this.end() && inserted;
     if (retyped && this.word) this.word = { start: this.word.start, latin: "", rendered: "" };
-    const insertOnly = (edit.oldEnd === edit.start || retyped) && inserted;
+    // Letters typed over a selection start a word in its place.
+    const overSelection = !this.word && edit.oldEnd > edit.start && inputType === "insertText";
+    const insertOnly = (edit.oldEnd === edit.start || retyped || overSelection) && inserted;
     const letters = LETTERS[this.mode];
     if (insertOnly && letters.test(inserted)) {
       this.extend(edit.start, inserted);
@@ -145,11 +169,13 @@ export class Composer {
       this.render(edit.start + m[1].length);
       // The caret goes after the space or punctuation that came with the word.
       const after = this.end() + (m[2]?.length ?? 0);
-      this.commit();
+      this.finish(true, after);
       this.editor.select(after);
       return;
     }
-    this.commit();
+    // An edit at the word's end, such as the space that ends it, pushes the word's space along.
+    const shift = this.word?.pad && edit.start === this.end() ? edit.newEnd - edit.oldEnd : 0;
+    this.finish(true, this.end() + shift);
   }
 
   private extend(at: number, letters: string): void {

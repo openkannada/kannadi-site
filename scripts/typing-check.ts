@@ -64,6 +64,11 @@ expect("first letter sent alone, then taken back with the whole word", await typ
 expect("a word typed after clearing the document", await typed(typing, [{ type: "abc " }, { selectAll: true }, { key: "Backspace" }, { type: "hello" }]), kannadaWord);
 expect("a word typed after a word and a space", await typed(typing, [{ type: "hi " }, { type: "ta" }]), /^[\u0C80-\u0CFF]+[ \u00a0][\u0C80-\u0CFF]+$/u);
 expect("a word typed after a space typed at the end", await typed(typing, [{ type: "hi" }, { key: "Escape" }, { type: " ta" }]), /^hi[ \u00a0][\u0C80-\u0CFF]+$/u);
+// "ನಮಸ್ಕಾರ " is 8 code units, so the caret goes right before ಕನ್ನಡ.
+const before = await typed(typing, [{ type: "namaskaara kannaDa " }]);
+expect("a word typed right before Kannada text", await typed(typing, [{ type: "namaskaara kannaDa " }, { caret: 8 }, { type: "hosa " }]), before.replace(/ /, " ಹೊಸ "));
+expect("a word typed over a selection", await typed(typing, [{ type: "abc" }, { key: "Escape" }, { selectAll: true }, { type: "nu" }]), kannadaWord);
+expect("x and q in English letters", await typed(typing, [{ type: "taxi" }]), kannadaWord);
 // A composition the page moves away from, with no compositionend, must not stop the editor converting.
 expect("typing after a composition that never ended", await typed(typing, [{ compose: "hel" }, { caret: 0 }, { type: "ka " }]), /^[\u0C80-\u0CFF]+ /u);
 for (const mode of ["english", "baraha", "iso15919"]) {

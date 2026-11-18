@@ -26,7 +26,7 @@ async function typed(path: string, steps: Step[], mode?: string): Promise<string
       if ("key" in step) await page.keyboard.press(step.key as never);
       else if ("type" in step) await page.keyboard.type(step.type, { delay: 20 });
       else if ("compose" in step) {
-        const replace = step.from === undefined ? {} : { replacementStart: step.from, replacementEnd: step.to };
+        const replace = step.from === undefined || step.to === undefined ? {} : { replacementStart: step.from, replacementEnd: step.to };
         await cdp.send("Input.imeSetComposition", { text: step.compose, selectionStart: step.compose.length, selectionEnd: step.compose.length, ...replace });
       }
       else if ("caret" in step) {

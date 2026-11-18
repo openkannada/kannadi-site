@@ -1,6 +1,7 @@
 // The hashed build files under /_astro/ that a page or another build file names, and the ones a deploy keeps.
 
-const NAME = String.raw`[\w.@~-]+\.(?:m?js|css|wasm|woff2?|ttf|otf|svg|png|jpe?g|gif|webp|avif|ico|tsv|json|txt)(?![\w.])`;
+// Every build file's name carries an 8-character content hash, which import keys such as "./kannadi_wasm_bg.js" lack.
+const NAME = String.raw`[\w.@~-]+\.[\w-]{8}\.(?:m?js|css|wasm|woff2?|ttf|otf|svg|png|jpe?g|gif|webp|avif|ico|tsv|json|txt)(?![\w.])`;
 
 /**
  * Each "/_astro/<name>" in `text`, and "_astro/<name>" as Vite lists preloads. Inside a build file, also its

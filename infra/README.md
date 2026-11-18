@@ -43,7 +43,13 @@ Pages and other files run the Worker first, so it can redirect and set noindex. 
 
 Build files under `/_astro/` are named by a hash of their content, and a deploy replaces them. A page already open, or HTML a cache still holds, asks for the previous names, so before each publish `scripts/keep-assets.ts` copies every build file the live pages name, and the files those name, into the new upload. They stay until the deploy after, so a tab opened 2 deploys back can still miss them. The live check then fails if a build file named by the pages it checks, or kept by the deploy, does not answer 200.
 
-Build files get the asset server's own `Cache-Control: public, max-age=0, must-revalidate` with an ETag, so a repeat visit costs a 304 per file. A year-long `immutable` header would also apply to a 404, and a browser would keep that 404 for a file that exists moments later; that is how a page stayed unstyled after a deploy until a hard reload.
+Build files are cached for a year as `immutable`. That header also applies to a 404, and for up to a minute after a publish the edge can still miss a new file, so a browser could keep a 404 for a file that exists moments later. A deploy therefore goes out in 2 steps (`scripts/stage.ts`):
+1. The new build is published with the live HTML and the live 404 page in place of the new. Every build file that HTML names goes out with it, so it names nothing missing. Pages new in this build show the 404 page until step 2.
+2. Once every build file answers 200 here, plus 30 seconds for other locations, the new build is published as is.
+
+If a file never answers, step 2 does not run. Step 1's build stays live: the old HTML with the new Worker, markdown mirrors, llms files and sitemap. It is consistent, and the next deploy starts from it.
+
+The word list is served as `text/plain`, so the edge compresses it.
 
 ## Rolling back
 

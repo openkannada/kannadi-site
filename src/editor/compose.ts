@@ -33,7 +33,16 @@ export interface ComposerEvents {
 const WORD_AND_BREAK = /^(.+?)([\s.,;:!?]+)$/u;
 
 /** The editor surface the composer needs; DocEditor provides it. */
-export type ComposerEditor = Pick<DocEditor, "replace" | "selection" | "select" | "composing">;
+export type ComposerEditor = Pick<DocEditor, "replace" | "selection" | "select" | "composing" | "text">;
+
+const KANNADA = /[\u0C80-\u0CFF]/u;
+const VIRAMA = "\u0CCD";
+const ZWNJ = "\u200C";
+
+/** Before a Kannada letter, a final virama would join it and the browser would move the caret past both. */
+function stopJoin(kannada: string, next: string | undefined): string {
+  return kannada.endsWith(VIRAMA) && KANNADA.test(next ?? "") ? kannada + ZWNJ : kannada;
+}
 
 interface Word {
   start: number;
@@ -65,6 +74,10 @@ export class Composer {
     this.mode = mode;
   }
 
+  get composing(): boolean {
+    return this.editor.composing;
+  }
+
   end(): number {
     return this.word ? this.word.start + this.word.rendered.length : -1;
   }
@@ -74,6 +87,17 @@ export class Composer {
   }
 
   private finish(kept: boolean): void {
+    const w = this.word;
+    if (!w) return;
+    // A ZWNJ is meaningful only before a Kannada letter; before a space, punctuation or the end it goes.
+    const text = this.editor.text;
+    const end = this.end();
+    if (w.rendered.endsWith(ZWNJ) && text[end - 1] === ZWNJ && !KANNADA.test(text[end] ?? "")) {
+      const sel = this.editor.selection();
+      this.write(end - 1, end, "");
+      w.rendered = w.rendered.slice(0, -1);
+      if (sel) this.editor.select(sel.start >= end ? sel.start - 1 : sel.start, sel.end >= end ? sel.end - 1 : sel.end);
+    }
     const done = this.current;
     if (!done) return;
     this.word = null;
@@ -96,9 +120,10 @@ export class Composer {
   respell(kannada: string): void {
     const w = this.word;
     if (!w || !kannada) return;
-    this.write(w.start, this.end(), kannada);
-    w.rendered = kannada;
-    this.events.onComposing([w.start, w.start + kannada.length]);
+    const out = stopJoin(kannada, this.editor.text[this.end()]);
+    this.write(w.start, this.end(), out);
+    w.rendered = out;
+    this.events.onComposing([w.start, w.start + out.length]);
   }
 
   /** Puts `kannada` in place of the word being typed, and ends the word. */
@@ -107,10 +132,11 @@ export class Composer {
     this.commit();
   }
 
-  private render(replaceEnd: number): void {
+  private render(replaceEnd: number, after = this.editor.text): void {
     const w = this.word;
     if (!w || this.mode === "kannada") return;
-    const out = w.latin ? this.spell(w.latin, this.mode) : "";
+    const spelled = w.latin ? this.spell(w.latin, this.mode) : "";
+    const out = stopJoin(spelled, after[replaceEnd]);
     this.write(w.start, replaceEnd, out);
     w.rendered = out;
     if (!out) {
@@ -132,21 +158,23 @@ export class Composer {
     // A phone keyboard can take back the word being typed and send it again whole, in place of its Kannada.
     const retyped = this.word && edit.start === this.word.start && edit.oldEnd === this.end() && inserted;
     if (retyped && this.word) this.word = { start: this.word.start, latin: "", rendered: "" };
-    const insertOnly = (edit.oldEnd === edit.start || retyped) && inserted;
+    // Letters typed over a selection start a word in its place.
+    const overSelection = !this.word && edit.oldEnd > edit.start && inputType === "insertText";
+    const insertOnly = (edit.oldEnd === edit.start || retyped || overSelection) && inserted;
     const letters = LETTERS[this.mode];
     if (insertOnly && letters.test(inserted)) {
       this.extend(edit.start, inserted);
-      this.render(edit.newEnd);
+      this.render(edit.newEnd, after);
       return;
     }
     const m = insertOnly && inserted.match(WORD_AND_BREAK);
     if (m && m[1] && letters.test(m[1])) {
       this.extend(edit.start, m[1]);
-      this.render(edit.start + m[1].length);
+      this.render(edit.start + m[1].length, after);
       // The caret goes after the space or punctuation that came with the word.
-      const after = this.end() + (m[2]?.length ?? 0);
+      const caret = this.end() + (m[2]?.length ?? 0);
       this.commit();
-      this.editor.select(after);
+      this.editor.select(caret);
       return;
     }
     this.commit();

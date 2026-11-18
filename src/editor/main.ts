@@ -357,6 +357,9 @@ function convertSelection(): void {
 function setMode(mode: TypingMode, remember = true): void {
   composer.setMode(mode);
   if (mode !== "english") english.hide();
+  // Choosing English letters loads the word list; a page that opens in them only fetches it, to stay responsive.
+  else if (remember) void english.prepare();
+  else english.prefetch();
   for (const input of document.querySelectorAll<HTMLInputElement>('input[name="mode"]')) input.checked = input.value === mode;
   settings.mode = remember ? mode : settings.mode;
   if (remember) saveSettings();
@@ -519,7 +522,7 @@ function wire(): void {
     const sel = editor.selection();
     english.caretMoved(sel && sel.start === sel.end ? sel.start : null);
   });
-  // The word list loads when someone starts typing in English letters, not with the page.
+  // The word list loads when English letters are chosen, or the page opens in them, and not with any other page.
   ui.doc.addEventListener("focus", () => {
     if (composer.mode === "english") void english.prepare();
   });

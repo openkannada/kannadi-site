@@ -108,6 +108,10 @@ const BACK_TO_NUDI: Faq = {
   q: "Can it convert Unicode back to Nudi?",
   a: 'Yes. Choose <b>Save</b>, then <b>Nudi text</b> for a file or <b>Copy as Nudi</b> for Word, and set the result in a Nudi or BRH font. See the <a href="/unicode-to-nudi/">Unicode to Nudi converter</a>.',
 };
+const MANY_FILES: Faq = {
+  q: "Can I convert many files at once?",
+  a: `Yes, with <a href="https://github.com/openkannada/kannadi">kannadi</a>, the free command-line tool this editor is built on. <code>kannadi to-unicode old-orders/ --out converted/</code> converts the Nudi, Baraha and Akruti text in every text, web page and Word file in a folder and its subfolders, and saves the text of each PDF as a .txt file. Anything that did not convert is listed in a report next to the file. On macOS or Linux, install it with <code>curl --proto '=https' --tlsv1.2 -LsSf https://github.com/openkannada/kannadi/releases/latest/download/kannadi-cli-installer.sh | sh</code> or with Homebrew: <code>brew install openkannada/tap/kannadi</code>. On Windows, run <code>powershell -ExecutionPolicy Bypass -c "irm https://github.com/openkannada/kannadi/releases/latest/download/kannadi-cli-installer.ps1 | iex"</code>. With Rust 1.89 or later, <code>cargo install --locked --git https://github.com/openkannada/kannadi kannadi-cli</code> builds it from source. Downloads for each system are on the <a href="https://github.com/openkannada/kannadi/releases/latest">latest release</a>.`,
+};
 const OPEN_SOURCE: Faq = {
   q: "Who made this?",
   a: 'Prasad Subrahmanya, on <a href="https://github.com/openkannada/kannadi">kannadi</a>, his open-source Rust library for Kannada text, released under MIT OR Apache-2.0. The fonts are Noto Sans, Noto Sans Kannada and Noto Serif Kannada, under the SIL Open Font License.',
@@ -179,6 +183,7 @@ export const ALL_PAGES: Page[] = [
         a: 'Normalize joins vowel signs typed in 2 parts and removes doubled marks, so text that looks the same also searches the same. Modernize changes the Old Kannada letters <span lang="kn">ೞ ಱ ೝ</span> to <span lang="kn">ಳ ರ ನ್</span>.',
       },
       BACK_TO_NUDI,
+      MANY_FILES,
       PRIVATE,
       CHECKED,
       OPEN_SOURCE,
@@ -214,6 +219,7 @@ export const ALL_PAGES: Page[] = [
         a: "It changes how the Kannada is stored, and the words stay Kannada. Once the text is Unicode, translation tools and search engines can read it.",
       },
       BACK_TO_NUDI,
+      MANY_FILES,
       CHECKED,
       PRIVATE,
     ],

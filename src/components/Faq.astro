@@ -55,6 +55,9 @@ const { faq, lang = "en" } = Astro.props;
     transform: rotate(225deg);
     top: 1.7rem;
   }
+  .faq details p :global(code) {
+    overflow-wrap: anywhere;
+  }
   .faq details p {
     margin: 0 0 1.25rem;
     color: var(--muted-foreground);

@@ -1,4 +1,5 @@
-// Loads every built page at 6 widths, light and dark, and fails on horizontal scroll, layout shift,
+// Loads every built page at 6 widths, light and dark, and fails on horizontal scroll (with and without
+// every answer open), layout shift,
 // Kannada text cut by an ancestor that hides overflow, or an illustration whose animation does not end
 // on its rest frame. With --shots DIR it also saves a screenshot of each:
 // node scripts/layout-check.ts [dist] [--shots DIR]
@@ -76,6 +77,11 @@ try {
         }));
         m.clippedKannada = seen.filter((t) => isClipped(t.box, t.clippers)).map((t) => t.text);
         for (const p of layoutProblems(m)) problems.push(`${path} ${width}px ${scheme}: ${p}`);
+        const openWidth = await page.evaluate(() => {
+          for (const d of document.querySelectorAll("main details")) (d as HTMLDetailsElement).open = true;
+          return document.documentElement.scrollWidth;
+        });
+        if (openWidth > m.innerWidth) problems.push(`${path} ${width}px ${scheme}: scrolls sideways to ${openWidth}px with every answer open`);
         if (shots) await page.screenshot({ path: join(shots, `${path.replace(/\//g, "_") || "_"}-${width}-${scheme}.png`), fullPage: true });
       }
       // Every illustration's animation must end on its rest frame, so motion and no motion agree.

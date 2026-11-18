@@ -61,6 +61,18 @@ export function looksLegacy(text: string): boolean {
 }
 
 /** The layout of the first legacy family in a font-family list, or null. */
+/**
+ * What Convert should do with `text`: "empty" when there is nothing but spaces,
+ * "unicode" when every line beyond ASCII is Unicode already, as the command-line
+ * tool decides for text files, and "convert" otherwise. A line of ASCII alone
+ * could be either, so it does not decide.
+ */
+export function convertPlan(text: string, isUnicode: (line: string) => boolean): "empty" | "unicode" | "convert" {
+  if (!text.trim()) return "empty";
+  const lines = text.split("\n").filter((line) => /[^\x00-\x7f]/.test(line));
+  return lines.length > 0 && lines.every(isUnicode) ? "unicode" : "convert";
+}
+
 export function legacyLayout(family: unknown): Layout | null {
   if (typeof family !== "string") return null;
   for (const f of family.split(",")) {

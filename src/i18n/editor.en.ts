@@ -126,6 +126,7 @@ export const EDITOR_EN = {
     /** Convert on text that is Unicode Kannada already. */
     unicodeDocument: "The document is already Unicode: nothing to convert.",
     unicodeSelection: "The selection is already Unicode: nothing to convert.",
+    nothing: "Nothing to convert.",
     pasted: "Pasted",
     opened: "Opened {name}",
     sample: "Converted part of a 2002 Karnataka government page, typed in BRH Kannada.",

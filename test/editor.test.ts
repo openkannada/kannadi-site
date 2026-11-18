@@ -8,6 +8,7 @@ import { DocEditor } from "../src/editor/editor.ts";
 import { exportBlob, htmlSegments, NotText, openFile, pasted } from "../src/editor/files.ts";
 import {
   codePoints,
+  convertPlan,
   countWords,
   diff,
   escapeMarkup,
@@ -587,4 +588,18 @@ test("HTML saved by the editor and then edited elsewhere is read like any other 
   } finally {
     globalThis.DOMParser = saved;
   }
+});
+
+test("Convert stops on blank text and on text whose every line beyond ASCII is Unicode", () => {
+  // Stands in for kannadi's isUnicode: more Kannada characters than Latin-1 glyph codes.
+  const unicode = (text: string) =>
+    (text.match(/[\u0c80-\u0cff]/g) ?? []).length > (text.match(/[\u0080-\u00ff]/g) ?? []).length;
+  assert.equal(convertPlan("", unicode), "empty");
+  assert.equal(convertPlan(" \n\t", unicode), "empty");
+  assert.equal(convertPlan("ಕನ್ನಡ ನಾಡು\nOffice hours 10 to 5", unicode), "unicode");
+  assert.equal(convertPlan("ಕನ್ನಡ ನಾಡು\nPÀ£ÀßqÀ", unicode), "convert");
+  // Mostly Unicode as a whole, with a Nudi line: still converted.
+  assert.equal(convertPlan("ಕನ್ನಡ ನಾಡು ನುಡಿ ಬಹಳ ಸುಂದರ\nPÀ£Àß", unicode), "convert");
+  assert.equal(convertPlan("PÀ£ÀßqÀ", unicode), "convert");
+  assert.equal(convertPlan("Office hours", unicode), "convert");
 });

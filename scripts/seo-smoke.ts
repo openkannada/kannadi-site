@@ -113,7 +113,8 @@ for (const page of PAGES) {
   if (document.querySelector('meta[name="keywords"]')) fail(where, "a meta keywords tag");
   if (document.documentElement.getAttribute("lang") !== (page.lang ?? "en")) fail(where, `html lang is ${document.documentElement.getAttribute("lang")}`);
   const card = file(`/og/${page.slug || "home"}.png`);
-  if (!existsSync(card) || pngSize(card)?.join("x") !== "1200x630") fail(where, "Open Graph card is not a 1200x630 PNG");
+  // A draft is read in a local build only; its card is made when it is published.
+  if (!page.needsReview && (!existsSync(card) || pngSize(card)?.join("x") !== "1200x630")) fail(where, "Open Graph card is not a 1200x630 PNG");
   if (!og("image:alt") && og("image")) fail(where, "og:image has no alt text");
   for (const img of document.querySelectorAll("img")) {
     const src = img.getAttribute("src") ?? "";

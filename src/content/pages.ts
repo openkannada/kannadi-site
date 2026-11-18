@@ -72,7 +72,7 @@ const BACK_TO_NUDI: Faq = {
 };
 const OPEN_SOURCE: Faq = {
   q: "Who made this?",
-  a: 'Prasad Subrahmanya, on <a href="https://github.com/openkannada/kannadi">kannadi</a>, his open-source Rust library for Kannada text, released under the MIT license. The fonts are Noto Sans, Noto Sans Kannada and Noto Serif Kannada, under the SIL Open Font License.',
+  a: 'Prasad Subrahmanya, on <a href="https://github.com/openkannada/kannadi">kannadi</a>, his open-source Rust library for Kannada text, released under MIT OR Apache-2.0. The fonts are Noto Sans, Noto Sans Kannada and Noto Serif Kannada, under the SIL Open Font License.',
 };
 
 const CONVERT_STEPS = [
@@ -524,7 +524,7 @@ export const ALL_PAGES: Page[] = [
       },
       {
         q: "ಇದನ್ನು ಮಾಡಿದವರು ಯಾರು?",
-        a: 'ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ, ಕನ್ನಡ ಪಠ್ಯಕ್ಕಾಗಿ ಅವರು ಬರೆದ ಮುಕ್ತ ಮೂಲದ Rust ಲೈಬ್ರರಿ <a href="https://github.com/openkannada/kannadi">ಕನ್ನಡಿ</a> ಯನ್ನು ಬಳಸಿ. ಅದು MIT ಲೈಸೆನ್ಸ್ ಅಡಿಯಲ್ಲಿದೆ. ಫಾಂಟ್‌ಗಳು Noto Sans, Noto Sans Kannada ಮತ್ತು Noto Serif Kannada, SIL Open Font License ಅಡಿಯಲ್ಲಿ.',
+        a: 'ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ, ಕನ್ನಡ ಪಠ್ಯಕ್ಕಾಗಿ ಅವರು ಬರೆದ ಮುಕ್ತ ಮೂಲದ Rust ಲೈಬ್ರರಿ <a href="https://github.com/openkannada/kannadi">ಕನ್ನಡಿ</a> ಯನ್ನು ಬಳಸಿ. ಅದು MIT ಅಥವಾ Apache-2.0 ಲೈಸೆನ್ಸ್ ಅಡಿಯಲ್ಲಿದೆ. ಫಾಂಟ್‌ಗಳು Noto Sans, Noto Sans Kannada ಮತ್ತು Noto Serif Kannada, SIL Open Font License ಅಡಿಯಲ್ಲಿ.',
       },
     ],
     og: { from: "PÀ£ÀßqÀ", to: "ಕನ್ನಡ" },

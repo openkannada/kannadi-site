@@ -79,7 +79,7 @@ const FACTS = [
     label: "Editor",
   },
   {
-    fact: "The code is open source under the MIT license.",
+    fact: "The code is open source under MIT OR Apache-2.0, at your choice.",
     source: KANNADI,
     label: "kannadi on GitHub",
   },
@@ -149,7 +149,7 @@ const PRESS_KN: Press = {
     { fact: "ಕನ್ನಡ ಫಾಂಟ್‌ಗಳ ಅಕ್ಷರ ಜೋಡಣೆ ಪರೀಕ್ಷೆಗಳು, 41 ಫಾಂಟ್‌ಗಳ ಫಲಿತಾಂಶಗಳೊಂದಿಗೆ.", source: `${KANNADI}/tree/main/tools/fontqa`, label: "fontqa" },
     { fact: "Google Fonts ನ shaperglot ನಲ್ಲಿ ಓಪನ್ ಕನ್ನಡ ಬರೆದ ಒತ್ತಕ್ಷರ ಮತ್ತು ಅರ್ಕಾವೊತ್ತು ಪರೀಕ್ಷೆಗಳಿವೆ. ಅವು 17 ನವೆಂಬರ್ 2026ರಂದು ಸೇರಿದವು.", source: "https://github.com/googlefonts/shaperglot/pull/192", label: "shaperglot ಪುಲ್ ರಿಕ್ವೆಸ್ಟ್ 192" },
     { fact: "ಸಂಪಾದಕ WebAssembly ಮೂಲಕ ಓದುಗರ ಸಾಧನದಲ್ಲೇ ನಡೆಯುತ್ತದೆ. ಫೈಲ್‌ಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡುವುದಿಲ್ಲ, ಮತ್ತು ಸೈಟ್‌ನಲ್ಲಿ ಕುಕೀಗಳಾಗಲಿ ಅನಾಲಿಟಿಕ್ಸ್ ಆಗಲಿ ಇಲ್ಲ.", source: "/kn/", label: "ಸಂಪಾದಕ" },
-    { fact: "ಕೋಡ್ MIT ಲೈಸೆನ್ಸ್ ಅಡಿಯಲ್ಲಿ ಮುಕ್ತ ಮೂಲ.", source: KANNADI, label: "GitHub ನಲ್ಲಿ ಕನ್ನಡಿ" },
+    { fact: "ಕೋಡ್ MIT ಅಥವಾ Apache-2.0 ಲೈಸೆನ್ಸ್ ಅಡಿಯಲ್ಲಿ ಮುಕ್ತ ಮೂಲ; ಯಾವುದನ್ನಾದರೂ ಆರಿಸಬಹುದು.", source: KANNADI, label: "GitHub ನಲ್ಲಿ ಕನ್ನಡಿ" },
   ],
   logos: [
     { ...LOGOS[0]!, name: "ಓಪನ್ ಕನ್ನಡ" },

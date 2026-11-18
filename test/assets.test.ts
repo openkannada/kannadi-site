@@ -21,35 +21,46 @@ test("a build file a live page names that does not load is a problem", () => {
 
 test("a deploy keeps the live files the new build lacks, and the files they name, once each", async () => {
   const live = new Map([
-    ["/_astro/Base.old.css", "@font-face{src:url(/_astro/font.same.woff2)}body{background:url(/_astro/bg.old.png)}"],
-    ["/_astro/app.old.js", 'import"./chunk.old.js";import"./shared.same.js"'],
-    ["/_astro/chunk.old.js", 'import"./app.old.js"'],
-    ["/_astro/bg.old.png", "png"],
+    ["/_astro/Base.OLD12345.css", "@font-face{src:url(/_astro/font.SAME1234.woff2)}body{background:url(/_astro/bg.OLD12345.png)}"],
+    ["/_astro/app.OLD12345.js", 'import"./chunk.OLD12345.js";import"./shared.SAME1234.js"'],
+    ["/_astro/chunk.OLD12345.js", 'import"./app.OLD12345.js"'],
+    ["/_astro/bg.OLD12345.png", "png"],
   ]);
   const asked: string[] = [];
   const { files, failed } = await keepAssets(
-    ["/_astro/Base.old.css", "/_astro/app.old.js", "/_astro/gone.old.js", "/_astro/Base.old.css"],
-    new Set(["font.same.woff2", "shared.same.js"]),
+    ["/_astro/Base.OLD12345.css", "/_astro/app.OLD12345.js", "/_astro/gone.OLD12345.js", "/_astro/Base.OLD12345.css"],
+    new Set(["font.SAME1234.woff2", "shared.SAME1234.js"]),
     async (ref) => {
       asked.push(ref);
       const body = live.get(ref);
       return body === undefined ? null : new TextEncoder().encode(body);
     },
   );
-  assert.deepEqual([...files.keys()].sort(), ["Base.old.css", "app.old.js", "bg.old.png", "chunk.old.js"]);
-  assert.deepEqual(failed, ["/_astro/gone.old.js"]);
+  assert.deepEqual([...files.keys()].sort(), ["Base.OLD12345.css", "app.OLD12345.js", "bg.OLD12345.png", "chunk.OLD12345.js"]);
+  assert.deepEqual(failed, ["/_astro/gone.OLD12345.js"]);
   assert.equal(asked.length, new Set(asked).size, "each file is fetched once, even in a cycle");
-  assert.ok(!asked.some((r) => r.includes(".same.")), "a file the new build has is not fetched");
+  assert.ok(!asked.some((r) => r.includes(".SAME1234.")), "a file the new build has is not fetched");
 });
 
 test("names end at their extension, and Vite's preload list counts", () => {
-  assert.deepEqual(assetRefs('"/_astro/data.Ab1.json"'), ["/_astro/data.Ab1.json"]);
-  assert.deepEqual(assetRefs('__vite__mapDeps(["_astro/files.DQ.js","_astro/x.Q.css"])'), ["/_astro/files.DQ.js", "/_astro/x.Q.css"]);
-  assert.deepEqual(assetRefs("my_astro/x.js"), []);
+  assert.deepEqual(assetRefs('"/_astro/data.Ab1cD2eF.json"'), ["/_astro/data.Ab1cD2eF.json"]);
+  assert.deepEqual(assetRefs('__vite__mapDeps(["_astro/files.DQqdrNH0.js","_astro/x.Q1w2E3r4.css"])'), ["/_astro/files.DQqdrNH0.js", "/_astro/x.Q1w2E3r4.css"]);
+  assert.deepEqual(assetRefs("my_astro/x.Q1w2E3r4.js"), []);
+  assert.deepEqual(assetRefs('import("./kannadi_wasm_bg.js")', true), [], "an import key with no hash is not a file");
 });
 
-test("build files are never cached for a year, since that would hold a 404 too", () => {
+test("build files are cached for a year only because a deploy serves them before any page names them", async () => {
   const headers = readFileSync(new URL("../public/_headers", import.meta.url), "utf8");
-  const block = headers.split(/\n(?=\S)/).find((b) => b.startsWith("/_astro/*")) ?? "";
-  assert.doesNotMatch(block, /max-age=[1-9]|immutable/);
+  const block = (path) => headers.split(/\n(?=\S)/).find((b) => b.startsWith(`${path}\n`)) ?? "";
+  assert.match(block("/_astro/*"), /Cache-Control: public, max-age=31536000, immutable/);
+  // A text/plain word list is compressed at the edge; tab-separated-values is not.
+  assert.match(block("/_astro/*.tsv"), /Content-Type: text\/plain; charset=utf-8/);
+  const { deploySteps } = await import("../src/lib/deploy.ts");
+  const lines = deploySteps(new URL("https://openkannada.org/"), false).map((s) => [s.command, ...s.args].join(" "));
+  const at = (start) => lines.findIndex((l) => l.startsWith(start));
+  const staged = at("npx --no -- wrangler deploy --assets .deploy/stage");
+  const waited = at("node scripts/stage.ts wait");
+  const published = lines.indexOf("npx --no -- wrangler deploy");
+  assert.ok(at("node scripts/keep-assets.ts") < at("node scripts/stage.ts stage") && at("node scripts/stage.ts stage") < staged);
+  assert.ok(staged >= 0 && staged < waited && waited < published, "the new files go out, are waited for, then the pages that name them");
 });

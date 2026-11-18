@@ -283,3 +283,11 @@ test("voice typing says, at the microphone, that it goes through the browser's s
   const copy = JSON.stringify(ALL_PAGES);
   assert.doesNotMatch(copy, /voice[^"]{0,80}(on your device|offline|stays with you)/i);
 });
+
+test("the site names kannadi's license as MIT OR Apache-2.0, never MIT alone", () => {
+  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
+  for (const f of ["src/content/pages.ts", "src/content/press.ts", "src/integrations/agent-files.ts", "src/i18n/site.en.ts", "src/i18n/site.kn.ts"]) {
+    const alone = read(f).match(/\bMIT\b(?! (OR|or|ಅಥವಾ) Apache-2\.0)/g) ?? [];
+    assert.deepEqual(alone, [], f);
+  }
+});

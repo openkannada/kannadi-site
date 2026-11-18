@@ -285,7 +285,9 @@ async function open(file: File | undefined): Promise<void> {
     if (result.converted) report(result, fmt(S.convert.opened, { name: file.name }));
     else say(fmt(S.files.nothingToConvert, { name: file.name }));
   } catch (e) {
-    say(fmt(S.files.openFailed, { name: file.name, error: e instanceof Error ? e.message : "" }).trim());
+    const kind = (e as { kind?: unknown }).kind;
+    if (kind === "doc" || kind === "pdf" || kind === "other") say(fmt(S.files.notText[kind], { name: file.name }));
+    else say(fmt(S.files.openFailed, { name: file.name, error: e instanceof Error ? e.message : "" }).trim());
   }
 }
 

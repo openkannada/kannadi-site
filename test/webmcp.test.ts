@@ -118,3 +118,15 @@ test("options default as the editor does, and bad input comes back as an error t
   assert.deepEqual(await tools.count_aksharas.execute({ text: "x".repeat(MAX_TEXT + 1) }), { error: `text is longer than ${MAX_TEXT} characters` });
   assert.deepEqual(await tools.transliterate.execute({ text: "x", from: "latin", to: "kannada" }), { error: "from must be one of kannada, baraha, iso15919, iast" });
 });
+
+test("Unicode Kannada needs no conversion, and converts to itself with nothing to check", () => {
+  for (const text of ["ಕನ್ನಡ ನಾಡು", "ನಮಸ್ಕಾರ, ಕನ್ನಡ ನಾಡು ನುಡಿ.\nOffice hours 10 to 5, 30°C"]) {
+    assert.equal(kannadi.isUnicode(text), true, text);
+  }
+  // Convert checks isUnicode first; converting anyway keeps Kannada and reports nothing in it.
+  const result = kannadi.convertLegacy("ಕನ್ನಡ ನಾಡು");
+  assert.equal(result.text, "ಕನ್ನಡ ನಾಡು");
+  assert.deepEqual(result.unknown, []);
+  assert.equal(kannadi.isUnicode("PÀ£ÀßqÀ"), false);
+  assert.equal(kannadi.isUnicode("ಕ PÀ£ÀßqÀ", "nudi"), false);
+});

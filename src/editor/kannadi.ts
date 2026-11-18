@@ -44,6 +44,11 @@ export function bestLayout(text: string): Layout {
   return wasm.bestLayout(text) as Layout;
 }
 
+/** True if `text` is already Unicode Kannada, with nothing to convert from `layout` or the layout it reads best in. */
+export function isUnicode(text: string, layout: Layout | "auto" = "auto"): boolean {
+  return wasm.isUnicode(text, layout === "auto" ? bestLayout(text) : layout);
+}
+
 /**
  * Converts legacy font text in `layout`, or in the layout it reads best in.
  * Unknown glyph offsets are UTF-16 code units in the output.

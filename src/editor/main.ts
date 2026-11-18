@@ -11,7 +11,7 @@ import { EnglishTyping } from "./english.ts";
 import { SuggestStrip } from "./strip.ts";
 import type { Plural } from "../i18n/core.ts";
 import { count, type EditorStrings, fmt, nodes, num, pick, S } from "./strings.ts";
-import { countWords, type Layout, looksLegacy, nudiNotes, type TypingMode } from "./text.ts";
+import { convertPlan, countWords, type Layout, looksLegacy, nudiNotes, type TypingMode } from "./text.ts";
 import { recognitionClass, Voice } from "./voice.ts";
 
 // From a Karnataka RDPR scheme page, Dec 2002, set in BRH Kannada:
@@ -347,7 +347,18 @@ function transform(fn: (text: string) => string, done: EditorStrings["edit"]["no
 
 function convertSelection(): void {
   const { start, end, whole } = selectionOrAll();
-  const result = convert(editor.text.slice(start, end));
+  const text = editor.text.slice(start, end);
+  const layout = kannadi.bestLayout(text);
+  const plan = convertPlan(text, (line) => kannadi.isUnicode(line, layout));
+  if (plan === "empty") {
+    say(S.convert.nothing);
+    return;
+  }
+  if (plan === "unicode") {
+    say(whole ? S.convert.unicodeDocument : S.convert.unicodeSelection);
+    return;
+  }
+  const result = convert(text);
   editor.replace(start, end, result.text);
   issues.addUnknown(result.unknown.map((o) => start + o));
   report({ ...result, converted: end - start, layouts: [result.layout] }, whole ? S.convert.document : S.convert.selection);

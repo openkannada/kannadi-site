@@ -401,5 +401,6 @@ test("the editor and the Nudi converter say how to convert a folder with the kan
     assert.ok(answer.includes("https://github.com/openkannada/kannadi/releases/latest/download/kannadi-cli-installer.sh | sh"), `${slug} lacks the macOS and Linux installer`);
     assert.ok(answer.includes("kannadi-cli-installer.ps1 | iex"), `${slug} lacks the Windows installer`);
     assert.ok(answer.includes("brew install openkannada/tap/kannadi"), `${slug} lacks Homebrew`);
+    assert.ok(answer.includes("--layout akruti"), `${slug} does not say Akruti text files need --layout akruti`);
   }
 });

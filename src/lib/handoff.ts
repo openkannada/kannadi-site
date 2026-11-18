@@ -30,6 +30,17 @@ export function giveText(store: Store | null, text: string, html = ""): boolean 
   }
 }
 
+/** The clipboard's HTML when the field still holds what was pasted; Windows clipboards end lines with CRLF. */
+export function htmlFor(field: string, pasted: { html: string; plain: string }): string {
+  const lines = (t: string) => t.replace(/\r\n?/g, "\n").trim();
+  return pasted.html && lines(field) === lines(pasted.plain) ? pasted.html : "";
+}
+
+/** Keeps text for the editor with its HTML, or, when the HTML does not fit the store, the text alone. */
+export function handOver(store: Store | null, text: string, html: string): boolean {
+  return (html !== "" && giveText(store, text, html)) || giveText(store, text);
+}
+
 /** The text kept for the editor, left in place until doneWith, so a reload before it is pasted keeps it. */
 export function takeText(store: Store | null): Handoff | null {
   if (!store) return null;

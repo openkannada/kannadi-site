@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { doneWith, giveText, HANDOFF_KEY, takeText } from "../src/lib/handoff.ts";
+import { doneWith, giveText, HANDOFF_KEY, handOver, htmlFor, takeText } from "../src/lib/handoff.ts";
 
 const store = () => {
   const items = new Map();
@@ -37,8 +37,22 @@ test("blank text is not handed over, and a store that throws, is missing or hold
 
 test("the editor removes the text only after pasting it, and the home page never puts it in the URL", () => {
   const main = readFileSync(new URL("../src/editor/main.ts", import.meta.url), "utf8");
-  assert.match(main, /paste\(handed\.html, handed\.text\)\.finally\(\(\) => doneWith\(store\)\)/);
+  assert.match(main, /paste\(handed\.html, handed\.text\)[\s\S]*?\.finally\(\(\) => \{\s*save\(\);\s*doneWith\(store\);/);
   const home = readFileSync(new URL("../src/layouts/HomePage.astro", import.meta.url), "utf8");
-  assert.match(home, /if \(giveText\(sessionStore\(\), field\.value, html\)\)/, "it leaves the page only when the text was kept");
+  assert.match(home, /if \(handOver\(sessionStore\(\), field\.value, htmlFor\(field\.value, pasted\)\)\)/, "it leaves the page only when the text was kept");
   assert.doesNotMatch(home, /searchParams|[?&]text=|location\.hash/);
+});
+
+test("pasted HTML goes along while the field holds the pasted text, Windows line endings included", () => {
+  const html = "<p>x</p>";
+  assert.equal(htmlFor("ಒಂದು\nಎರಡು", { html, plain: "ಒಂದು\r\nಎರಡು\r\n" }), html, "a Windows clipboard ends lines with CRLF");
+  assert.equal(htmlFor("ಒಂದು ಬದಲು", { html, plain: "ಒಂದು" }), "", "edited after the paste, the HTML no longer matches");
+  assert.equal(htmlFor("typed", { html: "", plain: "" }), "");
+});
+
+test("text whose HTML does not fit the store is handed over without it", () => {
+  const items = new Map();
+  const small = { getItem: (k) => items.get(k) ?? null, setItem: (k, v) => { if (String(v).length > 60) throw new Error("quota"); items.set(k, String(v)); }, removeItem: (k) => items.delete(k) };
+  assert.equal(handOver(small, "PÀ£ÀßqÀ", "<p>" + "x".repeat(200) + "</p>"), true);
+  assert.deepEqual(takeText(small), { text: "PÀ£ÀßqÀ", html: "" });
 });

@@ -95,7 +95,7 @@ const editor = to("editor");
 </Base>
 
 <script>
-  import { giveText, sessionStore } from "../lib/handoff.ts";
+  import { handOver, htmlFor, sessionStore } from "../lib/handoff.ts";
 
   const form = document.getElementById("handoff") as HTMLFormElement | null;
   const field = form?.elements.namedItem("text") as HTMLTextAreaElement | null;
@@ -108,8 +108,7 @@ const editor = to("editor");
   form?.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!field) return;
-    const html = pasted.html && field.value.trim() === pasted.plain.trim() ? pasted.html : "";
-    if (giveText(sessionStore(), field.value, html)) {
+    if (handOver(sessionStore(), field.value, htmlFor(field.value, pasted))) {
       location.href = form.dataset.editor ?? "/";
     } else {
       const hint = document.getElementById("handoff-hint");

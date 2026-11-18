@@ -490,7 +490,13 @@ function receive(): void {
   const end = editor.text.length;
   if (end) editor.replace(end, end, "\n\n", "insertText");
   editor.select(editor.text.length);
-  void paste(handed.html, handed.text).finally(() => doneWith(store));
+  // The document is saved before the handed text is removed, so a reload in between loses nothing.
+  void paste(handed.html, handed.text)
+    .catch(() => insert({ text: handed.text, unknown: [] }))
+    .finally(() => {
+      save();
+      doneWith(store);
+    });
 }
 
 function wire(): void {

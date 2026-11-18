@@ -2,7 +2,7 @@
 import { count as countOf, S } from "./strings.ts";
 
 /** A legacy font layout, or "auto" for legacy text in an unknown font. */
-export type Layout = "nudi" | "akruti";
+export type Layout = "nudi" | "akruti" | "kan-eng" | "shree-lipi" | "nudi-b";
 export type TypingMode = "kannada" | "english" | "baraha" | "iso15919";
 export type SegmentFont = false | Layout | "auto";
 
@@ -78,6 +78,25 @@ export function isLegacyFont(family: unknown): boolean {
  * Decodes a text file: UTF-16 with a byte order mark, UTF-8 when valid, and
  * Windows-1252 otherwise, the encoding of legacy Kannada files.
  */
+/** Windows and old Mac line endings as "\n", the only line break the editor knows. */
+export function unixLines(text: string): string {
+  return text.replace(/\r\n?/g, "\n");
+}
+
+/** What a file that is not text is, from its first bytes or its control characters, or null for text. */
+export function notText(bytes: Uint8Array): "doc" | "pdf" | "other" | null {
+  const starts = (...b: number[]) => b.every((v, i) => bytes[i] === v);
+  if (starts(0x25, 0x50, 0x44, 0x46)) return "pdf";
+  if (starts(0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1)) return "doc";
+  if (starts(0x50, 0x4b, 0x03, 0x04)) return "other";
+  // UTF-16 text has a NUL in every other byte; anything else with control characters is binary.
+  if ((bytes[0] === 0xff && bytes[1] === 0xfe) || (bytes[0] === 0xfe && bytes[1] === 0xff)) return null;
+  const sample = bytes.subarray(0, 4096);
+  let control = 0;
+  for (const b of sample) if (b < 0x20 && b !== 0x09 && b !== 0x0a && b !== 0x0c && b !== 0x0d) control++;
+  return control > sample.length / 100 ? "other" : null;
+}
+
 export function decodeBytes(bytes: Uint8Array, decodeWindows1252: (bytes: Uint8Array) => string): string {
   if (bytes[0] === 0xff && bytes[1] === 0xfe) return new TextDecoder("utf-16le").decode(bytes);
   if (bytes[0] === 0xfe && bytes[1] === 0xff) return new TextDecoder("utf-16be").decode(bytes);

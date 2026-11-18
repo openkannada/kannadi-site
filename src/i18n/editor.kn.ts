@@ -110,7 +110,7 @@ export const EDITOR_KN: EditorStrings = {
     close: "ಮುಚ್ಚು",
   },
   convert: {
-    layouts: { nudi: "ನುಡಿ ಅಥವಾ ಬರಹ", akruti: "ಆಕೃತಿ" },
+    layouts: { nudi: "ನುಡಿ ಅಥವಾ ಬರಹ", akruti: "ಆಕೃತಿ", "kan-eng": "Kan-Eng", "shree-lipi": "ಶ್ರೀಲಿಪಿ", "nudi-b": "ನುಡಿ ಬಿ-ಅಕ್ಷರ" },
     andFrom: "{first} ಮತ್ತು {second}",
     legacyFont: "ಹಳೆಯ ಫಾಂಟ್",
     report: { one: "{what}: {n} ಚಿಹ್ನೆಯನ್ನು ಪರಿವರ್ತಿಸಲಾಗಿದೆ (ಮೂಲ: {from}).", other: "{what}: {n} ಚಿಹ್ನೆಗಳನ್ನು ಪರಿವರ್ತಿಸಲಾಗಿದೆ (ಮೂಲ: {from})." },
@@ -159,6 +159,11 @@ export const EDITOR_KN: EditorStrings = {
     sampleName: "sample",
     nothingToConvert: "{name} ತೆರೆಯಲಾಗಿದೆ. ಅದರಲ್ಲಿ ಪರಿವರ್ತಿಸಬೇಕಾದ್ದು ಏನೂ ಇರಲಿಲ್ಲ.",
     openFailed: "{name} ತೆರೆಯಲು ಆಗಲಿಲ್ಲ. {error}",
+    notText: {
+      doc: "{name} ತೆರೆಯಲು ಆಗಲಿಲ್ಲ: Word 97-2003 .doc ಫೈಲ್‌ಗಳನ್ನು ಇಲ್ಲಿ ತೆರೆಯಲು ಆಗುವುದಿಲ್ಲ. ಅದನ್ನು Word ನಲ್ಲಿ ತೆರೆದು .docx ಆಗಿ ಉಳಿಸಿ, ನಂತರ ಅದನ್ನು ತೆರೆಯಿರಿ.",
+      pdf: "{name} ತೆರೆಯಲು ಆಗಲಿಲ್ಲ: PDF ಗಳನ್ನು ಇಲ್ಲಿ ತೆರೆಯಲು ಆಗುವುದಿಲ್ಲ. PDF ನಿಂದ ಪಠ್ಯವನ್ನು ನಕಲಿಸಿ ಇಲ್ಲಿ ಅಂಟಿಸಿ.",
+      other: "{name} ತೆರೆಯಲು ಆಗಲಿಲ್ಲ: ಇದು ಪಠ್ಯ, HTML ಅಥವಾ Word .docx ಫೈಲ್ ಅಲ್ಲ.",
+    },
     saved: "{name} ಅನ್ನು ನಿಮ್ಮ ಡೌನ್‌ಲೋಡ್‌ಗಳಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ.",
     savedNudi: "{name} ಉಳಿಸಲಾಗಿದೆ. ಓದಲು ಅದನ್ನು ನುಡಿ ಅಥವಾ BRH ಫಾಂಟ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ. {notes}",
     saveFailed: "{name} ಉಳಿಸಲು ಆಗಲಿಲ್ಲ. ಪುಟವನ್ನು ಮತ್ತೆ ತೆರೆದು ಪ್ರಯತ್ನಿಸಿ.",

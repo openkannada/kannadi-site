@@ -5,7 +5,7 @@ import { test } from "node:test";
 import { Composer } from "../src/editor/compose.ts";
 import { readDocx, writeDocx } from "../src/editor/docx.ts";
 import { DocEditor } from "../src/editor/editor.ts";
-import { htmlSegments, pasted } from "../src/editor/files.ts";
+import { exportBlob, htmlSegments, NotText, openFile, pasted } from "../src/editor/files.ts";
 import {
   codePoints,
   countWords,
@@ -16,6 +16,7 @@ import {
   legacyLayout,
   resolveAuto,
   looksLegacy,
+  notText,
   nudiNotes,
   shiftAnchors,
   shiftRanges,
@@ -74,8 +75,47 @@ test("ranges move with edits and drop when touched", () => {
 test("plain text that needs no conversion is kept exactly", () => {
   const convert = () => assert.fail("nothing to convert");
   const bestLayout = () => assert.fail("nothing to judge");
-  for (const text of ["    indented code\n\n\n\nend ", "ಕನ್ನಡ  ನಾಡು\r\n\t", " "]) {
+  for (const text of ["    indented code\n\n\n\nend ", "ಕನ್ನಡ  ನಾಡು\n\t", " "]) {
     assert.deepEqual(pasted("", text, { convert, bestLayout }), { text, unknown: [], converted: 0, layouts: [] });
+  }
+});
+
+test("Windows and old Mac line endings become the editor's 1 line break, in pastes and files", async () => {
+  const convert = () => assert.fail("nothing to convert");
+  const bestLayout = () => assert.fail("nothing to judge");
+  assert.equal(pasted("", "ಒಂದು\r\nಎರಡು\rಮೂರು\n", { convert, bestLayout }).text, "ಒಂದು\nಎರಡು\nಮೂರು\n");
+  const file = new File([new TextEncoder().encode("ಒಂದು\r\nಎರಡು\r\n")], "crlf.txt");
+  const opened = await openFile(file, { convert, bestLayout, decodeWindows1252: () => assert.fail("UTF-8") });
+  assert.equal(opened.text, "ಒಂದು\nಎರಡು\n");
+});
+
+test("a .doc, a PDF or other binary is refused, never opened as text", async () => {
+  const io = { convert: () => assert.fail("no text"), bestLayout: () => assert.fail("no text"), decodeWindows1252: () => assert.fail("no text") };
+  const bytes = (...b) => new Uint8Array([...b, ...new Array(200).fill(0x41)]);
+  assert.equal(notText(bytes(0x25, 0x50, 0x44, 0x46, 0x2d)), "pdf");
+  assert.equal(notText(bytes(0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1)), "doc");
+  assert.equal(notText(bytes(0x50, 0x4b, 0x03, 0x04)), "other");
+  assert.equal(notText(new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52])), "other");
+  assert.equal(notText(new TextEncoder().encode("ಕನ್ನಡ\r\n\tline\f")), null);
+  assert.equal(notText(new Uint8Array([0xff, 0xfe, 0x95, 0x0c, 0, 0])), null, "UTF-16 has NULs and is text");
+  assert.equal(notText(new Uint8Array([0xc0, 0xe0, 0xa3, 0x20, 0x50])), null, "Windows-1252 Nudi bytes are text");
+  for (const [name, kind, head] of [["old.doc", "doc", [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]], ["scan.pdf", "pdf", [0x25, 0x50, 0x44, 0x46]]]) {
+    await assert.rejects(openFile(new File([bytes(...head)], name), io), (e) => e instanceof NotText && e.kind === kind);
+  }
+});
+
+test("HTML saved by the editor opens with every line, blank line and space as typed", async () => {
+  const { DOMParser } = await import("linkedom");
+  const saved = globalThis.DOMParser;
+  globalThis.DOMParser = DOMParser;
+  try {
+    const text = "ಮೊದಲ ಸಾಲು\n\n\nಎರಡು  ಸ್ಪೇಸ್   ಇಲ್ಲಿ\n  ಮುಂದೆ ಸ್ಪೇಸ್\n<a & b>\n";
+    const blob = await exportBlob(text, "html", "t");
+    const io = { convert: () => assert.fail("nothing to convert"), bestLayout: () => assert.fail("nothing to judge"), decodeWindows1252: () => assert.fail("UTF-8") };
+    const opened = await openFile(new File([await blob.arrayBuffer()], "t.html"), io);
+    assert.equal(opened.text, text);
+  } finally {
+    globalThis.DOMParser = saved;
   }
 });
 
@@ -503,4 +543,14 @@ test("a no-break space the browser swaps for a space is not an edit, so the next
   editor.caret = 3;
   editor.replace(2, 3, " t", "insertText");
   assert.equal(editor.text, "ಹಿ <english:t>");
+});
+
+test("every layout the converter reports has a name in both languages", async () => {
+  const { EDITOR_STRINGS } = await import("../src/i18n/editor.ts");
+  for (const lang of ["en", "kn"]) {
+    for (const id of ["nudi", "akruti", "kan-eng", "shree-lipi", "nudi-b"]) {
+      const name = EDITOR_STRINGS[lang].convert.layouts[id];
+      assert.ok(name && name !== id, `${lang} ${id}`);
+    }
+  }
 });

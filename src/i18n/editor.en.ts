@@ -123,6 +123,9 @@ export const EDITOR_EN = {
     glyphs: { one: "{n} glyph to check.", other: "{n} glyphs to check." },
     document: "Converted the document",
     selection: "Converted the selection",
+    /** Convert on text that is Unicode Kannada already. */
+    unicodeDocument: "The document is already Unicode: nothing to convert.",
+    unicodeSelection: "The selection is already Unicode: nothing to convert.",
     pasted: "Pasted",
     opened: "Opened {name}",
     sample: "Converted part of a 2002 Karnataka government page, typed in BRH Kannada.",

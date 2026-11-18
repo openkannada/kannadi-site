@@ -347,7 +347,12 @@ function transform(fn: (text: string) => string, done: EditorStrings["edit"]["no
 
 function convertSelection(): void {
   const { start, end, whole } = selectionOrAll();
-  const result = convert(editor.text.slice(start, end));
+  const text = editor.text.slice(start, end);
+  if (kannadi.isUnicode(text)) {
+    say(whole ? S.convert.unicodeDocument : S.convert.unicodeSelection);
+    return;
+  }
+  const result = convert(text);
   editor.replace(start, end, result.text);
   issues.addUnknown(result.unknown.map((o) => start + o));
   report({ ...result, converted: end - start, layouts: [result.layout] }, whole ? S.convert.document : S.convert.selection);

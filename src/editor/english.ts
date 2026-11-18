@@ -113,7 +113,8 @@ export class EnglishTyping {
   /** A word is done. Remembers a choice the user kept, and leaves its alternatives showing. */
   done(word: ComposingWord, kept: boolean): void {
     clearTimeout(this.announceTimer);
-    const shown = this.deps.text().slice(word.start, word.end);
+    // A ZWNJ that keeps a final virama from joining the next word is not part of the spelling.
+    const shown = this.deps.text().slice(word.start, word.end).replace(/\u200C$/, "");
     if (!kept || !word.latin || shown !== this.choices[this.chosen]) {
       this.hide();
       return;

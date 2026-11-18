@@ -537,3 +537,33 @@ test("letters typed over a selection start a word in its place", () => {
   editor.type("u");
   assert.equal(editor.text, "<english:nu>");
 });
+
+test("a ZWNJ stays only before a Kannada letter, in typed words and chosen suggestions", () => {
+  const table = { h: "ಹ್", hos: "ಹೊಸ್", hosa: "ಹೊಸ" };
+  const make = (text, caret) => {
+    const editor = new FakeEditor();
+    const c = new Composer(editor, (latin) => table[latin] ?? `<${latin}>`, { onComposing: () => {} });
+    editor.onEdit = (edit, after, type) => c.handle(edit, after, type);
+    c.setMode("english");
+    editor.text = text;
+    editor.caret = caret;
+    return { editor, c };
+  };
+  const spaced = make("ಕನ್ನಡ", 0);
+  spaced.editor.type("h ");
+  assert.equal(spaced.editor.text, "ಹ್ ಕನ್ನಡ", "before a typed space the ZWNJ goes");
+  const left = make("ಕನ್ನಡ", 0);
+  left.editor.type("h");
+  left.c.commit();
+  assert.equal(left.editor.text, "ಹ್‌ಕನ್ನಡ", "ended right before Kannada, it keeps its visible virama");
+  const chosen = make("ಕನ್ನಡ", 0);
+  chosen.editor.type("hosa");
+  chosen.c.respell("ಹೊಸ್");
+  assert.equal(chosen.editor.text, "ಹೊಸ್‌ಕನ್ನಡ", "a chosen suggestion that ends in a virama gets the ZWNJ too");
+  chosen.c.respell("ಹೊಸ");
+  assert.equal(chosen.editor.text, "ಹೊಸಕನ್ನಡ");
+  const moved = make("ನಮ ಕನ್ನಡ", 3);
+  moved.editor.type("h");
+  moved.editor.replace(0, 0, "XY", "insertFromPaste");
+  assert.equal(moved.editor.text, "XYನಮ ಹ್‌ಕನ್ನಡ", "a paste before the word removes nothing");
+});

@@ -39,6 +39,11 @@ const KANNADA = /[\u0C80-\u0CFF]/u;
 const VIRAMA = "\u0CCD";
 const ZWNJ = "\u200C";
 
+/** Before a Kannada letter, a final virama would join it and the browser would move the caret past both. */
+function stopJoin(kannada: string, next: string | undefined): string {
+  return kannada.endsWith(VIRAMA) && KANNADA.test(next ?? "") ? kannada + ZWNJ : kannada;
+}
+
 interface Word {
   start: number;
   latin: string;
@@ -78,6 +83,17 @@ export class Composer {
   }
 
   private finish(kept: boolean): void {
+    const w = this.word;
+    if (!w) return;
+    // A ZWNJ is meaningful only before a Kannada letter; before a space, punctuation or the end it goes.
+    const text = this.editor.text;
+    const end = this.end();
+    if (w.rendered.endsWith(ZWNJ) && text[end - 1] === ZWNJ && !KANNADA.test(text[end] ?? "")) {
+      const sel = this.editor.selection();
+      this.write(end - 1, end, "");
+      w.rendered = w.rendered.slice(0, -1);
+      if (sel) this.editor.select(sel.start >= end ? sel.start - 1 : sel.start, sel.end >= end ? sel.end - 1 : sel.end);
+    }
     const done = this.current;
     if (!done) return;
     this.word = null;
@@ -100,9 +116,10 @@ export class Composer {
   respell(kannada: string): void {
     const w = this.word;
     if (!w || !kannada) return;
-    this.write(w.start, this.end(), kannada);
-    w.rendered = kannada;
-    this.events.onComposing([w.start, w.start + kannada.length]);
+    const out = stopJoin(kannada, this.editor.text[this.end()]);
+    this.write(w.start, this.end(), out);
+    w.rendered = out;
+    this.events.onComposing([w.start, w.start + out.length]);
   }
 
   /** Puts `kannada` in place of the word being typed, and ends the word. */
@@ -115,8 +132,7 @@ export class Composer {
     const w = this.word;
     if (!w || this.mode === "kannada") return;
     const spelled = w.latin ? this.spell(w.latin, this.mode) : "";
-    // Before a Kannada letter, a final virama would join it and the browser would move the caret past both.
-    const out = spelled.endsWith(VIRAMA) && KANNADA.test(after[replaceEnd] ?? "") ? spelled + ZWNJ : spelled;
+    const out = stopJoin(spelled, after[replaceEnd]);
     this.write(w.start, replaceEnd, out);
     w.rendered = out;
     if (!out) {

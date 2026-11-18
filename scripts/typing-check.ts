@@ -75,6 +75,7 @@ const before = await typed(typing, [{ type: "namaskaara kannaDa " }]);
 expect("a word typed right before Kannada text", await typed(typing, [{ type: "namaskaara kannaDa " }, { caret: 8 }, { type: "hosa " }]), before.replace(/ /, " ಹೊಸ "));
 expect("Enter after a word typed right before Kannada text", await typed(typing, [{ type: "namaskaara kannaDa " }, { caret: 8 }, { type: "hosa" }, { key: "Enter" }]), before.replace(/ /, " ಹೊಸ\n").replace(/ $/, " "));
 expect("undo after a word typed right before Kannada text", await typed(typing, [{ type: "namaskaara kannaDa " }, { caret: 8 }, { pause: 1600 }, { type: "ho" }, { key: "Control+z" }]), before);
+expect("a word ending in a consonant, then a space, before Kannada text leaves no ZWNJ", await typed(typing, [{ type: "namaskaara kannaDa " }, { caret: 8 }, { type: "bus " }]), /^[^\u200C]+$/u);
 expect("a word typed over a selection", await typed(typing, [{ type: "abc" }, { key: "Escape" }, { selectAll: true }, { type: "nu" }]), kannadaWord);
 expect("x and q in English letters", await typed(typing, [{ type: "taxi" }]), kannadaWord);
 // A composition the page moves away from, with no compositionend, must not stop the editor converting.

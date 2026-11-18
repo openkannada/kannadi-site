@@ -1,4 +1,5 @@
-import type { Page } from "../content/pages.ts";
+import { isHome, type Page } from "../content/pages.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
 import { AUTHOR, ORG, SITE, pagePath } from "../content/site.ts";
 
 type Node = Record<string, unknown>;
@@ -14,6 +15,13 @@ export function plainText(html: string): string {
     .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+const SEGMENTER = new Intl.Segmenter("kn", { granularity: "grapheme" });
+
+/** Length as a reader sees it: a Kannada letter with its vowel sign counts once, where .length counts every code unit. */
+export function graphemes(text: string): number {
+  return [...SEGMENTER.segment(text)].length;
 }
 
 /** Resolves a site path against the site URL; relative to the site root while no URL is set. */
@@ -40,7 +48,7 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
       url,
       name: page.title,
       description: page.description,
-      inLanguage: SITE.language,
+      inLanguage: page.lang === "kn" ? "kn-IN" : SITE.language,
       isPartOf: { "@id": id("website", root) },
       mainEntity: { "@id": page.kind === "info" ? id("organization", root) : id(page.kind === "tool" ? "app" : "resource") },
       breadcrumb: { "@id": id("breadcrumb") },
@@ -64,8 +72,8 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
       "@type": "BreadcrumbList",
       "@id": id("breadcrumb"),
       itemListElement: [
-        { "@type": "ListItem", position: 1, name: home.name, item: root },
-        ...(page.slug ? [{ "@type": "ListItem", position: 2, name: page.name, item: url }] : []),
+        { "@type": "ListItem", position: 1, name: home.name, item: absolute(pagePath(home.slug), site) },
+        ...(page.slug !== home.slug ? [{ "@type": "ListItem", position: 2, name: page.name, item: url }] : []),
       ],
     },
     {
@@ -128,7 +136,7 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
     {
       "@type": "WebApplication",
       "@id": id("app"),
-      name: page.slug ? `${page.h1} by ${SITE.name}` : `${SITE.name} ${SITE.tagline}`,
+      name: isHome(page) ? SITE_STRINGS[page.lang ?? "en"].appName : `${page.h1} by ${SITE.name}`,
       url,
       description: plainText(page.intro),
       applicationCategory: "UtilitiesApplication",
@@ -137,17 +145,7 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
       inLanguage: ["kn", "en"],
       isAccessibleForFree: true,
       offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
-      featureList: [
-        "Nudi, Baraha and Akruti to Unicode",
-        "Unicode to Nudi and Baraha ANSI",
-        "Opens TXT, DOCX and HTML files",
-        "Marks unknown glyphs and malformed syllables with fixes",
-        "Kannada typing in English letters with word suggestions, Baraha and ISO 15919",
-        "Voice typing in Kannada where the browser supports it",
-        "Akshara and word counts",
-        "Saves DOCX, HTML, TXT and Nudi text",
-        "Runs offline in the browser",
-      ],
+      featureList: SITE_STRINGS[page.lang ?? "en"].features,
       author,
       isBasedOn: { "@id": id("library", root) },
     },

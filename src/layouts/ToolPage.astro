@@ -1,5 +1,6 @@
 ---
 import Editor from "../components/Editor.astro";
+import { EDITOR_STRINGS } from "../i18n/editor.ts";
 import Illustration from "../components/Illustration.astro";
 import { illustrationFor } from "../lib/illustrations.ts";
 import LetterChart from "../components/LetterChart.astro";
@@ -7,6 +8,7 @@ import WordTable from "../components/WordTable.astro";
 import Faq from "../components/Faq.astro";
 import type { ToolPage } from "../content/pages.ts";
 import { TAGLINE } from "../content/story.ts";
+import { isHome } from "../content/pages.ts";
 import { withBase } from "../lib/paths.ts";
 import Base from "./Base.astro";
 import PageTop from "../components/PageTop.astro";
@@ -23,11 +25,11 @@ const illo = illustrationFor(page);
     <PageTop page={page} />
     <h1 class="text-[length:var(--type-heading)] leading-[1.15] font-semibold tracking-[var(--type-heading-tracking)] sm:text-[length:var(--type-heading-wide)]">{page.h1}</h1>
     <p class="mt-3 max-w-[62ch] text-[1.0625rem] leading-relaxed text-muted-foreground sm:text-lg" set:html={withBase(page.intro)} />
-    {!page.slug && <p class="tagline mt-4 text-[1.0625rem] font-semibold text-primary sm:text-lg">{TAGLINE}</p>}
+    {isHome(page) && <p class="tagline mt-4 text-[1.0625rem] font-semibold text-primary sm:text-lg">{TAGLINE[page.lang ?? "en"]}</p>}
     </div>
     {illo && <Illustration {...illo} class="hero-illo" />}
   </div>
-  <Editor mode={page.mode} welcome={page.welcome} />
+  <Editor mode={page.mode} welcome={page.welcome} strings={EDITOR_STRINGS[page.lang ?? "en"]} lang={page.lang ?? "en"} />
   <div class="prose-kn mx-auto max-w-[46rem] px-4 sm:px-6">
     <section aria-labelledby="how-heading">
       <h2 id="how-heading">{page.howTitle}</h2>
@@ -37,7 +39,7 @@ const illo = illustrationFor(page);
     </section>
     {page.chart === "letters" && <LetterChart />}
     {page.chart === "words" && <WordTable />}
-    <Faq faq={page.faq} />
+    <Faq faq={page.faq} lang={page.lang ?? "en"} />
   </div>
 </Base>
 

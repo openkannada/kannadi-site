@@ -8,3 +8,4 @@ src/editor/wasm/
 dist-site/
 .wrangler/
 .deploy/
+dist-drafts

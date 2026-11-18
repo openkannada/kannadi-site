@@ -1,8 +1,23 @@
 ---
 import { PAGES } from "../content/pages.ts";
-import { AUTHOR, ORG, SITE } from "../content/site.ts";
+import { AUTHOR, ORG, SITE, pagePath } from "../content/site.ts";
+import { fmt, type Lang } from "../i18n/core.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
 import { href } from "../lib/paths.ts";
 import Logo from "./Logo.astro";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const T = SITE_STRINGS[lang].footer;
+const nav = SITE_STRINGS[lang].nav;
+const link = (url: string, text: string) => `<a href="${url}">${text}</a>`;
+const named = (f: { name: string; nameKn: string }) => (lang === "kn" ? f.nameKn : f.name);
+const founders = ORG.founders.map((f) => link(f.url, named(f))).join(T.and);
+const own = PAGES.filter((p) => (p.lang ?? "en") === lang);
+const others = lang === "en" ? [] : PAGES.filter((p) => (p.lang ?? "en") !== lang && !p.twin);
+const pageLink = "text-muted-foreground no-underline hover:text-foreground hover:underline";
 ---
 <footer class="mx-auto mt-20 w-full max-w-6xl px-4 pb-[max(2rem,calc(env(safe-area-inset-bottom)+6rem))] text-sm text-muted-foreground sm:px-6 md:pb-10">
   <div class="flex flex-col gap-6 border-t border-border pt-8 md:flex-row md:items-start md:justify-between">
@@ -11,28 +26,24 @@ import Logo from "./Logo.astro";
         <Logo mark="kannadi" class="size-9" />
         <span>{SITE.name} <span lang="kn">{SITE.nameKn}</span></span>
       </p>
-      <p>
-        Made by <a href={AUTHOR.url}>{AUTHOR.name}</a> with the open-source{" "}
-        <a href={SITE.repository}>kannadi</a> library.
-      </p>
-      <p>
-        Started by {ORG.founders.map((f, i) => (
-          <>{i > 0 && " and "}<a href={f.url}>{f.name}</a></>
-        ))}. Supported by <a href={ORG.supporter.url}>{ORG.supporter.label}</a>.
-      </p>
-      <p>
-        The licenses and names of {ORG.name} belong to the project. {ORG.supporter.label} supports it and holds none of them.{" "}
-        Text and images: CC BY 4.0. Code: MIT or Apache-2.0. <a href={href("/names-and-logos/")}>Names and logos</a>.
-      </p>
-      <p>If kannadi helps your project, a mention or a link to <a href={AUTHOR.url}>prasad.tech</a> is appreciated.</p>
-      <p>Word suggestions use a list of words counted in the articles that <a href="https://kn.wikipedia.org">Kannada Wikipedia</a> contributors write, shared under <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
+      <p set:html={fmt(T.madeBy, { author: link(AUTHOR.url, named(ORG.founders[0]!)), library: link(SITE.repository, "kannadi") })} />
+      <p set:html={fmt(T.started, { founders, supporter: link(ORG.supporter.url, ORG.supporter.label) })} />
+      <p set:html={fmt(T.owns, { org: ORG.name, supporter: ORG.supporter.label, names: link(href(pagePath(lang === "kn" ? "kn/names-and-logos" : "names-and-logos")), T.names) })} />
+      <p set:html={fmt(T.credit, { site: link(AUTHOR.url, "prasad.tech") })} />
+      <p set:html={fmt(T.words, { wikipedia: link("https://kn.wikipedia.org", T.wikipedia), license: link("https://creativecommons.org/licenses/by-sa/4.0/", "CC BY-SA 4.0") })} />
     </div>
-    <nav aria-label="All pages">
+    <nav aria-label={nav.allPages} class="space-y-4">
       <ul class="grid grid-cols-2 gap-x-8 gap-y-1.5" role="list">
-        {PAGES.map((p) => (
-          <li><a class="text-muted-foreground no-underline hover:text-foreground hover:underline" href={href(p.slug ? `/${p.slug}/` : "/")}>{p.name}</a></li>
-        ))}
+        {own.map((p) => <li><a class={pageLink} href={href(pagePath(p.slug))}>{p.name}</a></li>)}
       </ul>
+      {others.length > 0 && (
+        <>
+          <p class="font-medium text-foreground">{nav.otherLanguage}</p>
+          <ul class="grid grid-cols-2 gap-x-8 gap-y-1.5" role="list" lang="en">
+            {others.map((p) => <li><a class={pageLink} href={href(pagePath(p.slug))}>{p.name}</a></li>)}
+          </ul>
+        </>
+      )}
     </nav>
   </div>
 </footer>

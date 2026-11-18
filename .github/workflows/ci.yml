@@ -57,6 +57,10 @@ jobs:
         run: npm run typing-check
       - name: Lighthouse, mobile
         run: npx lhci autorun
+      - name: Build and check the Kannada drafts, which wait for a native reader
+        run: |
+          KANNADA_DRAFTS=1 npx astro build --outDir dist-drafts
+          KANNADA_DRAFTS=1 node scripts/seo-smoke.ts dist-drafts
       - name: Build and check with a site URL
         run: |
           SITE_URL=https://example.org/kannada/ npx astro build --outDir dist-site

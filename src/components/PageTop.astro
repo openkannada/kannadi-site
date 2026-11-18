@@ -1,5 +1,5 @@
 ---
-import type { Page } from "../content/pages.ts";
+import { isHome, type Page } from "../content/pages.ts";
 import AskAi from "./AskAi.astro";
 import Breadcrumbs from "./Breadcrumbs.astro";
 
@@ -8,7 +8,7 @@ interface Props {
 }
 const { page } = Astro.props;
 ---
-{page.slug && (
+{!isHome(page) && (
   <div class="page-top">
     <Breadcrumbs page={page} />
     <AskAi page={page} />

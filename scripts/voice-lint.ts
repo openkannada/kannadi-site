@@ -25,8 +25,8 @@ const dist = process.argv[2] ?? "dist";
 const files = readdirSync(dist, { recursive: true, withFileTypes: true })
   .filter((e) => e.isFile() && /\.(html|md|txt)$/.test(e.name) && e.name !== "OFL.txt")
   .map((e) => join(e.parentPath, e.name));
-// Messages the editor shows at run time are not in the built pages.
-const runtime = readdirSync("src/editor").filter((n) => n.endsWith(".ts")).map((n) => join("src/editor", n));
+// Messages the editor shows at run time, and the dictionaries they come from, are not all in the built pages.
+const runtime = ["src/editor", "src/i18n"].flatMap((dir) => readdirSync(dir).filter((n) => n.endsWith(".ts")).map((n) => join(dir, n)));
 
 function visibleText(path: string): string {
   const raw = readFileSync(path, "utf8");
@@ -58,4 +58,4 @@ if (problems.length) {
   console.error(problems.join("\n"));
   process.exit(1);
 }
-console.log(`Voice lint: ${files.length} built files and ${runtime.length} editor modules read clean.`);
+console.log(`Voice lint: ${files.length} built files and ${runtime.length} editor and dictionary modules read clean.`);

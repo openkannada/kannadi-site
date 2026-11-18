@@ -14,13 +14,23 @@ export function readTheme(): Theme {
   }
 }
 
+/** The button's labels in the page's language, from its data-labels JSON, or the English ones. */
+function labelsOf(button: HTMLElement): Record<Theme, string> & { change: string } {
+  try {
+    return { ...LABELS, change: "{label}. Change theme", ...JSON.parse(button.dataset.labels ?? "{}") };
+  } catch {
+    return { ...LABELS, change: "{label}. Change theme" };
+  }
+}
+
 export function applyTheme(theme: Theme, button?: HTMLElement | null): void {
   if (theme === "auto") delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme = theme;
   if (button) {
     button.dataset.theme = theme;
-    button.setAttribute("aria-label", `${LABELS[theme]}. Change theme`);
-    button.title = LABELS[theme];
+    const labels = labelsOf(button);
+    button.setAttribute("aria-label", labels.change.replace("{label}", labels[theme]));
+    button.title = labels[theme];
   }
   try {
     if (theme === "auto") localStorage.removeItem(KEY);

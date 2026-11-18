@@ -3,10 +3,10 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { HOME, PAGES } from "../src/content/pages.ts";
+import { ALL_PAGES, HOME, HOMES, PAGES, published } from "../src/content/pages.ts";
 import { pagePath, siteUrl } from "../src/content/site.ts";
 import { llmsFull, llmsIndex, markdownPath, mirror, readPage, robots, sitemap } from "../src/lib/agent-text.ts";
-import { absolute, jsonLd, plainText, scriptJson } from "../src/lib/seo.ts";
+import { absolute, graphemes, jsonLd, plainText, scriptJson } from "../src/lib/seo.ts";
 
 const types = (graph) => graph["@graph"].map((n) => n["@type"]);
 
@@ -64,8 +64,9 @@ test("page slugs and titles are unique, and descriptions fit a search result", (
   assert.equal(new Set(PAGES.map((p) => p.slug)).size, PAGES.length);
   assert.equal(new Set(PAGES.map((p) => p.title)).size, PAGES.length);
   for (const p of PAGES) {
-    assert.ok(p.description.length >= 70 && p.description.length <= 160, `${p.slug}: ${p.description.length}`);
-    assert.ok(p.title.length <= 70, `${p.slug}: ${p.title.length}`);
+    const d = graphemes(p.description);
+    assert.ok(d >= 70 && d <= 160, `${p.slug}: ${d}`);
+    assert.ok(graphemes(p.title) <= 70, `${p.slug}: ${graphemes(p.title)}`);
   }
 });
 
@@ -175,11 +176,62 @@ test("the site is named Open Kannada, and the editor and library kannadi", () =>
   assert.match(base, /<meta property="og:site_name" content=\{ORG\.name\} \/>/);
 });
 
+test("every Kannada page has an English twin that names it back, and waits for a native reader", async () => {
+  const { twinProblems, alternates } = await import("../src/lib/seo.ts");
+  const drafts = published(ALL_PAGES, true);
+  assert.deepEqual(twinProblems(drafts), []);
+  const kn = drafts.filter((p) => p.lang === "kn");
+  assert.deepEqual(kn.map((p) => p.slug), ["kn", "kn/about", "kn/press", "kn/names-and-logos"]);
+  for (const p of drafts.filter((p) => p.needsReview)) assert.equal(p.lang, "kn", `only Kannada drafts wait for a review: ${p.slug}`);
+  const links = alternates(drafts.find((p) => p.slug === "about"), drafts, siteUrl("https://example.org/"));
+  assert.deepEqual(links, [
+    { hreflang: "en", href: "https://example.org/about/" },
+    { hreflang: "kn", href: "https://example.org/kn/about/" },
+    { hreflang: "x-default", href: "https://example.org/about/" },
+  ]);
+  assert.equal(graphemes("ಕನ್ನಡ"), 4, "ಕ ನ್ ನ ಡ: a virama ends a cluster in Kannada");
+});
+
+test("Lighthouse checks only pages that are built", () => {
+  const urls = JSON.parse(readFileSync(new URL("../lighthouserc.json", import.meta.url), "utf8")).ci.collect.url;
+  const built = new Set(PAGES.map((p) => (p.slug ? `/${p.slug}/` : "/")));
+  for (const u of urls) assert.ok(built.has(u), `${u} is not built`);
+});
+
+test("pages that wait for a native reader stay out of the build, and so do links to them", async () => {
+  const { twinProblems, alternates } = await import("../src/lib/seo.ts");
+  const drafted = ALL_PAGES.map((p) => (p.lang === "kn" ? { ...p, needsReview: true } : p));
+  const built = published(drafted, false);
+  assert.ok(!built.some((p) => p.lang === "kn"), "drafts are left out");
+  assert.deepEqual(twinProblems(built), []);
+  const about = built.find((p) => p.slug === "about");
+  assert.equal(about.twin, undefined, "a link to a draft is left out too");
+  assert.deepEqual(alternates(about, built, siteUrl("https://example.org/")), []);
+  assert.equal(published(drafted, true).find((p) => p.slug === "about").twin, "kn/about", "KANNADA_DRAFTS keeps them");
+});
+
+test("the Kannada pages are published, with their twins", () => {
+  assert.deepEqual(PAGES.filter((p) => p.needsReview), []);
+  assert.deepEqual(PAGES.filter((p) => p.lang === "kn").map((p) => p.slug), ["kn", "kn/about", "kn/press", "kn/names-and-logos"]);
+  assert.equal(PAGES.find((p) => p.slug === "about").twin, "kn/about");
+});
+
+test("a Kannada page's structured data is in Kannada and its trail starts at the Kannada home", () => {
+  const page = ALL_PAGES.find((p) => p.slug === "kn/about");
+  const graph = jsonLd(page, siteUrl("https://example.org/"), HOMES.kn)["@graph"];
+  assert.equal(graph.find((n) => n["@type"] === "WebPage").inLanguage, "kn-IN");
+  const crumbs = graph.find((n) => n["@type"] === "BreadcrumbList").itemListElement;
+  assert.deepEqual(crumbs.map((c) => c.item), ["https://example.org/kn/", "https://example.org/kn/about/"]);
+  const home = jsonLd(HOMES.kn, siteUrl("https://example.org/"), HOMES.kn)["@graph"].find((n) => n["@type"] === "BreadcrumbList");
+  assert.equal(home.itemListElement.length, 1);
+});
+
 test("the people of Open Kannada carry a role label, and no page text ranks them as founders", async () => {
   const { ABOUT } = await import("../src/content/about.ts");
-  assert.deepEqual(ABOUT.people.map((p) => p.role), ["Founding member", "Founding member"]);
-  for (const p of ABOUT.people) assert.deepEqual(Object.keys(p).sort(), ["name", "role", "site", "url"]);
-  const shown = [JSON.stringify(ABOUT), readFileSync(new URL("../src/components/SiteFooter.astro", import.meta.url), "utf8")].join("\n");
+  const { SITE_STRINGS } = await import("../src/i18n/site.ts");
+  assert.deepEqual(ABOUT.en.people.map((p) => p.role), ["Founding member", "Founding member"]);
+  for (const p of [...ABOUT.en.people, ...ABOUT.kn.people]) assert.deepEqual(Object.keys(p).sort(), ["name", "role", "site", "url"]);
+  const shown = [JSON.stringify(ABOUT.en), JSON.stringify(SITE_STRINGS.en)].join("\n");
   assert.doesNotMatch(shown.replace(/founders@luminik\.io/g, ""), /co-founder|\bfounded\b|>Founders</i);
 });
 
@@ -190,7 +242,34 @@ test("the code is MIT OR Apache-2.0 from The Open Kannada Authors, and every pag
   assert.match(read("LICENSE-APACHE"), /Apache License\s+Version 2\.0/);
   assert.match(read("REUSE.toml"), /path = "data\/words\.tsv"[\s\S]*?SPDX-License-Identifier = "CC-BY-SA-4\.0"/);
   const footer = read("src/components/SiteFooter.astro");
-  assert.match(footer, /belong to the project\. \{ORG\.supporter\.label\} supports it and holds none of them\./);
-  assert.match(footer, /href=\{href\("\/names-and-logos\/"\)\}/);
+  assert.match(read("src/i18n/site.en.ts"), /belong to the project\. \{supporter\} supports it and holds none of them\./);
+  assert.match(footer, /fmt\(T\.owns,[^\n]*names-and-logos/);
   assert.ok(PAGES.some((p) => p.slug === "names-and-logos"));
+});
+
+test("each Kannada dictionary has every key and every {slot} of its English twin", async () => {
+  const { EDITOR_STRINGS } = await import("../src/i18n/editor.ts");
+  const { SITE_STRINGS } = await import("../src/i18n/site.ts");
+  const slots = (v) => [...String(v).matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(",");
+  const walk = (en, kn, path) => {
+    if (typeof en === "string") return assert.equal(slots(kn), slots(en), path);
+    if (Array.isArray(en)) return assert.equal(kn.length, en.length, path);
+    for (const key of Object.keys(en)) {
+      assert.ok(Object.hasOwn(kn, key), `${path}.${key} is missing in Kannada`);
+      walk(en[key], kn[key], `${path}.${key}`);
+    }
+  };
+  walk(EDITOR_STRINGS.en, EDITOR_STRINGS.kn, "editor");
+  walk(SITE_STRINGS.en, SITE_STRINGS.kn, "site");
+});
+
+test("the editor reads its words from the page, and falls back to English on bad or missing data", async () => {
+  const { parseHTML } = await import("linkedom");
+  const { pageStrings } = await import("../src/editor/strings.ts");
+  const { EDITOR_STRINGS } = await import("../src/i18n/editor.ts");
+  const page = (attr) => parseHTML(`<html><body><section class="editor"${attr}></section></body></html>`).document;
+  const kn = JSON.stringify(EDITOR_STRINGS.kn).replace(/'/g, "&#39;");
+  assert.equal(pageStrings(page(` data-ui-strings='${kn}'`)).toolbar.save, "ಉಳಿಸು");
+  assert.equal(pageStrings(page(" data-ui-strings='{not json'")), EDITOR_STRINGS.en);
+  assert.equal(pageStrings(page("")), EDITOR_STRINGS.en);
 });

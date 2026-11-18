@@ -10,7 +10,7 @@ const { server, port } = serve(dist);
 const browser = await puppeteer.launch({ executablePath: chrome(), headless: true, args: ["--no-sandbox"] });
 
 /** A key to press, letters to type, or a phone keyboard's composition: its text so far, or the text it commits. */
-type Step = { key: string } | { type: string } | { compose: string; from?: number; to?: number } | { commit: string } | { caret: number } | { selectAll: true };
+type Step = { key: string } | { type: string } | { compose: string; from?: number; to?: number } | { commit: string } | { caret: number } | { selectAll: true } | { pause: number };
 const composed = (word: string): Step[] => [...word].map((_, i) => ({ compose: word.slice(0, i + 1) }));
 
 async function typed(path: string, steps: Step[], mode?: string): Promise<string> {
@@ -23,8 +23,14 @@ async function typed(path: string, steps: Step[], mode?: string): Promise<string
     if (mode) await page.evaluate((m) => (document.getElementById(`mode-${m}`) as HTMLInputElement).click(), mode);
     await page.click("#doc");
     for (const step of steps) {
-      if ("key" in step) await page.keyboard.press(step.key as never);
+      if ("key" in step) {
+        const keys = step.key.split("+");
+        for (const k of keys.slice(0, -1)) await page.keyboard.down(k as never);
+        await page.keyboard.press(keys.at(-1) as never);
+        for (const k of keys.slice(0, -1).reverse()) await page.keyboard.up(k as never);
+      }
       else if ("type" in step) await page.keyboard.type(step.type, { delay: 20 });
+      else if ("pause" in step) await new Promise((r) => setTimeout(r, step.pause));
       else if ("compose" in step) {
         const replace = step.from === undefined || step.to === undefined ? {} : { replacementStart: step.from, replacementEnd: step.to };
         await cdp.send("Input.imeSetComposition", { text: step.compose, selectionStart: step.compose.length, selectionEnd: step.compose.length, ...replace });
@@ -67,6 +73,8 @@ expect("a word typed after a space typed at the end", await typed(typing, [{ typ
 // "ನಮಸ್ಕಾರ " is 8 code units, so the caret goes right before ಕನ್ನಡ.
 const before = await typed(typing, [{ type: "namaskaara kannaDa " }]);
 expect("a word typed right before Kannada text", await typed(typing, [{ type: "namaskaara kannaDa " }, { caret: 8 }, { type: "hosa " }]), before.replace(/ /, " ಹೊಸ "));
+expect("Enter after a word typed right before Kannada text", await typed(typing, [{ type: "namaskaara kannaDa " }, { caret: 8 }, { type: "hosa" }, { key: "Enter" }]), before.replace(/ /, " ಹೊಸ\n").replace(/ $/, " "));
+expect("undo after a word typed right before Kannada text", await typed(typing, [{ type: "namaskaara kannaDa " }, { caret: 8 }, { pause: 1600 }, { type: "ho" }, { key: "Control+z" }]), before);
 expect("a word typed over a selection", await typed(typing, [{ type: "abc" }, { key: "Escape" }, { selectAll: true }, { type: "nu" }]), kannadaWord);
 expect("x and q in English letters", await typed(typing, [{ type: "taxi" }]), kannadaWord);
 // A composition the page moves away from, with no compositionend, must not stop the editor converting.

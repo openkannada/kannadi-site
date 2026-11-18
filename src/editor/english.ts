@@ -85,8 +85,7 @@ export class EnglishTyping {
     return this.loading;
   }
 
-  /** Baraha spelling of loosely typed letters, where capitals carry no meaning. */
-  /** The literal spelling; English x and q have no Baraha letter, so they are read as ks and k. */
+  /** The literal spelling, where capitals carry no meaning; English x and q have no Baraha letter, so they read as ks and k. */
   private strict(latin: string): string {
     return this.deps.kannadi.transliterate(latin.toLowerCase().replace(/x/g, "ks").replace(/q/g, "k"));
   }

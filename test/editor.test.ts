@@ -505,26 +505,29 @@ test("a no-break space the browser swaps for a space is not an edit, so the next
   assert.equal(editor.text, "ಹಿ <english:t>");
 });
 
-test("a word typed right before Kannada text keeps a space from it while typed, and leaves 1 space or none", () => {
-  const typed = (finish) => {
-    const { editor, c } = marked("english");
-    editor.text = "ನಮಸ್ಕಾರ ಕನ್ನಡ";
-    editor.caret = 8;
-    editor.type("ho");
-    assert.equal(editor.text, "ನಮಸ್ಕಾರ <english:ho> ಕನ್ನಡ", "a space keeps the rendering from joining ಕ");
-    assert.equal(editor.caret, 8 + "<english:ho>".length, "the caret stays before the space");
-    editor.type("sa");
-    finish(editor, c);
-    return editor.text;
-  };
-  assert.equal(typed((e) => e.type(" ")), "ನಮಸ್ಕಾರ <english:hosa> ಕನ್ನಡ", "the typed space takes its place");
-  assert.equal(typed((e, c) => c.commit()), "ನಮಸ್ಕಾರ <english:hosa>ಕನ್ನಡ", "ended another way, the word joins as typed");
-  assert.equal(typed((e, c) => c.revert()), "ನಮಸ್ಕಾರ hosaಕನ್ನಡ");
-  const plain = marked("english");
-  plain.editor.text = "ab";
-  plain.editor.caret = 2;
-  plain.editor.type("ho");
-  assert.equal(plain.editor.text, "ab<english:ho>", "no space before anything that is not Kannada");
+test("a word typed right before Kannada text ends in a ZWNJ while its rendering ends in a virama, and in nothing after", () => {
+  const editor = new FakeEditor();
+  const table = { h: "ಹ್", ho: "ಹೊ", hos: "ಹೊಸ್", hosa: "ಹೊಸ" };
+  const c = new Composer(editor, (latin) => table[latin] ?? `<${latin}>`, { onComposing: () => {} });
+  editor.onEdit = (edit, after, type) => c.handle(edit, after, type);
+  c.setMode("english");
+  editor.text = "ನಮಸ್ಕಾರ ಕನ್ನಡ";
+  editor.caret = 8;
+  editor.type("h");
+  assert.equal(editor.text, "ನಮಸ್ಕಾರ ಹ್\u200Cಕನ್ನಡ", "the virama cannot join ಕ");
+  assert.equal(editor.caret, 11, "the caret is after the ZWNJ, at the word's end");
+  editor.type("o");
+  assert.equal(editor.text, "ನಮಸ್ಕಾರ ಹೊಕನ್ನಡ", "a vowel ends the word, so nothing is added");
+  editor.type("s");
+  assert.equal(editor.text, "ನಮಸ್ಕಾರ ಹೊಸ್\u200Cಕನ್ನಡ");
+  editor.type("a ");
+  assert.equal(editor.text, "ನಮಸ್ಕಾರ ಹೊಸ ಕನ್ನಡ");
+  const end = new FakeEditor();
+  const e = new Composer(end, (latin) => table[latin] ?? `<${latin}>`, { onComposing: () => {} });
+  end.onEdit = (edit, after, type) => e.handle(edit, after, type);
+  e.setMode("english");
+  end.type("h");
+  assert.equal(end.text, "ಹ್", "at the end of the text nothing follows, so no ZWNJ");
 });
 
 test("letters typed over a selection start a word in its place", () => {

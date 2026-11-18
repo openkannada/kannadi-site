@@ -6,7 +6,7 @@ const BRAND_EN = {
     {
       heading: "What you may do",
       items: [
-        "Use, change and share our code and data under their licenses, in free or paid work, and the Noto fonts we ship under the SIL Open Font License.",
+        "Use, change and share our code and data under their licenses, in free or paid work, and the fonts we ship under the SIL Open Font License.",
         "Say that your work is built with kannadi or uses Open Kannada data, and link to us.",
         "Use our logos, unchanged, to refer to the project in articles, talks, lists and slides. The files are in the <a href=\"/press/\">press kit</a>.",
       ],
@@ -42,7 +42,7 @@ const BRAND_KN: Brand = {
     {
       heading: "ನೀವು ಏನು ಮಾಡಬಹುದು",
       items: [
-        "ನಮ್ಮ ಕೋಡ್ ಮತ್ತು ಡೇಟಾವನ್ನು ಅವುಗಳ ಲೈಸೆನ್ಸ್‌ಗಳ ಅಡಿಯಲ್ಲಿ, ಉಚಿತ ಅಥವಾ ಹಣ ಪಡೆಯುವ ಕೆಲಸದಲ್ಲಿ ಬಳಸಿ, ಬದಲಿಸಿ, ಹಂಚಿಕೊಳ್ಳಿ. ನಾವು ಬಳಸುವ Noto ಫಾಂಟ್‌ಗಳನ್ನು SIL Open Font License ಅಡಿಯಲ್ಲಿ ಬಳಸಿ.",
+        "ನಮ್ಮ ಕೋಡ್ ಮತ್ತು ಡೇಟಾವನ್ನು ಅವುಗಳ ಲೈಸೆನ್ಸ್‌ಗಳ ಅಡಿಯಲ್ಲಿ, ಉಚಿತ ಅಥವಾ ಹಣ ಪಡೆಯುವ ಕೆಲಸದಲ್ಲಿ ಬಳಸಿ, ಬದಲಿಸಿ, ಹಂಚಿಕೊಳ್ಳಿ. ನಾವು ಬಳಸುವ ಫಾಂಟ್‌ಗಳನ್ನು SIL Open Font License ಅಡಿಯಲ್ಲಿ ಬಳಸಿ.",
         "ನಿಮ್ಮ ಕೆಲಸ ಕನ್ನಡಿಯಿಂದ ಮಾಡಿದ್ದು ಅಥವಾ ಓಪನ್ ಕನ್ನಡದ ಡೇಟಾ ಬಳಸುತ್ತದೆ ಎಂದು ಹೇಳಿ, ನಮಗೆ ಲಿಂಕ್ ಕೊಡಿ.",
         "ಲೇಖನಗಳು, ಭಾಷಣಗಳು, ಪಟ್ಟಿಗಳು ಮತ್ತು ಸ್ಲೈಡ್‌ಗಳಲ್ಲಿ ಈ ಯೋಜನೆಯನ್ನು ಉಲ್ಲೇಖಿಸಲು ನಮ್ಮ ಲೋಗೊಗಳನ್ನು ಬದಲಿಸದೆ ಬಳಸಿ. ಫೈಲ್‌ಗಳು <a href=\"/kn/press/\">ಪತ್ರಿಕಾ ಕಿಟ್</a> ನಲ್ಲಿವೆ.",
       ],

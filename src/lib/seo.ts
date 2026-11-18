@@ -166,10 +166,11 @@ function mainNodes(page: Page, url: string, id: (name: string, base?: string) =>
   ];
 }
 
-/** A project page's subject: a dataset of measured results, or a work still to be released, with its licenses. */
+/** A project page's subject: a dataset of measured results, or a work with its licenses and any released downloads. */
 function project(page: ProjectPage, url: string, id: (name: string, base?: string) => string, author: Node, root: string): Node {
   const text = (p: ProjectPage["sections"][number]) => [...(p.paragraphs ?? []), ...(p.items ?? [])].map(plainText).join(" ");
   const method = page.sections.find((p) => p.id === "method");
+  const license = page.licenses.length === 1 ? page.licenses[0] : page.licenses;
   return {
     "@type": page.schema,
     "@id": id("project"),
@@ -177,11 +178,24 @@ function project(page: ProjectPage, url: string, id: (name: string, base?: strin
     url,
     description: plainText(page.intro),
     inLanguage: page.lang === "kn" ? "kn-IN" : SITE.language,
-    license: page.licenses.length === 1 ? page.licenses[0] : page.licenses,
+    license,
     isAccessibleForFree: true,
     creator: { "@type": "Organization", "@id": id("organization", root), name: ORG.name, url: root },
     author,
     ...(page.schema === "Dataset" && method ? { measurementTechnique: text(method) } : {}),
+    ...(page.releases?.length
+      ? {
+          hasPart: page.releases.map((r) => ({
+            "@type": "CreativeWork",
+            name: r.name,
+            version: r.version,
+            url: r.page,
+            license,
+            isAccessibleForFree: true,
+            encoding: { "@type": "MediaObject", contentUrl: r.zip, encodingFormat: "application/zip" },
+          })),
+        }
+      : {}),
   };
 }
 

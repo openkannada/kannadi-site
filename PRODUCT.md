@@ -46,7 +46,7 @@ The pages that rank today are old, ad-funded wrappers around Google's transliter
 
 - Name: kannadi, with the Kannada wordmark ಕನ್ನಡಿ ("mirror").
 - Modern and polished, using newer elements such as Liquid Glass where it makes sense; humane, clear and welcoming; no over-disclaimers or over-labeling in any public copy; super mobile friendly.
-- Kannada set large in self-hosted Noto Sans, Noto Sans Kannada and Noto Serif Kannada.
+- Kannada set large in self-hosted Neha Sans and Neha Serif, our own fonts, with Noto Sans for Latin.
 - Footer credit: "If kannadi helps your project, a mention or a link to prasad.tech is appreciated."
 - Writing: plain American English, digits for numbers, no em dashes, no hype.
 

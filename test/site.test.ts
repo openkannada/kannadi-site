@@ -73,7 +73,7 @@ test("project pages say what each tool does, its license and where to get it, wi
   assert.deepEqual(projects.map((p) => p.slug), ["fonts", "spell-check", "dictionary", "ocr", "ai-benchmark"]);
   for (const p of projects) {
     const ids = p.sections.map((s) => s.id);
-    for (const want of ["what", "downloads", "license"]) assert.ok(ids.includes(want), `${p.slug} lacks ${want}`);
+    for (const want of [p.slug === "fonts" ? "based" : "what", "downloads", "license"]) assert.ok(ids.includes(want), `${p.slug} lacks ${want}`);
     assert.ok(p.licenses.length, p.slug);
   }
   const text = (slug) => JSON.stringify(PAGES.find((p) => p.slug === slug));
@@ -85,7 +85,7 @@ test("project pages say what each tool does, its license and where to get it, wi
     "MILE lines from IISc, 600: 2.8%, against 3.8%.",
   ], "the v0.2 results as released, and no other");
   assert.doesNotMatch(text("ocr"), /dots/i);
-  for (const slug of ["fonts", "dictionary"]) assert.doesNotMatch(text(slug).replace(/U\+0C[0-9A-F]{2}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 /g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
+  for (const slug of ["fonts", "dictionary"]) assert.doesNotMatch(text(slug).replace(/U\+0C[0-9A-F]{2}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 |\d\.\d{3}|SHA-256|Article 1\b/g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
   const bench = PAGES.find((p) => p.slug === "ai-benchmark");
   const rows = bench.sections.find((s) => s.id === "result").table.rows;
   assert.deepEqual(rows.map((r) => [r.name, r.ratio, r.low, r.high]), [

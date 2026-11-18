@@ -66,6 +66,9 @@ export const SITE_KN: SiteStrings = {
   },
   project: {
     what: "ಇದು ಏನು ಮಾಡುತ್ತದೆ",
+    specimen: "ಮಾದರಿ",
+    based: "ಆಧಾರ",
+    fixed: "ನಾವು ಸರಿಪಡಿಸಿದ್ದು",
     result: "ಫಲಿತಾಂಶ",
     method: "ಅಳೆದ ವಿಧಾನ",
     limits: "ಮಿತಿಗಳು",

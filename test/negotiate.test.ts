@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { canonicalRedirect, handle } from "../src/lib/edge.ts";
+import { canonicalRedirect, handle, movedTo, REDIRECTS } from "../src/lib/edge.ts";
 import { markdownPathFor, prefersMarkdown } from "../src/lib/negotiate.ts";
 
 test("markdown is served only to clients that ask for it over HTML", () => {
@@ -78,4 +78,24 @@ test("the site is not launched yet, and the Worker serves it that way", async ()
   assert.equal(res.headers.get("x-robots-tag"), "noindex");
   const moved = await worker.fetch(new Request("https://www.openkannada.org/a/?q=1"), { ASSETS: assets });
   assert.equal(moved.headers.get("location"), "https://openkannada.org/a/?q=1");
+});
+
+test("moved pages answer 301 to their new path, with the query kept, before launch too", async () => {
+  assert.deepEqual(REDIRECTS, { "/names-and-logos/": "/brand/", "/kn/names-and-logos/": "/kn/brand/" });
+  for (const [from, to] of [
+    ["https://openkannada.org/names-and-logos/", "/brand/"],
+    ["https://openkannada.org/names-and-logos/?utm_source=x&a=1", "/brand/?utm_source=x&a=1"],
+    ["https://openkannada.org/names-and-logos", "/brand/"],
+    ["https://openkannada.org/names-and-logos/index.md", "/brand/index.md"],
+    ["https://openkannada.org/kn/names-and-logos/?q=1", "/kn/brand/?q=1"],
+  ]) {
+    const r = await get(from, {}, { host: "openkannada.org", launched: false });
+    assert.equal(r.status, 301, from);
+    assert.equal(r.headers.get("location"), to, from);
+    assert.equal(r.headers.get("x-robots-tag"), "noindex", from);
+  }
+  assert.equal(movedTo(new URL("https://openkannada.org/brand/")), null);
+  assert.equal(movedTo(new URL("https://openkannada.org/names-and-logos-old/")), null, "only the path itself and what is under it");
+  const other = await get("https://www.openkannada.org/names-and-logos/?q=1");
+  assert.equal(other.headers.get("location"), "https://openkannada.org/names-and-logos/?q=1", "the host is fixed first, then the path");
 });

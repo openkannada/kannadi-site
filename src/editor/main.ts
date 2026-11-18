@@ -4,6 +4,7 @@ import wordsUrl from "../../data/words.tsv?url";
 import { Composer } from "./compose.ts";
 import { DocEditor } from "./editor.ts";
 import type { ExportFormat } from "./files.ts";
+import { doneWith, sessionStore, takeText } from "../lib/handoff.ts";
 import { registerWhenIdle, resolveModelContext } from "../lib/model-context.ts";
 import { Issues } from "./issues.ts";
 import * as kannadi from "./kannadi.ts";
@@ -465,36 +466,56 @@ function wireVoice(): void {
   });
 }
 
+/** Inserts pasted text at the selection, converting legacy font text, with a way to keep it as it was. */
+function paste(html: string, plain: string): Promise<void> {
+  if (!settings.autoConvert) {
+    insert({ text: plain, unknown: [] });
+    return Promise.resolve();
+  }
+  return files().then(({ pasted }) => {
+    const result = pasted(html, plain, io);
+    const start = insert(result, S.convert.pasted);
+    if (!result.converted) return;
+    say(ui.toastText.textContent ?? "", {
+      label: S.paste.asIs,
+      run: () => {
+        if (editor.text.slice(start, start + result.text.length) !== result.text) {
+          say(S.paste.changed);
+          return;
+        }
+        editor.replace(start, start + result.text.length, plain);
+        say(S.paste.pastedAsIs);
+      },
+    });
+  }, () => {
+    insert({ text: plain, unknown: [] });
+    say(S.paste.noConverter);
+  });
+}
+
+/** Text brought from the home page goes in as a paste, after anything already in the document. */
+function receive(): void {
+  const store = sessionStore();
+  const handed = takeText(store);
+  if (!handed) return;
+  const end = editor.text.length;
+  if (end) editor.replace(end, end, "\n\n", "insertText");
+  editor.select(editor.text.length);
+  // The document is saved before the handed text is removed, so a reload in between loses nothing.
+  void paste(handed.html, handed.text)
+    .catch(() => insert({ text: handed.text, unknown: [] }))
+    .finally(() => {
+      save();
+      doneWith(store);
+    });
+}
+
 function wire(): void {
   wireVoice();
   ui.doc.addEventListener("beforeinput", (e) => composer.beforeInput(e));
   ui.doc.addEventListener("paste", (e) => {
     e.preventDefault();
-    const html = e.clipboardData?.getData("text/html") ?? "";
-    const plain = e.clipboardData?.getData("text/plain") ?? "";
-    if (!settings.autoConvert) {
-      insert({ text: plain, unknown: [] });
-      return;
-    }
-    void files().then(({ pasted }) => {
-      const result = pasted(html, plain, io);
-      const start = insert(result, S.convert.pasted);
-      if (!result.converted) return;
-      say(ui.toastText.textContent ?? "", {
-        label: S.paste.asIs,
-        run: () => {
-          if (editor.text.slice(start, start + result.text.length) !== result.text) {
-            say(S.paste.changed);
-            return;
-          }
-          editor.replace(start, start + result.text.length, plain);
-          say(S.paste.pastedAsIs);
-        },
-      });
-    }, () => {
-      insert({ text: plain, unknown: [] });
-      say(S.paste.noConverter);
-    });
+    void paste(e.clipboardData?.getData("text/html") ?? "", e.clipboardData?.getData("text/plain") ?? "");
   });
   ui.doc.addEventListener("click", () => {
     const sel = editor.selection();
@@ -658,6 +679,7 @@ function restore(): void {
 
 wire();
 restore();
+receive();
 document.documentElement.classList.add("ready");
 const modelContext = resolveModelContext(document, navigator);
 if (modelContext) {

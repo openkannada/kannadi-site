@@ -1,5 +1,5 @@
 ---
-import { PAGES } from "../content/pages.ts";
+import { NAV, inLanguage, type Page } from "../content/pages.ts";
 import { AUTHOR, ORG, SITE, pagePath } from "../content/site.ts";
 import { fmt, type Lang } from "../i18n/core.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
@@ -15,35 +15,52 @@ const nav = SITE_STRINGS[lang].nav;
 const link = (url: string, text: string) => `<a href="${url}">${text}</a>`;
 const named = (f: { name: string; nameKn: string }) => (lang === "kn" ? f.nameKn : f.name);
 const founders = ORG.founders.map((f) => link(f.url, named(f))).join(T.and);
-const own = PAGES.filter((p) => (p.lang ?? "en") === lang);
-const others = lang === "en" ? [] : PAGES.filter((p) => (p.lang ?? "en") !== lang && !p.twin);
+const pages = (slugs: readonly string[]) => slugs.map((s) => inLanguage(s, lang)).filter((p): p is Page => !!p);
+const groups = [
+  { label: nav.tools, pages: pages(NAV.tools) },
+  { label: nav.converters, pages: pages(NAV.converters) },
+  { label: nav.typing, pages: pages(NAV.typing) },
+  { label: nav.org, pages: pages(NAV.org) },
+];
+const brand = inLanguage("brand", lang);
+const otherLang = (p: Page) => ((p.lang ?? "en") === lang ? undefined : (p.lang ?? "en"));
 const pageLink = "text-muted-foreground no-underline hover:text-foreground hover:underline";
 ---
 <footer class="mx-auto mt-20 w-full max-w-6xl px-4 pb-[max(2rem,calc(env(safe-area-inset-bottom)+6rem))] text-sm text-muted-foreground sm:px-6 md:pb-10">
-  <div class="flex flex-col gap-6 border-t border-border pt-8 md:flex-row md:items-start md:justify-between">
-    <div class="max-w-md space-y-2">
+  <div class="grid gap-8 border-t border-border pt-8 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-12">
+    <div class="space-y-2">
       <p class="flex items-center gap-2.5 font-medium text-foreground">
         <Logo mark="kannadi" class="size-9" />
         <span>{SITE.name} <span lang="kn">{SITE.nameKn}</span></span>
       </p>
       <p set:html={fmt(T.madeBy, { author: link(AUTHOR.url, named(ORG.founders[0]!)), library: link(SITE.repository, "kannadi") })} />
       <p set:html={fmt(T.started, { founders, supporter: link(ORG.supporter.url, ORG.supporter.label) })} />
-      <p set:html={fmt(T.owns, { org: ORG.name, supporter: ORG.supporter.label, names: link(href(pagePath(lang === "kn" ? "kn/names-and-logos" : "names-and-logos")), T.names) })} />
+      <p set:html={fmt(T.owns, { org: ORG.name, supporter: ORG.supporter.label, names: link(href(pagePath(brand?.slug ?? "brand")), T.names) })} />
       <p set:html={fmt(T.credit, { site: link(AUTHOR.url, "prasad.tech") })} />
       <p set:html={fmt(T.words, { wikipedia: link("https://kn.wikipedia.org", T.wikipedia), license: link("https://creativecommons.org/licenses/by-sa/4.0/", "CC BY-SA 4.0") })} />
     </div>
-    <nav aria-label={nav.allPages} class="space-y-4">
-      <ul class="grid grid-cols-2 gap-x-8 gap-y-1.5" role="list">
-        {own.map((p) => <li><a class={pageLink} href={href(pagePath(p.slug))}>{p.name}</a></li>)}
-      </ul>
-      {others.length > 0 && (
-        <>
-          <p class="font-medium text-foreground">{nav.otherLanguage}</p>
-          <ul class="grid grid-cols-2 gap-x-8 gap-y-1.5" role="list" lang="en">
-            {others.map((p) => <li><a class={pageLink} href={href(pagePath(p.slug))}>{p.name}</a></li>)}
+    <nav aria-label={nav.allPages} class="footer-nav">
+      {groups.map((g) => (
+        <div>
+          <p class="mb-2 font-medium text-foreground">{g.label}</p>
+          <ul class="grid gap-1.5" role="list">
+            {g.pages.map((p) => <li><a class={pageLink} href={href(pagePath(p.slug))} lang={otherLang(p)}>{p.name}</a></li>)}
           </ul>
-        </>
-      )}
+        </div>
+      ))}
     </nav>
   </div>
 </footer>
+
+<style>
+  .footer-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem 2rem;
+  }
+  @media (min-width: 48rem) {
+    .footer-nav {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

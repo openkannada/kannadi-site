@@ -1,0 +1,16 @@
+---
+import { CONTRIBUTE } from "../content/contribute.ts";
+import type { Lang } from "../i18n/core.ts";
+import { withBase } from "../lib/paths.ts";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+---
+{CONTRIBUTE[lang].sections.map((s) => (
+  <section>
+    <h2>{s.heading}</h2>
+    {s.paragraphs.map((p) => <p set:html={withBase(p)} />)}
+  </section>
+))}

@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 
 import type { AstroIntegration } from "astro";
 
-import { SITE } from "../content/site.ts";
+import { ORG, SITE } from "../content/site.ts";
 import { contentHash, HASH_FILE, lastmodOf, type PageHashes } from "../lib/freshness.ts";
 import {
   type BuiltPage,
@@ -59,9 +59,9 @@ export function agentFiles(): AstroIntegration {
         }
         pages.sort((a, b) => (a.path === "/" ? -1 : b.path === "/" ? 1 : a.path.localeCompare(b.path)));
         const info = {
-          name: `${SITE.name} (${SITE.nameKn}): ${SITE.tagline}`,
+          name: ORG.name,
           summary:
-            "A free Kannada editor in the browser. It converts text typed in the Nudi, Baraha and Akruti fonts to Unicode, types Kannada from English letters, marks what could not be converted, and saves Word, web, text and Nudi files. It runs on the visitor's device with the open-source kannadi library compiled to WebAssembly.",
+            "Free, open-source tools so that Kannada works properly on computers. The first is kannadi, a Kannada editor in the browser at /editor/: it converts text typed in the Nudi, Baraha and Akruti fonts to Unicode, types Kannada from English letters, marks what could not be converted, and saves Word, web, text and Nudi files. It runs on the visitor's device with the open-source kannadi library compiled to WebAssembly. Fonts, spell check, a dictionary and OCR are coming soon, and the AI benchmark page has measured results.",
           details: [
             `Source of the library: ${SITE.repository} (Rust, MIT OR Apache-2.0).`,
             "Every page is also served as markdown at the same path plus index.md, and on requests that accept text/markdown.",

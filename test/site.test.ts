@@ -1,9 +1,9 @@
 // Tests for the site's structured data and agent files: npm test
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { ALL_PAGES, HOME, HOMES, PAGES, published } from "../src/content/pages.ts";
+import { ALL_PAGES, EDITOR, HOME, HOMES, NAV, PAGES, inLanguage, isHome, published } from "../src/content/pages.ts";
 import { pagePath, siteUrl } from "../src/content/site.ts";
 import { llmsFull, llmsIndex, markdownPath, mirror, readPage, robots, sitemap } from "../src/lib/agent-text.ts";
 import { absolute, graphemes, jsonLd, plainText, scriptJson } from "../src/lib/seo.ts";
@@ -11,17 +11,96 @@ import { absolute, graphemes, jsonLd, plainText, scriptJson } from "../src/lib/s
 const types = (graph) => graph["@graph"].map((n) => n["@type"]);
 
 test("every page has the structured data the strategy asks for", () => {
-  for (const page of PAGES) {
+  for (const page of published(ALL_PAGES, true)) {
     const t = types(jsonLd(page, null, HOME));
-    const main = { tool: ["WebApplication", "HowTo"], reference: ["LearningResource"], info: ["Organization"] }[page.kind];
-    const faq = page.kind !== "info" || page.faq.length ? ["FAQPage"] : [];
-    if (page.kind !== "info") assert.ok(page.faq.length, `${page.slug || "home"} has no FAQ`);
+    const main = { tool: ["WebApplication", "HowTo"], reference: ["LearningResource"], info: ["Organization"], home: ["Organization", "WebSite"], project: [page.schema] }[page.kind];
+    const asks = page.kind === "tool" || page.kind === "reference";
+    const faq = asks || page.faq.length ? ["FAQPage"] : [];
+    if (asks) assert.ok(page.faq.length, `${page.slug || "home"} has no FAQ`);
     for (const want of ["WebPage", "BreadcrumbList", "Person", ...faq, ...main]) {
       assert.ok(t.includes(want), `${page.slug || "home"} lacks ${want}`);
     }
   }
   const home = types(jsonLd(HOME, null, HOME));
-  assert.ok(home.includes("SoftwareSourceCode") && home.includes("WebSite"));
+  assert.ok(home.includes("Organization") && home.includes("WebSite"));
+  assert.ok(!home.includes("SoftwareSourceCode") && !home.includes("WebApplication"), "the library and the app moved to /editor/");
+  const editor = types(jsonLd(EDITOR, null, HOME));
+  for (const want of ["WebApplication", "HowTo", "SoftwareSourceCode", "FAQPage"]) assert.ok(editor.includes(want), `/editor/ lacks ${want}`);
+});
+
+test("the editor moved to /editor/ as it was, and the home page is Open Kannada's front door", () => {
+  assert.equal(HOME.slug, "");
+  assert.equal(HOME.kind, "home");
+  assert.equal(HOME.h1, "Kannada should be as easy to use on a computer as English.");
+  assert.equal(EDITOR.title, "Kannada editor and converter: Nudi to Unicode, typing and more");
+  assert.equal(EDITOR.h1, "Kannada editor and converter");
+  assert.equal(EDITOR.faq.length, 7);
+  assert.equal(EDITOR.twin, "kn");
+  assert.equal(HOME.twin, undefined, "the English home has no twin until the Kannada home is read");
+  assert.equal(HOMES.kn.slug, "kn", "the language switch on / goes to the Kannada home");
+  assert.ok(isHome(HOME) && isHome(HOMES.kn) && !isHome(EDITOR));
+  const knHome = ALL_PAGES.find((p) => p.slug === "kn/home");
+  assert.ok(isHome(knHome), "the Kannada home draft is a home page, with no trail or Ask AI, wherever it lives");
+  assert.equal(jsonLd(knHome, null, HOMES.kn)["@graph"].find((n) => n["@type"] === "BreadcrumbList").itemListElement.length, 1);
+  const graph = jsonLd(EDITOR, siteUrl("https://example.org/"), HOME)["@graph"];
+  const app = graph.find((n) => n["@type"] === "WebApplication");
+  assert.equal(app.name, "kannadi Kannada editor and converter");
+  assert.equal(app.isBasedOn["@id"], "https://example.org/editor/#library");
+  assert.equal(graph.find((n) => n["@type"] === "SoftwareSourceCode")["@id"], "https://example.org/editor/#library");
+  const crumbs = graph.find((n) => n["@type"] === "BreadcrumbList").itemListElement;
+  assert.deepEqual(crumbs.map((c) => c.item), ["https://example.org/", "https://example.org/editor/"]);
+  const home = jsonLd(HOME, siteUrl("https://example.org/"), HOME)["@graph"];
+  assert.equal(home.find((n) => n["@type"] === "BreadcrumbList").itemListElement.length, 1);
+  assert.equal(home.find((n) => n["@type"] === "WebPage").mainEntity["@id"], "https://example.org/#organization");
+});
+
+test("every English page is in exactly 1 menu, and a Kannada reader gets the Kannada page where it is built", () => {
+  const listed = Object.values(NAV).flat();
+  assert.equal(new Set(listed).size, listed.length);
+  const english = PAGES.filter((p) => (p.lang ?? "en") === "en" && !isHome(p)).map((p) => p.slug).sort();
+  assert.deepEqual([...listed].sort(), english);
+  assert.deepEqual(NAV.tools, ["editor", "fonts", "spell-check", "dictionary", "ocr", "ai-benchmark"]);
+  assert.deepEqual(NAV.org, ["about", "contribute", "press", "brand"]);
+  assert.equal(inLanguage("editor", "kn").slug, "kn");
+  assert.equal(inLanguage("brand", "kn").slug, "kn/brand");
+  assert.equal(inLanguage("fonts", "kn").slug, "fonts", "a draft is not built, so the English page stands in");
+  assert.equal(inLanguage("fonts", "kn", published(ALL_PAGES, true)).slug, "kn/fonts");
+  assert.equal(inLanguage("about", "en").slug, "about");
+});
+
+test("project pages say what each tool does, its license and where to get it, with no figure the brief does not give", () => {
+  const projects = PAGES.filter((p) => p.kind === "project");
+  assert.deepEqual(projects.map((p) => p.slug), ["fonts", "spell-check", "dictionary", "ocr", "ai-benchmark"]);
+  for (const p of projects) {
+    const ids = p.sections.map((s) => s.id);
+    for (const want of ["what", "downloads", "license"]) assert.ok(ids.includes(want), `${p.slug} lacks ${want}`);
+    assert.ok(p.licenses.length, p.slug);
+  }
+  const text = (slug) => JSON.stringify(PAGES.find((p) => p.slug === slug));
+  const ocr = PAGES.find((p) => p.slug === "ocr").sections.find((s) => s.id === "result").items;
+  assert.deepEqual(ocr, [
+    "Old printed books, 60 Wikisource pages: 6.0%, against 8.7%.",
+    "Degraded words, 400: 17.0%, against 24.4%.",
+    "MILE pages from IISc, 30: 5.4%, against 7.3%.",
+    "MILE lines from IISc, 600: 2.8%, against 3.8%.",
+  ], "the v0.2 results as released, and no other");
+  assert.doesNotMatch(text("ocr"), /dots/i);
+  for (const slug of ["fonts", "dictionary"]) assert.doesNotMatch(text(slug).replace(/U\+0C[0-9A-F]{2}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 /g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
+  const bench = PAGES.find((p) => p.slug === "ai-benchmark");
+  const rows = bench.sections.find((s) => s.id === "result").table.rows;
+  assert.deepEqual(rows.map((r) => [r.name, r.ratio, r.low, r.high]), [
+    ["cl100k", 8.27, 8.06, 8.48],
+    ["Qwen 2.5", 6.52, 6.37, 6.68],
+    ["Kimi", 3.42, 3.35, 3.5],
+    ["o200k", 1.83, 1.8, 1.87],
+    ["Gemma 4", 1.7, 1.65, 1.74],
+    ["Sarvam", 1.35, 1.32, 1.38],
+    ["Sarvam-1", 1.14, 1.12, 1.17],
+  ]);
+  assert.match(text("ai-benchmark"), /between 1\.1 and 8\.3 times/);
+  assert.match(text("ai-benchmark"), /Claude and Gemini are not measured/);
+  assert.match(text("spell-check"), /88\.9%[^"]*65\.7%/);
+  assert.equal(jsonLd(bench, null, HOME)["@graph"].find((n) => n["@type"] === "Dataset").license, "https://creativecommons.org/licenses/by/4.0/");
 });
 
 test("structured data uses absolute URLs once the site has one", () => {
@@ -37,10 +116,10 @@ test("structured data uses absolute URLs once the site has one", () => {
 });
 
 test("FAQ answers in the structured data are the visible answers as plain text", () => {
-  const faq = jsonLd(HOME, null, HOME)["@graph"].find((n) => n["@type"] === "FAQPage").mainEntity;
-  assert.equal(faq.length, HOME.faq.length);
+  const faq = jsonLd(EDITOR, null, HOME)["@graph"].find((n) => n["@type"] === "FAQPage").mainEntity;
+  assert.equal(faq.length, EDITOR.faq.length);
   for (const [i, q] of faq.entries()) {
-    assert.equal(q.name, plainText(HOME.faq[i].q));
+    assert.equal(q.name, plainText(EDITOR.faq[i].q));
     assert.ok(!/[<>]/.test(q.acceptedAnswer.text), q.acceptedAnswer.text);
   }
   assert.equal(plainText('<b>Save</b> &amp; <a href="/">go</a>'), "Save & go");
@@ -171,7 +250,7 @@ test("the site is named Open Kannada, and the editor and library kannadi", () =>
   const site = graph.find((n) => n["@type"] === "WebSite");
   assert.equal(site.name, "Open Kannada");
   assert.equal(site.publisher["@id"], graph.find((n) => n["@type"] === "Organization")["@id"]);
-  assert.equal(graph.find((n) => n["@type"] === "SoftwareSourceCode").name, "kannadi");
+  assert.equal(jsonLd(EDITOR, null, HOME)["@graph"].find((n) => n["@type"] === "SoftwareSourceCode").name, "kannadi");
   const base = readFileSync(new URL("../src/layouts/Base.astro", import.meta.url), "utf8");
   assert.match(base, /<meta property="og:site_name" content=\{ORG\.name\} \/>/);
 });
@@ -181,7 +260,7 @@ test("every Kannada page has an English twin that names it back, and waits for a
   const drafts = published(ALL_PAGES, true);
   assert.deepEqual(twinProblems(drafts), []);
   const kn = drafts.filter((p) => p.lang === "kn");
-  assert.deepEqual(kn.map((p) => p.slug), ["kn", "kn/about", "kn/press", "kn/names-and-logos"]);
+  assert.deepEqual(kn.map((p) => p.slug), ["kn", "kn/about", "kn/press", "kn/brand", "kn/home", "kn/fonts", "kn/spell-check", "kn/dictionary", "kn/ocr", "kn/ai-benchmark", "kn/contribute"]);
   for (const p of drafts.filter((p) => p.needsReview)) assert.equal(p.lang, "kn", `only Kannada drafts wait for a review: ${p.slug}`);
   const links = alternates(drafts.find((p) => p.slug === "about"), drafts, siteUrl("https://example.org/"));
   assert.deepEqual(links, [
@@ -212,7 +291,8 @@ test("pages that wait for a native reader stay out of the build, and so do links
 
 test("the Kannada pages are published, with their twins", () => {
   assert.deepEqual(PAGES.filter((p) => p.needsReview), []);
-  assert.deepEqual(PAGES.filter((p) => p.lang === "kn").map((p) => p.slug), ["kn", "kn/about", "kn/press", "kn/names-and-logos"]);
+  assert.deepEqual(PAGES.filter((p) => p.lang === "kn").map((p) => p.slug), ["kn", "kn/about", "kn/press", "kn/brand"]);
+  assert.deepEqual(ALL_PAGES.filter((p) => p.needsReview).map((p) => p.slug), ["kn/home", "kn/fonts", "kn/spell-check", "kn/dictionary", "kn/ocr", "kn/ai-benchmark", "kn/contribute"]);
   assert.equal(PAGES.find((p) => p.slug === "about").twin, "kn/about");
 });
 
@@ -243,8 +323,9 @@ test("the code is MIT OR Apache-2.0 from The Open Kannada Authors, and every pag
   assert.match(read("REUSE.toml"), /path = "data\/words\.tsv"[\s\S]*?SPDX-License-Identifier = "CC-BY-SA-4\.0"/);
   const footer = read("src/components/SiteFooter.astro");
   assert.match(read("src/i18n/site.en.ts"), /belong to the project\. \{supporter\} supports it and holds none of them\./);
-  assert.match(footer, /fmt\(T\.owns,[^\n]*names-and-logos/);
-  assert.ok(PAGES.some((p) => p.slug === "names-and-logos"));
+  assert.match(footer, /fmt\(T\.owns,[^\n]*brand/);
+  assert.ok(PAGES.some((p) => p.slug === "brand"));
+  assert.ok(!ALL_PAGES.some((p) => p.slug.includes("names-and-logos")), "the old path only redirects");
 });
 
 test("each Kannada dictionary has every key and every {slot} of its English twin", async () => {
@@ -284,10 +365,30 @@ test("voice typing says, at the microphone, that it goes through the browser's s
   assert.doesNotMatch(copy, /voice[^"]{0,80}(on your device|offline|stays with you)/i);
 });
 
-test("the site names kannadi's license as MIT OR Apache-2.0, never MIT alone", () => {
+test("the site names kannadi's license as MIT OR Apache-2.0, and never as the MIT license alone", () => {
   const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
-  for (const f of ["src/content/pages.ts", "src/content/press.ts", "src/integrations/agent-files.ts", "src/i18n/site.en.ts", "src/i18n/site.kn.ts"]) {
-    const alone = read(f).match(/\bMIT\b(?! (OR|or|ಅಥವಾ) Apache-2\.0)/g) ?? [];
-    assert.deepEqual(alone, [], f);
+  const files = ["src/content/pages.ts", "src/content/press.ts", "src/integrations/agent-files.ts", "src/i18n/site.en.ts", "src/i18n/site.kn.ts"];
+  for (const f of files) assert.doesNotMatch(read(f), /MIT license|MIT ಲೈಸೆನ್ಸ್/, f);
+  assert.match(read("src/content/press.ts"), /open source under MIT OR Apache-2\.0/);
+  assert.match(read("src/integrations/agent-files.ts"), /\(Rust, MIT OR Apache-2\.0\)/);
+  assert.match(read("src/content/pages.ts"), /library for Kannada text, released under MIT OR Apache-2\.0/);
+});
+
+test("every page runs the Worker first and none is marked noindex by path, so redirects and launch reach every page", () => {
+  const config = JSON.parse(readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8").replace(/^\s*\/\/.*$/gm, ""));
+  const skips = config.assets.run_worker_first.filter((r) => r.startsWith("!")).map((r) => r.slice(1));
+  const headers = readFileSync(new URL("../public/_headers", import.meta.url), "utf8");
+  const noindex = headers.split(/\n(?=\S)/).filter((b) => /X-Robots-Tag: noindex/.test(b)).map((b) => b.split("\n")[0]);
+  const matches = (glob, path) => new RegExp(`^${glob.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`).test(path);
+  for (const page of PAGES) {
+    const path = page.slug ? `/${page.slug}/` : "/";
+    for (const glob of skips) assert.ok(!matches(glob, path), `${path} skips the Worker through ${glob}`);
+    for (const glob of noindex) assert.ok(!matches(glob, path), `${path} is noindex through ${glob}`);
   }
+});
+
+test("Open Graph cards exist only for published pages, so no draft Kannada is served", () => {
+  const cards = readdirSync(new URL("../public/og", import.meta.url), { recursive: true }).filter((f) => String(f).endsWith(".png")).map((f) => String(f).replace(/\\/g, "/"));
+  const wanted = new Set(PAGES.map((p) => `${p.slug || "home"}.png`));
+  for (const card of cards) assert.ok(wanted.has(card), `public/og/${card} belongs to no published page`);
 });

@@ -1,6 +1,6 @@
 // What the Worker in front of the static files does to each request: send every other host to the 1 canonical
-// address, answer requests that prefer markdown with the page's mirror, and keep the site out of search
-// results until launch.
+// address, send moved pages to their new paths, answer requests that prefer markdown with the page's mirror,
+// and keep the site out of search results until launch.
 import { markdownPathFor, prefersMarkdown } from "./negotiate.ts";
 
 export interface Assets {
@@ -23,6 +23,21 @@ export function canonicalRedirect(url: URL, host: string): string | null {
   return `https://${host}${url.pathname}${url.search}`;
 }
 
+/** Pages that moved, old path to new; each covers the path without its slash and the files under it. */
+export const REDIRECTS: Record<string, string> = {
+  "/names-and-logos/": "/brand/",
+  "/kn/names-and-logos/": "/kn/brand/",
+};
+
+/** The new path and query for a page that moved, or null. */
+export function movedTo(url: URL): string | null {
+  for (const [from, to] of Object.entries(REDIRECTS)) {
+    if (url.pathname === from.slice(0, -1)) return `${to}${url.search}`;
+    if (url.pathname.startsWith(from)) return `${to}${url.pathname.slice(from.length)}${url.search}`;
+  }
+  return null;
+}
+
 function withHeaders(response: Response, set: Record<string, string>, append: Record<string, string> = {}): Response {
   const headers = new Headers(response.headers);
   for (const [k, v] of Object.entries(set)) headers.set(k, v);
@@ -34,12 +49,18 @@ export async function handle(request: Request, assets: Assets, options: EdgeOpti
   const url = new URL(request.url);
   const target = canonicalRedirect(url, options.host);
   if (target) return new Response(null, { status: 301, headers: { location: target } });
+  const moved = movedTo(url);
+  if (moved) return noindex(new Response(null, { status: 301, headers: { location: moved } }), options);
 
   let response = await respond(request, url, assets);
   // The asset server adds a page's trailing slash with a 307; a permanent move is what search engines should keep.
   if (response.status === 307 && response.headers.has("location")) {
     response = new Response(null, { status: 308, headers: { location: response.headers.get("location") ?? "/" } });
   }
+  return noindex(response, options);
+}
+
+function noindex(response: Response, options: EdgeOptions): Response {
   return options.launched ? response : withHeaders(response, { "x-robots-tag": "noindex" });
 }
 

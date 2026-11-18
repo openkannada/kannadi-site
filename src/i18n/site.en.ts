@@ -5,10 +5,11 @@ export const SITE_EN = {
   skip: "Skip to content",
   nav: {
     pages: "Pages",
+    tools: "Tools",
     converters: "Converters",
     typing: "Typing and letters",
+    org: "Open Kannada",
     allPages: "All pages",
-    otherLanguage: "Other pages, in English",
   },
   theme: {
     auto: "Theme: same as system",
@@ -65,6 +66,19 @@ export const SITE_EN = {
   },
   brand: {
     owner: "Who holds them",
+  },
+  /** The headings every project page shares, and its table of measured ratios. */
+  project: {
+    what: "What it does",
+    result: "Result",
+    method: "How it was measured",
+    limits: "Limits",
+    downloads: "Downloads",
+    license: "License",
+    name: "Tokenizer",
+    ratio: "Kannada tokens per English token",
+    interval: "95% interval",
+    range: "{low} to {high}",
   },
   press: {
     story: "Tagline and story",

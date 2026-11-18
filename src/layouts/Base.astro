@@ -57,7 +57,7 @@ const ogImageUrl = site ? new URL(ogImage, site).href : null;
     {ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
     {ogImageUrl && <meta property="og:image:width" content="1200" />}
     {ogImageUrl && <meta property="og:image:height" content="630" />}
-    {ogImageUrl && <meta property="og:image:alt" content={page.kind === "tool" ? fmt(SITE_STRINGS[page.lang ?? "en"].imageAlt, page.og) : `${page.h1}: ${page.og.to}`} />}
+    {ogImageUrl && <meta property="og:image:alt" content={page.kind === "tool" ? fmt(SITE_STRINGS[page.lang ?? "en"].imageAlt, page.og) : `${page.h1.replace(/\.$/, "")}: ${page.og.to}`} />}
     <meta name="twitter:card" content="summary_large_image" />
     {!noindex && <script type="application/ld+json" set:html={scriptJson(jsonLd(page, site, HOMES[page.lang ?? "en"]))} />}
     <script is:inline>

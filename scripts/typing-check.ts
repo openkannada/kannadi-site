@@ -61,6 +61,7 @@ const expect = (label: string, got: string, want: string | RegExp) => {
   if (typeof want === "string" ? got !== want : !want.test(got)) problems.push(`${label}: got ${JSON.stringify(got)}, expected ${typeof want === "string" ? JSON.stringify(want) : want}`);
 };
 const typing = "/english-to-kannada-typing/";
+const editor = "/editor/";
 const kannadaWord = /^[ಀ-೿]+$/u;
 
 const whole = await typed(typing, [...composed("hello"), { commit: "hello " }]);
@@ -82,19 +83,19 @@ expect("x and q in English letters", await typed(typing, [{ type: "taxi" }]), ka
 // A composition the page moves away from, with no compositionend, must not stop the editor converting.
 expect("typing after a composition that never ended", await typed(typing, [{ compose: "hel" }, { caret: 0 }, { type: "ka " }]), /^[\u0C80-\u0CFF]+ /u);
 for (const mode of ["english", "baraha", "iso15919"]) {
-  expect(`${mode}: hello from the empty editor`, await typed("/", [{ type: "hello" }], mode), kannadaWord);
+  expect(`${mode}: hello from the empty editor`, await typed(editor, [{ type: "hello" }], mode), kannadaWord);
 }
-expect("Kannada keys: Enter at the end, then typing", await typed("/", [{ type: "abc" }, { key: "Enter" }, { type: "xy" }]), "abc\nxy");
+expect("Kannada keys: Enter at the end, then typing", await typed(editor, [{ type: "abc" }, { key: "Enter" }, { type: "xy" }]), "abc\nxy");
 expect("English: Enter at the end, then a word", await typed(typing, [{ type: "namaskara" }, { key: "Enter" }, { type: "hello" }]), /^[ಀ-೿]+\n[ಀ-೿]+$/u);
-expect("Enter twice at the end, then typing", await typed("/", [{ type: "ab" }, { key: "Enter" }, { key: "Enter" }, { type: "c" }]), "ab\n\nc");
-expect("Enter at the end, then Backspace", await typed("/", [{ type: "ab" }, { key: "Enter" }, { key: "Backspace" }, { type: "c" }]), "abc");
-expect("Delete at the end after a line break keeps it", await typed("/", [{ type: "ab" }, { key: "Enter" }, { key: "Delete" }, { type: "c" }]), "ab\nc");
+expect("Enter twice at the end, then typing", await typed(editor, [{ type: "ab" }, { key: "Enter" }, { key: "Enter" }, { type: "c" }]), "ab\n\nc");
+expect("Enter at the end, then Backspace", await typed(editor, [{ type: "ab" }, { key: "Enter" }, { key: "Backspace" }, { type: "c" }]), "abc");
+expect("Delete at the end after a line break keeps it", await typed(editor, [{ type: "ab" }, { key: "Enter" }, { key: "Delete" }, { type: "c" }]), "ab\nc");
 
 // A file the editor cannot read leaves the document as it was, with a message.
 {
   const context = await browser.createBrowserContext();
   const page = await context.newPage();
-  await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle0" });
+  await page.goto(`http://127.0.0.1:${port}${editor}`, { waitUntil: "networkidle0" });
   await page.waitForFunction(() => (document.querySelector("#doc") as HTMLElement | null)?.isContentEditable);
   await page.click("#doc");
   await page.keyboard.type("abc");
@@ -125,13 +126,55 @@ expect("Delete at the end after a line break keeps it", await typed("/", [{ type
   const page = await context.newPage();
   const errors: string[] = [];
   page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
-  await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle0" });
+  await page.goto(`http://127.0.0.1:${port}${editor}`, { waitUntil: "networkidle0" });
   await page.waitForFunction(() => (document.querySelector("#doc") as HTMLElement | null)?.isContentEditable);
   await page.click("#doc");
   await page.keyboard.press("KeyV", { commands: ["Paste"] } as never);
   await new Promise((r) => setTimeout(r, 800));
   expect("rich paste", (await page.evaluate(() => document.querySelector("#doc")?.textContent ?? "")).replace(/\n$/, ""), "Report\nಕನ್ನಡ");
   expect("rich paste logs no console error", errors.join(" | "), "");
+  await context.close();
+}
+
+// Nudi text pasted on the home page opens in the editor converted, through sessionStorage and only once.
+{
+  const context = await browser.createBrowserContext();
+  const page = await context.newPage();
+  await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle0" });
+  await page.type("#handoff-text", "PÀ£ÀßqÀ");
+  await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click("#handoff [type=submit]")]);
+  const doc = async () => {
+    await page.waitForFunction(() => (document.querySelector("#doc") as HTMLElement | null)?.isContentEditable);
+    await new Promise((r) => setTimeout(r, 800));
+    return page.evaluate(() => (document.querySelector("#doc")?.textContent ?? "").replace(/\n$/, ""));
+  };
+  expect("Nudi text from the home page", await doc(), "ಕನ್ನಡ");
+  expect("the home page's text says it was converted", await page.evaluate(() => document.getElementById("toast-text")?.textContent ?? ""), /converted/);
+  expect("the text is never in the URL", page.url(), `http://127.0.0.1:${port}${editor}`);
+  await page.reload({ waitUntil: "networkidle0" });
+  expect("a reload does not insert it again", await doc(), "ಕನ್ನಡ");
+  await context.close();
+}
+
+// Rich text pasted on the home page keeps its fonts: the English heading stays English, the Nudi converts.
+{
+  const context = await browser.createBrowserContext();
+  const source = await context.newPage();
+  await source.setContent(`<div id="s" contenteditable><p><span style="font-family:Calibri">Heading</span></p><p style='font-family:"BRH Kannada"'>PÀ£ÀßqÀ</p></div>`);
+  await source.evaluate(() => {
+    const s = document.getElementById("s") as HTMLElement;
+    s.focus();
+    getSelection()?.selectAllChildren(s);
+  });
+  await source.keyboard.press("KeyC", { commands: ["Copy"] } as never);
+  const page = await context.newPage();
+  await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle0" });
+  await page.click("#handoff-text");
+  await page.keyboard.press("KeyV", { commands: ["Paste"] } as never);
+  await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click("#handoff [type=submit]")]);
+  await page.waitForFunction(() => (document.querySelector("#doc") as HTMLElement | null)?.isContentEditable);
+  await new Promise((r) => setTimeout(r, 800));
+  expect("rich text from the home page keeps its fonts", await page.evaluate(() => (document.querySelector("#doc")?.textContent ?? "").replace(/\n$/, "")), "Heading\nಕನ್ನಡ");
   await context.close();
 }
 

@@ -32,7 +32,9 @@ async function typed(path: string, steps: Step[], mode?: string): Promise<string
       else if ("type" in step) await page.keyboard.type(step.type, { delay: 20 });
       else if ("pause" in step) await new Promise((r) => setTimeout(r, step.pause));
       else if ("compose" in step) {
-        const replace = step.from === undefined || step.to === undefined ? {} : { replacementStart: step.from, replacementEnd: step.to };
+        // A replacement up to -1 runs to the end of the text as it is now.
+        const to = step.to === -1 ? await page.evaluate(() => (document.querySelector("#doc")?.textContent ?? "").replace(/\n$/, "").length) : step.to;
+        const replace = step.from === undefined || to === undefined ? {} : { replacementStart: step.from, replacementEnd: to };
         await cdp.send("Input.imeSetComposition", { text: step.compose, selectionStart: step.compose.length, selectionEnd: step.compose.length, ...replace });
       }
       else if ("caret" in step) {
@@ -65,8 +67,7 @@ const whole = await typed(typing, [...composed("hello"), { commit: "hello " }]);
 expect("a composed word", whole, /^[ಀ-೿]+ $/u);
 expect("first letter sent alone, the rest composed", await typed(typing, [{ commit: "h" }, ...composed("ello"), { commit: "ello " }]), whole);
 // The keyboard takes back the rendered letter and composes the whole word over it, as phone keyboards do.
-const rendered = (await typed(typing, [{ commit: "h" }])).length;
-expect("first letter sent alone, then taken back with the whole word", await typed(typing, [{ commit: "h" }, { compose: "he", from: 0, to: rendered }, ...composed("hello").slice(2), { commit: "hello " }]), whole);
+expect("first letter sent alone, then taken back with the whole word", await typed(typing, [{ commit: "h" }, { compose: "he", from: 0, to: -1 }, ...composed("hello").slice(2), { commit: "hello " }]), whole);
 expect("a word typed after clearing the document", await typed(typing, [{ type: "abc " }, { selectAll: true }, { key: "Backspace" }, { type: "hello" }]), kannadaWord);
 expect("a word typed after a word and a space", await typed(typing, [{ type: "hi " }, { type: "ta" }]), /^[\u0C80-\u0CFF]+[ \u00a0][\u0C80-\u0CFF]+$/u);
 expect("a word typed after a space typed at the end", await typed(typing, [{ type: "hi" }, { key: "Escape" }, { type: " ta" }]), /^hi[ \u00a0][\u0C80-\u0CFF]+$/u);

@@ -27,6 +27,8 @@ export interface EnglishComposer {
   readonly current: ComposingWord | null;
   /** The typing mode; only a word typed in English letters is respelled from the list. */
   readonly mode: string;
+  /** Whether a keyboard is composing; text under a composition is never rewritten. */
+  readonly composing: boolean;
   respell: (kannada: string) => void;
   choose: (kannada: string) => void;
 }
@@ -100,7 +102,7 @@ export class EnglishTyping {
   /** A word typed while the list loaded was spelled letter by letter; it gets its best spelling now. */
   private respellCurrent(): void {
     const word = this.composer?.current;
-    if (!word || !this.suggester || this.composer?.mode !== "english") return;
+    if (!word || !this.suggester || this.composer?.mode !== "english" || this.composer.composing) return;
     const best = this.spell(word.latin);
     if (best !== this.deps.text().slice(word.start, word.end).replace(/\u200C$/, "")) this.composer?.respell(best);
     this.typing(this.composer?.current ?? null);

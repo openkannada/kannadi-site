@@ -39,6 +39,7 @@ function harness({ load = async () => WORDS, stored = [] } = {}) {
   };
   const composer = {
     mode: "english",
+    composing: false,
     get current() {
       return doc.word && { ...doc.word };
     },
@@ -203,10 +204,22 @@ test("prefetching fetches the word list once and builds nothing until it is used
   const { english } = harness({ load: async () => (fetches++, WORDS) });
   english.prefetch();
   english.prefetch();
-  await new Promise((r) => setTimeout(r, 0));
+  await new Promise((r) => setTimeout(r, 50));
   assert.equal(fetches, 1);
-  assert.equal(english.ready, false, "nothing is built yet");
+  assert.equal(english.ready, false, "nothing is built until the list is used");
   await english.prepare();
   assert.equal(fetches, 1, "the fetched list is used");
   assert.equal(english.ready, true);
+});
+
+test("a word under a keyboard's composition is not respelled when the word list arrives", async () => {
+  let arrive;
+  const { doc, english, type, composer } = harness({ load: () => new Promise((resolve) => (arrive = resolve)) });
+  type("namaskara");
+  composer.composing = true;
+  const typed = doc.text;
+  arrive(WORDS);
+  await english.prepare();
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(doc.text, typed);
 });

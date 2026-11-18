@@ -85,7 +85,15 @@ test("project pages say what each tool does, its license and where to get it, wi
     "MILE lines from IISc, 600: 2.8%, against 3.8%.",
   ], "the v0.2 results as released, and no other");
   assert.doesNotMatch(text("ocr"), /dots/i);
-  for (const slug of ["fonts", "dictionary"]) assert.doesNotMatch(text(slug).replace(/U\+[0-9A-F]{4}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 |\d\.\d{3}|SHA-256|Article 1\b/g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
+  const BRIEF = ["3,712", "13,887", "10,654", "20.0%", "45.1%", "1.6%", "21.1%", "2.2", "22", "100", "27", "28", "25", "24", "400", "1876", "1894", "20", "7.6%", "12.4%", "22.7%", "30.1%", "60", "6.2%", "7.5%", "10", "0.2", "4", "1", "2"];
+  for (const slug of ["dictionary", "kn/dictionary"]) {
+    const page = ALL_PAGES.find((p) => p.slug === slug);
+    const shown = plainText(JSON.stringify(page.sections)).replace(/15919|ODbL-1\.0|Apache-2\.0|BY-SA 4\.0|License 1\.0/g, "").match(/\d[\d,.]*\d%?|\d%?/g);
+    for (const n of shown) assert.ok(BRIEF.includes(n), `${slug} shows ${n}, a figure the brief does not give`);
+    for (const n of ["3,712", "13,887", "20.0%", "45.1%", "1.6%", "21.1%", "27", "28", "25", "24", "7.6%", "12.4%", "22.7%", "30.1%"]) assert.ok(shown.includes(n), `${slug} lacks ${n}`);
+    assert.ok(JSON.stringify(page.sections).includes("Contains information from Alar by V. Krishna"), `${slug} lacks the Alar credit`);
+  }
+  for (const slug of ["fonts"]) assert.doesNotMatch(text(slug).replace(/U\+[0-9A-F]{4}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 |\d\.\d{3}|SHA-256|Article 1\b/g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
   const bench = PAGES.find((p) => p.slug === "ai-benchmark");
   const rows = bench.sections.find((s) => s.id === "result").table.rows;
   assert.deepEqual(rows.map((r) => [r.name, r.ratio, r.low, r.high]), [

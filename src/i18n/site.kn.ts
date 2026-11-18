@@ -72,6 +72,8 @@ export const SITE_KN: SiteStrings = {
     result: "ಫಲಿತಾಂಶ",
     method: "ಅಳೆದ ವಿಧಾನ",
     limits: "ಮಿತಿಗಳು",
+    next: "ಮುಂದಿನ ಹೆಜ್ಜೆಗಳು",
+    sources: "ಮೂಲಗಳು",
     downloads: "ಡೌನ್‌ಲೋಡ್‌ಗಳು",
     license: "ಲೈಸೆನ್ಸ್",
     name: "ಟೋಕನೈಸರ್",

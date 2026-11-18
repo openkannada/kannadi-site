@@ -50,15 +50,25 @@ export class DocEditor {
 
     el.addEventListener("beforeinput", (e) => this.beforeInput(e));
     el.addEventListener("input", (e) => {
-      if (!(e as InputEvent).isComposing && !this.composing) this.sync((e as InputEvent).inputType);
+      const input = e as InputEvent;
+      if (input.isComposing) return;
+      // Plain input means the composition is over, even when no compositionend came.
+      if (this.composing && input.inputType !== "insertCompositionText") this.composing = false;
+      if (!this.composing) this.sync(input.inputType);
     });
     el.addEventListener("compositionstart", () => {
       this.composing = true;
     });
-    el.addEventListener("compositionend", () => {
+    const endComposition = () => {
+      if (!this.composing) return;
       this.composing = false;
       this.sync("insertCompositionText");
+    };
+    el.addEventListener("compositionend", () => {
+      this.composing = true;
+      endComposition();
     });
+    el.addEventListener("focusout", endComposition);
     el.addEventListener("keydown", (e) => {
       const mod = e.ctrlKey || e.metaKey;
       if (!mod || e.altKey || e.isComposing) return;
@@ -95,7 +105,7 @@ export class DocEditor {
         if (!target) break;
         if (!text) break;
         e.preventDefault();
-        const at = this.offsetOf(target.startContainer, target.startOffset);
+        const at = Math.min(this.offsetOf(target.startContainer, target.startOffset), this.text.length);
         this.replace(at, at, text, "insertFromDrop");
         break;
       }
@@ -107,10 +117,7 @@ export class DocEditor {
     return this.tail && dom.endsWith("\n") ? dom.slice(0, -1) : dom;
   }
 
-  /**
-   * A plain-text element gives no line, and no caret, to what follows a final "\n", so a line break typed at the
-   * end would leave the caret before it. While the text ends with "\n", 1 more "\n" follows it in the element only.
-   */
+  /** While the text ends with "\n", 1 more "\n" follows in the element only, to give the empty last line a caret. */
   private keepTail(text: string): void {
     const want = text.endsWith("\n");
     const dom = this.el.textContent ?? "";

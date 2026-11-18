@@ -10,7 +10,7 @@ const { server, port } = serve(dist);
 const browser = await puppeteer.launch({ executablePath: chrome(), headless: true, args: ["--no-sandbox"] });
 
 /** A key to press, letters to type, or a phone keyboard's composition: its text so far, or the text it commits. */
-type Step = { key: string } | { type: string } | { compose: string } | { commit: string };
+type Step = { key: string } | { type: string } | { compose: string; from?: number; to?: number } | { commit: string } | { caret: number };
 const composed = (word: string): Step[] => [...word].map((_, i) => ({ compose: word.slice(0, i + 1) }));
 
 async function typed(path: string, steps: Step[], mode?: string): Promise<string> {
@@ -25,8 +25,17 @@ async function typed(path: string, steps: Step[], mode?: string): Promise<string
     for (const step of steps) {
       if ("key" in step) await page.keyboard.press(step.key as never);
       else if ("type" in step) await page.keyboard.type(step.type, { delay: 20 });
-      else if ("compose" in step) await cdp.send("Input.imeSetComposition", { text: step.compose, selectionStart: step.compose.length, selectionEnd: step.compose.length });
-      else await cdp.send("Input.insertText", { text: step.commit });
+      else if ("compose" in step) {
+        const replace = step.from === undefined ? {} : { replacementStart: step.from, replacementEnd: step.to };
+        await cdp.send("Input.imeSetComposition", { text: step.compose, selectionStart: step.compose.length, selectionEnd: step.compose.length, ...replace });
+      }
+      else if ("caret" in step) {
+        await page.evaluate((at) => {
+          const doc = document.querySelector("#doc") as HTMLElement;
+          const node = doc.firstChild ?? doc;
+          getSelection()?.collapse(node, Math.min(at, node.textContent?.length ?? 0));
+        }, step.caret);
+      } else await cdp.send("Input.insertText", { text: step.commit });
       await new Promise((r) => setTimeout(r, 40));
     }
     await new Promise((r) => setTimeout(r, 200));
@@ -46,7 +55,11 @@ const kannadaWord = /^[ಀ-೿]+$/u;
 const whole = await typed(typing, [...composed("hello"), { commit: "hello " }]);
 expect("a composed word", whole, /^[ಀ-೿]+ $/u);
 expect("first letter sent alone, the rest composed", await typed(typing, [{ commit: "h" }, ...composed("ello"), { commit: "ello " }]), whole);
-expect("first letter sent alone, then the whole word again", await typed(typing, [{ commit: "h" }, ...composed("hello"), { commit: "hello " }]).then((t) => t.replace(/^[ಀ-೿]{0,2}(?=[ಀ-೿]+ $)/u, (m) => m)), /^[ಀ-೿]+ $/u);
+// The keyboard takes back the rendered letter and composes the whole word over it, as phone keyboards do.
+const rendered = (await typed(typing, [{ commit: "h" }])).length;
+expect("first letter sent alone, then taken back with the whole word", await typed(typing, [{ commit: "h" }, { compose: "he", from: 0, to: rendered }, ...composed("hello").slice(2), { commit: "hello " }]), whole);
+// A composition the page moves away from, with no compositionend, must not stop the editor converting.
+expect("typing after a composition that never ended", await typed(typing, [{ compose: "hel" }, { caret: 0 }, { type: "ka " }]), /^[\u0C80-\u0CFF]+ /u);
 for (const mode of ["english", "baraha", "iso15919"]) {
   expect(`${mode}: hello from the empty editor`, await typed("/", [{ type: "hello" }], mode), kannadaWord);
 }

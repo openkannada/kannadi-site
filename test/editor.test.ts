@@ -480,3 +480,18 @@ test("after a paste, the next word typed is converted from its first letter", ()
   editor.type("hello");
   assert.equal(editor.text, "ನಮಸ್ಕಾರ <english:hello>");
 });
+
+test("a word replaced by something that is not letters ends cleanly, with its highlight cleared", () => {
+  const editor = new FakeEditor();
+  const ranges = [];
+  const done = [];
+  const c = new Composer(editor, (latin) => `<${latin}>`, { onComposing: (r) => ranges.push(r), onDone: (w) => done.push(w.latin) });
+  editor.onEdit = (edit, after, type) => c.handle(edit, after, type);
+  c.setMode("english");
+  editor.type("dont");
+  editor.replace(0, editor.text.length, "don't", "insertCompositionText");
+  assert.equal(editor.text, "don't");
+  assert.deepEqual(ranges.at(-1), []);
+  assert.equal(done.length, 1);
+  assert.equal(c.current, null);
+});

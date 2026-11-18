@@ -131,7 +131,7 @@ export class Composer {
     const inserted = after.slice(edit.start, edit.newEnd);
     // A phone keyboard can take back the word being typed and send it again whole, in place of its Kannada.
     const retyped = this.word && edit.start === this.word.start && edit.oldEnd === this.end() && inserted;
-    if (retyped) this.word = null;
+    if (retyped && this.word) this.word = { start: this.word.start, latin: "", rendered: "" };
     const insertOnly = (edit.oldEnd === edit.start || retyped) && inserted;
     const letters = LETTERS[this.mode];
     if (insertOnly && letters.test(inserted)) {

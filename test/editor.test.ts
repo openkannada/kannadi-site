@@ -495,3 +495,12 @@ test("a word replaced by something that is not letters ends cleanly, with its hi
   assert.equal(done.length, 1);
   assert.equal(c.current, null);
 });
+
+test("a no-break space the browser swaps for a space is not an edit, so the next letter starts a word", () => {
+  assert.deepEqual(diff("ಹಿ ", "ಹಿ t", 4), { start: 3, oldEnd: 3, newEnd: 4 });
+  const { editor } = marked("english");
+  editor.text = "ಹಿ ";
+  editor.caret = 3;
+  editor.replace(2, 3, " t", "insertText");
+  assert.equal(editor.text, "ಹಿ <english:t>");
+});

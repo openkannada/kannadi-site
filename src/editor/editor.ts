@@ -207,10 +207,12 @@ export class DocEditor {
     if (nodes.length === 0) return;
     const sel = this.selection();
     let text = "";
+    let lastBr = false;
     const walk = (node: Node, first: boolean) => {
       for (const child of node.childNodes) {
+        lastBr = child.nodeName === "BR";
         if (child.nodeType === Node.TEXT_NODE) text += (child as Text).data;
-        else if (child.nodeName === "BR") text += "\n";
+        else if (lastBr) text += "\n";
         else {
           if (text && !text.endsWith("\n") && !first) text += "\n";
           walk(child, false);
@@ -218,6 +220,8 @@ export class DocEditor {
       }
     };
     walk(this.el, true);
+    // A final <br> is the browser's placeholder for an empty line, such as after clearing the text; it holds no break.
+    if (lastBr) text = text.slice(0, -1);
     this.el.textContent = text;
     if (sel) this.select(Math.min(sel.start, text.length), Math.min(sel.end, text.length));
   }

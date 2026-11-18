@@ -10,7 +10,7 @@ const { server, port } = serve(dist);
 const browser = await puppeteer.launch({ executablePath: chrome(), headless: true, args: ["--no-sandbox"] });
 
 /** A key to press, letters to type, or a phone keyboard's composition: its text so far, or the text it commits. */
-type Step = { key: string } | { type: string } | { compose: string; from?: number; to?: number } | { commit: string } | { caret: number };
+type Step = { key: string } | { type: string } | { compose: string; from?: number; to?: number } | { commit: string } | { caret: number } | { selectAll: true };
 const composed = (word: string): Step[] => [...word].map((_, i) => ({ compose: word.slice(0, i + 1) }));
 
 async function typed(path: string, steps: Step[], mode?: string): Promise<string> {
@@ -35,11 +35,14 @@ async function typed(path: string, steps: Step[], mode?: string): Promise<string
           const node = doc.firstChild ?? doc;
           getSelection()?.collapse(node, Math.min(at, node.textContent?.length ?? 0));
         }, step.caret);
+      } else if ("selectAll" in step) {
+        await page.evaluate(() => getSelection()?.selectAllChildren(document.querySelector("#doc") as HTMLElement));
       } else await cdp.send("Input.insertText", { text: step.commit });
       await new Promise((r) => setTimeout(r, 40));
     }
     await new Promise((r) => setTimeout(r, 200));
-    return await page.evaluate(() => document.querySelector("#doc")?.textContent ?? "");
+    // The element ends with "\n" only when it holds the extra one that keeps an empty last line.
+    return await page.evaluate(() => (document.querySelector("#doc")?.textContent ?? "").replace(/\n$/, ""));
   } finally {
     await context.close();
   }
@@ -58,6 +61,9 @@ expect("first letter sent alone, the rest composed", await typed(typing, [{ comm
 // The keyboard takes back the rendered letter and composes the whole word over it, as phone keyboards do.
 const rendered = (await typed(typing, [{ commit: "h" }])).length;
 expect("first letter sent alone, then taken back with the whole word", await typed(typing, [{ commit: "h" }, { compose: "he", from: 0, to: rendered }, ...composed("hello").slice(2), { commit: "hello " }]), whole);
+expect("a word typed after clearing the document", await typed(typing, [{ type: "abc " }, { selectAll: true }, { key: "Backspace" }, { type: "hello" }]), kannadaWord);
+expect("a word typed after a word and a space", await typed(typing, [{ type: "hi " }, { type: "ta" }]), /^[\u0C80-\u0CFF]+[ \u00a0][\u0C80-\u0CFF]+$/u);
+expect("a word typed after a space typed at the end", await typed(typing, [{ type: "hi" }, { key: "Escape" }, { type: " ta" }]), /^hi[ \u00a0][\u0C80-\u0CFF]+$/u);
 // A composition the page moves away from, with no compositionend, must not stop the editor converting.
 expect("typing after a composition that never ended", await typed(typing, [{ compose: "hel" }, { caret: 0 }, { type: "ka " }]), /^[\u0C80-\u0CFF]+ /u);
 for (const mode of ["english", "baraha", "iso15919"]) {

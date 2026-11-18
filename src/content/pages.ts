@@ -476,12 +476,11 @@ export const ALL_PAGES: Page[] = [
     og: { from: "kannadi", to: "ಕನ್ನಡಿ" },
     keywords: "",
   },
-  // Kannada pages: drafts that wait for a native reader, so each is marked needsReview until checked.
+  // Kannada pages, each the twin of an English page.
   {
     slug: "kn",
     lang: "kn",
     twin: "",
-    needsReview: true,
     kind: "tool",
     name: "ಸಂಪಾದಕ",
     title: "ಕನ್ನಡ ಸಂಪಾದಕ ಮತ್ತು ಪರಿವರ್ತಕ: ನುಡಿಯಿಂದ ಯೂನಿಕೋಡ್, ಟೈಪಿಂಗ್ ಮತ್ತು ಇನ್ನಷ್ಟು",
@@ -535,7 +534,6 @@ export const ALL_PAGES: Page[] = [
     slug: "kn/about",
     lang: "kn",
     twin: "about",
-    needsReview: true,
     kind: "info",
     name: "ನಮ್ಮ ಬಗ್ಗೆ",
     title: "ಓಪನ್ ಕನ್ನಡದ ಬಗ್ಗೆ: ಕನ್ನಡಕ್ಕಾಗಿ ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳು",
@@ -553,7 +551,6 @@ export const ALL_PAGES: Page[] = [
     slug: "kn/press",
     lang: "kn",
     twin: "press",
-    needsReview: true,
     kind: "info",
     name: "ಪತ್ರಿಕಾ ಕಿಟ್",
     title: "ಓಪನ್ ಕನ್ನಡ ಪತ್ರಿಕಾ ಕಿಟ್: ಲೋಗೊಗಳು, ಪರಿಚಯಗಳು ಮತ್ತು ಮಾಹಿತಿ",
@@ -571,7 +568,6 @@ export const ALL_PAGES: Page[] = [
     slug: "kn/names-and-logos",
     lang: "kn",
     twin: "names-and-logos",
-    needsReview: true,
     kind: "info",
     name: "ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು",
     title: "ಓಪನ್ ಕನ್ನಡದ ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು: ಯೋಜನೆಯನ್ನು ಉಲ್ಲೇಖಿಸುವ ವಿಧಾನ",

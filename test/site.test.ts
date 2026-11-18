@@ -200,14 +200,20 @@ test("Lighthouse checks only pages that are built", () => {
 
 test("pages that wait for a native reader stay out of the build, and so do links to them", async () => {
   const { twinProblems, alternates } = await import("../src/lib/seo.ts");
+  const drafted = ALL_PAGES.map((p) => (p.lang === "kn" ? { ...p, needsReview: true } : p));
+  const built = published(drafted, false);
+  assert.ok(!built.some((p) => p.lang === "kn"), "drafts are left out");
+  assert.deepEqual(twinProblems(built), []);
+  const about = built.find((p) => p.slug === "about");
+  assert.equal(about.twin, undefined, "a link to a draft is left out too");
+  assert.deepEqual(alternates(about, built, siteUrl("https://example.org/")), []);
+  assert.equal(published(drafted, true).find((p) => p.slug === "about").twin, "kn/about", "KANNADA_DRAFTS keeps them");
+});
+
+test("the Kannada pages are published, with their twins", () => {
   assert.deepEqual(PAGES.filter((p) => p.needsReview), []);
-  assert.ok(!PAGES.some((p) => p.lang === "kn"), "every Kannada page is still a draft");
-  assert.deepEqual(twinProblems(PAGES), []);
-  const about = PAGES.find((p) => p.slug === "about");
-  assert.equal(about.twin, undefined);
-  assert.deepEqual(alternates(about, PAGES, siteUrl("https://example.org/")), []);
-  const checked = ALL_PAGES.map((p) => (p.slug === "kn/about" || p.slug === "about" ? { ...p, needsReview: undefined } : p));
-  assert.equal(published(checked, false).find((p) => p.slug === "about").twin, "kn/about", "a checked twin is kept");
+  assert.deepEqual(PAGES.filter((p) => p.lang === "kn").map((p) => p.slug), ["kn", "kn/about", "kn/press", "kn/names-and-logos"]);
+  assert.equal(PAGES.find((p) => p.slug === "about").twin, "kn/about");
 });
 
 test("a Kannada page's structured data is in Kannada and its trail starts at the Kannada home", () => {

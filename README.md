@@ -12,7 +12,7 @@ The conversion runs on [kannadi](https://github.com/openkannada/kannadi), a Rust
 | `/nudi-to-unicode/`, `/unicode-to-nudi/`, `/baraha-to-unicode/`, `/akruti-to-unicode/` | Converter pages, each with the editor |
 | `/kannada-typing/`, `/english-to-kannada-typing/` | Typing pages, opening in English letters with word suggestions |
 | `/kannada-alphabet/`, `/kagunita/` | Reference pages: every letter, and every consonant with every vowel sign, spelled by the library at build time |
-| `/kn/`, `/kn/about/`, `/kn/press/`, `/kn/names-and-logos/` | The Kannada pages. Each is built once a native reader has checked it and its `needsReview` mark is removed in `src/content/pages.ts`; until then `KANNADA_DRAFTS=1 npm run build` (or `npm run dev`) includes them for reading. |
+| `/kn/`, `/kn/about/`, `/kn/press/`, `/kn/names-and-logos/` | The Kannada pages, each the twin of an English page. A new Kannada page can be marked `needsReview` in `src/content/pages.ts` to keep it out of the build until a native reader has checked it; `KANNADA_DRAFTS=1 npm run build` (or `npm run dev`) includes it for reading. |
 
 Every page also has a markdown mirror at `<page>index.md`. In browsers with WebMCP, the editor registers 4 read-only tools (`convert_legacy_to_unicode`, `convert_unicode_to_legacy`, `transliterate`, `count_aksharas`) on `document.modelContext`, or the older `navigator.modelContext`, after the page is idle. The build writes `llms.txt`, `llms-full.txt` and `robots.txt`, and `sitemap.xml` once a site URL is set.
 

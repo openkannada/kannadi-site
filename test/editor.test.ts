@@ -554,3 +554,37 @@ test("every layout the converter reports has a name in both languages", async ()
     }
   }
 });
+
+test("short text files with a Word line break or an old end-of-file byte open; a NUL means binary", () => {
+  const enc = (s) => new TextEncoder().encode(s);
+  assert.equal(notText(enc("ಕನ್ನಡ ನೋಟ್\x1a")), null, "Ctrl-Z at the end of an old DOS file");
+  assert.equal(notText(enc("line one\x0bline two")), null, "a vertical tab from Word");
+  assert.equal(notText(new Uint8Array([0x41, 0x00, 0x42])), "other");
+  assert.equal(notText(new Uint8Array([0x95, 0x0c, 0xa8, 0x0c])), null, "4 bytes with no NUL and form feeds read as text");
+  assert.equal(notText(new Uint8Array([0x95, 0x0c, 0x00, 0x0c])), "other", "UTF-16 with no byte order mark has NULs and is refused");
+});
+
+test("a Word file opens by its contents whatever its name, and a renamed .doc is named for what it is", async () => {
+  const io = { convert: (t) => ({ text: t, unknown: [] }), bestLayout: () => "nudi", decodeWindows1252: () => assert.fail("not text") };
+  const docx = await writeDocx("ಕನ್ನಡ ಪುಟ");
+  for (const name of ["renamed.doc", "no-extension", "saved.docx"]) {
+    assert.equal((await openFile(new File([docx], name), io)).text, "ಕನ್ನಡ ಪುಟ", name);
+  }
+  const ole = new Uint8Array([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1, ...new Array(64).fill(0)]);
+  await assert.rejects(openFile(new File([ole], "renamed.docx"), io), (e) => e instanceof NotText && e.kind === "doc");
+});
+
+test("HTML saved by the editor and then edited elsewhere is read like any other page", async () => {
+  const { DOMParser } = await import("linkedom");
+  const saved = globalThis.DOMParser;
+  globalThis.DOMParser = DOMParser;
+  try {
+    const io = { convert: () => assert.fail("nothing to convert"), bestLayout: () => assert.fail("nothing to judge"), decodeWindows1252: () => assert.fail("UTF-8") };
+    const page = (body) => `<!doctype html><html><head><meta name="generator" content="kannadi"></head><body>${body}</body></html>`;
+    const open = async (body) => (await openFile(new File([page(body)], "edited.html"), io)).text;
+    assert.equal(await open("<p>ಒಂದು<br>ಎರಡು</p>"), "ಒಂದು\nಎರಡು");
+    assert.equal(await open("<h1>ಶೀರ್ಷಿಕೆ</h1><p>ಪಠ್ಯ</p>"), "ಶೀರ್ಷಿಕೆ\nಪಠ್ಯ");
+  } finally {
+    globalThis.DOMParser = saved;
+  }
+});

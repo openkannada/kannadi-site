@@ -4,6 +4,7 @@ import { readDocx, writeDocx } from "./docx.ts";
 import {
   type Converted,
   decodeBytes,
+  isZip,
   notText,
   unixLines,
   escapeMarkup,
@@ -159,11 +160,13 @@ export async function openFile(file: File, { convert, bestLayout, decodeWindows1
   const join = (segments: Segment[]) => joinSegments(resolveAuto(segments, bestLayout), convert);
   const bytes = new Uint8Array(await file.arrayBuffer());
   const name = file.name.toLowerCase();
-  if (name.endsWith(".docx")) return join(await readDocx(bytes));
+  // A Word file is read by its contents, so a renamed .docx opens and a renamed .doc is named for what it is.
+  if (isZip(bytes) && (name.endsWith(".docx") || !name.includes(".") || /\.(doc|txt)$/.test(name))) return join(await readDocx(bytes));
   const kind = notText(bytes);
   if (kind) throw new NotText(kind);
   const text = unixLines(decodeBytes(bytes, decodeWindows1252));
-  if (ours(text)) return { text: ownText(text), unknown: [], converted: 0, layouts: [] };
+  const own = ours(text) ? ownText(text) : null;
+  if (own !== null) return { text: own, unknown: [], converted: 0, layouts: [] };
   if (name.endsWith(".html") || name.endsWith(".htm") || /^\s*<(!doctype|html)/i.test(text)) {
     return join(htmlSegments(parseHtml(text)));
   }
@@ -188,10 +191,16 @@ function ours(html: string): boolean {
   return /^\s*<!doctype html>/i.test(html) && new RegExp(`<meta name="generator" content="${GENERATOR}">`).test(html);
 }
 
-/** The text of HTML this editor saved: each paragraph is 1 line, kept exactly. */
-function ownText(html: string): string {
-  const doc = new DOMParser().parseFromString(html.replace(/<style\b[\s\S]*?<\/style>/gi, ""), "text/html");
-  return [...doc.body.querySelectorAll("p")].map((p) => p.textContent ?? "").join("\n");
+/**
+ * The text of HTML this editor saved, each paragraph 1 line kept exactly; null when the body holds anything else,
+ * such as an edit made in another program, so the file is read like any other page.
+ */
+function ownText(html: string): string | null {
+  const doc = parseHtml(html);
+  const blocks = [...doc.body.childNodes].filter((n) => n.nodeType !== Node.TEXT_NODE || (n as Text).data.trim());
+  const plain = (p: Element) => p.tagName === "P" && [...p.childNodes].every((n) => n.nodeType === Node.TEXT_NODE);
+  if (!blocks.every((n) => n.nodeType === Node.ELEMENT_NODE && plain(n as Element))) return null;
+  return blocks.map((p) => p.textContent ?? "").join("\n");
 }
 
 const HTML_TEMPLATE = (title: string, body: string) => `<!doctype html>

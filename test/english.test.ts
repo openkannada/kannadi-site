@@ -38,6 +38,7 @@ function harness({ load = async () => WORDS, stored = [] } = {}) {
     doc.word.end = doc.word.start + kannada.length;
   };
   const composer = {
+    mode: "english",
     get current() {
       return doc.word && { ...doc.word };
     },
@@ -59,7 +60,7 @@ function harness({ load = async () => WORDS, stored = [] } = {}) {
     write(english.spell(latin));
     english.typing(composer.current);
   };
-  return { doc, english, picks, strip, type, finish };
+  return { doc, english, picks, strip, type, finish, composer };
 }
 
 test("a pick kept with space is remembered; one put back with Esc or undone is not", async () => {
@@ -164,4 +165,16 @@ test("a word typed while the word list loads gets its best spelling once the lis
   await english.prepare();
   await new Promise((r) => setTimeout(r, 0));
   assert.equal(doc.text, "ನಮಸ್ಕಾರ");
+});
+
+test("a word typed in Baraha while the English word list loads is left as typed", async () => {
+  let arrive;
+  const { doc, english, type, composer } = harness({ load: () => new Promise((resolve) => (arrive = resolve)) });
+  type("namaskara");
+  composer.mode = "baraha";
+  const typed = doc.text;
+  arrive(WORDS);
+  await english.prepare();
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(doc.text, typed);
 });

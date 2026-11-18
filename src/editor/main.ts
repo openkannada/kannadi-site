@@ -5,11 +5,13 @@ import { Composer } from "./compose.ts";
 import { DocEditor } from "./editor.ts";
 import type { ExportFormat } from "./files.ts";
 import { registerWhenIdle, resolveModelContext } from "../lib/model-context.ts";
-import { Issues, PROBLEM_NAMES } from "./issues.ts";
+import { Issues } from "./issues.ts";
 import * as kannadi from "./kannadi.ts";
 import { EnglishTyping } from "./english.ts";
 import { SuggestStrip } from "./strip.ts";
-import { countWords, LAYOUT_NAMES, type Layout, looksLegacy, nudiNotes, plural, type TypingMode } from "./text.ts";
+import type { Plural } from "../i18n/core.ts";
+import { count, type EditorStrings, fmt, nodes, num, pick, S } from "./strings.ts";
+import { countWords, type Layout, looksLegacy, nudiNotes, type TypingMode } from "./text.ts";
 import { recognitionClass, Voice } from "./voice.ts";
 
 // From a Karnataka RDPR scheme page, Dec 2002, set in BRH Kannada:
@@ -97,7 +99,7 @@ const ui = {
 };
 
 let settings: Settings = { mode: "kannada", font: "sans", autoConvert: true, zero: true, digits: false };
-let fileName = "kannada";
+let fileName = S.files.defaultName;
 let countTimer: ReturnType<typeof setTimeout> | undefined;
 let saveTimer: ReturnType<typeof setTimeout> | undefined;
 let toastTimer: ReturnType<typeof setTimeout> | undefined;
@@ -138,23 +140,21 @@ const convert = (text: string, layout: Layout | "auto" = "auto") =>
 const io = { convert, bestLayout: kannadi.bestLayout, decodeWindows1252: kannadi.decodeWindows1252 };
 
 function layoutNames(layouts: Layout[] = []): string {
-  const names = layouts.map((l) => LAYOUT_NAMES[l] ?? l);
-  return names.length ? names.join(", and from ") : "a legacy font";
+  const names = layouts.map((l) => S.convert.layouts[l] ?? l);
+  return names.length ? names.reduce((first, second) => fmt(S.convert.andFrom, { first, second })) : S.convert.legacyFont;
 }
 
 function report(result: Result, what: string): void {
   const issues = result.unknown.length;
-  say(
-    `${what}: ${plural(result.converted ?? 0, "character", "characters")} converted from ${layoutNames(result.layouts)}.` +
-      (issues ? ` ${plural(issues, "glyph", "glyphs")} to check.` : ""),
-  );
+  const done = count(result.converted ?? 0, S.convert.report, { what, from: layoutNames(result.layouts) });
+  say(issues ? `${done} ${count(issues, S.convert.glyphs)}` : done);
 }
 
 // The document stays read-only until the converter has loaded.
 try {
   await kannadi.init();
 } catch (e) {
-  say("This browser could not load the editor. A recent Chrome, Edge, Firefox or Safari will work.");
+  say(S.editor.loadFailed);
   throw e;
 }
 
@@ -173,8 +173,8 @@ const issues = new Issues(editor, kannadi, {
   onChange(i) {
     ui.chip.hidden = i.total === 0;
     ui.chip.dataset.kind = i.unknown.length ? "unknown" : "malformed";
-    ui.problemCount.textContent = i.total.toLocaleString("en-IN");
-    ui.chip.setAttribute("aria-label", `${plural(i.total, "problem", "problems")} to check`);
+    ui.problemCount.textContent = num(i.total);
+    ui.chip.setAttribute("aria-label", count(i.total, S.problems.chipLabel));
     if (i.total === 0) byId("problems-panel").hidePopover?.();
     // Keeping a spelling changes no text, so save here too.
     clearTimeout(saveTimer);
@@ -231,21 +231,20 @@ const composer = new Composer(
 );
 english.attach(composer);
 
-/** Shows a count and its noun, singular for 1: "1 word", "2 words". */
-function showCount(el: HTMLElement, n: number): void {
-  el.textContent = n.toLocaleString("en-IN");
-  const noun = el.nextElementSibling as HTMLElement | null;
-  if (noun?.dataset.one) noun.textContent = n === 1 ? noun.dataset.one : `${noun.dataset.one}s`;
+/** Shows a count in its sentence, "1 word" or "2 words", keeping the number's own element. */
+function showCount(el: HTMLElement, n: number, forms: Plural): void {
+  el.textContent = num(n);
+  el.parentElement?.replaceChildren(...nodes(pick(n, forms), { n: el }));
 }
 
 function update(text: string): void {
   ui.welcome.hidden = text.length > 0;
-  showCount(ui.chars, text.length);
+  showCount(ui.chars, text.length, S.counts.characters);
   clearTimeout(countTimer);
   countTimer = setTimeout(() => {
     const current = editor.text;
-    showCount(ui.words, countWords(current));
-    showCount(ui.aksharas, kannadi.countAksharas(current));
+    showCount(ui.words, countWords(current), S.counts.words);
+    showCount(ui.aksharas, kannadi.countAksharas(current), S.counts.aksharas);
   }, Math.min(600, 80 + text.length / 10000));
   clearTimeout(saveTimer);
   saveTimer = setTimeout(save, 500);
@@ -256,7 +255,7 @@ function save(): void {
   const kept = issues.kept.map((k) => k.offset);
   const ok = store.write({ text: editor.text, unknown, kept, settings, fileName });
   if (!editor.text) ui.saved.textContent = "";
-  else ui.saved.textContent = ok ? "Saved on this device" : "Too large to keep on this device";
+  else ui.saved.textContent = ok ? S.files.savedHere : S.files.tooLarge;
 }
 
 function saveSettings(): void {
@@ -282,11 +281,11 @@ async function open(file: File | undefined): Promise<void> {
     issues.addUnknown(result.unknown);
     editor.el.focus();
     editor.select(0);
-    fileName = file.name.replace(/\.[^.]*$/, "") || "kannada";
-    if (result.converted) report(result, `Opened ${file.name}`);
-    else say(`Opened ${file.name}. Nothing in it needed converting.`);
+    fileName = file.name.replace(/\.[^.]*$/, "") || S.files.defaultName;
+    if (result.converted) report(result, fmt(S.convert.opened, { name: file.name }));
+    else say(fmt(S.files.nothingToConvert, { name: file.name }));
   } catch (e) {
-    say(`Could not open ${file.name}. ${e instanceof Error ? e.message : ""}`.trim());
+    say(fmt(S.files.openFailed, { name: file.name, error: e instanceof Error ? e.message : "" }).trim());
   }
 }
 
@@ -309,19 +308,19 @@ async function exportAs(format: ExportFormat | "nudi"): Promise<void> {
     const name = `${fileName}-nudi.txt`;
     download(new Blob([bytes as Uint8Array<ArrayBuffer>], { type: "text/plain;charset=windows-1252" }), name);
     const notes = nudiNotes(encoded.unencodable.length, encoded.malformed.length / 2, questionMarks);
-    say(`Saved ${name}. Set it in a Nudi or BRH font to read it. ${notes}`.trim());
+    say(fmt(S.files.savedNudi, { name, notes }).trim());
     return;
   }
   const name = `${fileName}.${format}`;
   try {
     download(await (await files()).exportBlob(editor.text, format, fileName), name);
   } catch {
-    say(`Could not save ${name}. Reload the page and try again.`);
+    say(fmt(S.files.saveFailed, { name }));
     return;
   }
   settings.lastFormat = format;
   saveSettings();
-  say(`Saved ${name} to your downloads.`);
+  say(fmt(S.files.saved, { name }));
 }
 
 /** The selected range, or the whole document when nothing is selected. */
@@ -332,16 +331,16 @@ function selectionOrAll(): { start: number; end: number; whole: boolean } {
 }
 
 /** Applies a text transform to the selection, or to the whole document. */
-function transform(fn: (text: string) => string, done: string): void {
+function transform(fn: (text: string) => string, done: EditorStrings["edit"]["normalize"]): void {
   const { start, end, whole } = selectionOrAll();
   const before = editor.text.slice(start, end);
   const after = fn(before);
   if (after === before) {
-    say(`${done}: nothing to change.`);
+    say(done.nothing);
     return;
   }
   editor.replace(start, end, after);
-  say(`${done}${whole ? "" : " in the selection"}. Undo with Ctrl+Z.`);
+  say(whole ? done.whole : done.selection);
 }
 
 function convertSelection(): void {
@@ -349,7 +348,7 @@ function convertSelection(): void {
   const result = convert(editor.text.slice(start, end));
   editor.replace(start, end, result.text);
   issues.addUnknown(result.unknown.map((o) => start + o));
-  report({ ...result, converted: end - start, layouts: [result.layout] }, whole ? "Converted the document" : "Converted the selection");
+  report({ ...result, converted: end - start, layouts: [result.layout] }, whole ? S.convert.document : S.convert.selection);
 }
 
 function setMode(mode: TypingMode, remember = true): void {
@@ -376,7 +375,7 @@ function nextProblem(dir: number): void {
   const sel = editor.selection();
   const item = sel ? issues.next(sel.start, sel.end, dir) : issues.next(-1, -1, dir);
   if (item) issues.show(item, true);
-  else say("Nothing is marked.");
+  else say(S.problems.noneMarked);
 }
 
 async function copy(text: string, done: string, failed: string): Promise<void> {
@@ -395,25 +394,25 @@ const ACTIONS: Record<string, () => void> = {
     setMode("iso15919");
     editor.el.focus();
   },
-  normalize: () => transform(kannadi.normalize, "Normalized"),
-  modernize: () => transform(kannadi.modernize, "Modernized Old Kannada letters"),
+  normalize: () => transform(kannadi.normalize, S.edit.normalize),
+  modernize: () => transform(kannadi.modernize, S.edit.modernize),
   new: () => {
     issues.clear();
     editor.setText("");
-    fileName = "kannada";
+    fileName = S.files.defaultName;
     editor.el.focus();
-    say("New document. Undo with Ctrl+Z to get the last one back.");
+    say(S.edit.newDocument);
   },
   shortcuts: () => ui.shortcuts.showModal(),
   copy: () => {
     issues.flush();
-    void copy(editor.text, "Copied the whole document.", "Could not copy. Select the text and copy it by hand.");
+    void copy(editor.text, S.copy.done, S.copy.failed);
   },
   "copy-nudi": () => {
     issues.flush();
     const encoded = kannadi.toNudi(editor.text);
     const notes = nudiNotes(encoded.unencodable.length, encoded.malformed.length / 2);
-    void copy(encoded.text, `Copied as Nudi. Paste it into Word and set a Nudi or BRH font. ${notes}`.trim(), "Could not copy. Save as Nudi text instead.");
+    void copy(encoded.text, fmt(S.copy.nudi, { notes }).trim(), S.copy.nudiFailed);
   },
 };
 
@@ -432,14 +431,14 @@ function wireVoice(): void {
         const before = editor.text.slice(0, sel.start);
         insert({ text: (before && !/\s$/.test(before) ? " " : "") + final.trim(), unknown: [] });
       }
-      heard.textContent = interim || "Listening";
+      heard.textContent = interim || S.voice.listening;
     },
     onState(listening, error) {
       mic.setAttribute("aria-pressed", String(listening));
       heard.hidden = !listening;
-      heard.textContent = "Listening";
-      if (listening) ui.announce.textContent = "Listening. Speak in Kannada; select the microphone again to stop.";
-      else say(error ?? "Stopped listening.");
+      heard.textContent = S.voice.listening;
+      if (listening) ui.announce.textContent = S.voice.started;
+      else say(error ?? S.voice.stopped);
     },
   });
   // Keep the caret in the document, where the words go.
@@ -463,22 +462,22 @@ function wire(): void {
     }
     void files().then(({ pasted }) => {
       const result = pasted(html, plain, io);
-      const start = insert(result, "Pasted");
+      const start = insert(result, S.convert.pasted);
       if (!result.converted) return;
       say(ui.toastText.textContent ?? "", {
-        label: "Paste as is",
+        label: S.paste.asIs,
         run: () => {
           if (editor.text.slice(start, start + result.text.length) !== result.text) {
-            say("The pasted text has changed since, so it was left as it is.");
+            say(S.paste.changed);
             return;
           }
           editor.replace(start, start + result.text.length, plain);
-          say("Pasted as is, without converting.");
+          say(S.paste.pastedAsIs);
         },
       });
     }, () => {
       insert({ text: plain, unknown: [] });
-      say("Pasted as is: the converter did not load. Reload the page to convert pasted text.");
+      say(S.paste.noConverter);
     });
   });
   ui.doc.addEventListener("click", () => {
@@ -488,7 +487,7 @@ function wire(): void {
     const item = issues.at(sel.start);
     if (!item) return;
     issues.popover(item, false);
-    ui.announce.textContent = `${PROBLEM_NAMES[item.kind]} here. Press F8 for its fixes.`;
+    ui.announce.textContent = fmt(S.problems.here, { problem: S.problems.names[item.kind] });
   });
   ui.doc.addEventListener("keydown", (e) => {
     if (e.key === "Tab" && composer.mode === "english" && english.cycle(e.shiftKey)) e.preventDefault();
@@ -543,8 +542,8 @@ function wire(): void {
     issues.clear();
     editor.setText(result.text);
     issues.addUnknown(result.unknown);
-    fileName = "sample";
-    say("Converted part of a 2002 Karnataka government page, typed in BRH Kannada.");
+    fileName = S.files.sampleName;
+    say(S.convert.sample);
   });
   for (const b of document.querySelectorAll<HTMLButtonElement>("[data-run]")) {
     b.addEventListener("click", () => {
@@ -592,8 +591,7 @@ function wire(): void {
     } else if (e.altKey && !mod && /^Digit[1-4]$/.test(e.code)) {
       e.preventDefault();
       setMode(MODES[Number(e.code.slice(5)) - 1]!);
-      const label = document.querySelector<HTMLElement>(`label[for="mode-${settings.mode}"]`);
-      say(`Typing with ${label?.dataset.name ?? settings.mode}.`);
+      say(fmt(S.modes.typingWith, { name: S.modes[settings.mode].name }));
     } else if (e.key === "F8") {
       e.preventDefault();
       nextProblem(e.shiftKey ? -1 : 1);
@@ -634,8 +632,8 @@ function restore(): void {
     const offsets = (list: unknown) => (Array.isArray(list) ? list.filter((o): o is number => Number.isInteger(o) && o < saved.text.length) : []);
     issues.addUnknown(offsets(saved.unknown));
     issues.keep(offsets(saved.kept));
-    fileName = saved.fileName ?? "kannada";
-    if (looksLegacy(saved.text)) say("Welcome back. Some of this still looks like Nudi, Baraha or Akruti: select it and choose Convert.");
+    fileName = saved.fileName ?? S.files.defaultName;
+    if (looksLegacy(saved.text)) say(S.editor.welcomeBack);
   } else {
     update("");
   }

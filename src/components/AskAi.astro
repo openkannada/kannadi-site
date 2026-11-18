@@ -1,5 +1,7 @@
 ---
-import { ASK_AI, LIVE, pagePath } from "../content/site.ts";
+import { LIVE, pagePath } from "../content/site.ts";
+import { fmt } from "../i18n/core.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
 import type { Page } from "../content/pages.ts";
 import { askLinks } from "../lib/ask-ai.ts";
 import { href } from "../lib/paths.ts";
@@ -10,23 +12,24 @@ interface Props {
 }
 const { page } = Astro.props;
 const markdownPath = href(`${pagePath(page.slug)}index.md`);
-const links = askLinks(new URL(markdownPath, Astro.site ?? LIVE.origin).href, ASK_AI.prompt);
+const T = SITE_STRINGS[page.lang ?? "en"].askAi;
+const links = askLinks(new URL(markdownPath, Astro.site ?? LIVE.origin).href, (url) => fmt(T.prompt, { url }));
 ---
 <div class="ask-ai" data-md-skip>
   <button type="button" class="btn ask-ai-button" popovertarget="ask-ai-menu">
     <Icon name="sparkle" />
-    {ASK_AI.label}
+    {T.label}
   </button>
-  <div id="ask-ai-menu" popover class="menu ask-ai-menu" role="group" aria-label={ASK_AI.label}>
-    <a class="menu-item" href={markdownPath} data-copy-markdown data-copied={ASK_AI.copied}>
+  <div id="ask-ai-menu" popover class="menu ask-ai-menu" role="group" aria-label={T.label}>
+    <a class="menu-item" href={markdownPath} data-copy-markdown data-copied={T.copied}>
       <Icon name="copy" class="size-5 shrink-0" />
-      <span data-label aria-live="polite">{ASK_AI.copy}</span>
+      <span data-label aria-live="polite">{T.copy}</span>
     </a>
     <div class="menu-sep" role="separator"></div>
     {links.map((l) => (
       <a class="menu-item" href={l.href} target="_blank" rel="noopener noreferrer">
         <Icon name="external" class="size-5 shrink-0" />
-        {ASK_AI.open(l.name)}
+        {fmt(T.open, { name: l.name })}
       </a>
     ))}
   </div>

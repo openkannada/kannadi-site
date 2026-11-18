@@ -1,16 +1,20 @@
 ---
-import { HOME, type Page } from "../content/pages.ts";
+import { HOMES, isHome, type Page } from "../content/pages.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
+import { pagePath } from "../content/site.ts";
 import { href } from "../lib/paths.ts";
 
 interface Props {
   page: Page;
 }
 const { page } = Astro.props;
+const lang = page.lang ?? "en";
+const home = HOMES[lang];
 ---
-{page.slug && (
-  <nav aria-label="Breadcrumb" class="crumbs" data-md-skip>
+{!isHome(page) && (
+  <nav aria-label={SITE_STRINGS[lang].breadcrumb} class="crumbs" data-md-skip>
     <ol>
-      <li><a href={href("/")}>{HOME.name}</a></li>
+      <li><a href={href(pagePath(home.slug))}>{home.name}</a></li>
       <li aria-current="page">{page.name}</li>
     </ol>
   </nav>

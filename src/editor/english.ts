@@ -4,6 +4,7 @@
 // commits the word with its space still leaves a chance to swap it.
 import type { ComposingWord } from "./compose.ts";
 import type { SuggestStrip } from "./strip.ts";
+import { count, fmt, S } from "./strings.ts";
 import { parseWords, Suggester, type SuggestKannadi } from "./suggest.ts";
 
 export interface EnglishDeps {
@@ -103,7 +104,7 @@ export class EnglishTyping {
     this.last = null;
     if (this.choices.length > 1) {
       this.deps.strip.show(word, this.choices, this.chosen);
-      this.announceLater(`${this.choices.length} words to choose from`);
+      this.announceLater(count(this.choices.length, S.suggest.choices));
     } else {
       this.deps.strip.hide();
     }
@@ -155,7 +156,7 @@ export class EnglishTyping {
       this.chosen = (this.chosen + (backward ? n - 1 : 1)) % n;
       composer.respell(this.choices[this.chosen]!);
       this.deps.strip.select(this.chosen);
-      this.deps.announce(`${this.choices[this.chosen]}, ${this.chosen + 1} of ${n}`);
+      this.deps.announce(fmt(S.suggest.choice, { word: this.choices[this.chosen]!, i: this.chosen + 1, n }));
     }
     return true;
   }

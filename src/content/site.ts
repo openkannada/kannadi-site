@@ -14,8 +14,8 @@ export const ORG = {
   name: "Open Kannada",
   github: "https://github.com/openkannada",
   founders: [
-    { name: "Prasad Subrahmanya", url: "https://prasad.tech" },
-    { name: "Neha Prasad", url: "https://neha-prasad.com/" },
+    { name: "Prasad Subrahmanya", nameKn: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ", url: "https://prasad.tech" },
+    { name: "Neha Prasad", nameKn: "ನೇಹಾ ಪ್ರಸಾದ್", url: "https://neha-prasad.com/" },
   ],
   supporter: { name: "DataRavel Inc.", alternateName: "Luminik", label: "DataRavel Inc. (dba Luminik)", url: "https://www.luminik.io" },
   contacts: [
@@ -42,15 +42,6 @@ export const LIVE = {
   origin: "https://openkannada.org",
   host: "openkannada.org",
   launched: false,
-} as const;
-
-/** The Ask AI menu on every page but home. */
-export const ASK_AI = {
-  label: "Ask AI",
-  copy: "Copy page as Markdown",
-  copied: "Copied",
-  open: (name: string) => `Open in ${name}`,
-  prompt: (url: string) => `Read ${url} and answer my questions about it.`,
 } as const;
 
 export const AUTHOR = {

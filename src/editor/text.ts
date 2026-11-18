@@ -1,4 +1,5 @@
 // Pure text helpers shared by the editor and the importers. No DOM access.
+import { count as countOf, S } from "./strings.ts";
 
 /** A legacy font layout, or "auto" for legacy text in an unknown font. */
 export type Layout = "nudi" | "akruti";
@@ -86,8 +87,6 @@ export function decodeBytes(bytes: Uint8Array, decodeWindows1252: (bytes: Uint8A
     return decodeWindows1252(bytes);
   }
 }
-
-export const LAYOUT_NAMES: Record<Layout, string> = { nudi: "Nudi or Baraha", akruti: "Akruti" };
 
 /**
  * Replaces "auto" in every segment with 1 layout, chosen over all their text
@@ -209,11 +208,6 @@ export function escapeMarkup(text: string): string {
   return text.replace(/[<>&"]/g, (c) => MARKUP[c]!);
 }
 
-/** Formats a count with its noun: "1 word", "1,20,000 words" in Indian grouping. */
-export function plural(n: number, one: string, many: string): string {
-  return `${n.toLocaleString("en-IN")} ${n === 1 ? one : many}`;
-}
-
 /**
  * What a Unicode to Nudi conversion could not write, in 1 or 2 sentences.
  * `questionMarks` counts characters a Nudi text file had to write as "?".
@@ -221,9 +215,9 @@ export function plural(n: number, one: string, many: string): string {
 export function nudiNotes(unencodable: number, malformed: number, questionMarks = 0): string {
   const kept = unencodable - questionMarks;
   return [
-    kept ? `${plural(kept, "character has", "characters have")} no Nudi glyph and stayed as typed.` : "",
-    questionMarks ? `${plural(questionMarks, "character has", "characters have")} no byte in a Nudi text file and became ?.` : "",
-    malformed ? `${plural(malformed, "syllable is", "syllables are")} malformed and may not read back the same.` : "",
+    kept ? countOf(kept, S.nudi.unencodable) : "",
+    questionMarks ? countOf(questionMarks, S.nudi.questionMarks) : "",
+    malformed ? countOf(malformed, S.nudi.malformed) : "",
   ]
     .filter(Boolean)
     .join(" ");

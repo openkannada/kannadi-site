@@ -1,6 +1,14 @@
 ---
-import { BRAND } from "../content/brand.ts";
+import { BRAND as ALL } from "../content/brand.ts";
+import type { Lang } from "../i18n/core.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
 import { withBase } from "../lib/paths.ts";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const BRAND = ALL[lang];
 ---
 {BRAND.sections.map((s) => (
   <section>
@@ -12,7 +20,7 @@ import { withBase } from "../lib/paths.ts";
 ))}
 
 <section aria-labelledby="owner">
-  <h2 id="owner">Who holds them</h2>
+  <h2 id="owner">{SITE_STRINGS[lang].brand.owner}</h2>
   <p>{BRAND.owner}</p>
   <p set:html={BRAND.removal} />
 </section>

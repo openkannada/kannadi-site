@@ -1,14 +1,17 @@
 ---
 import type { Faq } from "../content/pages.ts";
+import type { Lang } from "../i18n/core.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
 import { withBase } from "../lib/paths.ts";
 
 interface Props {
   faq: Faq[];
+  lang?: Lang;
 }
-const { faq } = Astro.props;
+const { faq, lang = "en" } = Astro.props;
 ---
 <section aria-labelledby="faq-heading">
-  <h2 id="faq-heading">Questions</h2>
+  <h2 id="faq-heading">{SITE_STRINGS[lang].faq}</h2>
   <div class="faq">
     {faq.map((f) => (
       <details>

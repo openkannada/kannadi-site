@@ -2,6 +2,7 @@
 // also published as plain text in the FAQPage JSON-LD.
 
 import type { TypingMode } from "../editor/text.ts";
+import type { Lang } from "../i18n/core.ts";
 import { CONSONANTS, SIGNS, VOWELS, YOGAVAHAS } from "./letters.ts";
 
 export interface Faq {
@@ -16,6 +17,8 @@ interface PageBase {
   lang?: "en" | "kn";
   /** The slug of the same page in the other language, once it exists. Both pages must name each other. */
   twin?: string;
+  /** Copy that waits for a native reader; the page is left out of the build until the mark is removed. */
+  needsReview?: true;
   /** Short name for navigation and breadcrumbs. */
   name: string;
   title: string;
@@ -80,9 +83,11 @@ const CONVERT_STEPS = [
 
 const TYPING_LINK = '<a href="/english-to-kannada-typing/">English to Kannada typing</a>';
 
-export const PAGES: Page[] = [
+/** Every page, drafts included. */
+export const ALL_PAGES: Page[] = [
   {
     slug: "",
+    twin: "kn",
     kind: "tool",
     name: "Editor",
     title: "Kannada editor and converter: Nudi to Unicode, typing and more",
@@ -425,6 +430,7 @@ export const PAGES: Page[] = [
   },
   {
     slug: "about",
+    twin: "kn/about",
     kind: "info",
     name: "About",
     title: "About Open Kannada: free, open-source tools for Kannada",
@@ -440,6 +446,7 @@ export const PAGES: Page[] = [
   },
   {
     slug: "press",
+    twin: "kn/press",
     kind: "info",
     name: "Press kit",
     title: "Open Kannada press kit: logos, descriptions and facts",
@@ -455,6 +462,7 @@ export const PAGES: Page[] = [
   },
   {
     slug: "names-and-logos",
+    twin: "kn/names-and-logos",
     kind: "info",
     name: "Names and logos",
     title: "Open Kannada names and logos: how to refer to the project",
@@ -462,7 +470,112 @@ export const PAGES: Page[] = [
       "Anyone may say their work is built with kannadi. Here is how to use the Open Kannada and kannadi names and logos, and which license covers each part.",
     h1: "Names and logos",
     intro:
-      "Anyone may use our code, fonts and data under their licenses, and say that their work is built with kannadi. The names and logos say who made something, so they stay with this project.",
+      "Anyone may use our code and data, and the fonts we ship, under their licenses, and say that their work is built with kannadi. The names and logos say who made something, so they stay with this project.",
+    body: "brand",
+    faq: [],
+    og: { from: "kannadi", to: "ಕನ್ನಡಿ" },
+    keywords: "",
+  },
+  // Kannada pages, each the twin of an English page.
+  {
+    slug: "kn",
+    lang: "kn",
+    twin: "",
+    kind: "tool",
+    name: "ಸಂಪಾದಕ",
+    title: "ಕನ್ನಡ ಸಂಪಾದಕ ಮತ್ತು ಪರಿವರ್ತಕ: ನುಡಿಯಿಂದ ಯೂನಿಕೋಡ್, ಟೈಪಿಂಗ್ ಮತ್ತು ಇನ್ನಷ್ಟು",
+    description:
+      "ಬ್ರೌಸರ್‌ನಲ್ಲೇ ಉಚಿತ ಕನ್ನಡ ಸಂಪಾದಕ. ನುಡಿ, ಬರಹ, ಆಕೃತಿ ಪಠ್ಯವನ್ನು ಯೂನಿಕೋಡ್‌ಗೆ ಬದಲಿಸಿ, ಉಳಿದ ದೋಷಗಳನ್ನು ಸರಿಪಡಿಸಿ, ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರಗಳಲ್ಲಿ ಕನ್ನಡ ಟೈಪ್ ಮಾಡಿ.",
+    h1: "ಕನ್ನಡ ಸಂಪಾದಕ ಮತ್ತು ಪರಿವರ್ತಕ",
+    intro:
+      "ಕನ್ನಡಿ ಉಚಿತ ಕನ್ನಡ ಸಂಪಾದಕ: ಹಳೆಯ ನುಡಿ, ಬರಹ ಮತ್ತು ಆಕೃತಿ ಫಾಂಟ್‌ಗಳಲ್ಲಿ ಟೈಪ್ ಮಾಡಿದ ಪಠ್ಯವನ್ನು ಯೂನಿಕೋಡ್‌ಗೆ ಬದಲಿಸುತ್ತದೆ, ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರಗಳಿಂದ ಕನ್ನಡ ಟೈಪ್ ಮಾಡಿಸುತ್ತದೆ, ಮತ್ತು Word, ವೆಬ್, ಪಠ್ಯ ಹಾಗೂ ನುಡಿ ಫೈಲ್‌ಗಳಾಗಿ ಉಳಿಸುತ್ತದೆ, ಎಲ್ಲವೂ ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲೇ.",
+    welcome: "ಇಲ್ಲಿ ಟೈಪ್ ಮಾಡಿ, ಅಥವಾ ಹಳೆಯ ನುಡಿ, ಬರಹ, ಆಕೃತಿ ಪಠ್ಯವನ್ನು ಅಂಟಿಸಿ ಇಲ್ಲವೇ ಇಲ್ಲಿಗೆ ಎಳೆದು ಬಿಡಿ. ಯೂನಿಕೋಡ್ ಸಿಗುತ್ತದೆ.",
+    mode: "kannada",
+    howTitle: "ಕನ್ನಡ ಸಂಪಾದಕವನ್ನು ಬಳಸುವ ವಿಧಾನ",
+    steps: [
+      "ಪಠ್ಯವನ್ನು ಅಂಟಿಸಿ, TXT, Word ಅಥವಾ HTML ಫೈಲ್ ತೆರೆಯಿರಿ, ಇಲ್ಲವೇ ಟೈಪ್ ಮಾಡಲು ಶುರು ಮಾಡಿ. ಹಳೆಯ ಕನ್ನಡ ಫಾಂಟ್‌ಗಳ ಪಠ್ಯ ತಾನಾಗಿಯೇ ಯೂನಿಕೋಡ್ ಆಗುತ್ತದೆ.",
+      "ಗುರುತಿಸಿದ್ದನ್ನು ಸರಿಪಡಿಸಿ: ಗುರುತನ್ನು ಆರಿಸಿ, ಅಥವಾ <kbd>F8</kbd> ಒತ್ತಿ, ಸರಿಪಡಿಕೆಯನ್ನು ಆರಿಸಿ.",
+      "Word, ಸಾದಾ ಪಠ್ಯ, ವೆಬ್ ಪುಟ, ಅಥವಾ ಇನ್ನೂ ನುಡಿ ಫಾಂಟ್ ಬಳಸುವ ಕಚೇರಿಗಳಿಗಾಗಿ ನುಡಿ ಪಠ್ಯವಾಗಿ ಉಳಿಸಲು <b>ಉಳಿಸು</b> ಆರಿಸಿ.",
+    ],
+    faq: [
+      {
+        q: "ಇದು ಯಾವ ಫಾಂಟ್‌ಗಳನ್ನು ಪರಿವರ್ತಿಸುತ್ತದೆ?",
+        a: "ನುಡಿ 1 ರಿಂದ 5, BRH Kannada ಮುಂತಾದ ಬರಹ ANSI ಫಾಂಟ್‌ಗಳು, ಮತ್ತು AkrutiKndPadma ಮುಂತಾದ ಆಕೃತಿ ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು. ಈಗಾಗಲೇ ಕನ್ನಡ ಅಕ್ಷರಗಳಾಗಿ ಕಾಣುವ ಪಠ್ಯ ಯೂನಿಕೋಡ್‌ನಲ್ಲೇ ಇದೆ, ಅದಕ್ಕೆ ಪರಿವರ್ತನೆ ಬೇಕಿಲ್ಲ.",
+      },
+      {
+        q: "ಇಂಗ್ಲಿಷ್ ಕೀಬೋರ್ಡ್‌ನಲ್ಲಿ ಕನ್ನಡ ಟೈಪ್ ಮಾಡುವುದು ಹೇಗೆ?",
+        a: 'ಟೂಲ್‌ಬಾರ್‌ನಲ್ಲಿ <b>ಇಂಗ್ಲಿಷ್</b> ಆರಿಸಿ, ಪದಗಳು ಕೇಳಿಸುವಂತೆಯೇ ಟೈಪ್ ಮಾಡಿ: <kbd>namaskara</kbd> ಎಂದರೆ ನಮಸ್ಕಾರ. ಅದೇ ರೀತಿ ಕೇಳಿಸುವ ಬೇರೆ ಪದಗಳು ಪದದ ಮೇಲೆ ಕಾಣುತ್ತವೆ; ಬೇಕಾದದ್ದನ್ನು ಆರಿಸಲು <kbd>Tab</kbd> ಒತ್ತಿ ಅಥವಾ ಅದನ್ನು ತಟ್ಟಿ. ನಿಖರವಾದ ಕಾಗುಣಿತಕ್ಕೆ <b>ಬರಹ</b> ಆರಿಸಿ: <kbd>kannaDa</kbd> ಎಂದರೆ ಕನ್ನಡ. ಪದವನ್ನು ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರಗಳಲ್ಲೇ ಉಳಿಸಲು <kbd>Esc</kbd> ಒತ್ತಿ.',
+      },
+      {
+        q: "ಏಕರೂಪಗೊಳಿಸು ಮತ್ತು ಆಧುನಿಕಗೊಳಿಸು ಏನು ಮಾಡುತ್ತವೆ?",
+        a: "ಏಕರೂಪಗೊಳಿಸು, 2 ಭಾಗಗಳಾಗಿ ಟೈಪ್ ಮಾಡಿದ ಸ್ವರಚಿಹ್ನೆಗಳನ್ನು ಜೋಡಿಸುತ್ತದೆ ಮತ್ತು 2 ಸಲ ಬಂದ ಗುರುತುಗಳನ್ನು ತೆಗೆಯುತ್ತದೆ. ಹೀಗಾಗಿ ನೋಡಲು ಒಂದೇ ರೀತಿ ಇರುವ ಪಠ್ಯ ಹುಡುಕಾಟದಲ್ಲೂ ಒಂದೇ ಆಗುತ್ತದೆ. ಆಧುನಿಕಗೊಳಿಸು, ಹಳಗನ್ನಡದ ೞ ಱ ೝ ಅಕ್ಷರಗಳನ್ನು ಳ ರ ನ್ ಆಗಿ ಬದಲಿಸುತ್ತದೆ.",
+      },
+      {
+        q: "ಯೂನಿಕೋಡ್ ಪಠ್ಯವನ್ನು ಮತ್ತೆ ನುಡಿಗೆ ಬದಲಿಸಬಹುದೇ?",
+        a: 'ಹೌದು. <b>ಉಳಿಸು</b> ಆರಿಸಿ, ಫೈಲ್‌ಗಾಗಿ <b>ನುಡಿ ಪಠ್ಯ</b>, ಅಥವಾ Word ಗಾಗಿ <b>ನುಡಿಯಾಗಿ ನಕಲಿಸು</b> ಆರಿಸಿ. ನಂತರ ಅದನ್ನು ನುಡಿ ಅಥವಾ BRH ಫಾಂಟ್‌ನಲ್ಲಿ ಹಾಕಿ. <a href="/unicode-to-nudi/" lang="en">Unicode to Nudi</a> ಪರಿವರ್ತಕವನ್ನೂ ನೋಡಿ.',
+      },
+      {
+        q: "ನನ್ನ ಪಠ್ಯ ಎಲ್ಲಿಗಾದರೂ ಅಪ್‌ಲೋಡ್ ಆಗುತ್ತದೆಯೇ?",
+        a: "ಇಲ್ಲ. ಪರಿವರ್ತಕ WebAssembly ಆಗಿ ನಿಮ್ಮ ಸಾಧನದಲ್ಲೇ ನಡೆಯುತ್ತದೆ, ಹೀಗಾಗಿ ನಿಮ್ಮ ಫೈಲ್‌ಗಳು ನಿಮ್ಮ ಬಳಿಯೇ ಉಳಿಯುತ್ತವೆ. ಕುಕೀಗಳಿಲ್ಲ, ಅನಾಲಿಟಿಕ್ಸ್ ಇಲ್ಲ. ನಿಮ್ಮ ಕೊನೆಯ ದಾಖಲೆ ಈ ಬ್ರೌಸರ್‌ನಲ್ಲೇ ಉಳಿಯುತ್ತದೆ, ಹೀಗಾಗಿ ಮತ್ತೆ ಬಂದಾಗಲೂ ಅದು ಇಲ್ಲೇ ಇರುತ್ತದೆ.",
+      },
+      {
+        q: "ಪರಿವರ್ತನೆ ಸರಿಯಾಗಿದೆ ಎಂದು ತಿಳಿಯುವುದು ಹೇಗೆ?",
+        a: "ಪರಿವರ್ತಕಕ್ಕೆ ಕನ್ನಡ ಅಕ್ಷರ ಸಿಗದ ಪ್ರತಿ ಗ್ಲಿಫ್ ಅನ್ನೂ, ಕನ್ನಡ ಅಕ್ಷರವಾಗಲಾರದ ಪ್ರತಿ ಚಿಹ್ನೆಯನ್ನೂ ಪಠ್ಯದಲ್ಲಿ ಗುರುತಿಸಲಾಗುತ್ತದೆ. ಗುರುತನ್ನು ಆರಿಸಿದರೆ ಅದು ಏನು ಎಂದು ಕಾಣುತ್ತದೆ, ಸರಿಪಡಿಕೆಯನ್ನು ಆರಿಸಬಹುದು. ಗುರುತುಗಳಿಲ್ಲದ ಪಠ್ಯ ಸರಿಯಾಗಿ ಪರಿವರ್ತನೆಯಾಗಿದೆ.",
+      },
+      {
+        q: "ಇದನ್ನು ಮಾಡಿದವರು ಯಾರು?",
+        a: 'ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ, ಕನ್ನಡ ಪಠ್ಯಕ್ಕಾಗಿ ಅವರು ಬರೆದ ಮುಕ್ತ ಮೂಲದ Rust ಲೈಬ್ರರಿ <a href="https://github.com/openkannada/kannadi">ಕನ್ನಡಿ</a> ಯನ್ನು ಬಳಸಿ. ಅದು MIT ಲೈಸೆನ್ಸ್ ಅಡಿಯಲ್ಲಿದೆ. ಫಾಂಟ್‌ಗಳು Noto Sans, Noto Sans Kannada ಮತ್ತು Noto Serif Kannada, SIL Open Font License ಅಡಿಯಲ್ಲಿ.',
+      },
+    ],
+    og: { from: "PÀ£ÀßqÀ", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
+  {
+    slug: "kn/about",
+    lang: "kn",
+    twin: "about",
+    kind: "info",
+    name: "ನಮ್ಮ ಬಗ್ಗೆ",
+    title: "ಓಪನ್ ಕನ್ನಡದ ಬಗ್ಗೆ: ಕನ್ನಡಕ್ಕಾಗಿ ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳು",
+    description:
+      "ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಕನ್ನಡ ಸರಿಯಾಗಿ ಕೆಲಸ ಮಾಡಲೆಂದು ಓಪನ್ ಕನ್ನಡ ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳನ್ನು ಮಾಡುತ್ತದೆ: ಹಳೆಯ ದಾಖಲೆಗಳ ಪರಿವರ್ತನೆ, ಟೈಪಿಂಗ್, ಫಾಂಟ್‌ಗಳು, ಕಾಗುಣಿತ, OCR.",
+    h1: "ಓಪನ್ ಕನ್ನಡದ ಬಗ್ಗೆ",
+    intro:
+      "ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಕನ್ನಡ ಸರಿಯಾಗಿ ಕೆಲಸ ಮಾಡಲೆಂದು ಓಪನ್ ಕನ್ನಡ ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳನ್ನು ಮಾಡುತ್ತದೆ. ಹಳೆಯ ದಾಖಲೆಗಳನ್ನು ಯೂನಿಕೋಡ್‌ಗೆ ಬದಲಿಸುವುದು, ಕನ್ನಡದಲ್ಲಿ ಟೈಪ್ ಮಾಡುವುದು, ಪ್ರತಿ ಅಕ್ಷರವನ್ನೂ ಸರಿಯಾಗಿ ತೋರಿಸುವ ಫಾಂಟ್‌ಗಳು, ಕಾಗುಣಿತ, ಮತ್ತು ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳನ್ನು OCR ಮೂಲಕ ಓದುವುದು ಇದರಲ್ಲಿ ಸೇರಿವೆ. ಎಲ್ಲವನ್ನೂ ಉಚಿತವಾಗಿ ಬಳಸಬಹುದು, ಮತ್ತು ಕೋಡ್ ಯಾರು ಬೇಕಾದರೂ ಓದಲು, ಪರಿಶೀಲಿಸಲು ಮತ್ತು ಸುಧಾರಿಸಲು ತೆರೆದಿದೆ.",
+    body: "about",
+    faq: [],
+    og: { from: "Kannada", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
+  {
+    slug: "kn/press",
+    lang: "kn",
+    twin: "press",
+    kind: "info",
+    name: "ಪತ್ರಿಕಾ ಕಿಟ್",
+    title: "ಓಪನ್ ಕನ್ನಡ ಪತ್ರಿಕಾ ಕಿಟ್: ಲೋಗೊಗಳು, ಪರಿಚಯಗಳು ಮತ್ತು ಮಾಹಿತಿ",
+    description:
+      "ಲೇಖನಗಳು ಮತ್ತು ಭಾಷಣಗಳಿಗಾಗಿ ಓಪನ್ ಕನ್ನಡ ಮತ್ತು ಕನ್ನಡಿಯ ಲೋಗೊಗಳು, ಬಣ್ಣಗಳು, ಸಣ್ಣ ಪರಿಚಯಗಳು, ಸ್ಥಾಪಕ ಸದಸ್ಯರ ಪರಿಚಯ, ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳು ಮತ್ತು ಆಧಾರ ಸಹಿತ ಮಾಹಿತಿ.",
+    h1: "ಪತ್ರಿಕಾ ಕಿಟ್",
+    intro:
+      "ಓಪನ್ ಕನ್ನಡ ಮತ್ತು ಅದರ ಮೊದಲ ಯೋಜನೆಯಾದ ಕನ್ನಡಿ ಸಂಪಾದಕದ ಲೋಗೊಗಳು, ಪರಿಚಯಗಳು, ಸ್ಥಾಪಕ ಸದಸ್ಯರ ಪರಿಚಯ, ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳು ಮತ್ತು ಮಾಹಿತಿ. ಇವನ್ನು ಇದ್ದಂತೆಯೇ, ಕೇಳದೆಯೇ ಬಳಸಿ.",
+    body: "press",
+    faq: [],
+    og: { from: "Open Kannada", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
+  {
+    slug: "kn/names-and-logos",
+    lang: "kn",
+    twin: "names-and-logos",
+    kind: "info",
+    name: "ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು",
+    title: "ಓಪನ್ ಕನ್ನಡದ ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು: ಯೋಜನೆಯನ್ನು ಉಲ್ಲೇಖಿಸುವ ವಿಧಾನ",
+    description:
+      "ತಮ್ಮ ಕೆಲಸ ಕನ್ನಡಿಯಿಂದ ಮಾಡಿದ್ದು ಎಂದು ಯಾರು ಬೇಕಾದರೂ ಹೇಳಬಹುದು. ಓಪನ್ ಕನ್ನಡ ಮತ್ತು ಕನ್ನಡಿಯ ಹೆಸರು, ಲೋಗೊಗಳನ್ನು ಬಳಸುವ ರೀತಿ ಮತ್ತು ಯಾವ ಭಾಗಕ್ಕೆ ಯಾವ ಲೈಸೆನ್ಸ್ ಎಂಬುದು ಇಲ್ಲಿದೆ.",
+    h1: "ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು",
+    intro:
+      "ನಮ್ಮ ಕೋಡ್, ಡೇಟಾ ಮತ್ತು ನಾವು ಬಳಸುವ ಫಾಂಟ್‌ಗಳನ್ನು ಅವುಗಳ ಲೈಸೆನ್ಸ್‌ಗಳ ಅಡಿಯಲ್ಲಿ ಯಾರು ಬೇಕಾದರೂ ಬಳಸಬಹುದು, ಮತ್ತು ತಮ್ಮ ಕೆಲಸ ಕನ್ನಡಿಯಿಂದ ಮಾಡಿದ್ದು ಎಂದು ಹೇಳಬಹುದು. ಹೆಸರುಗಳು ಮತ್ತು ಲೋಗೊಗಳು ಯಾರು ಮಾಡಿದ್ದು ಎಂದು ಹೇಳುತ್ತವೆ, ಹೀಗಾಗಿ ಅವು ಈ ಯೋಜನೆಯಲ್ಲೇ ಉಳಿಯುತ್ತವೆ.",
     body: "brand",
     faq: [],
     og: { from: "kannadi", to: "ಕನ್ನಡಿ" },
@@ -470,7 +583,35 @@ export const PAGES: Page[] = [
   },
 ];
 
+/**
+ * The pages to build: drafts that wait for a native reader are left out, and so are links to them from their twins.
+ * KANNADA_DRAFTS=1 keeps them, to read them in a local build.
+ */
+export function published(pages: Page[], drafts: boolean): Page[] {
+  if (drafts) return pages;
+  const kept = pages.filter((p) => !p.needsReview);
+  const slugs = new Set(kept.map((p) => p.slug));
+  return kept.map((p) => {
+    if (p.twin === undefined || slugs.has(p.twin)) return p;
+    const { twin: _, ...rest } = p;
+    return rest as Page;
+  });
+}
+
+export const PAGES: Page[] = published(ALL_PAGES, typeof process !== "undefined" && process.env?.KANNADA_DRAFTS === "1");
+
 export const HOME = PAGES.find((p): p is ToolPage => p.kind === "tool" && p.slug === "")!;
+
+/** The home page in each language, built or not. */
+export const HOMES: Record<Lang, ToolPage> = {
+  en: HOME,
+  kn: ALL_PAGES.find((p): p is ToolPage => p.kind === "tool" && p.slug === "kn")!,
+};
+
+/** Whether the page is the home page of its language. */
+export function isHome(page: Page): boolean {
+  return page.slug === "" || page.slug === "kn";
+}
 
 /** Kannada words shown with their Baraha and ISO 15919 spellings. */
 export const EXAMPLE_WORDS = ["ಕನ್ನಡ", "ನಮಸ್ಕಾರ", "ಕರ್ನಾಟಕ", "ಬೆಂಗಳೂರು", "ಮೈಸೂರು", "ಜ್ಞಾನ", "ಶ್ರೀ", "ಹೃದಯ", "ಅಮ್ಮ", "ಊರು"];

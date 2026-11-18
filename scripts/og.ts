@@ -2,7 +2,7 @@
 // node scripts/og.ts [path to Chrome]. Run it after changing a page heading or the logo (og-mark.svg).
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { PAGES } from "../src/content/pages.ts";
@@ -14,6 +14,7 @@ mkdirSync(out, { recursive: true });
 
 for (const page of PAGES) {
   const name = page.slug || "home";
+  mkdirSync(dirname(join(out, `${name}.png`)), { recursive: true });
   const url = new URL(pathToFileURL(join(here, "og.html")));
   url.search = new URLSearchParams({ title: page.h1, from: page.og.from, to: page.og.to }).toString();
   execFileSync(chrome, [

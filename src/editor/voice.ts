@@ -1,6 +1,7 @@
 // Voice typing with the browser's speech recognition in Kannada (kn-IN).
 // Chrome and Edge send the audio to their speech service; the page itself
 // makes no request.
+import { S } from "./strings.ts";
 
 interface RecognitionResult {
   isFinal: boolean;
@@ -36,13 +37,6 @@ export interface VoiceEvents {
   onState: (listening: boolean, error?: string) => void;
 }
 
-const ERRORS: Record<string, string> = {
-  "not-allowed": "Allow the microphone for this page to type by voice.",
-  "service-not-allowed": "This browser does not allow voice typing here.",
-  "audio-capture": "No microphone was found.",
-  network: "Voice typing needs a connection to the browser's speech service.",
-  "language-not-supported": "This browser cannot recognize Kannada speech.",
-};
 /** Restarts in a row that each end in an error before listening gives up. */
 const MAX_EMPTY = 3;
 /** Errors after which listening again would fail the same way. */
@@ -100,7 +94,7 @@ export class Voice {
     };
     r.onerror = (e) => {
       if (e.error === "no-speech" || e.error === "aborted") return;
-      this.error = ERRORS[e.error] ?? "Voice typing stopped.";
+      this.error = S.voice.errors[e.error] ?? S.voice.failed;
       if (FATAL.has(e.error)) this.stopping = true;
     };
     r.onend = () => {
@@ -113,7 +107,7 @@ export class Voice {
     try {
       r.start();
     } catch {
-      this.error = "Voice typing could not start.";
+      this.error = S.voice.couldNotStart;
       return false;
     }
     this.recognition = r;

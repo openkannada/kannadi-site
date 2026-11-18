@@ -1,27 +1,39 @@
 ---
-import { PAGES } from "../content/pages.ts";
-import { ORG } from "../content/site.ts";
+import { HOMES, PAGES, type Page } from "../content/pages.ts";
+import { ORG, pagePath } from "../content/site.ts";
+import { fmt } from "../i18n/core.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
 import { href } from "../lib/paths.ts";
 import Icon from "./Icon.astro";
 import Logo from "./Logo.astro";
 
 interface Props {
-  current: string;
+  page: Page;
 }
-const { current } = Astro.props;
-const converters = PAGES.filter((p) => p.slug.endsWith("-to-unicode") || p.slug === "unicode-to-nudi");
-const typing = PAGES.filter((p) => p.slug.endsWith("typing") || p.kind === "reference");
+const { page } = Astro.props;
+const current = page.slug;
+const lang = page.lang ?? "en";
+const T = SITE_STRINGS[lang];
+const other = lang === "en" ? "kn" : "en";
+const twinPage = PAGES.find((p) => p.slug === page.twin);
+// With no page in the other language built yet, there is no switch.
+const twin = twinPage ?? PAGES.find((p) => p.slug === HOMES[other].slug);
+const label = twinPage ? T.language.switchLabel : T.language.homeLabel;
+const english = (p: Page) => (p.lang ?? "en") === "en";
+const converters = PAGES.filter((p) => english(p) && (p.slug.endsWith("-to-unicode") || p.slug === "unicode-to-nudi"));
+const typing = PAGES.filter((p) => english(p) && (p.slug.endsWith("typing") || p.kind === "reference"));
 const groups = [
-  { id: "nav-convert", label: "Converters", pages: converters },
-  { id: "nav-type", label: "Typing and letters", pages: typing },
+  { id: "nav-convert", label: T.nav.converters, pages: converters },
+  { id: "nav-type", label: T.nav.typing, pages: typing },
 ];
+const themeLabels = JSON.stringify({ ...T.theme });
 ---
-<header class="mx-auto flex w-full max-w-6xl items-center gap-2 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-6">
-  <a href={href("/")} class="mr-auto flex items-center gap-2.5 rounded-full py-1 pr-2 text-foreground no-underline">
+<header class="site-header mx-auto flex w-full max-w-6xl items-center gap-2 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-6">
+  <a href={href(pagePath(HOMES[lang].slug))} class="brand mr-auto flex items-center gap-2.5 rounded-full py-1 pr-2 text-foreground no-underline">
     <Logo mark="open-kannada" />
-    <span class="text-lg leading-none font-semibold tracking-tight">{ORG.name}</span>
+    <span class="text-lg leading-none font-semibold tracking-tight whitespace-nowrap">{ORG.name}</span>
   </a>
-  <nav aria-label="Pages" class="hidden items-center gap-1 md:flex">
+  <nav aria-label={T.nav.pages} class="hidden items-center gap-1 md:flex">
     {groups.map((g) => (
       <>
         <button type="button" class="btn nav-trigger" popovertarget={g.id}>
@@ -30,28 +42,33 @@ const groups = [
         </button>
         <div id={g.id} popover class="menu nav-menu">
           {g.pages.map((p) => (
-            <a class="menu-item" href={href(`/${p.slug}/`)} aria-current={p.slug === current ? "page" : undefined}>{p.name}</a>
+            <a class="menu-item" href={href(`/${p.slug}/`)} aria-current={p.slug === current ? "page" : undefined} lang={lang === "en" ? undefined : "en"}>{p.name}</a>
           ))}
         </div>
       </>
     ))}
   </nav>
-  <button type="button" class="btn btn-icon" id="theme" aria-label="Theme: same as system. Change theme" data-theme="auto">
+  {twin && (
+    <a class="btn lang-switch" href={href(pagePath(twin.slug))} hreflang={other}>
+      <span lang={other}>{T.language.switchTo}</span><span class="sr-only">: {label}</span>
+    </a>
+  )}
+  <button type="button" class="btn btn-icon" id="theme" aria-label={fmt(T.theme.change, { label: T.theme.auto })} data-theme="auto" data-labels={themeLabels}>
     <Icon name="auto" class="theme-auto" />
     <Icon name="sun" class="theme-light" />
     <Icon name="moon" class="theme-dark" />
   </button>
-  <button type="button" class="btn btn-icon md:hidden" popovertarget="nav-all" aria-label="Pages">
+  <button type="button" class="btn btn-icon md:hidden" popovertarget="nav-all" aria-label={T.nav.pages}>
     <Icon name="menu" />
   </button>
   <div id="nav-all" popover class="menu nav-menu">
-    <a class="menu-item" href={href("/")} aria-current={current === "" ? "page" : undefined}>Editor</a>
+    <a class="menu-item" href={href(pagePath(HOMES[lang].slug))} aria-current={current === HOMES[lang].slug ? "page" : undefined}>{HOMES[lang].name}</a>
     {groups.map((g) => (
       <>
         <div class="menu-sep" role="separator"></div>
         <p class="menu-label">{g.label}</p>
         {g.pages.map((p) => (
-          <a class="menu-item" href={href(`/${p.slug}/`)} aria-current={p.slug === current ? "page" : undefined}>{p.name}</a>
+          <a class="menu-item" href={href(`/${p.slug}/`)} aria-current={p.slug === current ? "page" : undefined} lang={lang === "en" ? undefined : "en"}>{p.name}</a>
         ))}
       </>
     ))}
@@ -76,6 +93,23 @@ const groups = [
 </script>
 
 <style>
+  .lang-switch {
+    font-size: 0.9375rem;
+    text-decoration: none;
+    color: var(--foreground);
+  }
+  /* The narrowest phones fit the logo, the switch and 2 buttons with the gaps and padding tightened. */
+  @media (max-width: 399.98px) {
+    .site-header {
+      gap: 0.25rem;
+    }
+    .brand {
+      padding-right: 0;
+    }
+    .lang-switch {
+      padding-inline: 0.5rem;
+    }
+  }
   #theme :global(svg) {
     display: none;
   }

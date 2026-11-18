@@ -1,6 +1,6 @@
 // Tests for the site's structured data and agent files: npm test
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { ALL_PAGES, EDITOR, HOME, HOMES, NAV, PAGES, inLanguage, isHome, published } from "../src/content/pages.ts";
@@ -81,8 +81,8 @@ test("project pages say what each tool does, its license and where to get it, wi
   assert.deepEqual(ocr, [
     "Old printed books, 60 Wikisource pages: 6.0%, against 8.7%.",
     "Degraded words, 400: 17.0%, against 24.4%.",
-    "MILE pages, 30: 5.4%, against 7.3%.",
-    "MILE lines, 600: 2.8%, against 3.8%.",
+    "MILE pages from IISc, 30: 5.4%, against 7.3%.",
+    "MILE lines from IISc, 600: 2.8%, against 3.8%.",
   ], "the v0.2 results as released, and no other");
   assert.doesNotMatch(text("ocr"), /dots/i);
   for (const slug of ["fonts", "dictionary"]) assert.doesNotMatch(text(slug).replace(/U\+0C[0-9A-F]{2}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 /g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
@@ -372,4 +372,23 @@ test("the site names kannadi's license as MIT OR Apache-2.0, and never as the MI
   assert.match(read("src/content/press.ts"), /open source under MIT OR Apache-2\.0/);
   assert.match(read("src/integrations/agent-files.ts"), /\(Rust, MIT OR Apache-2\.0\)/);
   assert.match(read("src/content/pages.ts"), /library for Kannada text, released under MIT OR Apache-2\.0/);
+});
+
+test("every page runs the Worker first and none is marked noindex by path, so redirects and launch reach every page", () => {
+  const config = JSON.parse(readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8").replace(/^\s*\/\/.*$/gm, ""));
+  const skips = config.assets.run_worker_first.filter((r) => r.startsWith("!")).map((r) => r.slice(1));
+  const headers = readFileSync(new URL("../public/_headers", import.meta.url), "utf8");
+  const noindex = headers.split(/\n(?=\S)/).filter((b) => /X-Robots-Tag: noindex/.test(b)).map((b) => b.split("\n")[0]);
+  const matches = (glob, path) => new RegExp(`^${glob.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*")}$`).test(path);
+  for (const page of PAGES) {
+    const path = page.slug ? `/${page.slug}/` : "/";
+    for (const glob of skips) assert.ok(!matches(glob, path), `${path} skips the Worker through ${glob}`);
+    for (const glob of noindex) assert.ok(!matches(glob, path), `${path} is noindex through ${glob}`);
+  }
+});
+
+test("Open Graph cards exist only for published pages, so no draft Kannada is served", () => {
+  const cards = readdirSync(new URL("../public/og", import.meta.url), { recursive: true }).filter((f) => String(f).endsWith(".png")).map((f) => String(f).replace(/\\/g, "/"));
+  const wanted = new Set(PAGES.map((p) => `${p.slug || "home"}.png`));
+  for (const card of cards) assert.ok(wanted.has(card), `public/og/${card} belongs to no published page`);
 });

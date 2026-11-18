@@ -68,7 +68,7 @@ const themeLabels = JSON.stringify({ ...T.theme });
       <>
         <div class="menu-sep" role="separator"></div>
         <p class="menu-label">{g.label}</p>
-        {g.pages.map((p) => (
+        {g.pages.filter((p) => p.slug !== HOMES[lang].slug).map((p) => (
           <a class="menu-item" href={href(pagePath(p.slug))} aria-current={p.slug === current ? "page" : undefined} lang={otherLang(p)}>{p.name}</a>
         ))}
       </>

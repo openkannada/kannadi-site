@@ -156,6 +156,28 @@ expect("Delete at the end after a line break keeps it", await typed(editor, [{ t
   await context.close();
 }
 
+// Rich text pasted on the home page keeps its fonts: the English heading stays English, the Nudi converts.
+{
+  const context = await browser.createBrowserContext();
+  const source = await context.newPage();
+  await source.setContent(`<div id="s" contenteditable><p><span style="font-family:Calibri">Heading</span></p><p style='font-family:"BRH Kannada"'>PÀ£ÀßqÀ</p></div>`);
+  await source.evaluate(() => {
+    const s = document.getElementById("s") as HTMLElement;
+    s.focus();
+    getSelection()?.selectAllChildren(s);
+  });
+  await source.keyboard.press("KeyC", { commands: ["Copy"] } as never);
+  const page = await context.newPage();
+  await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle0" });
+  await page.click("#handoff-text");
+  await page.keyboard.press("KeyV", { commands: ["Paste"] } as never);
+  await Promise.all([page.waitForNavigation({ waitUntil: "networkidle0" }), page.click("#handoff [type=submit]")]);
+  await page.waitForFunction(() => (document.querySelector("#doc") as HTMLElement | null)?.isContentEditable);
+  await new Promise((r) => setTimeout(r, 800));
+  expect("rich text from the home page keeps its fonts", await page.evaluate(() => (document.querySelector("#doc")?.textContent ?? "").replace(/\n$/, "")), "Heading\nಕನ್ನಡ");
+  await context.close();
+}
+
 await browser.close();
 server.close();
 if (problems.length) {

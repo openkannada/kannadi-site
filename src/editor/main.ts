@@ -4,7 +4,7 @@ import wordsUrl from "../../data/words.tsv?url";
 import { Composer } from "./compose.ts";
 import { DocEditor } from "./editor.ts";
 import type { ExportFormat } from "./files.ts";
-import { sessionStore, takeText } from "../lib/handoff.ts";
+import { doneWith, sessionStore, takeText } from "../lib/handoff.ts";
 import { registerWhenIdle, resolveModelContext } from "../lib/model-context.ts";
 import { Issues } from "./issues.ts";
 import * as kannadi from "./kannadi.ts";
@@ -456,12 +456,12 @@ function wireVoice(): void {
 }
 
 /** Inserts pasted text at the selection, converting legacy font text, with a way to keep it as it was. */
-function paste(html: string, plain: string): void {
+function paste(html: string, plain: string): Promise<void> {
   if (!settings.autoConvert) {
     insert({ text: plain, unknown: [] });
-    return;
+    return Promise.resolve();
   }
-  void files().then(({ pasted }) => {
+  return files().then(({ pasted }) => {
     const result = pasted(html, plain, io);
     const start = insert(result, S.convert.pasted);
     if (!result.converted) return;
@@ -484,12 +484,13 @@ function paste(html: string, plain: string): void {
 
 /** Text brought from the home page goes in as a paste, after anything already in the document. */
 function receive(): void {
-  const text = takeText(sessionStore());
-  if (!text) return;
+  const store = sessionStore();
+  const handed = takeText(store);
+  if (!handed) return;
   const end = editor.text.length;
   if (end) editor.replace(end, end, "\n\n", "insertText");
   editor.select(editor.text.length);
-  paste("", text);
+  void paste(handed.html, handed.text).finally(() => doneWith(store));
 }
 
 function wire(): void {
@@ -497,7 +498,7 @@ function wire(): void {
   ui.doc.addEventListener("beforeinput", (e) => composer.beforeInput(e));
   ui.doc.addEventListener("paste", (e) => {
     e.preventDefault();
-    paste(e.clipboardData?.getData("text/html") ?? "", e.clipboardData?.getData("text/plain") ?? "");
+    void paste(e.clipboardData?.getData("text/html") ?? "", e.clipboardData?.getData("text/plain") ?? "");
   });
   ui.doc.addEventListener("click", () => {
     const sel = editor.selection();

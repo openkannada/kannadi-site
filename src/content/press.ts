@@ -75,7 +75,7 @@ const FACTS = [
   },
   {
     fact: "The editor runs on the visitor's device with WebAssembly. Files are not uploaded, and the site has no cookies and no analytics.",
-    source: "/",
+    source: "/editor/",
     label: "Editor",
   },
   {

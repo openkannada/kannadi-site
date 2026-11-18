@@ -28,8 +28,9 @@ const CONVERTERS = ["unicode-to-nudi", "baraha-to-unicode", "akruti-to-unicode"]
 const HOME_EN = {
   story: { heading: "Why", paragraphs: STORY_PICK.map((i) => STORY.en[i]!), more: 'Read <a href="/about/">the whole story</a>.' },
   paste: {
-    label: "Paste Nudi or Baraha text",
+    label: "Paste Nudi, Baraha or Akruti text",
     hint: "It opens in the editor, converted to Unicode. Nothing is uploaded.",
+    failed: "This browser would not pass the text on. Open the editor and paste it there.",
     button: "Convert in the editor",
     open: "Open the editor",
   },
@@ -55,8 +56,9 @@ type Home = typeof HOME_EN;
 const HOME_KN: Home = {
   story: { heading: "ಯಾಕೆ", paragraphs: STORY_PICK.map((i) => STORY.kn[i]!), more: '<a href="/kn/about/">ಪೂರ್ತಿ ಕಥೆ</a> ಓದಿ.' },
   paste: {
-    label: "ನುಡಿ ಅಥವಾ ಬರಹ ಪಠ್ಯವನ್ನು ಅಂಟಿಸಿ",
+    label: "ನುಡಿ, ಬರಹ ಅಥವಾ ಆಕೃತಿ ಪಠ್ಯವನ್ನು ಅಂಟಿಸಿ",
     hint: "ಅದು ಯೂನಿಕೋಡ್‌ಗೆ ಬದಲಾಗಿ ಸಂಪಾದಕದಲ್ಲಿ ತೆರೆಯುತ್ತದೆ. ಏನೂ ಅಪ್‌ಲೋಡ್ ಆಗುವುದಿಲ್ಲ.",
+    failed: "ಈ ಬ್ರೌಸರ್ ಪಠ್ಯವನ್ನು ಮುಂದಕ್ಕೆ ಕಳುಹಿಸಲಿಲ್ಲ. ಸಂಪಾದಕವನ್ನು ತೆರೆದು ಅಲ್ಲಿ ಅಂಟಿಸಿ.",
     button: "ಸಂಪಾದಕದಲ್ಲಿ ಪರಿವರ್ತಿಸಿ",
     open: "ಸಂಪಾದಕ ತೆರೆಯಿರಿ",
   },

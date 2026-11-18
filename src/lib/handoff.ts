@@ -4,6 +4,12 @@ export const HANDOFF_KEY = "openkannada.handoff.v1";
 
 type Store = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
+/** What the home page hands over: the plain text, and the clipboard's HTML when it was pasted, for its fonts. */
+export interface Handoff {
+  text: string;
+  html: string;
+}
+
 /** The session store, or null where the browser blocks it. */
 export function sessionStore(): Store | null {
   try {
@@ -14,24 +20,35 @@ export function sessionStore(): Store | null {
 }
 
 /** Keeps text for the editor; false when there is nothing to keep or the store refuses it. */
-export function giveText(store: Store | null, text: string): boolean {
+export function giveText(store: Store | null, text: string, html = ""): boolean {
   if (!store || !text.trim()) return false;
   try {
-    store.setItem(HANDOFF_KEY, text);
+    store.setItem(HANDOFF_KEY, JSON.stringify({ text, html } satisfies Handoff));
     return true;
   } catch {
     return false;
   }
 }
 
-/** The text kept for the editor, removed so a reload does not insert it again; null when there is none. */
-export function takeText(store: Store | null): string | null {
+/** The text kept for the editor, left in place until doneWith, so a reload before it is pasted keeps it. */
+export function takeText(store: Store | null): Handoff | null {
   if (!store) return null;
   try {
-    const text = store.getItem(HANDOFF_KEY);
-    store.removeItem(HANDOFF_KEY);
-    return text?.trim() ? text : null;
+    const raw = store.getItem(HANDOFF_KEY);
+    if (!raw) return null;
+    const value = JSON.parse(raw) as Partial<Handoff>;
+    if (typeof value.text !== "string" || !value.text.trim()) return null;
+    return { text: value.text, html: typeof value.html === "string" ? value.html : "" };
   } catch {
     return null;
+  }
+}
+
+/** Removes the kept text once it is in the editor, so a reload does not insert it again. */
+export function doneWith(store: Store | null): void {
+  try {
+    store?.removeItem(HANDOFF_KEY);
+  } catch {
+    // A store that cannot remove also could not have kept anything.
   }
 }

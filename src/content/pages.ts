@@ -507,7 +507,7 @@ export const ALL_PAGES: Page[] = [
       {
         id: "what",
         items: [
-          '<b>Neha Sans</b> and <b>Neha Serif</b> fix <span lang="kn">ರೃ</span>, ra with the vocalic R sign, which Noto drew as <span lang="kn">ಋ</span> with a reph. They also draft U+0CDC, the Kannada archaic shrii.',
+          '<b>Neha Sans</b> and <b>Neha Serif</b> fix <span lang="kn">ರೃ</span>, ra with the vocalic R sign, which Noto drew as <span lang="kn">ಋ</span> with a reph. They also add a first draft of U+0CDC, the Kannada archaic shrii.',
           "They are named for Neha Prasad, a founding member of Open Kannada. Each credits its source, such as “Based on Noto Sans Kannada by Google.”",
           "<b>Gari</b> is a handwriting-style font based on Navilu by Aravinda VK. It adds new-order Kannada shaping and the newer letters U+0CDC, U+0CDD and U+0CF3.",
         ],
@@ -526,7 +526,7 @@ export const ALL_PAGES: Page[] = [
     name: "Spell check",
     title: "Kannada spell check: a Hunspell dictionary for LibreOffice and Firefox",
     description:
-      "A Kannada Hunspell dictionary that accepts 88.9% of held-out Wikipedia words, against 65.7% for the 2009 dictionary most systems ship.",
+      "A Kannada Hunspell dictionary that accepts 88.9% of held-out Wikipedia words, against 65.7% for hunspell-kn 1.0.3, the dictionary Fedora ships, from 2009.",
     h1: "Kannada spell check",
     intro:
       "A Kannada Hunspell dictionary for LibreOffice and Firefox, with an analyzer, a stemmer and sound-alike keys generated from the same paradigm rules.",
@@ -542,7 +542,7 @@ export const ALL_PAGES: Page[] = [
       },
       {
         id: "result",
-        paragraphs: ["It accepts 88.9% of held-out words. hunspell-kn 1.0.3, the dictionary most systems ship, from 2009, accepts 65.7%."],
+        paragraphs: ["It accepts 88.9% of held-out words. hunspell-kn 1.0.3, the dictionary Fedora ships, from 2009, accepts 65.7%."],
         stats: [
           { value: "88.9%", label: "Open Kannada kn_IN" },
           { value: "65.7%", label: "hunspell-kn 1.0.3, from 2009" },
@@ -623,8 +623,8 @@ export const ALL_PAGES: Page[] = [
         items: [
           "Old printed books, 60 Wikisource pages: 6.0%, against 8.7%.",
           "Degraded words, 400: 17.0%, against 24.4%.",
-          "MILE pages, 30: 5.4%, against 7.3%.",
-          "MILE lines, 600: 2.8%, against 3.8%.",
+          "MILE pages from IISc, 30: 5.4%, against 7.3%.",
+          "MILE lines from IISc, 600: 2.8%, against 3.8%.",
         ],
       },
       {
@@ -1031,8 +1031,8 @@ export const ALL_PAGES: Page[] = [
         items: [
           "ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳು, ವಿಕಿಸೋರ್ಸ್‌ನ 60 ಪುಟಗಳು: 6.0%, ಸಾಮಾನ್ಯದಲ್ಲಿ 8.7%.",
           "ಮಸುಕಾದ ಪದಗಳು, 400: 17.0%, ಸಾಮಾನ್ಯದಲ್ಲಿ 24.4%.",
-          "MILE ಪುಟಗಳು, 30: 5.4%, ಸಾಮಾನ್ಯದಲ್ಲಿ 7.3%.",
-          "MILE ಸಾಲುಗಳು, 600: 2.8%, ಸಾಮಾನ್ಯದಲ್ಲಿ 3.8%.",
+          "IISc ಯ MILE ಪುಟಗಳು, 30: 5.4%, ಸಾಮಾನ್ಯದಲ್ಲಿ 7.3%.",
+          "IISc ಯ MILE ಸಾಲುಗಳು, 600: 2.8%, ಸಾಮಾನ್ಯದಲ್ಲಿ 3.8%.",
         ],
       },
       {

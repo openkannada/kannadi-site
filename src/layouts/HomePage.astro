@@ -24,13 +24,13 @@ const editor = to("editor");
       <h1 class="home-title">{page.h1}</h1>
       <p class="home-intro" set:html={withBase(page.intro)} />
     </div>
-    <form class="paste-card" id="handoff" data-editor={url(editor)} data-md-skip>
+    <form class="paste-card" id="handoff" data-editor={url(editor)} data-failed={C.paste.failed} data-md-skip>
       <label for="handoff-text" class="paste-label">
         <Icon name="legacy" filled />
         {C.paste.label}
       </label>
       <textarea id="handoff-text" name="text" rows="4" required placeholder="PÀ£ÀßqÀ" spellcheck="false" autocapitalize="off" autocomplete="off" aria-describedby="handoff-hint"></textarea>
-      <p class="paste-hint" id="handoff-hint">{C.paste.hint}</p>
+      <p class="paste-hint" id="handoff-hint" aria-live="polite">{C.paste.hint}</p>
       <div class="paste-actions">
         <button type="submit" class="btn btn-primary">
           <Icon name="convert" />
@@ -98,11 +98,23 @@ const editor = to("editor");
   import { giveText, sessionStore } from "../lib/handoff.ts";
 
   const form = document.getElementById("handoff") as HTMLFormElement | null;
+  const field = form?.elements.namedItem("text") as HTMLTextAreaElement | null;
+  // The clipboard's HTML carries each run's font, which the editor needs to convert only the legacy text.
+  let pasted = { html: "", plain: "" };
+  field?.addEventListener("paste", (event) => {
+    const data = event.clipboardData;
+    pasted = { html: data?.getData("text/html") ?? "", plain: data?.getData("text/plain") ?? "" };
+  });
   form?.addEventListener("submit", (event) => {
     event.preventDefault();
-    const field = form.elements.namedItem("text") as HTMLTextAreaElement;
-    giveText(sessionStore(), field.value);
-    location.href = form.dataset.editor ?? "/";
+    if (!field) return;
+    const html = pasted.html && field.value.trim() === pasted.plain.trim() ? pasted.html : "";
+    if (giveText(sessionStore(), field.value, html)) {
+      location.href = form.dataset.editor ?? "/";
+    } else {
+      const hint = document.getElementById("handoff-hint");
+      if (hint) hint.textContent = form.dataset.failed ?? "";
+    }
   });
 </script>
 

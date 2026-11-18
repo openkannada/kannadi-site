@@ -356,8 +356,9 @@ function convertSelection(): void {
 function setMode(mode: TypingMode, remember = true): void {
   composer.setMode(mode);
   if (mode !== "english") english.hide();
-  // The word list starts loading as soon as English letters are chosen, so it is ready for the first word.
-  else void english.prepare();
+  // Choosing English letters loads the word list; a page that opens in them only fetches it, to stay responsive.
+  else if (remember) void english.prepare();
+  else english.prefetch();
   for (const input of document.querySelectorAll<HTMLInputElement>('input[name="mode"]')) input.checked = input.value === mode;
   settings.mode = remember ? mode : settings.mode;
   if (remember) saveSettings();

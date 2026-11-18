@@ -197,3 +197,16 @@ test("a word that ends in a ZWNJ before Kannada text keeps its alternatives on t
     assert.ok(strip.shown, "the alternatives stay");
   });
 });
+
+test("prefetching fetches the word list once and builds nothing until it is used", async () => {
+  let fetches = 0;
+  const { english } = harness({ load: async () => (fetches++, WORDS) });
+  english.prefetch();
+  english.prefetch();
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(fetches, 1);
+  assert.equal(english.ready, false, "nothing is built yet");
+  await english.prepare();
+  assert.equal(fetches, 1, "the fetched list is used");
+  assert.equal(english.ready, true);
+});

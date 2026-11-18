@@ -273,3 +273,13 @@ test("the editor reads its words from the page, and falls back to English on bad
   assert.equal(pageStrings(page(" data-ui-strings='{not json'")), EDITOR_STRINGS.en);
   assert.equal(pageStrings(page("")), EDITOR_STRINGS.en);
 });
+
+test("voice typing says, at the microphone, that it goes through the browser's speech service", async () => {
+  const { EDITOR_STRINGS } = await import("../src/i18n/editor.ts");
+  assert.match(EDITOR_STRINGS.en.toolbar.voice, /browser's speech service/);
+  assert.match(EDITOR_STRINGS.en.voice.started, /browser's speech service/);
+  assert.match(EDITOR_STRINGS.kn.toolbar.voice, /ಬ್ರೌಸರ್‌ನ ಧ್ವನಿ ಸೇವೆ/);
+  assert.match(EDITOR_STRINGS.kn.voice.started, /ಬ್ರೌಸರ್‌ನ ಧ್ವನಿ ಸೇವೆ/);
+  const copy = JSON.stringify(ALL_PAGES);
+  assert.doesNotMatch(copy, /voice[^"]{0,80}(on your device|offline|stays with you)/i);
+});

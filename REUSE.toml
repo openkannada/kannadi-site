@@ -31,7 +31,7 @@ precedence = "override"
 SPDX-FileCopyrightText = "Kannada Wikipedia contributors"
 SPDX-License-Identifier = "CC-BY-SA-4.0"
 
-# Noto fonts, unmodified Latin subsets.
+# Noto fonts, unmodified subsets.
 [[annotations]]
 path = "src/fonts/noto-*.woff2"
 precedence = "override"

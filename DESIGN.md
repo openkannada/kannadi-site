@@ -39,6 +39,7 @@ Rose and amber appear only in and about the text being edited. No other element 
 
 - 1 family: Neha Sans for Kannada and Noto Sans for Latin (`--type-sans`), self-hosted as variable woff2 files under the SIL Open Font License. Neha Sans carries only Kannada, so Latin comes from Noto Sans. Neha Serif (`--type-serif`), with the Latin subset of Noto Serif Kannada, is the document's alternative face. Gari loads only where a page sets it, as on the fonts page.
 - Every Kannada face uses the same `unicode-range`: U+0C80-0CFF, U+200C-200D, U+25CC and U+0964-0965. Only Neha Sans and the Latin Noto Sans are preloaded.
+- The Vedic signs and North Indic fractions the Neha fonts lack (U+1CD0 to U+1CF4, U+A830 to U+A835) come from the Kannada subsets of Noto Sans Kannada and Noto Serif Kannada, as extra "Neha Sans" and "Neha Serif" faces. The browser fetches them only for a page that shows one.
 - Kannada in a document: `--type-doc` 1.375rem on phones, `--type-doc-wide` 1.5rem from 768px, line height `--type-doc-leading` 1.95. Kannada anywhere else: line height `--type-kn-leading` 1.9.
 - Page headings: `--type-heading` 2rem, `--type-heading-wide` 2.75rem from 640px, weight 600, tracking `--type-heading-tracking`, balanced.
 - Controls: `--type-ui` 0.9375rem, medium weight.

@@ -47,7 +47,15 @@ test("Kannada comes from Neha Sans, Neha Serif and Gari, and Latin from the Noto
       ['"Gari"', "400", "swap", KANNADA_RANGE, "gari-kannada.woff2"],
     ],
   );
-  const latin = all.filter((f) => !kannada.includes(f));
+  const vedic = all.filter((f) => f["unicode-range"]?.startsWith("U+1CD0"));
+  assert.deepEqual(
+    vedic.map((f) => [f["font-family"], fileOf(f.src!)]),
+    [
+      ['"Neha Sans"', "noto-sans-kannada-kannada-wght-normal.woff2"],
+      ['"Neha Serif"', "noto-serif-kannada-kannada-wght-normal.woff2"],
+    ],
+  );
+  const latin = all.filter((f) => !kannada.includes(f) && !vedic.includes(f));
   assert.deepEqual(latin.map((f) => f["font-family"]), ['"Noto Sans"', '"Noto Sans"', '"Noto Serif Kannada"']);
   for (const f of latin) assert.doesNotMatch(f["unicode-range"]!, /0C80/, `${f["font-family"]} still draws Kannada`);
   const used = all.map((f) => fileOf(f.src!)).sort();
@@ -99,5 +107,23 @@ test("the fonts page is released: each release, zip and repository is linked, wi
   assert.match(css, /\.face-gari \{\s*font-family: "Gari"/);
   for (const lang of ["en", "kn"] as const) {
     assert.equal(HOME_COPY[lang].tools.items.find((t) => t.slug === "fonts")!.soon, undefined, `the ${lang} home card still says the fonts are coming`);
+  }
+});
+
+/** The code points a unicode-range lists. */
+function codePoints(range: string): number[] {
+  return range.split(",").flatMap((part) => {
+    const [lo, hi = lo] = part.trim().replace("U+", "").split("-").map((h) => parseInt(h, 16));
+    return Array.from({ length: hi! - lo! + 1 }, (_, i) => lo! + i);
+  });
+}
+
+test("every character the old Noto Kannada face drew still has a face in the sans and serif stacks", () => {
+  const OLD = "U+0C80-0CFF, U+1CD0, U+1CD2-1CD3, U+1CDA, U+1CF2, U+1CF4, U+200C-200D, U+25CC, U+A830-A835";
+  const all = faces(read("src/styles/global.css"));
+  for (const family of ['"Neha Sans"', '"Neha Serif"']) {
+    const covered = new Set(all.filter((f) => f["font-family"] === family).flatMap((f) => codePoints(f["unicode-range"]!)));
+    const missing = codePoints(OLD).filter((c) => !covered.has(c)).map((c) => `U+${c.toString(16).toUpperCase()}`);
+    assert.deepEqual(missing, [], `${family} has no face for ${missing.join(", ")}`);
   }
 });

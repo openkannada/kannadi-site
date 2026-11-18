@@ -564,15 +564,15 @@ export const ALL_PAGES: Page[] = [
       {
         id: "fixed",
         items: [
-          '<b>Neha Sans and Neha Serif:</b> <span lang="kn">ರೃ</span>, ra with the vocalic R sign, stays ra with the sign, where Noto drew <span lang="kn">ಋ</span> with a reph. U+0CDC, the archaic shrii, is drafted.',
+          '<b>Neha Sans and Neha Serif:</b> <span lang="kn">ರೃ</span>, ra with the vocalic R sign, stays ra with the sign, where Noto drew <span lang="kn">ಋ</span> with a reph. U+0CDC, the archaic shrii, is added in every weight.',
           "<b>Gari:</b> new-order Kannada shaping, so consonant clusters stack in HarfBuzz and other new-order shapers, plus the letters U+0CDC, U+0CDD and U+0CF3.",
         ],
       },
       {
         id: "limits",
         items: [
-          "In Neha Sans, U+0CDC is still a draft at Medium and heavier weights.",
-          "Gari lacks the nukta (U+0CBC), the avagraha (U+0CBD) and the vocalic L signs (U+0CE2 and U+0CE3).",
+          "U+0CDC is still a draft at heavy weights: from Medium in Neha Sans and from ExtraBold in Neha Serif.",
+          "Gari lacks the nukta (U+0CBC), the avagraha (U+0CBD), the vocalic L signs (U+0CE2 and U+0CE3), the candrabindu signs (U+0C80 and U+0C81), the siddham sign (U+0C84), the jihvamuliya and upadhmaniya (U+0CF1 and U+0CF2) and the dandas (U+0964 and U+0965).",
         ],
       },
       {
@@ -995,15 +995,15 @@ export const ALL_PAGES: Page[] = [
       {
         id: "fixed",
         items: [
-          "<b>Neha Sans ಮತ್ತು Neha Serif:</b> ರ ಜೊತೆ ಋ ಸ್ವರಚಿಹ್ನೆ ಸೇರಿದ ರೃ, ಸ್ವರಚಿಹ್ನೆ ಸಹಿತ ರ ಆಗಿಯೇ ಉಳಿಯುತ್ತದೆ. Noto ಅದನ್ನು ರೇಫ ಸಹಿತ ಋ ಆಗಿ ಬರೆದಿತ್ತು. ಪ್ರಾಚೀನ ಶ್ರೀ ಚಿಹ್ನೆ U+0CDC ಯ ಕರಡು ರೂಪವೂ ಇದೆ.",
+          "<b>Neha Sans ಮತ್ತು Neha Serif:</b> ರ ಜೊತೆ ಋ ಸ್ವರಚಿಹ್ನೆ ಸೇರಿದ ರೃ, ಸ್ವರಚಿಹ್ನೆ ಸಹಿತ ರ ಆಗಿಯೇ ಉಳಿಯುತ್ತದೆ. Noto ಅದನ್ನು ರೇಫ ಸಹಿತ ಋ ಆಗಿ ಬರೆದಿತ್ತು. ಪ್ರಾಚೀನ ಶ್ರೀ ಚಿಹ್ನೆ U+0CDC ಎಲ್ಲ ತೂಕಗಳಲ್ಲೂ ಸೇರಿದೆ.",
           "<b>Gari:</b> ಹೊಸ ಕ್ರಮದ ಕನ್ನಡ ಶೇಪಿಂಗ್. ಹಾಗಾಗಿ HarfBuzz ಮತ್ತು ಇತರ ಹೊಸ ಕ್ರಮದ ಶೇಪರ್‌ಗಳಲ್ಲಿ ಒತ್ತಕ್ಷರಗಳು ಸರಿಯಾಗಿ ಮೂಡುತ್ತವೆ. ಜೊತೆಗೆ U+0CDC, U+0CDD ಮತ್ತು U+0CF3 ಅಕ್ಷರಗಳೂ ಇವೆ.",
         ],
       },
       {
         id: "limits",
         items: [
-          "Neha Sans ನಲ್ಲಿ U+0CDC, Medium ಮತ್ತು ಅದಕ್ಕಿಂತ ದಪ್ಪ ತೂಕಗಳಲ್ಲಿ ಇನ್ನೂ ಕರಡು ರೂಪದಲ್ಲಿದೆ.",
-          "Gari ಯಲ್ಲಿ ನುಕ್ತ (U+0CBC), ಅವಗ್ರಹ (U+0CBD) ಮತ್ತು ಲೃ ಸ್ವರಚಿಹ್ನೆಗಳು (U+0CE2 ಮತ್ತು U+0CE3) ಇಲ್ಲ.",
+          "U+0CDC ದಪ್ಪ ತೂಕಗಳಲ್ಲಿ ಇನ್ನೂ ಕರಡು ರೂಪದಲ್ಲಿದೆ: Neha Sans ನಲ್ಲಿ Medium ನಿಂದ, Neha Serif ನಲ್ಲಿ ExtraBold ನಿಂದ.",
+          "Gari ಯಲ್ಲಿ ನುಕ್ತ (U+0CBC), ಅವಗ್ರಹ (U+0CBD), ಲೃ ಸ್ವರಚಿಹ್ನೆಗಳು (U+0CE2 ಮತ್ತು U+0CE3), U+0C80, U+0C81, U+0C84, U+0CF1, U+0CF2 ಮತ್ತು ದಂಡಗಳು (U+0964 ಮತ್ತು U+0965) ಇಲ್ಲ.",
         ],
       },
       {

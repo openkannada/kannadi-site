@@ -25,6 +25,23 @@
   src: url("../fonts/gari-kannada.woff2") format("woff2");
   unicode-range: U+0C80-0CFF, U+200C-200D, U+25CC, U+0964-0965;
 }
+/* Vedic signs and North Indic fractions the Neha fonts lack come from Noto, fetched only when a page shows one. */
+@font-face {
+  font-family: "Neha Sans";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("../fonts/noto-sans-kannada-kannada-wght-normal.woff2") format("woff2");
+  unicode-range: U+1CD0, U+1CD2-1CD3, U+1CDA, U+1CF2, U+1CF4, U+A830-A835;
+}
+@font-face {
+  font-family: "Neha Serif";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("../fonts/noto-serif-kannada-kannada-wght-normal.woff2") format("woff2");
+  unicode-range: U+1CD0, U+1CD2-1CD3, U+1CDA, U+1CF2, U+1CF4, U+A830-A835;
+}
 /* Latin comes from Noto Sans and Noto Serif Kannada's Latin subset; the Neha fonts carry only Kannada. */
 @font-face {
   font-family: "Noto Sans";

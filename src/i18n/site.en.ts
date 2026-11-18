@@ -70,6 +70,9 @@ export const SITE_EN = {
   /** The headings every project page shares, and its table of measured ratios. */
   project: {
     what: "What it does",
+    specimen: "Specimen",
+    based: "Based on",
+    fixed: "What we fixed",
     result: "Result",
     method: "How it was measured",
     limits: "Limits",

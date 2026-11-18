@@ -41,7 +41,7 @@ const HOME_EN = {
     items: [
       { slug: "editor", icon: "edit", art: "typing", name: "Editor", text: "Type Kannada in English letters, convert old documents and save Word files, in your browser." },
       { slug: "nudi-to-unicode", icon: "convert", art: "convert", name: "Converters", text: "Nudi, Baraha and Akruti to Unicode, and Unicode back to Nudi.", also: CONVERTERS },
-      { slug: "fonts", icon: "type", art: "font", name: "Fonts", text: "Neha Sans, Neha Serif and Gari, 3 open Kannada fonts.", soon: true },
+      { slug: "fonts", icon: "type", art: "font", name: "Fonts", text: "Neha Sans, Neha Serif and Gari, 3 open Kannada fonts." },
       { slug: "spell-check", icon: "spell", art: "spell", name: "Spell check", text: "A Hunspell dictionary for LibreOffice and Firefox that accepts 88.9% of held-out words.", soon: true },
       { slug: "dictionary", icon: "book", art: "dictionary", name: "Dictionary", text: "English to Kannada, with the spellings to read and type each word.", soon: true },
       { slug: "ocr", icon: "scan", art: "scan", name: "OCR", text: "A Tesseract model for Kannada print, especially old print.", soon: true },
@@ -69,7 +69,7 @@ const HOME_KN: Home = {
     items: [
       { slug: "editor", icon: "edit", art: "typing", name: "ಸಂಪಾದಕ", text: "ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರಗಳಲ್ಲಿ ಕನ್ನಡ ಟೈಪ್ ಮಾಡಿ, ಹಳೆಯ ದಾಖಲೆಗಳನ್ನು ಪರಿವರ್ತಿಸಿ, Word ಫೈಲ್‌ಗಳಾಗಿ ಉಳಿಸಿ, ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲೇ." },
       { slug: "nudi-to-unicode", icon: "convert", art: "convert", name: "ಪರಿವರ್ತಕಗಳು", text: "ನುಡಿ, ಬರಹ ಮತ್ತು ಆಕೃತಿಯಿಂದ ಯೂನಿಕೋಡ್‌ಗೆ, ಮತ್ತು ಯೂನಿಕೋಡ್‌ನಿಂದ ಮತ್ತೆ ನುಡಿಗೆ.", also: CONVERTERS },
-      { slug: "fonts", icon: "type", art: "font", name: "ಫಾಂಟ್‌ಗಳು", text: "Neha Sans, Neha Serif ಮತ್ತು Gari, 3 ಮುಕ್ತ ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು.", soon: true },
+      { slug: "fonts", icon: "type", art: "font", name: "ಫಾಂಟ್‌ಗಳು", text: "Neha Sans, Neha Serif ಮತ್ತು Gari, 3 ಮುಕ್ತ ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು." },
       { slug: "spell-check", icon: "spell", art: "spell", name: "ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ", text: "ಹೊರಗಿಟ್ಟ ಪದಗಳಲ್ಲಿ 88.9% ಅನ್ನು ಒಪ್ಪುವ, LibreOffice ಮತ್ತು Firefox ಗಾಗಿ Hunspell ನಿಘಂಟು.", soon: true },
       { slug: "dictionary", icon: "book", art: "dictionary", name: "ನಿಘಂಟು", text: "ಇಂಗ್ಲಿಷ್‌ನಿಂದ ಕನ್ನಡಕ್ಕೆ, ಪ್ರತಿ ಪದವನ್ನು ಓದಲು ಮತ್ತು ಟೈಪ್ ಮಾಡಲು ಲಿಪ್ಯಂತರದೊಂದಿಗೆ.", soon: true },
       { slug: "ocr", icon: "scan", art: "scan", name: "OCR", text: "ಕನ್ನಡ ಮುದ್ರಣಕ್ಕಾಗಿ, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣಕ್ಕಾಗಿ, Tesseract ಮಾದರಿ.", soon: true },

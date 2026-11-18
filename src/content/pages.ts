@@ -74,13 +74,33 @@ export interface RatioTable {
   rows: { name: string; ratio: number; low: number; high: number }[];
 }
 
+/** A typeface's class in ProjectPage.astro, which sets the sample in that face. */
+export type Face = "neha-sans" | "neha-serif" | "gari";
+
+/** The same Kannada text set in each font, shown before the section's paragraphs. */
+export interface Specimen {
+  text: string;
+  clusters: string;
+  faces: { name: string; face: Face }[];
+}
+
+/** A released font: its release page, its zip and its source, for the downloads and the structured data. */
+export interface FontRelease {
+  name: string;
+  version: string;
+  page: string;
+  zip: string;
+  source: string;
+}
+
 /** 1 part of a project page; its heading comes from the site strings, so every project page reads alike. */
 export interface ProjectSection {
-  id: "what" | "result" | "method" | "limits" | "downloads" | "license";
+  id: "what" | "specimen" | "based" | "fixed" | "result" | "method" | "limits" | "downloads" | "license";
   paragraphs?: string[];
   items?: string[];
   stats?: Stat[];
   table?: RatioTable;
+  specimen?: Specimen;
 }
 
 /** A project of Open Kannada beyond the editor: what it does, what it measured, where to get it, its license. */
@@ -92,6 +112,8 @@ export interface ProjectPage extends PageBase {
   /** License URLs for the structured data. */
   licenses: string[];
   sections: ProjectSection[];
+  /** What a visitor can download now, as parts of the work in the structured data. */
+  releases?: FontRelease[];
 }
 
 export type Page = ToolPage | ReferencePage | InfoPage | HomePage | ProjectPage;
@@ -110,7 +132,7 @@ const BACK_TO_NUDI: Faq = {
 };
 const OPEN_SOURCE: Faq = {
   q: "Who made this?",
-  a: 'Prasad Subrahmanya, on <a href="https://github.com/openkannada/kannadi">kannadi</a>, his open-source Rust library for Kannada text, released under MIT OR Apache-2.0. The fonts are Noto Sans, Noto Sans Kannada and Noto Serif Kannada, under the SIL Open Font License.',
+  a: 'Prasad Subrahmanya, on <a href="https://github.com/openkannada/kannadi">kannadi</a>, his open-source Rust library for Kannada text, released under MIT OR Apache-2.0. The Kannada fonts are <a href="/fonts/">Neha Sans and Neha Serif</a>, with Noto Sans for Latin, all under the SIL Open Font License.',
 };
 
 const CONVERT_STEPS = [
@@ -129,6 +151,28 @@ const ODBL = "https://opendatacommons.org/licenses/odbl/1-0/";
 const CC_BY = "https://creativecommons.org/licenses/by/4.0/";
 const OFL = "https://openfontlicense.org/open-font-license-official-text/";
 
+const NEHA_RELEASE = "https://github.com/openkannada/noto-kannada-fork/releases";
+const GARI_RELEASE = "https://github.com/openkannada/gari-font/releases";
+export const FONT_RELEASES: FontRelease[] = [
+  { name: "Neha Sans", version: "1.000", page: `${NEHA_RELEASE}/tag/v1.000`, zip: `${NEHA_RELEASE}/download/v1.000/NehaSans-1.000.zip`, source: "https://github.com/openkannada/noto-kannada-fork" },
+  { name: "Neha Serif", version: "1.000", page: `${NEHA_RELEASE}/tag/v1.000`, zip: `${NEHA_RELEASE}/download/v1.000/NehaSerif-1.000.zip`, source: "https://github.com/openkannada/noto-kannada-fork" },
+  { name: "Gari", version: "1.300", page: `${GARI_RELEASE}/tag/v1.300`, zip: `${GARI_RELEASE}/download/v1.300/Gari-1.300.zip`, source: "https://github.com/openkannada/gari-font" },
+];
+const zipLink = (r: FontRelease) => `<a href="${r.zip}">${r.zip.split("/").pop()}</a>`;
+const repoLink = (url: string) => `<a href="${url}">${url.replace("https://github.com/", "")}</a>`;
+const [NEHA_SANS, NEHA_SERIF, GARI] = FONT_RELEASES as [FontRelease, FontRelease, FontRelease];
+
+const FONT_SPECIMEN = {
+  text: "ಎಲ್ಲಾ ಮಾನವರೂ ಸ್ವತಂತ್ರರಾಗಿಯೇ ಜನಿಸಿದ್ದಾರೆ. ಹಾಗೂ ಘನತೆ ಮತ್ತು ಹಕ್ಕುಗಳಲ್ಲಿ ಸಮಾನರಾಗಿದ್ದಾರೆ. ವಿವೇಕ ಮತ್ತು ಅಂತಃಕರಣಗಳನ್ನು ಪಡೆದವರಾದ್ದರಿಂದ ಅವರು ಪರಸ್ಪರ ಸಹೋದರ ಭಾವದಿಂದ ವರ್ತಿಸಬೇಕು.",
+  clusters: "ಶ್ರೀ ಕೃಷ್ಣ ಸ್ತ್ರೀ ಕ್ಷೇತ್ರ ಅರ್ಥ ಪೃಥ್ವಿ ರೃ",
+  faces: [
+    { name: "Neha Sans", face: "neha-sans" },
+    { name: "Neha Serif", face: "neha-serif" },
+    { name: "Gari", face: "gari" },
+  ],
+} satisfies Specimen;
+const UDHR_SOURCE = '<a href="https://github.com/googlefonts/lang">googlefonts/lang</a>';
+
 /** Every page, drafts included. */
 export const ALL_PAGES: Page[] = [
   {
@@ -141,7 +185,7 @@ export const ALL_PAGES: Page[] = [
       "Free, open-source tools so that Kannada works properly on computers: an editor that converts Nudi and Baraha text, fonts, spell check, a dictionary and OCR.",
     h1: TAGLINE.en,
     intro:
-      "Open Kannada makes free, open-source tools so that Kannada works properly on computers. The editor and its converters work in your browser today, and the fonts, spell checker, dictionary and OCR are on the way.",
+      "Open Kannada makes free, open-source tools so that Kannada works properly on computers. The editor, its converters and the fonts are ready to use today, and the spell checker, dictionary and OCR are on the way.",
     faq: [],
     og: { from: "Kannada", to: "ಕನ್ನಡ" },
     keywords: "",
@@ -494,26 +538,55 @@ export const ALL_PAGES: Page[] = [
     twin: "kn/fonts",
     kind: "project",
     name: "Fonts",
-    title: "Kannada fonts: Neha Sans, Neha Serif and Gari",
+    title: "Kannada fonts: download Neha Sans, Neha Serif and Gari",
     description:
-      "3 open Kannada fonts under the SIL Open Font License: Neha Sans and Neha Serif, built from Noto, and Gari, a handwriting-style font based on Navilu.",
+      "Download Neha Sans, Neha Serif and Gari, 3 open Kannada fonts under the SIL Open Font License. Neha is built from Noto, and Gari from Navilu.",
     h1: "Kannada fonts",
     intro:
-      "Neha Sans and Neha Serif are Kannada fonts built from Noto Sans Kannada and Noto Serif Kannada by Google, with letters fixed and added. Gari is a handwriting-style font based on Navilu by Aravinda VK.",
+      "Neha Sans, Neha Serif and Gari are open Kannada fonts, released and free to download under the SIL Open Font License. The Kannada on this site is set in Neha Sans.",
     art: "font",
     schema: "CreativeWork",
     licenses: [OFL],
+    releases: FONT_RELEASES,
     sections: [
       {
-        id: "what",
+        id: "specimen",
+        specimen: FONT_SPECIMEN,
+        paragraphs: [`The text is Article 1 of the Universal Declaration of Human Rights in Kannada, as ${UDHR_SOURCE} gives it.`],
+      },
+      {
+        id: "based",
         items: [
-          '<b>Neha Sans</b> and <b>Neha Serif</b> fix <span lang="kn">ರೃ</span>, ra with the vocalic R sign, which Noto drew as <span lang="kn">ಋ</span> with a reph. They also add a first draft of U+0CDC, the Kannada archaic shrii.',
-          "They are named for Neha Prasad, a founding member of Open Kannada. Each credits its source, such as “Based on Noto Sans Kannada by Google.”",
-          "<b>Gari</b> is a handwriting-style font based on Navilu by Aravinda VK. It adds new-order Kannada shaping and the newer letters U+0CDC, U+0CDD and U+0CF3.",
+          "<b>Neha Sans</b> and <b>Neha Serif</b> are based on Noto Sans Kannada and Noto Serif Kannada by Google. They are named for Neha Prasad, a founding member of Open Kannada.",
+          "<b>Gari</b> is a handwriting-style font based on Navilu by Aravinda VK, which built on work by IISc Bangalore.",
         ],
       },
-      { id: "downloads", paragraphs: [SOON] },
-      { id: "license", paragraphs: ["All 3 fonts are under the SIL Open Font License 1.1."] },
+      {
+        id: "fixed",
+        items: [
+          '<b>Neha Sans and Neha Serif:</b> <span lang="kn">ರೃ</span>, ra with the vocalic R sign, stays ra with the sign, where Noto drew <span lang="kn">ಋ</span> with a reph. U+0CDC, the archaic shrii, is added in every weight.',
+          "<b>Gari:</b> new-order Kannada shaping, so consonant clusters stack in HarfBuzz and other new-order shapers, plus the letters U+0CDC, U+0CDD and U+0CF3.",
+        ],
+      },
+      {
+        id: "limits",
+        items: [
+          "U+0CDC is still a draft at heavy weights: from Medium in Neha Sans and from ExtraBold in Neha Serif.",
+          "Gari lacks the nukta (U+0CBC), the avagraha (U+0CBD), the vocalic L signs (U+0CE2 and U+0CE3), the candrabindu signs (U+0C80 and U+0C81), the siddham sign (U+0C84), the jihvamuliya and upadhmaniya (U+0CF1 and U+0CF2) and the dandas (U+0964 and U+0965).",
+        ],
+      },
+      {
+        id: "downloads",
+        items: [
+          `<b>Neha Sans and Neha Serif ${NEHA_SANS.version}:</b> ${zipLink(NEHA_SANS)} and ${zipLink(NEHA_SERIF)}, from the <a href="${NEHA_SANS.page}">Neha ${NEHA_SANS.version} release</a>. The source is ${repoLink(NEHA_SANS.source)}.`,
+          `<b>Gari ${GARI.version}:</b> ${zipLink(GARI)}, from the <a href="${GARI.page}">Gari ${GARI.version} release</a>. The source is ${repoLink(GARI.source)}.`,
+        ],
+        paragraphs: ["Download the zips from GitHub. Each has a SHA-256 file beside it on its release page, to check the download."],
+      },
+      {
+        id: "license",
+        paragraphs: ["All 3 fonts are under the SIL Open Font License 1.1. Use them, embed them and share them in free or paid work."],
+      },
     ],
     faq: [],
     og: { from: "Neha Sans", to: "ರೃ" },
@@ -814,7 +887,7 @@ export const ALL_PAGES: Page[] = [
       },
       {
         q: "ಇದನ್ನು ಮಾಡಿದವರು ಯಾರು?",
-        a: 'ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ, ಕನ್ನಡ ಪಠ್ಯಕ್ಕಾಗಿ ಅವರು ಬರೆದ ಮುಕ್ತ ಮೂಲದ Rust ಲೈಬ್ರರಿ <a href="https://github.com/openkannada/kannadi">ಕನ್ನಡಿ</a> ಯನ್ನು ಬಳಸಿ. ಅದು MIT ಅಥವಾ Apache-2.0 ಲೈಸೆನ್ಸ್ ಅಡಿಯಲ್ಲಿದೆ. ಫಾಂಟ್‌ಗಳು Noto Sans, Noto Sans Kannada ಮತ್ತು Noto Serif Kannada, SIL Open Font License ಅಡಿಯಲ್ಲಿ.',
+        a: 'ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ, ಕನ್ನಡ ಪಠ್ಯಕ್ಕಾಗಿ ಅವರು ಬರೆದ ಮುಕ್ತ ಮೂಲದ Rust ಲೈಬ್ರರಿ <a href="https://github.com/openkannada/kannadi">ಕನ್ನಡಿ</a> ಯನ್ನು ಬಳಸಿ. ಅದು MIT ಅಥವಾ Apache-2.0 ಲೈಸೆನ್ಸ್ ಅಡಿಯಲ್ಲಿದೆ. ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು <a href="/fonts/">Neha Sans ಮತ್ತು Neha Serif</a>, ಲ್ಯಾಟಿನ್ ಅಕ್ಷರಗಳಿಗೆ Noto Sans. ಎಲ್ಲವೂ SIL Open Font License ಅಡಿಯಲ್ಲಿ.',
       },
     ],
     og: { from: "PÀ£ÀßqÀ", to: "ಕನ್ನಡ" },
@@ -884,7 +957,7 @@ export const ALL_PAGES: Page[] = [
       "ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಕನ್ನಡ ಸರಿಯಾಗಿ ಕೆಲಸ ಮಾಡಲು ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳು: ನುಡಿ ಮತ್ತು ಬರಹ ಪಠ್ಯವನ್ನು ಪರಿವರ್ತಿಸುವ ಸಂಪಾದಕ, ಫಾಂಟ್‌ಗಳು, ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ, ನಿಘಂಟು ಮತ್ತು OCR.",
     h1: TAGLINE.kn,
     intro:
-      "ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಕನ್ನಡ ಸರಿಯಾಗಿ ಕೆಲಸ ಮಾಡಲೆಂದು ಓಪನ್ ಕನ್ನಡ ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳನ್ನು ಮಾಡುತ್ತದೆ. ಸಂಪಾದಕ ಮತ್ತು ಅದರ ಪರಿವರ್ತಕಗಳು ಇಂದೇ ನಿಮ್ಮ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಕೆಲಸ ಮಾಡುತ್ತವೆ. ಫಾಂಟ್‌ಗಳು, ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ, ನಿಘಂಟು ಮತ್ತು OCR ಸಿದ್ಧವಾಗುತ್ತಿವೆ.",
+      "ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಕನ್ನಡ ಸರಿಯಾಗಿ ಕೆಲಸ ಮಾಡಲೆಂದು ಓಪನ್ ಕನ್ನಡ ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳನ್ನು ಮಾಡುತ್ತದೆ. ಸಂಪಾದಕ, ಅದರ ಪರಿವರ್ತಕಗಳು ಮತ್ತು ಫಾಂಟ್‌ಗಳು ಇಂದೇ ಬಳಕೆಗೆ ಸಿದ್ಧ. ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ, ನಿಘಂಟು ಮತ್ತು OCR ಸಿದ್ಧವಾಗುತ್ತಿವೆ.",
     faq: [],
     og: { from: "Kannada", to: "ಕನ್ನಡ" },
     keywords: "",
@@ -896,26 +969,55 @@ export const ALL_PAGES: Page[] = [
     needsReview: true,
     kind: "project",
     name: "ಫಾಂಟ್‌ಗಳು",
-    title: "ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು: Neha Sans, Neha Serif ಮತ್ತು Gari",
+    title: "ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು: Neha Sans, Neha Serif ಮತ್ತು Gari ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
     description:
-      "SIL Open Font License ಅಡಿಯಲ್ಲಿ 3 ಮುಕ್ತ ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು: Noto ಆಧರಿಸಿದ Neha Sans ಮತ್ತು Neha Serif, ಹಾಗೂ Navilu ಆಧರಿಸಿದ ಕೈಬರಹ ಶೈಲಿಯ Gari.",
+      "SIL Open Font License ಅಡಿಯಲ್ಲಿರುವ 3 ಮುಕ್ತ ಕನ್ನಡ ಫಾಂಟ್‌ಗಳಾದ Neha Sans, Neha Serif ಮತ್ತು Gari ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ. Neha, Noto ಆಧರಿಸಿದೆ. Gari, Navilu ಆಧರಿಸಿದೆ.",
     h1: "ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು",
     intro:
-      "Neha Sans ಮತ್ತು Neha Serif, Google ನ Noto Sans Kannada ಮತ್ತು Noto Serif Kannada ಆಧರಿಸಿ ಮಾಡಿದ ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು. ಇವುಗಳಲ್ಲಿ ಕೆಲವು ಅಕ್ಷರಗಳನ್ನು ಸರಿಪಡಿಸಲಾಗಿದೆ, ಕೆಲವನ್ನು ಸೇರಿಸಲಾಗಿದೆ. Gari, Aravinda VK ಅವರ Navilu ಆಧರಿಸಿದ ಕೈಬರಹ ಶೈಲಿಯ ಫಾಂಟ್.",
+      "Neha Sans, Neha Serif ಮತ್ತು Gari ಮುಕ್ತ ಕನ್ನಡ ಫಾಂಟ್‌ಗಳು. ಇವು ಬಿಡುಗಡೆಯಾಗಿವೆ, SIL Open Font License ಅಡಿಯಲ್ಲಿ ಉಚಿತವಾಗಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಬಹುದು. ಈ ತಾಣದ ಕನ್ನಡ ಪಠ್ಯ Neha Sans ನಲ್ಲಿದೆ.",
     art: "font",
     schema: "CreativeWork",
     licenses: [OFL],
+    releases: FONT_RELEASES,
     sections: [
       {
-        id: "what",
+        id: "specimen",
+        specimen: FONT_SPECIMEN,
+        paragraphs: [`ಈ ಪಠ್ಯ ಮಾನವ ಹಕ್ಕುಗಳ ಸಾರ್ವತ್ರಿಕ ಘೋಷಣೆಯ 1ನೇ ವಿಧಿ, ${UDHR_SOURCE} ನೀಡಿರುವಂತೆ.`],
+      },
+      {
+        id: "based",
         items: [
-          "<b>Neha Sans</b> ಮತ್ತು <b>Neha Serif</b>, ರ ಜೊತೆ ಋ ಸ್ವರಚಿಹ್ನೆ ಸೇರಿದ ರೃ ಅನ್ನು ಸರಿಪಡಿಸುತ್ತವೆ. Noto ಅದನ್ನು ರೇಫ ಸಹಿತ ಋ ಆಗಿ ಬರೆದಿತ್ತು. ಕನ್ನಡದ ಪ್ರಾಚೀನ ಶ್ರೀ ಚಿಹ್ನೆ U+0CDC ಯ ಕರಡು ರೂಪವನ್ನೂ ಇವು ನೀಡುತ್ತವೆ.",
-          "ಓಪನ್ ಕನ್ನಡದ ಸ್ಥಾಪಕ ಸದಸ್ಯೆ ನೇಹಾ ಪ್ರಸಾದ್ ಅವರ ಹೆಸರನ್ನು ಇವುಗಳಿಗೆ ಇಡಲಾಗಿದೆ. ಪ್ರತಿಯೊಂದೂ ತನ್ನ ಮೂಲವನ್ನು ಉಲ್ಲೇಖಿಸುತ್ತದೆ, ಉದಾಹರಣೆಗೆ “Based on Noto Sans Kannada by Google.”",
-          "<b>Gari</b>, Aravinda VK ಅವರ Navilu ಆಧರಿಸಿದ ಕೈಬರಹ ಶೈಲಿಯ ಫಾಂಟ್. ಅದು ಹೊಸ ಕ್ರಮದ ಕನ್ನಡ ಶೇಪಿಂಗ್ ಅನ್ನು, ಮತ್ತು ಹೊಸ ಅಕ್ಷರಗಳಾದ U+0CDC, U+0CDD ಮತ್ತು U+0CF3 ಅನ್ನು ಸೇರಿಸುತ್ತದೆ.",
+          "<b>Neha Sans</b> ಮತ್ತು <b>Neha Serif</b>, Google ನ Noto Sans Kannada ಮತ್ತು Noto Serif Kannada ಆಧರಿಸಿವೆ. ಓಪನ್ ಕನ್ನಡದ ಸ್ಥಾಪಕ ಸದಸ್ಯೆ ನೇಹಾ ಪ್ರಸಾದ್ ಅವರ ಹೆಸರನ್ನು ಇವುಗಳಿಗೆ ಇಡಲಾಗಿದೆ.",
+          "<b>Gari</b>, Aravinda VK ಅವರ Navilu ಆಧರಿಸಿದ ಕೈಬರಹ ಶೈಲಿಯ ಫಾಂಟ್. Navilu, ಬೆಂಗಳೂರಿನ IISc ಯ ಕೆಲಸವನ್ನು ಆಧರಿಸಿದೆ.",
         ],
       },
-      { id: "downloads", paragraphs: [SOON_KN] },
-      { id: "license", paragraphs: ["3 ಫಾಂಟ್‌ಗಳೂ SIL Open Font License 1.1 ಅಡಿಯಲ್ಲಿವೆ."] },
+      {
+        id: "fixed",
+        items: [
+          "<b>Neha Sans ಮತ್ತು Neha Serif:</b> ರ ಜೊತೆ ಋ ಸ್ವರಚಿಹ್ನೆ ಸೇರಿದ ರೃ, ಸ್ವರಚಿಹ್ನೆ ಸಹಿತ ರ ಆಗಿಯೇ ಉಳಿಯುತ್ತದೆ. Noto ಅದನ್ನು ರೇಫ ಸಹಿತ ಋ ಆಗಿ ಬರೆದಿತ್ತು. ಪ್ರಾಚೀನ ಶ್ರೀ ಚಿಹ್ನೆ U+0CDC ಎಲ್ಲ ತೂಕಗಳಲ್ಲೂ ಸೇರಿದೆ.",
+          "<b>Gari:</b> ಹೊಸ ಕ್ರಮದ ಕನ್ನಡ ಶೇಪಿಂಗ್. ಹಾಗಾಗಿ HarfBuzz ಮತ್ತು ಇತರ ಹೊಸ ಕ್ರಮದ ಶೇಪರ್‌ಗಳಲ್ಲಿ ಒತ್ತಕ್ಷರಗಳು ಸರಿಯಾಗಿ ಮೂಡುತ್ತವೆ. ಜೊತೆಗೆ U+0CDC, U+0CDD ಮತ್ತು U+0CF3 ಅಕ್ಷರಗಳೂ ಇವೆ.",
+        ],
+      },
+      {
+        id: "limits",
+        items: [
+          "U+0CDC ದಪ್ಪ ತೂಕಗಳಲ್ಲಿ ಇನ್ನೂ ಕರಡು ರೂಪದಲ್ಲಿದೆ: Neha Sans ನಲ್ಲಿ Medium ನಿಂದ, Neha Serif ನಲ್ಲಿ ExtraBold ನಿಂದ.",
+          "Gari ಯಲ್ಲಿ ನುಕ್ತ (U+0CBC), ಅವಗ್ರಹ (U+0CBD), ಲೃ ಸ್ವರಚಿಹ್ನೆಗಳು (U+0CE2 ಮತ್ತು U+0CE3), U+0C80, U+0C81, U+0C84, U+0CF1, U+0CF2 ಮತ್ತು ದಂಡಗಳು (U+0964 ಮತ್ತು U+0965) ಇಲ್ಲ.",
+        ],
+      },
+      {
+        id: "downloads",
+        items: [
+          `<b>Neha Sans ಮತ್ತು Neha Serif ${NEHA_SANS.version}:</b> ${zipLink(NEHA_SANS)} ಮತ್ತು ${zipLink(NEHA_SERIF)}, <a href="${NEHA_SANS.page}">Neha ${NEHA_SANS.version} ಬಿಡುಗಡೆ</a> ಪುಟದಿಂದ. ಮೂಲ ಕೋಡ್: ${repoLink(NEHA_SANS.source)}.`,
+          `<b>Gari ${GARI.version}:</b> ${zipLink(GARI)}, <a href="${GARI.page}">Gari ${GARI.version} ಬಿಡುಗಡೆ</a> ಪುಟದಿಂದ. ಮೂಲ ಕೋಡ್: ${repoLink(GARI.source)}.`,
+        ],
+        paragraphs: ["ಜಿಪ್ ಫೈಲ್‌ಗಳನ್ನು GitHub ನಿಂದ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ. ಡೌನ್‌ಲೋಡ್ ಸರಿಯಾಗಿದೆಯೇ ಎಂದು ನೋಡಲು, ಪ್ರತಿ ಜಿಪ್‌ನ ಬಿಡುಗಡೆ ಪುಟದಲ್ಲಿ ಅದರ ಪಕ್ಕದಲ್ಲೇ SHA-256 ಫೈಲ್ ಇದೆ."],
+      },
+      {
+        id: "license",
+        paragraphs: ["3 ಫಾಂಟ್‌ಗಳೂ SIL Open Font License 1.1 ಅಡಿಯಲ್ಲಿವೆ. ಉಚಿತ ಅಥವಾ ಹಣ ಪಡೆಯುವ ಕೆಲಸದಲ್ಲಿ ಇವನ್ನು ಬಳಸಿ, ಅಳವಡಿಸಿ, ಹಂಚಿಕೊಳ್ಳಿ."],
+      },
     ],
     faq: [],
     og: { from: "Neha Sans", to: "ರೃ" },

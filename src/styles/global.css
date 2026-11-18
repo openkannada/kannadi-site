@@ -2,14 +2,47 @@
 @import "../../design/tokens.css";
 
 @font-face {
-  font-family: "Noto Sans Kannada";
+  font-family: "Neha Sans";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("../fonts/neha-sans-kannada-wght.woff2") format("woff2");
+  unicode-range: U+0C80-0CFF, U+200C-200D, U+25CC, U+0964-0965;
+}
+@font-face {
+  font-family: "Neha Serif";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("../fonts/neha-serif-kannada-wght.woff2") format("woff2");
+  unicode-range: U+0C80-0CFF, U+200C-200D, U+25CC, U+0964-0965;
+}
+@font-face {
+  font-family: "Gari";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 400;
+  src: url("../fonts/gari-kannada.woff2") format("woff2");
+  unicode-range: U+0C80-0CFF, U+200C-200D, U+25CC, U+0964-0965;
+}
+/* Vedic signs and North Indic fractions the Neha fonts lack come from Noto, fetched only when a page shows one. */
+@font-face {
+  font-family: "Neha Sans";
   font-style: normal;
   font-display: swap;
   font-weight: 100 900;
   src: url("../fonts/noto-sans-kannada-kannada-wght-normal.woff2") format("woff2");
-  unicode-range: U+0C80-0CFF, U+1CD0, U+1CD2-1CD3, U+1CDA, U+1CF2, U+1CF4, U+200C-200D, U+20B9, U+25CC, U+A830-A835;
+  unicode-range: U+1CD0, U+1CD2-1CD3, U+1CDA, U+1CF2, U+1CF4, U+A830-A835;
 }
-/* Latin comes from Noto Sans: the Latin glyphs in Noto Sans Kannada keep 1 weight at every wght. */
+@font-face {
+  font-family: "Neha Serif";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("../fonts/noto-serif-kannada-kannada-wght-normal.woff2") format("woff2");
+  unicode-range: U+1CD0, U+1CD2-1CD3, U+1CDA, U+1CF2, U+1CF4, U+A830-A835;
+}
+/* Latin comes from Noto Sans and Noto Serif Kannada's Latin subset; the Neha fonts carry only Kannada. */
 @font-face {
   font-family: "Noto Sans";
   font-style: normal;
@@ -25,14 +58,6 @@
   font-weight: 100 900;
   src: url("../fonts/noto-sans-latin-ext-wght-normal.woff2") format("woff2");
   unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
-}
-@font-face {
-  font-family: "Noto Serif Kannada";
-  font-style: normal;
-  font-display: swap;
-  font-weight: 100 900;
-  src: url("../fonts/noto-serif-kannada-kannada-wght-normal.woff2") format("woff2");
-  unicode-range: U+0C80-0CFF, U+1CD0, U+1CD2-1CD3, U+1CDA, U+1CF2, U+1CF4, U+200C-200D, U+20B9, U+25CC, U+A830-A835;
 }
 @font-face {
   font-family: "Noto Serif Kannada";

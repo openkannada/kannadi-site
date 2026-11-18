@@ -1,3 +1,16 @@
+Neha Sans and Neha Serif (neha-sans-kannada-wght.woff2, neha-serif-kannada-wght.woff2):
+Copyright 2022 The Noto Project Authors (https://github.com/notofonts/kannada); Copyright 2026 The Open Kannada Authors
+
+Gari (gari-kannada.woff2):
+Copyright (C) 2026, The Open Kannada Authors. Copyright (C) 2011-2012, Aravinda VK <hallimanearavind@gmail.com> (http://aravindavk.in); Copyright (C) 2005-2010, Indian Institute of Science, Bangalore; with Reserved Font Name Navilu.
+
+Noto Sans, Latin subsets (noto-sans-latin-wght-normal.woff2, noto-sans-latin-ext-wght-normal.woff2):
+Copyright 2022 The Noto Project Authors (https://github.com/notofonts/latin-greek-cyrillic)
+
+Noto Sans Kannada and Noto Serif Kannada, Kannada subsets (noto-sans-kannada-kannada-wght-normal.woff2, noto-serif-kannada-kannada-wght-normal.woff2), for the Vedic signs and North Indic fractions:
+Copyright 2022 The Noto Project Authors (https://github.com/notofonts/kannada)
+
+Noto Serif Kannada, Latin subset (noto-serif-kannada-latin-wght-normal.woff2):
 Copyright 2022 The Noto Project Authors (https://github.com/notofonts/kannada)
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.

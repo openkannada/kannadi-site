@@ -4,6 +4,9 @@ import { readDocx, writeDocx } from "./docx.ts";
 import {
   type Converted,
   decodeBytes,
+  isZip,
+  notText,
+  unixLines,
   escapeMarkup,
   type Joined,
   joinSegments,
@@ -143,13 +146,27 @@ export function htmlSegments(doc: Document): Segment[] {
   return segments.map(({ text, font }): Segment => ({ text, legacy: font === null ? byLooks(text) : font }));
 }
 
-/** Opens a TXT, HTML or DOCX file as editor text, converting its legacy font text. */
+/** A file that is not text the editor can open: a .doc, a PDF, or other binary. */
+export class NotText extends Error {
+  readonly kind: "doc" | "pdf" | "other";
+  constructor(kind: "doc" | "pdf" | "other") {
+    super(kind);
+    this.kind = kind;
+  }
+}
+
+/** Opens a TXT, HTML or DOCX file as editor text, converting its legacy font text. Throws NotText for anything else. */
 export async function openFile(file: File, { convert, bestLayout, decodeWindows1252 }: Converter): Promise<Joined> {
   const join = (segments: Segment[]) => joinSegments(resolveAuto(segments, bestLayout), convert);
   const bytes = new Uint8Array(await file.arrayBuffer());
   const name = file.name.toLowerCase();
-  if (name.endsWith(".docx")) return join(await readDocx(bytes));
-  const text = decodeBytes(bytes, decodeWindows1252);
+  // A Word file is read by its contents, so a renamed .docx opens and a renamed .doc is named for what it is.
+  if (isZip(bytes) && (name.endsWith(".docx") || !name.includes(".") || /\.(doc|txt)$/.test(name))) return join(await readDocx(bytes));
+  const kind = notText(bytes);
+  if (kind) throw new NotText(kind);
+  const text = unixLines(decodeBytes(bytes, decodeWindows1252));
+  const own = ours(text) ? ownText(text) : null;
+  if (own !== null) return { text: own, unknown: [], converted: 0, layouts: [] };
   if (name.endsWith(".html") || name.endsWith(".htm") || /^\s*<(!doctype|html)/i.test(text)) {
     return join(htmlSegments(parseHtml(text)));
   }
@@ -157,8 +174,9 @@ export async function openFile(file: File, { convert, bestLayout, decodeWindows1
 }
 
 /** Pasted clipboard data as editor text, converting its legacy font text. */
-export function pasted(html: string, plain: string, { convert, bestLayout }: Omit<Converter, "decodeWindows1252">): Joined {
+export function pasted(html: string, rawPlain: string, { convert, bestLayout }: Omit<Converter, "decodeWindows1252">): Joined {
   const join = (segments: Segment[]) => joinSegments(resolveAuto(segments, bestLayout), convert);
+  const plain = unixLines(rawPlain);
   if (html) {
     const segments = htmlSegments(parseHtml(html));
     if (segments.some((s) => s.legacy)) return join(segments);
@@ -166,13 +184,33 @@ export function pasted(html: string, plain: string, { convert, bestLayout }: Omi
   return join([{ text: plain, legacy: byLooks(plain) }]);
 }
 
+const GENERATOR = "kannadi";
+
+/** Whether HTML was saved by this editor, which writes 1 paragraph per line. */
+function ours(html: string): boolean {
+  return /^\s*<!doctype html>/i.test(html) && new RegExp(`<meta name="generator" content="${GENERATOR}">`).test(html);
+}
+
+/**
+ * The text of HTML this editor saved, each paragraph 1 line kept exactly; null when the body holds anything else,
+ * such as an edit made in another program, so the file is read like any other page.
+ */
+function ownText(html: string): string | null {
+  const doc = parseHtml(html);
+  const blocks = [...doc.body.childNodes].filter((n) => n.nodeType !== Node.TEXT_NODE || (n as Text).data.trim());
+  const plain = (p: Element) => p.tagName === "P" && [...p.childNodes].every((n) => n.nodeType === Node.TEXT_NODE);
+  if (!blocks.every((n) => n.nodeType === Node.ELEMENT_NODE && plain(n as Element))) return null;
+  return blocks.map((p) => p.textContent ?? "").join("\n");
+}
+
 const HTML_TEMPLATE = (title: string, body: string) => `<!doctype html>
 <html lang="kn">
 <head>
 <meta charset="utf-8">
+<meta name="generator" content="${GENERATOR}">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
-<style>body{max-width:42rem;margin:2rem auto;padding:0 1rem;font:1.125rem/1.9 "Noto Sans Kannada","Nirmala UI","Tunga",sans-serif}p{margin:0 0 1rem}</style>
+<style>body{max-width:42rem;margin:2rem auto;padding:0 1rem;font:1.125rem/1.9 "Noto Sans Kannada","Nirmala UI","Tunga",sans-serif}p{margin:0;min-height:1.9em;white-space:pre-wrap}</style>
 </head>
 <body>
 ${body}
@@ -190,9 +228,10 @@ export async function exportBlob(text: string, format: ExportFormat, title: stri
     });
   }
   if (format === "html") {
+    // 1 paragraph per line, with spaces kept, so the file reads as typed and reopens the same.
     const body = text
-      .split(/\n{2,}/)
-      .map((p) => `<p>${escapeMarkup(p).replace(/\n/g, "<br>")}</p>`)
+      .split("\n")
+      .map((line) => `<p>${escapeMarkup(line)}</p>`)
       .join("\n");
     return new Blob([HTML_TEMPLATE(escapeMarkup(title), body)], { type: "text/html;charset=utf-8" });
   }

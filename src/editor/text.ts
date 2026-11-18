@@ -2,7 +2,7 @@
 import { count as countOf, S } from "./strings.ts";
 
 /** A legacy font layout, or "auto" for legacy text in an unknown font. */
-export type Layout = "nudi" | "akruti";
+export type Layout = "nudi" | "akruti" | "kan-eng" | "shree-lipi" | "nudi-b";
 export type TypingMode = "kannada" | "english" | "baraha" | "iso15919";
 export type SegmentFont = false | Layout | "auto";
 
@@ -72,6 +72,34 @@ export function legacyLayout(family: unknown): Layout | null {
 
 export function isLegacyFont(family: unknown): boolean {
   return legacyLayout(family) !== null;
+}
+
+/** Windows and old Mac line endings as "\n", the only line break the editor knows. */
+export function unixLines(text: string): string {
+  return text.replace(/\r\n?/g, "\n");
+}
+
+/** Whether a file starts with a ZIP signature, as a .docx does whatever its name. */
+export function isZip(bytes: Uint8Array): boolean {
+  return bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04;
+}
+
+/** What a file that is not text is, from its first bytes or its control characters, or null for text. */
+export function notText(bytes: Uint8Array): "doc" | "pdf" | "other" | null {
+  const starts = (...b: number[]) => b.every((v, i) => bytes[i] === v);
+  if (starts(0x25, 0x50, 0x44, 0x46)) return "pdf";
+  if (starts(0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1)) return "doc";
+  if (isZip(bytes)) return "other";
+  // UTF-16 text has a NUL in every other byte. Otherwise a NUL, or more than a few stray control bytes, is binary;
+  // vertical tab (a Word line break) and Ctrl-Z (an old DOS end of file) turn up in real text files.
+  if ((bytes[0] === 0xff && bytes[1] === 0xfe) || (bytes[0] === 0xfe && bytes[1] === 0xff)) return null;
+  const sample = bytes.subarray(0, 4096);
+  let control = 0;
+  for (const b of sample) {
+    if (b === 0) return "other";
+    if (b < 0x20 && b !== 0x09 && b !== 0x0a && b !== 0x0b && b !== 0x0c && b !== 0x0d && b !== 0x1a) control++;
+  }
+  return control >= 4 && control > sample.length / 100 ? "other" : null;
 }
 
 /**

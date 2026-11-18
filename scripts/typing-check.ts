@@ -89,6 +89,51 @@ expect("Enter twice at the end, then typing", await typed("/", [{ type: "ab" }, 
 expect("Enter at the end, then Backspace", await typed("/", [{ type: "ab" }, { key: "Enter" }, { key: "Backspace" }, { type: "c" }]), "abc");
 expect("Delete at the end after a line break keeps it", await typed("/", [{ type: "ab" }, { key: "Enter" }, { key: "Delete" }, { type: "c" }]), "ab\nc");
 
+// A file the editor cannot read leaves the document as it was, with a message.
+{
+  const context = await browser.createBrowserContext();
+  const page = await context.newPage();
+  await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle0" });
+  await page.waitForFunction(() => (document.querySelector("#doc") as HTMLElement | null)?.isContentEditable);
+  await page.click("#doc");
+  await page.keyboard.type("abc");
+  const dropped = await page.evaluate(async () => {
+    const doc = new Uint8Array([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1, ...new Array(512).fill(0)]);
+    const data = new DataTransfer();
+    data.items.add(new File([doc], "old.doc"));
+    document.dispatchEvent(new DragEvent("drop", { dataTransfer: data, bubbles: true, cancelable: true }));
+    await new Promise((r) => setTimeout(r, 800));
+    return { text: document.querySelector("#doc")?.textContent ?? "", toast: document.querySelector("[role=status]")?.textContent ?? document.body.innerText };
+  });
+  expect("a dropped .doc leaves the document as it was", dropped.text, "abc");
+  expect("a dropped .doc says what to do", dropped.toast, /\.docx/);
+  await context.close();
+}
+
+// Rich text copied from another page pastes with no console error and converts its legacy font text.
+{
+  const context = await browser.createBrowserContext();
+  const source = await context.newPage();
+  await source.setContent(`<div id="s" contenteditable><p><span style="font-family:Calibri">Report</span></p><p style='font-family:"BRH Kannada"'>PÀ£ÀßqÀ</p></div>`);
+  await source.evaluate(() => {
+    const s = document.getElementById("s") as HTMLElement;
+    s.focus();
+    getSelection()?.selectAllChildren(s);
+  });
+  await source.keyboard.press("KeyC", { commands: ["Copy"] } as never);
+  const page = await context.newPage();
+  const errors: string[] = [];
+  page.on("console", (m) => m.type() === "error" && errors.push(m.text()));
+  await page.goto(`http://127.0.0.1:${port}/`, { waitUntil: "networkidle0" });
+  await page.waitForFunction(() => (document.querySelector("#doc") as HTMLElement | null)?.isContentEditable);
+  await page.click("#doc");
+  await page.keyboard.press("KeyV", { commands: ["Paste"] } as never);
+  await new Promise((r) => setTimeout(r, 800));
+  expect("rich paste", (await page.evaluate(() => document.querySelector("#doc")?.textContent ?? "")).replace(/\n$/, ""), "Report\nಕನ್ನಡ");
+  expect("rich paste logs no console error", errors.join(" | "), "");
+  await context.close();
+}
+
 await browser.close();
 server.close();
 if (problems.length) {

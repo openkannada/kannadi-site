@@ -19,6 +19,7 @@
     "tokens": "node scripts/tokens.ts",
     "icons": "node scripts/icons.ts",
     "layout-check": "node scripts/layout-check.ts",
+    "typing-check": "node scripts/typing-check.ts",
     "lighthouse": "lhci autorun",
     "deploy": "node scripts/deploy.ts"
   },

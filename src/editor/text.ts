@@ -155,7 +155,10 @@ function commonSuffix(a: string, b: string, limit: number): number {
  * inside a run of equal letters fits several places; when `caret` (the
  * collapsed caret after the edit) is given and fits, the edit is put there.
  */
-export function diff(before: string, after: string, caret = -1): Edit {
+export function diff(rawBefore: string, rawAfter: string, caret = -1): Edit {
+  // Browsers swap a space for a no-break space at the end of a line and back; that is not an edit.
+  const before = rawBefore.replace(/\u00a0/g, " ");
+  const after = rawAfter.replace(/\u00a0/g, " ");
   const start = commonPrefix(before, after, Math.min(before.length, after.length));
   const tail = commonSuffix(before, after, Math.min(before.length, after.length) - start);
   const edit = { start, oldEnd: before.length - tail, newEnd: after.length - tail };

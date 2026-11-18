@@ -33,7 +33,7 @@ export interface ComposerEvents {
 const WORD_AND_BREAK = /^(.+?)([\s.,;:!?]+)$/u;
 
 /** The editor surface the composer needs; DocEditor provides it. */
-export type ComposerEditor = Pick<DocEditor, "replace" | "selection" | "select">;
+export type ComposerEditor = Pick<DocEditor, "replace" | "selection" | "select" | "composing">;
 
 interface Word {
   start: number;
@@ -129,7 +129,10 @@ export class Composer {
       return;
     }
     const inserted = after.slice(edit.start, edit.newEnd);
-    const insertOnly = edit.oldEnd === edit.start && inserted;
+    // A phone keyboard can take back the word being typed and send it again whole, in place of its Kannada.
+    const retyped = this.word && edit.start === this.word.start && edit.oldEnd === this.end() && inserted;
+    if (retyped && this.word) this.word = { start: this.word.start, latin: "", rendered: "" };
+    const insertOnly = (edit.oldEnd === edit.start || retyped) && inserted;
     const letters = LETTERS[this.mode];
     if (insertOnly && letters.test(inserted)) {
       this.extend(edit.start, inserted);
@@ -176,7 +179,8 @@ export class Composer {
 
   /** The caret left the word: the word is done. */
   selectionChanged(): void {
-    if (!this.word || this.busy) return;
+    // A keyboard composing the rest of the word moves the caret past it; the word goes on.
+    if (!this.word || this.busy || this.editor.composing) return;
     const sel = this.editor.selection();
     if (!sel || sel.start !== sel.end || sel.end !== this.end()) this.commit();
   }

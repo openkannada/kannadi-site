@@ -34,6 +34,10 @@ export class DocEditor {
   readonly el: HTMLElement;
   private readonly onEdit: EditListener;
   private before: string;
+  /** Whether the element ends with the extra "\n" that gives an empty last line its place. */
+  private tail = false;
+  /** Whether a keyboard is composing; some send input events mid-composition without saying so. */
+  composing = false;
   undoStack: Step[] = [];
   private redoStack: Step[] = [];
 
@@ -46,9 +50,25 @@ export class DocEditor {
 
     el.addEventListener("beforeinput", (e) => this.beforeInput(e));
     el.addEventListener("input", (e) => {
-      if (!(e as InputEvent).isComposing) this.sync((e as InputEvent).inputType);
+      const input = e as InputEvent;
+      if (input.isComposing) return;
+      // Plain input means the composition is over, even when no compositionend came.
+      if (this.composing && input.inputType !== "insertCompositionText") this.composing = false;
+      if (!this.composing) this.sync(input.inputType);
     });
-    el.addEventListener("compositionend", () => this.sync("insertCompositionText"));
+    el.addEventListener("compositionstart", () => {
+      this.composing = true;
+    });
+    const endComposition = () => {
+      if (!this.composing) return;
+      this.composing = false;
+      this.sync("insertCompositionText");
+    };
+    el.addEventListener("compositionend", () => {
+      this.composing = true;
+      endComposition();
+    });
+    el.addEventListener("focusout", endComposition);
     el.addEventListener("keydown", (e) => {
       const mod = e.ctrlKey || e.metaKey;
       if (!mod || e.altKey || e.isComposing) return;
@@ -85,7 +105,7 @@ export class DocEditor {
         if (!target) break;
         if (!text) break;
         e.preventDefault();
-        const at = this.offsetOf(target.startContainer, target.startOffset);
+        const at = Math.min(this.offsetOf(target.startContainer, target.startOffset), this.text.length);
         this.replace(at, at, text, "insertFromDrop");
         break;
       }
@@ -93,7 +113,17 @@ export class DocEditor {
   }
 
   get text(): string {
-    return this.el.textContent ?? "";
+    const dom = this.el.textContent ?? "";
+    return this.tail && dom.endsWith("\n") ? dom.slice(0, -1) : dom;
+  }
+
+  /** While the text ends with "\n", 1 more "\n" follows in the element only, to give the empty last line a caret. */
+  private keepTail(text: string): void {
+    const want = text.endsWith("\n");
+    const dom = this.el.textContent ?? "";
+    if (want && dom === text) this.node().appendData("\n");
+    else if (!want && dom.length > text.length) this.node().deleteData(text.length, dom.length - text.length);
+    this.tail = want;
   }
 
   node(): Text {
@@ -110,6 +140,7 @@ export class DocEditor {
   sync(inputType = "", record = true): void {
     this.flatten();
     const after = this.text;
+    this.keepTail(after);
     if (after === this.before) return;
     const sel = this.selection();
     const edit = diff(this.before, after, sel && sel.start === sel.end ? sel.start : -1);
@@ -176,10 +207,12 @@ export class DocEditor {
     if (nodes.length === 0) return;
     const sel = this.selection();
     let text = "";
+    let lastBr = false;
     const walk = (node: Node, first: boolean) => {
       for (const child of node.childNodes) {
+        lastBr = child.nodeName === "BR";
         if (child.nodeType === Node.TEXT_NODE) text += (child as Text).data;
-        else if (child.nodeName === "BR") text += "\n";
+        else if (lastBr) text += "\n";
         else {
           if (text && !text.endsWith("\n") && !first) text += "\n";
           walk(child, false);
@@ -187,6 +220,8 @@ export class DocEditor {
       }
     };
     walk(this.el, true);
+    // A final <br> is the browser's placeholder for an empty line, such as after clearing the text; it holds no break.
+    if (lastBr) text = text.slice(0, -1);
     this.el.textContent = text;
     if (sel) this.select(Math.min(sel.start, text.length), Math.min(sel.end, text.length));
   }
@@ -212,8 +247,9 @@ export class DocEditor {
     if (!sel || sel.rangeCount === 0) return null;
     const range = sel.getRangeAt(0);
     if (!this.el.contains(range.startContainer) || !this.el.contains(range.endContainer)) return null;
-    const a = this.offsetOf(range.startContainer, range.startOffset);
-    const b = this.offsetOf(range.endContainer, range.endOffset);
+    const length = this.text.length;
+    const a = Math.min(this.offsetOf(range.startContainer, range.startOffset), length);
+    const b = Math.min(this.offsetOf(range.endContainer, range.endOffset), length);
     return { start: Math.min(a, b), end: Math.max(a, b) };
   }
 

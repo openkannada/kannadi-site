@@ -53,6 +53,8 @@ jobs:
       - run: npm run voice-lint
       - name: Every page at 6 widths, light and dark
         run: npm run layout-check
+      - name: Typing in the editor, on desktop keys and composing phone keyboards
+        run: npm run typing-check
       - name: Lighthouse, mobile
         run: npx lhci autorun
       - name: Build and check the Kannada drafts, which wait for a native reader

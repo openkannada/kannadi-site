@@ -53,8 +53,10 @@ const { problems } = Astro.props;
     flex: none;
     color: var(--primary);
   }
+  /* The value fills its shared row with its text at the bottom, so a value that wraps still lines up. */
   .problem-value {
-    align-self: end;
+    display: flex;
+    align-items: flex-end;
     margin: 0.5rem 0 0;
     color: var(--foreground);
     font-size: 1.75rem;

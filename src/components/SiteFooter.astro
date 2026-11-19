@@ -1,6 +1,6 @@
 ---
 import { NAV, inLanguage, type Page } from "../content/pages.ts";
-import { AUTHOR, ORG, SITE, pagePath } from "../content/site.ts";
+import { AUTHOR, LIVE, ORG, SITE, pagePath } from "../content/site.ts";
 import { fmt, type Lang } from "../i18n/core.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
 import { href } from "../lib/paths.ts";
@@ -44,9 +44,8 @@ const otherLang = (p: Page) => ((p.lang ?? "en") === lang ? undefined : (p.lang 
     <div class="footer-notes">
       <p set:html={fmt(T.madeBy, { author: link(AUTHOR.url, named(ORG.founders[0]!)), library: link(SITE.repository, "kannadi") })} />
       <p set:html={fmt(T.started, { founders, supporter: link(ORG.supporter.url, ORG.supporter.label) })} />
-      <p set:html={fmt(T.credit, { site: link(AUTHOR.url, "prasad.tech") })} />
-      <p set:html={fmt(T.owns, { org: ORG.name, supporter: ORG.supporter.label, names: link(href(pagePath(brand?.slug ?? "brand")), T.names) })} />
-      <p set:html={fmt(T.words, { wikipedia: link("https://kn.wikipedia.org", T.wikipedia), license: link("https://creativecommons.org/licenses/by-sa/4.0/", "CC BY-SA 4.0") })} />
+      <p set:html={fmt(T.credit, { site: link(LIVE.origin, LIVE.host) })} />
+      <p set:html={fmt(T.licenses, { details: link(href(pagePath(brand?.slug ?? "brand")), T.details) })} />
     </div>
   </div>
 </footer>

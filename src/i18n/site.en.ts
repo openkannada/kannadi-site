@@ -53,10 +53,8 @@ export const SITE_EN = {
     started: "Started by {founders}. Supported by {supporter}.",
     and: " and ",
     credit: "If kannadi helps your project, a mention or a link to {site} is appreciated.",
-    owns: "The licenses and names of {org} belong to the project. {supporter} supports it and holds none of them. Text and the images we make: CC BY 4.0. Code: MIT or Apache-2.0. {names}.",
-    names: "Names and logos",
-    words: "Word suggestions use a list of words counted in the articles that {wikipedia} contributors write, shared under {license}.",
-    wikipedia: "Kannada Wikipedia",
+    licenses: "Code: MIT or Apache-2.0. Text and the images we make: CC BY 4.0. {details}.",
+    details: "Licenses, names and credits",
   },
   about: {
     people: "Founding members",

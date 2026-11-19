@@ -8,7 +8,7 @@ import { join, relative, sep } from "node:path";
 
 import puppeteer from "puppeteer-core";
 
-import { WIDTHS, frameDrift, isClipped, layoutProblems, type Measure } from "../src/lib/layout.ts";
+import { WIDTHS, frameDrift, isClipped, layoutProblems, misaligned, type Card, type Measure } from "../src/lib/layout.ts";
 import { chrome, serve } from "./browser.ts";
 
 const args = process.argv.slice(2);
@@ -77,6 +77,18 @@ try {
         }));
         m.clippedKannada = seen.filter((t) => isClipped(t.box, t.clippers)).map((t) => t.text);
         for (const p of layoutProblems(m)) problems.push(`${path} ${width}px ${scheme}: ${p}`);
+        const rows: { name: string; cards: Card[] }[] = await page.evaluate(() =>
+          [...document.querySelectorAll<HTMLElement>("[data-cards]")].map((list) => ({
+            name: list.dataset.cards || list.className,
+            cards: [...list.children].filter((c) => c.getBoundingClientRect().height > 0).map((c) => {
+              const r = c.getBoundingClientRect();
+              const parts: Record<string, number> = {};
+              for (const p of c.querySelectorAll<HTMLElement>("[data-align]")) if (p.getBoundingClientRect().height > 0) parts[p.dataset.align!] = p.getBoundingClientRect().top;
+              return { top: r.top, bottom: r.bottom, width: r.width, parts };
+            }),
+          })),
+        );
+        for (const { name, cards } of rows) for (const p of misaligned(cards)) problems.push(`${path} ${width}px ${scheme}: in ${name}, ${p}`);
         const openWidth = await page.evaluate(() => {
           for (const d of document.querySelectorAll("main details")) (d as HTMLDetailsElement).open = true;
           return document.documentElement.scrollWidth;
@@ -114,4 +126,4 @@ if (problems.length) {
   console.error(problems.join("\n"));
   process.exit(1);
 }
-console.log(`Layout: ${pages.length} pages at ${WIDTHS.length} widths in light and dark, with no horizontal scroll, layout shift or clipped Kannada, and every illustration ending on its rest frame.`);
+console.log(`Layout: ${pages.length} pages at ${WIDTHS.length} widths in light and dark, with no horizontal scroll, layout shift, clipped Kannada or cards out of line, and every illustration ending on its rest frame.`);

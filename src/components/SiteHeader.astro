@@ -1,11 +1,14 @@
 ---
+import { HOME_COPY } from "../content/home.ts";
 import { HOMES, NAV, PAGES, inLanguage, type Page } from "../content/pages.ts";
 import { ORG, pagePath } from "../content/site.ts";
+import { PRIMARY_TOOLS, toolFor } from "../content/tools.ts";
 import { fmt } from "../i18n/core.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
 import { href } from "../lib/paths.ts";
 import Icon from "./Icon.astro";
 import Logo from "./Logo.astro";
+import ToolMark from "./ToolMark.astro";
 
 interface Props {
   page: Page;
@@ -20,55 +23,74 @@ const twinPage = PAGES.find((p) => p.slug === page.twin);
 const twin = twinPage ?? PAGES.find((p) => p.slug === HOMES[other].slug);
 const label = twinPage ? T.language.switchLabel : T.language.homeLabel;
 const pages = (slugs: readonly string[]) => slugs.map((s) => inLanguage(s, lang)).filter((p): p is Page => !!p);
-const groups = [
-  { id: "nav-tools", label: T.nav.tools, pages: pages(NAV.tools) },
-  { id: "nav-convert", label: T.nav.converters, pages: pages(NAV.converters) },
-  { id: "nav-type", label: T.nav.typing, pages: pages(NAV.typing) },
-];
-const org = { label: T.nav.org, pages: pages(NAV.org) };
 const otherLang = (p: Page) => ((p.lang ?? "en") === lang ? undefined : (p.lang ?? "en"));
+// The English slug a page stands for, so /kn/ (the Kannada editor) lights up the editor.
+const englishSlug = (lang === "en" ? current : PAGES.find((p) => p.slug === current)?.twin) ?? current;
+const here = toolFor(englishSlug);
+const names = new Map(HOME_COPY[lang].tools.items.map((t) => [t.slug, t.name]));
+const tools = PRIMARY_TOOLS.map((slug) => ({ slug, page: inLanguage(slug, lang), name: names.get(slug) ?? slug })).filter((t) => t.page);
+const more = [
+  { label: T.nav.typing, pages: pages(NAV.typing) },
+  { label: T.nav.converters, pages: pages(NAV.converters) },
+  { label: T.nav.org, pages: pages(["ai-benchmark", ...NAV.org]) },
+];
 const themeLabels = JSON.stringify({ ...T.theme });
 ---
-<header class="site-header mx-auto flex w-full max-w-6xl items-center gap-2 px-4 pt-[max(0.75rem,env(safe-area-inset-top))] pb-2 sm:px-6">
-  <a href={href(pagePath(HOMES[lang].slug))} class="brand mr-auto flex items-center gap-2.5 rounded-full py-1 pr-2 text-foreground no-underline">
+<header class="site-header wrap-page">
+  <a href={href(pagePath(HOMES[lang].slug))} class="brand" aria-label={ORG.name} aria-current={current === HOMES[lang].slug && !here ? "page" : undefined}>
     <Logo mark="open-kannada" />
-    <span class="text-lg leading-none font-semibold tracking-tight whitespace-nowrap">{ORG.name}</span>
+    <span class="brand-name">{ORG.name}</span>
   </a>
-  <nav aria-label={T.nav.pages} class="hidden items-center gap-1 lg:flex">
-    {groups.map((g) => (
-      <>
-        <button type="button" class="btn nav-trigger" popovertarget={g.id}>
-          {g.label}
-          <Icon name="chevron" class="!size-4 text-muted-foreground" />
-        </button>
-        <div id={g.id} popover class="menu nav-menu">
-          {g.pages.map((p) => (
-            <a class="menu-item" href={href(pagePath(p.slug))} aria-current={p.slug === current ? "page" : undefined} lang={otherLang(p)}>{p.name}</a>
-          ))}
-        </div>
-      </>
+  <nav aria-label={T.nav.pages} class="tool-nav glass">
+    {tools.map((t) => (
+      <a class="tool-nav-link" href={href(pagePath(t.page!.slug))} aria-current={t.slug === here ? (t.page!.slug === current ? "page" : "true") : undefined} lang={otherLang(t.page!)}>{t.name}</a>
     ))}
+    <button type="button" class="tool-nav-link tool-nav-more" popovertarget="nav-more">
+      {T.nav.more}
+      <Icon name="chevron" />
+    </button>
   </nav>
-  {twin && (
-    <a class="btn lang-switch" href={href(pagePath(twin.slug))} hreflang={other}>
-      <span lang={other}>{T.language.switchTo}</span><span class="sr-only">: {label}</span>
-    </a>
-  )}
-  <button type="button" class="btn btn-icon" id="theme" aria-label={fmt(T.theme.change, { label: T.theme.auto })} data-theme="auto" data-labels={themeLabels}>
-    <Icon name="auto" class="theme-auto" />
-    <Icon name="sun" class="theme-light" />
-    <Icon name="moon" class="theme-dark" />
-  </button>
-  <button type="button" class="btn btn-icon lg:hidden" popovertarget="nav-all" aria-label={T.nav.pages}>
-    <Icon name="menu" />
-  </button>
-  <div id="nav-all" popover class="menu nav-menu">
-    <a class="menu-item" href={href(pagePath(HOMES[lang].slug))} aria-current={current === HOMES[lang].slug ? "page" : undefined}>{HOMES[lang].name}</a>
-    {[...groups, org].map((g) => (
+  <div id="nav-more" popover class="menu nav-menu nav-more">
+    {more.map((g) => (
+      <div class="nav-group">
+        <p class="menu-label">{g.label}</p>
+        {g.pages.map((p) => (
+          <a class="menu-item" href={href(pagePath(p.slug))} aria-current={p.slug === current ? "page" : undefined} lang={otherLang(p)}>{p.name}</a>
+        ))}
+      </div>
+    ))}
+  </div>
+  <div class="header-end">
+    {twin && (
+      <a class="btn lang-switch" href={href(pagePath(twin.slug))} hreflang={other}>
+        <span lang={other}>{T.language.switchTo}</span><span class="sr-only">: {label}</span>
+      </a>
+    )}
+    <button type="button" class="btn btn-icon" id="theme" aria-label={fmt(T.theme.change, { label: T.theme.auto })} data-theme="auto" data-labels={themeLabels}>
+      <Icon name="auto" class="theme-auto" />
+      <Icon name="sun" class="theme-light" />
+      <Icon name="moon" class="theme-dark" />
+    </button>
+    <button type="button" class="btn btn-icon menu-button" popovertarget="nav-all" aria-label={T.nav.pages}>
+      <Icon name="menu" />
+    </button>
+  </div>
+  <div id="nav-all" popover class="menu nav-menu nav-sheet">
+    <ul class="sheet-tools" role="list">
+      {tools.map((t) => (
+        <li>
+          <a class="sheet-tool" href={href(pagePath(t.page!.slug))} aria-current={t.page!.slug === current ? "page" : undefined} lang={otherLang(t.page!)}>
+            <ToolMark slug={t.slug} size="sm" />
+            <span>{t.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    {more.map((g) => (
       <>
         <div class="menu-sep" role="separator"></div>
         <p class="menu-label">{g.label}</p>
-        {g.pages.filter((p) => p.slug !== HOMES[lang].slug).map((p) => (
+        {g.pages.map((p) => (
           <a class="menu-item" href={href(pagePath(p.slug))} aria-current={p.slug === current ? "page" : undefined} lang={otherLang(p)}>{p.name}</a>
         ))}
       </>
@@ -94,15 +116,134 @@ const themeLabels = JSON.stringify({ ...T.theme });
 </script>
 
 <style>
+  .site-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+    padding-bottom: 0.5rem;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    margin-right: auto;
+    padding: 0.25rem 0.5rem 0.25rem 0;
+    border-radius: 9999px;
+    color: var(--foreground);
+    text-decoration: none;
+  }
+  .brand-name {
+    font-size: 1.125rem;
+    line-height: 1;
+    font-weight: 620;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .header-end {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: auto;
+  }
   .lang-switch {
     font-size: 0.9375rem;
     text-decoration: none;
     color: var(--foreground);
   }
-  /* The narrowest phones fit the logo, the switch and 2 buttons with the gaps and padding tightened. */
-  @media (max-width: 399.98px) {
+
+  /* On wide screens the tools sit 1 click away in a pane of glass; the page you are on is the white bead. */
+  .tool-nav {
+    display: none;
+    align-items: center;
+    gap: 0.125rem;
+    padding: 0.3125rem;
+    border-radius: 9999px;
+  }
+  .tool-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    height: 2.25rem;
+    padding-inline: 0.875rem;
+    border-radius: 9999px;
+    color: var(--foreground);
+    font-size: var(--type-ui);
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      background-color var(--duration-quick) var(--ease-standard),
+      color var(--duration-quick) var(--ease-standard),
+      transform var(--duration-morph) var(--ease-spring);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .tool-nav-link:lang(kn) {
+    font-size: 0.9375rem;
+  }
+  .tool-nav-link :global(svg) {
+    width: 1rem;
+    height: 1rem;
+    color: var(--muted-foreground);
+  }
+  @media (hover: hover) {
+    .tool-nav-link:hover {
+      background: oklch(from var(--foreground) l c h / 0.07);
+    }
+  }
+  .tool-nav-link:active {
+    transform: scale(0.94);
+    transition-duration: var(--duration-quick), var(--duration-quick), 90ms;
+  }
+  .tool-nav-link[aria-current] {
+    background: var(--card);
+    color: var(--primary);
+    font-weight: 600;
+    box-shadow:
+      0 1px 2px oklch(0 0 0 / 0.08),
+      0 2px 8px -2px oklch(from var(--primary) l c h / 0.25),
+      inset 0 1px 0 var(--glass-rim);
+  }
+  @media (min-width: 64rem) {
+    .tool-nav {
+      display: flex;
+    }
+    .menu-button {
+      display: none;
+    }
+    .brand,
+    .header-end {
+      margin: 0;
+    }
+    .brand {
+      justify-self: start;
+    }
+    .header-end {
+      justify-self: end;
+    }
+    /* The capsule centers on the page, whatever the widths on either side. */
     .site-header {
-      gap: 0.25rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+      gap: 1rem;
+    }
+  }
+  /* Between 1024 and 1150px the capsule and the brand share the row with less air. */
+  @media (min-width: 64rem) and (max-width: 71.99rem) {
+    .tool-nav-link {
+      padding-inline: 0.6875rem;
+    }
+    .brand-name {
+      display: none;
+    }
+  }
+  /* The narrowest phones fit the logo, the switch and 2 buttons with the gaps tightened. */
+  @media (max-width: 399.98px) {
+    .site-header,
+    .header-end {
+      gap: 0.125rem;
     }
     .brand {
       padding-right: 0;
@@ -111,6 +252,7 @@ const themeLabels = JSON.stringify({ ...T.theme });
       padding-inline: 0.5rem;
     }
   }
+
   #theme :global(svg) {
     display: none;
   }
@@ -119,25 +261,56 @@ const themeLabels = JSON.stringify({ ...T.theme });
   #theme[data-theme="dark"] :global(.theme-dark) {
     display: block;
   }
-  [popovertarget="nav-tools"] { anchor-name: --nav-tools; }
-  [popovertarget="nav-convert"] { anchor-name: --nav-convert; }
-  [popovertarget="nav-type"] { anchor-name: --nav-type; }
+
+  [popovertarget="nav-more"] { anchor-name: --nav-more; }
   [popovertarget="nav-all"] { anchor-name: --nav-all; }
-  #nav-tools { position-anchor: --nav-tools; }
-  #nav-convert { position-anchor: --nav-convert; }
-  #nav-type { position-anchor: --nav-type; }
+  #nav-more { position-anchor: --nav-more; }
   #nav-all { position-anchor: --nav-all; }
   .nav-menu {
     position-area: bottom span-left;
-    margin-top: 0.375rem;
+    margin-top: 0.5rem;
   }
-  #nav-all {
+  .nav-more {
+    grid-template-columns: repeat(3, minmax(0, 12rem));
+    gap: 0.25rem;
+  }
+  .nav-more:popover-open {
+    display: grid;
+  }
+  .nav-sheet {
+    width: min(22rem, calc(100vw - 2rem));
     max-height: calc(100dvh - 5rem);
     overflow-y: auto;
   }
   .nav-menu [aria-current="page"] {
     font-weight: 600;
     color: var(--primary);
+  }
+  .sheet-tools {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sheet-tool {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 3rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: var(--radius-md);
+    color: var(--foreground);
+    font-size: var(--type-ui);
+    font-weight: 500;
+    line-height: 1.25;
+    text-decoration: none;
+  }
+  .sheet-tool:hover,
+  .sheet-tool:focus-visible {
+    background: var(--accent);
+    outline: none;
   }
   @supports not (anchor-name: --a) {
     .nav-menu {

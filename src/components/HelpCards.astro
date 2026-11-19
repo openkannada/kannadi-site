@@ -1,0 +1,68 @@
+---
+// The ways to help, as cards with an icon each.
+import type { IconName } from "../icons/icons.ts";
+import { withBase } from "../lib/paths.ts";
+import Icon from "./Icon.astro";
+
+interface Props {
+  /** Trusted HTML, each opening with its question in bold. */
+  items: readonly string[];
+  icons: readonly IconName[];
+}
+const { items, icons } = Astro.props;
+---
+<ul class="helps" role="list" data-cards="help">
+  {items.map((h, i) => (
+    <li class="help reveal" data-inview>
+      <span class="icon-tile"><Icon name={icons[i] ?? "people"} /></span>
+      <p set:html={withBase(h)} />
+    </li>
+  ))}
+</ul>
+
+<style>
+  .helps {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .help {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    align-content: start;
+    gap: 0.875rem;
+    padding: 1.125rem 1.25rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+  }
+  .help p {
+    margin: 0;
+    line-height: 1.55;
+  }
+  .help p:lang(kn) {
+    line-height: var(--type-kn-leading);
+  }
+  .help p :global(b) {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  @media (hover: hover) {
+    .help:hover {
+      border-color: oklch(from var(--primary) l c h / 0.35);
+      box-shadow: var(--shadow-sheet);
+    }
+  }
+  @media (min-width: 40rem) {
+    .helps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .help {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+</style>

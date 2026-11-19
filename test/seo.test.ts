@@ -18,6 +18,15 @@ test("a page's fingerprint follows its text and ignores link targets and spacing
   assert.notEqual(contentHash("# Nudi\n\nSee [the converter](/)."), a);
 });
 
+test("a table of links has 1 fingerprint at any base path, though its columns pad to the longest link", () => {
+  const table = (base: string) => {
+    const cell = `[Nudi](${base}nudi/)`;
+    return `| Converter${" ".repeat(cell.length - 9)} |\n| ${"-".repeat(cell.length)} |\n| ${cell} |`;
+  };
+  assert.equal(contentHash(table("/kannada/")), contentHash(table("/")));
+  assert.notEqual(contentHash(table("/").replace("Converter", "Font")), contentHash(table("/")));
+});
+
 test("the hash file records each page, and a changed or new page is stale", () => {
   const recorded = recordHashes([{ path: "/b/", hash: "bbb" }, { path: "/", hash: "aaa" }]);
   assert.deepEqual(Object.keys(recorded), ["/", "/b/"]);

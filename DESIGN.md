@@ -77,6 +77,12 @@ A pane (`@utility glass` on the site):
 - `npm run icons` writes `design/icons.html`, the index of every icon in both states, in light and dark. A test fails when it is out of date, or when an icon leaves the grid.
 - No brand logos of other companies, and no icon from a general library where 1 of ours fits.
 
+### Tool marks
+
+- Each tool is marked by the first letter of its Kannada name, set in Neha Sans on a small tile (`ToolMark.astro`, letters in `src/content/tools.ts`): ಸಂ the editor (ಸಂಪಾದಕ), ಪ the converters (ಪರಿವರ್ತಕ), ಫಾ fonts (ಫಾಂಟ್), ಕಾ spell check (ಕಾಗುಣಿತ), ನಿ the dictionary (ನಿಘಂಟು), ಓ OCR (ಓದು, to read) and ಮಾ the AI benchmark (ಮಾನದಂಡ).
+- The tile is `--accent` with a faint indigo light from above and the glass rim; the letter is `--primary` at weight 650.
+- Motion: the letter's weight swells from 360 to 650 once, when it first comes into view, and to 780 on hover, through the variable font. The rest frame is 650, which is what shows without script and under reduced motion.
+
 ## Illustration
 
 - Drawn from Kannada itself: letterforms and ottaksharas, on the turmeric, kumkuma and indigo fields, on a sheet like the editor's. Avoid stock "India" pictures. Old print and palm-leaf textures belong to the OCR and dictionary pages, when those exist.
@@ -89,7 +95,7 @@ A pane (`@utility glass` on the site):
   - `scan`: a beam passes over a printed page, and the text reads out;
   - `dictionary`: the English word *water* dims as its entry, ನೀರು, settles in, then its ISO 15919 and Baraha spellings and a line of meaning appear;
   - `benchmark`: the same sentence counted in tokens, 3 for English, then 7 for Kannada, 1 at a time.
-- Tool pages show theirs beside the heading from 1024px, so the editor stays in the first viewport on phones and tablets. Reference and project pages show theirs from 768px. The About page shows the 4 kinds of work as cards. On the home page each tool card shows its illustration: small beside the words on phones, above them from 640px, and beside them on the 2 wide cards.
+- Tool pages show theirs beside the heading from 1024px, so the editor stays in the first viewport on phones and tablets. Reference and project pages show theirs from 768px. The About page shows the 4 kinds of work as cards. On the home page each tool card shows its illustration above its name from 640px; on phones the cards are compact rows without it. The AI benchmark band shows its illustration beside its words.
 
 ## Motion in illustrations
 
@@ -151,12 +157,34 @@ A pane (`@utility glass` on the site):
 - **Ask AI** (`AskAi.astro`): an outlined pill at the right end of the breadcrumb row, on every page but the home pages, and never inside the editor. Its glass menu copies the page's markdown mirror or opens ChatGPT, Claude or Perplexity with a prompt to read it. On narrow screens the current crumb truncates so the row stays 1 line.
 - **Home page**: a solid page with no glass of its own. The tagline is the heading, large, beside a solid card with the paste box (below it on phones). Then the story in short, a grid of tool cards (each a solid card with its icon, illustration, 1 line and a quiet "Coming soon" pill when it is not released), and how to help.
 - **Project pages**: the same sections in the same order on every project: what it does, result, how it was measured, limits, downloads, license. A result can be large figures on cards, or a table of ratios with a bar in each row. The fonts page shows a specimen card per font, then what each is based on and what we fixed, in place of what it does.
+- **Site header** (`SiteHeader.astro`): from 1024px the 6 tools (Editor, Converters, Fonts, Spell check, Dictionary, OCR) are direct links in 1 pane of glass, so each is 1 click away; the page you are on, or the tool it belongs to, is a white bead with indigo text, as in the segmented control. More opens a glass menu of the typing pages, the converters, the AI benchmark and the Open Kannada pages in 3 columns. Below 1024px the menu button opens a sheet whose first block is the 6 tools as tiles with their marks.
+- **Tool card** (home): mark and name, 1 line, and a foot with the other converters or "Coming soon" and an arrow. The whole card is the link. From 640px the cards sit in a grid where each row of cards shares 4 subgrid rows, so illustrations, names, lines and feet line up across a row.
+- **Stat cards** (project pages): each card spans 2 subgrid rows, so values share a baseline and labels start on 1 line.
+- **Hero actions** (project pages): a release's zip as a button for each font, the first solid; pages with nothing to download yet link to their result.
+- **Problem cards** (`Problems.astro`): an icon and a short name, the 1 number, and 1 or 2 short sentences, in 3 subgrid rows so the numbers share a baseline; 2 across on phones, 4 from 1024px.
+- **Help cards** (`HelpCards.astro`): an icon tile, the question in bold, and the ask.
+- **Steps** (tool pages): numbered cards, side by side from 768px (3 across, or 2 by 2 for 4 steps).
+- **Comparison table** (`CompareTable.astro`): options side by side, the first column naming each row; a column of figures aligns right in tabular numbers, and our own column is in the action color on a faint tint. It scrolls sideways on narrow screens.
+- **On this page rail** (project pages, from 1024px): the section names beside the prose, sticky, with a 2px indigo bar that grows beside the section being read.
+- **Icon tile** (`.icon-tile`): an icon on a small accent tile lit from above, as the tool marks are.
+- **Reveal** (`.reveal` with `data-inview`): cards rise 10px into place once, staggered by 60ms, when they first come into view; without script or under reduced motion they are simply there.
+- **Quiet button** (`.btn-quiet`): an outlined pill for a secondary action beside a solid one.
+- **Footer**: the 4 groups of pages first, then the credits and licensing in a quieter block, in 2 columns from 1024px.
 - **Content sections**: numbered steps with accent discs, a letter chart of tiles (Kannada, the Baraha key, ISO), a 3-column word table, and an FAQ of `details` elements with a rotating chevron.
 
 
 ## Layout
 
-- Content column: 54rem for the heading and the editor, 46rem for prose. Side gutters are 16px on phones and 24px from 640px.
+- 4 widths, as custom properties in `global.css`, each with its wrapper class (`.wrap-page`, `.wrap-wide`, `.wrap-column`, `.wrap-prose`) that centers a block with the gutter inside, as the editor does:
+  - `--page` 80rem: the header, the home page and the footer;
+  - `--wide` 68rem: project pages, the prose with the On this page rail beside it;
+  - `--column` 54rem: tool and reference pages, the same as the editor, so the hero, the sheet, the steps and the tables share 1 left edge;
+  - `--prose` 46rem: the measure of running text, and the whole width of the short info pages.
+- Use the width. Below a hero, no section leaves a wide empty column beside a narrow one: put cards, tables, figures or a rail beside the prose, or center the reading column. Check 1280, 1440 and 1920px.
+- Structure over walls of text: paragraphs of 1 to 3 sentences, and cards, numbered steps, comparison tables and lists where the content has that shape.
+- Side gutters (`--gutter`) are 16px on phones and 24px from 640px.
+- Every inner page opens with `PageHero.astro`: the trail and Ask AI across the full column, so Ask AI lines up with the sheet's right edge; then the heading, the answer-first intro, any actions, and the illustration.
+- Home: the heading, intro and a link to the editor beside the paste card; the 6 tools at once; the AI benchmark band; Why as 1 lead line, 4 problem cards and How we work in 3 parts; How to help as 3 cards.
 - Below 768px the counts move from the sheet's foot to its top, because the dock covers the bottom edge.
 
 ## Constraints

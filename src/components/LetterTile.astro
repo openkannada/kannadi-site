@@ -10,9 +10,9 @@ const { letter } = Astro.props;
 const s = spellings(letter);
 ---
 <li>
-  <span class="tile-kn" lang="kn">{letter}</span>
+  <span class="tile-kn" lang="kn" data-align="letter">{letter}</span>
   <span class="sr-only">: type </span>
-  <kbd>{s.baraha}</kbd>
+  <kbd data-align="baraha">{s.baraha}</kbd>
   <span class="sr-only">; ISO 15919 </span>
-  <span class="tile-iso">{s.iso}</span>
+  <span class="tile-iso" data-align="iso">{s.iso}</span>
 </li>

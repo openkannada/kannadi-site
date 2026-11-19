@@ -1,7 +1,7 @@
 // The toolbar, the suggestions and the caret line never cover each other, at every width, light and dark. @layout
 import { expect, test } from "@playwright/test";
 
-import { docText, expectClearLayout, focusDoc, isPhone, layout, openEditor } from "./editor.ts";
+import { docText, expectClearLayout, focusDoc, isPhone, layout, openEditor, settle } from "./editor.ts";
 
 test.describe("@layout", () => {
   test("after a word, the first line is clear of the toolbar and the suggestions", async ({ page }, info) => {
@@ -59,9 +59,7 @@ test.describe("@layout", () => {
     await openEditor(page);
     await focusDoc(page);
     await page.keyboard.insertText(Array.from({ length: 60 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
-    // Let the typing's own events settle, as they have long before anyone scrolls.
-    await page.waitForTimeout(500);
-    const end = await page.evaluate(() => scrollY);
+    const end = await settle(page);
     await page.evaluate(() => scrollBy(0, -600));
     await page.waitForTimeout(300);
     await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
@@ -73,7 +71,7 @@ test.describe("@layout", () => {
     await openEditor(page);
     await focusDoc(page);
     await page.keyboard.insertText(Array.from({ length: 60 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
-    await page.waitForTimeout(500);
+    await settle(page);
     // Emulators have no on-screen keyboard; the visual viewport shrinks here as a keyboard would make it, 60px at a time.
     const shrink = (by: number) =>
       page.evaluate((by) => {
@@ -99,7 +97,7 @@ test.describe("@layout", () => {
     await openEditor(page);
     await focusDoc(page);
     await page.keyboard.insertText(Array.from({ length: 60 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
-    await page.waitForTimeout(500);
+    await settle(page);
     // A line from the middle of the text, scrolled to straddle the window's bottom edge.
     const at = await page.evaluate(() => {
       const node = document.getElementById("doc")!.firstChild!;

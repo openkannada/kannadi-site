@@ -68,6 +68,17 @@ export const docText = (page: Page) =>
 /** The text as saved on this device, half a second after the last edit; exact, unlike the element's text. */
 export const savedText = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem("kannadi.editor.v1") ?? "{}") as { text?: string }).text ?? null);
 
+/** Waits until the page has stopped scrolling, as it has long before anyone reads or scrolls on. */
+export async function settle(page: Page): Promise<number> {
+  let last = -1;
+  for (let i = 0; i < 40; i++) {
+    const y = await page.evaluate(() => new Promise<number>((done) => setTimeout(() => requestAnimationFrame(() => done(scrollY)), 150)));
+    if (y === last) return y;
+    last = y;
+  }
+  return last;
+}
+
 /** Puts the caret at a text offset. */
 export const caretAt = (page: Page, at: number) =>
   page.evaluate((at) => {

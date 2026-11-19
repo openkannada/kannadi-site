@@ -52,10 +52,16 @@ export class View {
     dock.toggleAttribute("data-stuck", under);
   }
 
+  /** The bottom of the band on desktop, which reaches below the dock's own box. */
+  private bandBottom(): number {
+    const { dock } = this.parts;
+    return dock.getBoundingClientRect().bottom - (parseFloat(getComputedStyle(dock, "::before").bottom) || 0);
+  }
+
   /** The screen area the suggestions must stay out of on desktop: the toolbar, and the band when it shows. */
   avoid(): { top: number; bottom: number } {
     const bar = this.parts.toolbar.getBoundingClientRect();
-    return this.parts.dock.hasAttribute("data-stuck") ? { top: 0, bottom: this.parts.dock.getBoundingClientRect().bottom } : { top: bar.top, bottom: bar.bottom };
+    return this.parts.dock.hasAttribute("data-stuck") ? { top: 0, bottom: this.bandBottom() } : { top: bar.top, bottom: bar.bottom };
   }
 
   /** The part of the window where the caret line is in the clear. */
@@ -67,7 +73,7 @@ export class View {
       if (!strip.hidden) bottom = Math.min(bottom, strip.getBoundingClientRect().top);
       return { top: MARGIN, bottom: bottom - MARGIN };
     }
-    return { top: stuck ? dock.getBoundingClientRect().bottom + MARGIN : MARGIN, bottom: innerHeight - MARGIN };
+    return { top: stuck ? this.bandBottom() + MARGIN : MARGIN, bottom: innerHeight - MARGIN };
   }
 
   /** Scrolls the caret line into the clear part of the window, after the browser has laid out the latest change. */

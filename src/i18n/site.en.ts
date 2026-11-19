@@ -76,6 +76,8 @@ export const SITE_EN = {
     result: "Result",
     method: "How it was measured",
     limits: "Limits",
+    next: "What's next",
+    sources: "Sources",
     downloads: "Downloads",
     license: "License",
     name: "Tokenizer",

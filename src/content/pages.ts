@@ -95,7 +95,7 @@ export interface FontRelease {
 
 /** 1 part of a project page; its heading comes from the site strings, so every project page reads alike. */
 export interface ProjectSection {
-  id: "what" | "specimen" | "based" | "fixed" | "result" | "method" | "limits" | "downloads" | "license";
+  id: "what" | "specimen" | "based" | "fixed" | "result" | "method" | "limits" | "next" | "sources" | "downloads" | "license";
   paragraphs?: string[];
   items?: string[];
   stats?: Stat[];
@@ -147,6 +147,8 @@ const CONVERT_STEPS = [
 
 const TYPING_LINK = '<a href="/english-to-kannada-typing/">English to Kannada typing</a>';
 
+/** The credit Alar's ODbL asks for, word for word, on every page and download that uses it. */
+const ALAR_CREDIT = "Contains information from Alar by V. Krishna (<a href=\"https://alar.ink\">https://alar.ink</a>), made available under the Open Database License 1.0.";
 const SOON = "Coming soon.";
 const SOON_KN = "ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ.";
 const MIT = "https://opensource.org/license/mit";
@@ -654,25 +656,74 @@ export const ALL_PAGES: Page[] = [
     name: "Dictionary",
     title: "English to Kannada dictionary: Kannada words, spellings and meanings",
     description:
-      "An English to Kannada dictionary with 1 page per English word: Kannada words with ISO 15919 and Baraha spellings, part of speech and meanings from Alar.",
+      "An English to Kannada dictionary with 3,712 word pages: Kannada words with ISO 15919 and Baraha spellings, part of speech and meanings from Alar.",
     h1: "English to Kannada dictionary",
     intro:
-      "An English to Kannada dictionary, with 1 page per English word. Each page gives the Kannada words with their ISO 15919 and Baraha spellings, the part of speech, and meanings drawn from the Alar dictionary.",
+      "An English to Kannada dictionary, with 1 page per English word. Each page gives the Kannada words with their ISO 15919 and Baraha spellings, the part of speech, and what each Kannada word means in English, from the Alar dictionary.",
     art: "dictionary",
     schema: "CreativeWork",
-    licenses: [ODBL, MIT],
+    licenses: [ODBL, MIT, APACHE],
     sections: [
       {
         id: "what",
         paragraphs: [
-          'Look up an English word, such as <i>water</i>, and its page lists the Kannada words for it, such as <span lang="kn">ನೀರು</span>, each with its ISO 15919 spelling, <kbd>nīru</kbd>, and the Baraha spelling to type it, <kbd>nIru</kbd>. The meanings come from the Alar dictionary by V. Krishna.',
+          'The page for an English word, such as <i>village</i>, lists the Kannada words for it, such as <span lang="kn">ಹಳ್ಳಿ</span>, each with its ISO 15919 spelling, <kbd>haḷḷi</kbd>, and the Baraha spelling to type it, <kbd>haLLi</kbd>. The meanings come from the Alar dictionary by V. Krishna.',
+          'The dictionary\'s search takes English or Kannada. It finds words that sound alike, and it finds a Kannada word from its inflected forms: <span lang="kn">ಹಳ್ಳಿಗಳಲ್ಲಿ</span>, in the villages, finds the page for <i>village</i>.',
+        ],
+      },
+      {
+        id: "result",
+        stats: [
+          { value: "3,712", label: "English word pages" },
+          { value: "13,887", label: "distinct Kannada words on those pages" },
+          { value: "45.1%", label: "of Kannada words in running text find a page, with inflected forms" },
+        ],
+        paragraphs: [
+          "In held-out Kannada Wikipedia text, 20.0% of running words find a page by the exact word, and 45.1% by the exact word or the word it is a form of. Counted once each, 1.6% of distinct words find a page by the exact word, and 21.1% with forms.",
+        ],
+      },
+      {
+        id: "method",
+        paragraphs: [
+          'The text is the 2.2 million held-out words of Kannada Wikipedia that the <a href="/spell-check/">spell checker</a> is measured on. Search matches each page\'s main Kannada word and the next 4, 10,654 Kannada words in all.',
+          "The main Kannada word of 100 pages was checked in 2 independent reviews.",
+        ],
+      },
+      {
+        id: "limits",
+        items: [
+          'About 1 page in 4 leads with a Kannada word whose modern meaning differs, such as <span lang="kn">ವರ್ತನೆ</span> for <i>profession</i>. In the 2 reviews, the main word was judged fine on 27 and 28 pages, and wrong on 25 and 24.',
+          "The 400 most frequent English words, such as <i>house</i> and <i>water</i>, have no page yet. They are left out until their Kannada meanings can be ranked well.",
+        ],
+      },
+      {
+        id: "next",
+        items: [
+          "A Kannada reader's check of the main word on the most searched pages.",
+          "Example sentences, only from an openly licensed source and with attribution. None are made up, and none are on the site yet.",
+          'Words from 2 public-domain dictionaries: Ziegler\'s English-Kannada school dictionary of 1876 and Kittel\'s Kannada-English dictionary of 1894. In a pilot on 20 pages of each, <a href="/ocr/">Open Kannada OCR</a> v0.2 misread 7.6% of Kannada characters in Ziegler, against 12.4% for Tesseract\'s stock Kannada model, and 22.7% in Kittel, against 30.1%. These are first measurements, on 60 lines of each book transcribed from the scans. A Kannada reader has not checked those transcriptions yet.',
+          'Ziegler comes first, since its Kannada reads well enough to proofread. Kittel needs a model trained on its old letters, such as <span lang="kn">ಱ</span> and <span lang="kn">ೞ</span>, and its type. English headwords with pronunciation marks come out exactly right fewer than 1 time in 10 so far, 6.2% in Ziegler and 7.5% in Kittel, because Tesseract\'s English model lacks the marks.',
+        ],
+      },
+      {
+        id: "sources",
+        items: [
+          'Meanings and Kannada words: <a href="https://alar.ink">Alar</a>, the Kannada-English dictionary by V. Krishna, under ODbL-1.0. The English to Kannada index built from it is ODbL-1.0 too.',
+          'Inflected-form search: the <a href="/spell-check/">spell checker</a>\'s analyzer, compiled to WebAssembly, under MIT OR Apache-2.0. Its stem list is derived from Alar and is ODbL-1.0.',
+          "Sound-alike search: the spell checker's sound-alike keys, under MIT OR Apache-2.0.",
+          'ISO 15919 and Baraha spellings: <a href="https://github.com/openkannada/kannadi">kannadi</a>, under MIT OR Apache-2.0.',
+          "The order of meanings: word counts from Kannada Wikipedia. Only the counts are used; Wikipedia's text is CC BY-SA 4.0.",
+          'The choice of English words: ranks from <a href="https://github.com/hermitdave/FrequencyWords">FrequencyWords</a> by Hermit Dave, under CC BY-SA 4.0. Only the ranks are used.',
         ],
       },
       { id: "downloads", paragraphs: [SOON] },
-      { id: "license", items: ["Data: ODbL-1.0.", "Code: MIT."] },
+      {
+        id: "license",
+        items: ["Data: ODbL-1.0.", "Code: MIT OR Apache-2.0.", ALAR_CREDIT],
+      },
     ],
     faq: [],
-    og: { from: "water", to: "ನೀರು" },
+    og: { from: "village", to: "ಹಳ್ಳಿ" },
     keywords: "",
   },
   {
@@ -1089,25 +1140,74 @@ export const ALL_PAGES: Page[] = [
     name: "ನಿಘಂಟು",
     title: "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ಕನ್ನಡ ಪದಗಳು, ಲಿಪ್ಯಂತರ ಮತ್ತು ಅರ್ಥಗಳು",
     description:
-      "ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ 1 ಪುಟವಿರುವ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರದೊಂದಿಗೆ ಕನ್ನಡ ಪದಗಳು, ಪದವರ್ಗ, ಅಲರ್‌ನಿಂದ ಅರ್ಥಗಳು.",
+      "3,712 ಪದ ಪುಟಗಳಿರುವ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರದೊಂದಿಗೆ ಕನ್ನಡ ಪದಗಳು, ಪದವರ್ಗ, ಅಲರ್‌ನಿಂದ ಅರ್ಥಗಳು.",
     h1: "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು",
     intro:
-      "ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ 1 ಪುಟವಿರುವ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು. ಪ್ರತಿ ಪುಟದಲ್ಲಿ ಕನ್ನಡ ಪದಗಳು, ಅವುಗಳ ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರ, ಪದವರ್ಗ, ಮತ್ತು ಅಲರ್ ನಿಘಂಟಿನಿಂದ ತೆಗೆದ ಅರ್ಥಗಳು ಇರುತ್ತವೆ.",
+      "ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ 1 ಪುಟವಿರುವ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು. ಪ್ರತಿ ಪುಟದಲ್ಲಿ ಕನ್ನಡ ಪದಗಳು, ಅವುಗಳ ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರ, ಪದವರ್ಗ, ಮತ್ತು ಅಲರ್ ನಿಘಂಟಿನಿಂದ ಪಡೆದ ಇಂಗ್ಲಿಷ್ ಅರ್ಥಗಳು ಇರುತ್ತವೆ.",
     art: "dictionary",
     schema: "CreativeWork",
-    licenses: [ODBL, MIT],
+    licenses: [ODBL, MIT, APACHE],
     sections: [
       {
         id: "what",
         paragraphs: [
-          '<i lang="en">water</i> ನಂತಹ ಇಂಗ್ಲಿಷ್ ಪದವನ್ನು ಹುಡುಕಿದರೆ, ಅದರ ಪುಟದಲ್ಲಿ ನೀರು ನಂತಹ ಕನ್ನಡ ಪದಗಳು ಕಾಣುತ್ತವೆ. ಪ್ರತಿ ಪದದ ಜೊತೆ ಅದರ ISO 15919 ರೂಪ <kbd>nīru</kbd>, ಮತ್ತು ಅದನ್ನು ಟೈಪ್ ಮಾಡಲು ಬರಹ ರೂಪ <kbd>nIru</kbd> ಇರುತ್ತದೆ. ಅರ್ಥಗಳು ವಿ. ಕೃಷ್ಣ ಅವರ ಅಲರ್ ನಿಘಂಟಿನಿಂದ ಬಂದಿವೆ.',
+          '<i lang="en">village</i> ನಂತಹ ಇಂಗ್ಲಿಷ್ ಪದದ ಪುಟದಲ್ಲಿ ಹಳ್ಳಿ ನಂತಹ ಕನ್ನಡ ಪದಗಳಿರುತ್ತವೆ. ಪ್ರತಿ ಪದದ ಜೊತೆ ಅದರ ISO 15919 ರೂಪ <kbd>haḷḷi</kbd>, ಮತ್ತು ಅದನ್ನು ಟೈಪ್ ಮಾಡಲು ಬರಹ ರೂಪ <kbd>haLLi</kbd> ಇರುತ್ತದೆ. ಅರ್ಥಗಳು ವಿ. ಕೃಷ್ಣ ಅವರ ಅಲರ್ ನಿಘಂಟಿನಿಂದ ಬಂದಿವೆ.',
+          'ನಿಘಂಟಿನ ಹುಡುಕಾಟ ಇಂಗ್ಲಿಷ್ ಅಥವಾ ಕನ್ನಡ ಪದವನ್ನು ಸ್ವೀಕರಿಸುತ್ತದೆ. ಅದು ಉಚ್ಚಾರದಲ್ಲಿ ಹೋಲುವ ಪದಗಳನ್ನು ಹುಡುಕುತ್ತದೆ, ಮತ್ತು ಪದದ ರೂಪಾಂತರಗಳಿಂದ ಮೂಲ ಪದವನ್ನು ಗುರುತಿಸುತ್ತದೆ: ಹಳ್ಳಿಗಳಲ್ಲಿ ಎಂಬ ರೂಪದಿಂದ <i lang="en">village</i> ಪುಟ ಸಿಗುತ್ತದೆ.',
+        ],
+      },
+      {
+        id: "result",
+        stats: [
+          { value: "3,712", label: "ಇಂಗ್ಲಿಷ್ ಪದ ಪುಟಗಳು" },
+          { value: "13,887", label: "ಆ ಪುಟಗಳಲ್ಲಿರುವ ಬೇರೆ ಬೇರೆ ಕನ್ನಡ ಪದಗಳು" },
+          { value: "45.1%", label: "ಪಠ್ಯದ ಕನ್ನಡ ಪದಗಳಿಗೆ, ರೂಪಾಂತರಗಳೂ ಸೇರಿ, ಪುಟ ಸಿಗುತ್ತದೆ" },
+        ],
+        paragraphs: [
+          "ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಟ್ಟ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯ ಪಠ್ಯದಲ್ಲಿ, ಪದವನ್ನು ಇದ್ದಂತೆಯೇ ಹುಡುಕಿದರೆ 20.0% ಪದಗಳಿಗೆ ಪುಟ ಸಿಗುತ್ತದೆ. ಪದ ಯಾವುದರ ರೂಪಾಂತರವೋ ಆ ಮೂಲ ಪದದಿಂದಲೂ ಹುಡುಕಿದರೆ 45.1% ಪದಗಳಿಗೆ ಸಿಗುತ್ತದೆ. ಪ್ರತಿ ಪದವನ್ನು ಒಮ್ಮೆ ಮಾತ್ರ ಎಣಿಸಿದರೆ, ಇವು 1.6% ಮತ್ತು 21.1%.",
+        ],
+      },
+      {
+        id: "method",
+        paragraphs: [
+          'ಅಳತೆಗೆ ಬಳಸಿದ ಪಠ್ಯ, <a href="/kn/spell-check/">ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ</a>ವನ್ನು ಅಳೆಯಲು ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಟ್ಟ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದ ಅದೇ 22 ಲಕ್ಷ ಪದಗಳು. ಹುಡುಕಾಟವು ಪ್ರತಿ ಪುಟದ ಮುಖ್ಯ ಕನ್ನಡ ಪದ ಮತ್ತು ಅದರ ನಂತರದ 4 ಪದಗಳೊಂದಿಗೆ ಹೋಲಿಸುತ್ತದೆ, ಒಟ್ಟು 10,654 ಕನ್ನಡ ಪದಗಳು.',
+          "100 ಪುಟಗಳ ಮುಖ್ಯ ಕನ್ನಡ ಪದವನ್ನು 2 ಸ್ವತಂತ್ರ ಪರಿಶೀಲನೆಗಳಲ್ಲಿ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.",
+        ],
+      },
+      {
+        id: "limits",
+        items: [
+          'ಸುಮಾರು 4 ಪುಟಗಳಲ್ಲಿ 1 ಪುಟ, ಇಂದಿನ ಅರ್ಥ ಬೇರೆಯಾಗಿರುವ ಕನ್ನಡ ಪದದಿಂದ ಆರಂಭವಾಗುತ್ತದೆ, ಉದಾಹರಣೆಗೆ <i lang="en">profession</i> ಗೆ ವರ್ತನೆ. 2 ಪರಿಶೀಲನೆಗಳಲ್ಲಿ ಮುಖ್ಯ ಪದ 27 ಮತ್ತು 28 ಪುಟಗಳಲ್ಲಿ ಸರಿ ಎಂದು, 25 ಮತ್ತು 24 ಪುಟಗಳಲ್ಲಿ ತಪ್ಪು ಎಂದು ತೀರ್ಮಾನವಾಯಿತು.',
+          '<i lang="en">house</i>, <i lang="en">water</i> ನಂತಹ ಅತಿ ಹೆಚ್ಚು ಬಳಕೆಯ 400 ಇಂಗ್ಲಿಷ್ ಪದಗಳಿಗೆ ಇನ್ನೂ ಪುಟವಿಲ್ಲ. ಅವುಗಳ ಕನ್ನಡ ಅರ್ಥಗಳನ್ನು ಸರಿಯಾಗಿ ಕ್ರಮಗೊಳಿಸುವವರೆಗೆ ಅವನ್ನು ಬಿಡಲಾಗಿದೆ.',
+        ],
+      },
+      {
+        id: "next",
+        items: [
+          "ಹೆಚ್ಚು ಹುಡುಕಲಾಗುವ ಪುಟಗಳ ಮುಖ್ಯ ಪದವನ್ನು ಕನ್ನಡ ಓದುಗರೊಬ್ಬರು ಪರಿಶೀಲಿಸುವುದು.",
+          "ಉದಾಹರಣೆ ವಾಕ್ಯಗಳು, ಮುಕ್ತ ಲೈಸೆನ್ಸ್ ಇರುವ ಮೂಲದಿಂದ ಮಾತ್ರ, ಮೂಲದ ಉಲ್ಲೇಖದೊಂದಿಗೆ. ಯಾವುದನ್ನೂ ಕಲ್ಪಿಸಿ ಬರೆಯುವುದಿಲ್ಲ, ಮತ್ತು ಇನ್ನೂ ಯಾವುದೂ ತಾಣದಲ್ಲಿಲ್ಲ.",
+          'ಸಾರ್ವಜನಿಕ ಸ್ವತ್ತಾಗಿರುವ 2 ನಿಘಂಟುಗಳ ಪದಗಳು: 1876ರ ಜೀಗ್ಲರ್ ಅವರ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ಶಾಲಾ ನಿಘಂಟು ಮತ್ತು 1894ರ ಕಿಟ್ಟೆಲ್ ಅವರ ಕನ್ನಡ-ಇಂಗ್ಲಿಷ್ ನಿಘಂಟು. ಪ್ರತಿಯೊಂದರ 20 ಪುಟಗಳ ಪ್ರಾಯೋಗಿಕ ಓದಿನಲ್ಲಿ, <a href="/kn/ocr/">ಓಪನ್ ಕನ್ನಡ OCR</a> 0.2 ಜೀಗ್ಲರ್‌ನಲ್ಲಿ 7.6% ಕನ್ನಡ ಅಕ್ಷರಗಳನ್ನು ತಪ್ಪಾಗಿ ಓದಿತು; Tesseract ನ ಸಾಮಾನ್ಯ ಕನ್ನಡ ಮಾದರಿ 12.4% ತಪ್ಪಾಗಿ ಓದಿತು. ಕಿಟ್ಟೆಲ್‌ನಲ್ಲಿ ಇವು 22.7% ಮತ್ತು 30.1%. ಇವು ಮೊದಲ ಅಳತೆಗಳು, ಸ್ಕ್ಯಾನ್‌ಗಳಿಂದ ಬರೆದುಕೊಂಡ ಪ್ರತಿ ಪುಸ್ತಕದ 60 ಸಾಲುಗಳ ಮೇಲೆ. ಆ ಪ್ರತಿಗಳನ್ನು ಕನ್ನಡ ಓದುಗರೊಬ್ಬರು ಇನ್ನೂ ಪರಿಶೀಲಿಸಿಲ್ಲ.',
+          "ಜೀಗ್ಲರ್ ಮೊದಲು, ಏಕೆಂದರೆ ಅದರ ಕನ್ನಡವನ್ನು ತಿದ್ದುವಷ್ಟು ಚೆನ್ನಾಗಿ ಓದಬಹುದು. ಕಿಟ್ಟೆಲ್‌ಗೆ ಱ, ೞ ನಂತಹ ಅದರ ಹಳೆಯ ಅಕ್ಷರಗಳ ಮೇಲೆ ಮತ್ತು ಅದರ ಅಚ್ಚಿನ ಮೇಲೆ ತರಬೇತಿ ಪಡೆದ ಮಾದರಿ ಬೇಕು. ಉಚ್ಚಾರ ಚಿಹ್ನೆಗಳಿರುವ ಇಂಗ್ಲಿಷ್ ಮುಖ್ಯ ಪದಗಳು ಸದ್ಯಕ್ಕೆ 10ರಲ್ಲಿ 1 ಸಲಕ್ಕಿಂತ ಕಡಿಮೆ ಬಾರಿ ಪೂರ್ತಿ ಸರಿಯಾಗಿ ಬರುತ್ತವೆ, ಜೀಗ್ಲರ್‌ನಲ್ಲಿ 6.2% ಮತ್ತು ಕಿಟ್ಟೆಲ್‌ನಲ್ಲಿ 7.5%, ಏಕೆಂದರೆ Tesseract ನ ಇಂಗ್ಲಿಷ್ ಮಾದರಿಯಲ್ಲಿ ಆ ಚಿಹ್ನೆಗಳಿಲ್ಲ.",
+        ],
+      },
+      {
+        id: "sources",
+        items: [
+          'ಅರ್ಥಗಳು ಮತ್ತು ಕನ್ನಡ ಪದಗಳು: ವಿ. ಕೃಷ್ಣ ಅವರ ಕನ್ನಡ-ಇಂಗ್ಲಿಷ್ ನಿಘಂಟು <a href="https://alar.ink">ಅಲರ್</a>, ODbL-1.0 ಅಡಿಯಲ್ಲಿ. ಅದರಿಂದ ಕಟ್ಟಿದ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ಸೂಚಿಯೂ ODbL-1.0.',
+          'ರೂಪಾಂತರಗಳ ಹುಡುಕಾಟ: <a href="/kn/spell-check/">ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ</a>ದ ಪದ ವಿಶ್ಲೇಷಕ, WebAssembly ಆಗಿ, MIT OR Apache-2.0 ಅಡಿಯಲ್ಲಿ. ಅದರ ಪದಮೂಲ ಪಟ್ಟಿ ಅಲರ್‌ನಿಂದ ಪಡೆದದ್ದು, ODbL-1.0.',
+          "ಉಚ್ಚಾರ ಹೋಲಿಕೆಯ ಹುಡುಕಾಟ: ಕಾಗುಣಿತ ಪರೀಕ್ಷಕದ ಉಚ್ಚಾರ ಹೋಲಿಕೆಯ ಕೀಲಿಗಳು, MIT OR Apache-2.0 ಅಡಿಯಲ್ಲಿ.",
+          'ISO 15919 ಮತ್ತು ಬರಹ ರೂಪಗಳು: <a href="https://github.com/openkannada/kannadi">ಕನ್ನಡಿ</a>, MIT OR Apache-2.0 ಅಡಿಯಲ್ಲಿ.',
+          "ಅರ್ಥಗಳ ಕ್ರಮ: ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದ ಪದ ಎಣಿಕೆಗಳು. ಎಣಿಕೆಗಳನ್ನು ಮಾತ್ರ ಬಳಸಲಾಗಿದೆ; ವಿಕಿಪೀಡಿಯದ ಪಠ್ಯ CC BY-SA 4.0.",
+          'ಇಂಗ್ಲಿಷ್ ಪದಗಳ ಆಯ್ಕೆ: Hermit Dave ಅವರ <a href="https://github.com/hermitdave/FrequencyWords">FrequencyWords</a> ನ ಕ್ರಮಾಂಕಗಳು, CC BY-SA 4.0 ಅಡಿಯಲ್ಲಿ. ಕ್ರಮಾಂಕಗಳನ್ನು ಮಾತ್ರ ಬಳಸಲಾಗಿದೆ.',
         ],
       },
       { id: "downloads", paragraphs: [SOON_KN] },
-      { id: "license", items: ["ಡೇಟಾ: ODbL-1.0.", "ಕೋಡ್: MIT."] },
+      {
+        id: "license",
+        items: ["ಡೇಟಾ: ODbL-1.0.", "ಕೋಡ್: MIT OR Apache-2.0.", ALAR_CREDIT],
+      },
     ],
     faq: [],
-    og: { from: "water", to: "ನೀರು" },
+    og: { from: "village", to: "ಹಳ್ಳಿ" },
     keywords: "",
   },
   {

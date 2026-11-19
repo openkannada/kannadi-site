@@ -85,7 +85,24 @@ test("project pages say what each tool does, its license and where to get it, wi
     "MILE lines from IISc, 600: 2.8%, against 3.8%.",
   ], "the v0.2 results as released, and no other");
   assert.doesNotMatch(text("ocr"), /dots/i);
-  for (const slug of ["fonts", "dictionary"]) assert.doesNotMatch(text(slug).replace(/U\+[0-9A-F]{4}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 |\d\.\d{3}|SHA-256|Article 1\b/g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
+  const BRIEF = ["3,712", "13,887", "10,654", "20.0%", "45.1%", "1.6%", "21.1%", "2.2", "22", "100", "27", "28", "25", "24", "400", "1876", "1894", "20", "7.6%", "12.4%", "22.7%", "30.1%", "60", "6.2%", "7.5%", "10", "0.2", "4", "1", "2"];
+  const figures = (html) => plainText(html).replace(/15919|ODbL-1\.0|Apache-2\.0|BY-SA 4\.0|License 1\.0/g, "").match(/\d[\d,.]*\d%?|\d%?/g) ?? [];
+  const CREDIT = 'Contains information from Alar by V. Krishna (<a href="https://alar.ink">https://alar.ink</a>), made available under the Open Database License 1.0.';
+  for (const slug of ["dictionary", "kn/dictionary"]) {
+    const page = ALL_PAGES.find((p) => p.slug === slug);
+    const section = (id) => page.sections.find((s) => s.id === id);
+    for (const n of figures(JSON.stringify(page.sections) + page.description + page.intro)) assert.ok(BRIEF.includes(n), `${slug} shows ${n}, a figure the brief does not give`);
+    assert.deepEqual(section("result").stats.map((s) => s.value), ["3,712", "13,887", "45.1%"], `${slug} stats`);
+    assert.deepEqual(figures(section("result").paragraphs[0]), ["20.0%", "45.1%", "1.6%", "21.1%"], `${slug}: running words exact, with forms, then distinct`);
+    assert.deepEqual(figures(section("limits").items[0]).filter((n) => n.length === 2), ["27", "28", "25", "24"], `${slug}: judged fine, then wrong`);
+    assert.deepEqual(figures(section("next").items[2]).filter((n) => n.endsWith("%")), ["7.6%", "12.4%", "22.7%", "30.1%"], `${slug}: Ziegler ours then stock, Kittel ours then stock`);
+    assert.deepEqual(figures(section("next").items[3]).filter((n) => n.endsWith("%")), ["6.2%", "7.5%"], `${slug}: headwords, Ziegler then Kittel`);
+    assert.ok(figures(section("method").paragraphs[0]).includes("10,654"), `${slug} lacks the searched words`);
+    assert.equal(section("license").items.at(-1), CREDIT, `${slug}: the Alar credit, word for word`);
+    assert.ok(page.description.includes("3,712"), `${slug} description`);
+    assert.equal(section("downloads").paragraphs.length, 1, `${slug}: downloads stay coming soon until the dictionary is hosted`);
+  }
+  for (const slug of ["fonts"]) assert.doesNotMatch(text(slug).replace(/U\+[0-9A-F]{4}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 |\d\.\d{3}|SHA-256|Article 1\b/g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
   const bench = PAGES.find((p) => p.slug === "ai-benchmark");
   const rows = bench.sections.find((s) => s.id === "result").table.rows;
   assert.deepEqual(rows.map((r) => [r.name, r.ratio, r.low, r.high]), [

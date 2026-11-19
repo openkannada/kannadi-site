@@ -4,9 +4,8 @@ import Brand from "../components/Brand.astro";
 import Contribute from "../components/Contribute.astro";
 import Press from "../components/Press.astro";
 import type { InfoPage } from "../content/pages.ts";
-import { withBase } from "../lib/paths.ts";
 import Base from "./Base.astro";
-import PageTop from "../components/PageTop.astro";
+import PageHero from "../components/PageHero.astro";
 
 interface Props {
   page: InfoPage;
@@ -14,15 +13,11 @@ interface Props {
 const { page } = Astro.props;
 ---
 <Base page={page}>
-  <div class="mx-auto max-w-[46rem] px-4 pt-6 pb-2 sm:px-6 sm:pt-10">
-    <PageTop page={page} />
-    <h1 class="text-[length:var(--type-heading)] leading-[1.15] font-semibold tracking-[var(--type-heading-tracking)] sm:text-[length:var(--type-heading-wide)]">{page.h1}</h1>
-    <p class="mt-3 max-w-[62ch] text-[1.0625rem] leading-relaxed text-muted-foreground sm:text-lg" set:html={withBase(page.intro)} />
-  </div>
-  <div class="prose-kn mx-auto max-w-[46rem] px-4 sm:px-6">
+  <PageHero page={page} />
+  <div class="wrap-column"><div class="prose-kn measure">
     {page.body === "about" && <About lang={page.lang ?? "en"} />}
     {page.body === "brand" && <Brand lang={page.lang ?? "en"} />}
     {page.body === "press" && <Press lang={page.lang ?? "en"} />}
     {page.body === "contribute" && <Contribute lang={page.lang ?? "en"} />}
-  </div>
+  </div></div>
 </Base>

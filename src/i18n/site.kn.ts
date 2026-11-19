@@ -10,6 +10,7 @@ export const SITE_KN: SiteStrings = {
     typing: "ಟೈಪಿಂಗ್ ಮತ್ತು ಅಕ್ಷರಗಳು",
     org: "ಓಪನ್ ಕನ್ನಡ",
     allPages: "ಎಲ್ಲ ಪುಟಗಳು",
+    more: "ಇನ್ನಷ್ಟು",
   },
   theme: {
     auto: "ಥೀಮ್: ಸಿಸ್ಟಮ್‌ನಂತೆಯೇ",

@@ -1,0 +1,89 @@
+---
+// The top of every inner page: the trail and Ask AI across the column, then the heading, the answer-first
+// intro, any actions, and the page's illustration beside them.
+import type { Page } from "../content/pages.ts";
+import type { IllustrationProps } from "../lib/illustrations.ts";
+import { withBase } from "../lib/paths.ts";
+import Illustration from "./Illustration.astro";
+import PageTop from "./PageTop.astro";
+
+interface Props {
+  page: Page;
+  illo?: IllustrationProps | null;
+  /** Tool pages show the illustration from 1024px, so the editor stays in the first viewport; others from 768px. */
+  art?: "tool" | "reference";
+  /** The brand line, on a page that is also a home. */
+  tagline?: string | undefined;
+}
+const { page, illo = null, art = "reference", tagline } = Astro.props;
+---
+<div class="page-hero wrap-column">
+  <PageTop page={page} />
+  <div class:list={["hero", art === "reference" && "hero-reference"]}>
+    <div class="hero-text">
+      <h1 class="page-title">{page.h1}</h1>
+      <p class="page-intro" set:html={withBase(page.intro)} />
+      {tagline && <p class="page-tagline">{tagline}</p>}
+      {Astro.slots.has("default") && <div class="hero-actions" data-md-skip><slot /></div>}
+    </div>
+    {illo && <Illustration {...illo} class="hero-illo" />}
+  </div>
+</div>
+
+<style>
+  .page-hero {
+    padding-top: 1.5rem;
+  }
+  @media (min-width: 40rem) {
+    .page-hero {
+      padding-top: 2.25rem;
+    }
+  }
+  .page-title {
+    font-size: var(--type-heading);
+    line-height: 1.15;
+    font-weight: 600;
+    letter-spacing: var(--type-heading-tracking);
+  }
+  .page-title:lang(kn) {
+    line-height: 1.45;
+  }
+  @media (min-width: 40rem) {
+    .page-title {
+      font-size: var(--type-heading-wide);
+    }
+  }
+  .page-intro {
+    margin-top: 0.75rem;
+    max-width: 62ch;
+    font-size: 1.0625rem;
+    line-height: 1.65;
+    color: var(--muted-foreground);
+  }
+  .page-intro:lang(kn) {
+    line-height: var(--type-kn-leading);
+  }
+  @media (min-width: 40rem) {
+    .page-intro {
+      font-size: 1.125rem;
+    }
+  }
+  .page-tagline {
+    margin-top: 1rem;
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--primary);
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem;
+    margin-top: 1.25rem;
+  }
+  .hero-actions:empty {
+    display: none;
+  }
+  .hero-actions :global(.btn) {
+    text-decoration: none;
+  }
+</style>

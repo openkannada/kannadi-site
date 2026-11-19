@@ -10,6 +10,7 @@ export const SITE_EN = {
     typing: "Typing and letters",
     org: "Open Kannada",
     allPages: "All pages",
+    more: "More",
   },
   theme: {
     auto: "Theme: same as system",

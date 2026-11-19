@@ -26,9 +26,10 @@ const { page, illo = null, art = "reference", width = "column", tagline } = Astr
       <h1 class="page-title">{page.h1}</h1>
       <p class="page-intro" set:html={withBase(page.intro)} />
       {tagline && <p class="page-tagline">{tagline}</p>}
+      {Astro.slots.has("lead") && <div class="hero-lead"><slot name="lead" /></div>}
       {Astro.slots.has("default") && <div class="hero-actions" data-md-skip><slot /></div>}
     </div>
-    {illo && <Illustration {...illo} class="hero-illo" />}
+    {Astro.slots.has("aside") ? <div class="hero-aside"><slot name="aside" /></div> : illo && <Illustration {...illo} class="hero-illo" />}
   </div>
 </div>
 
@@ -81,6 +82,13 @@ const { page, illo = null, art = "reference", width = "column", tagline } = Astr
     flex-wrap: wrap;
     gap: 0.625rem;
     margin-top: 1.25rem;
+  }
+  .hero-lead {
+    margin-top: 1.25rem;
+    max-width: 40rem;
+    font-size: 1.25rem;
+    line-height: 1.5;
+    text-wrap: pretty;
   }
   .hero-actions:empty {
     display: none;

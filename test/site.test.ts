@@ -17,7 +17,7 @@ const types = (graph) => graph["@graph"].map((n) => n["@type"]);
 test("every page has the structured data the strategy asks for", () => {
   for (const page of published(ALL_PAGES, true)) {
     const t = types(jsonLd(page, null, HOME));
-    const main = { tool: ["WebApplication", "HowTo"], reference: ["LearningResource"], info: ["Organization"], home: ["Organization", "WebSite"], project: [page.schema] }[page.kind];
+    const main = { tool: ["WebApplication", "HowTo"], reference: ["LearningResource"], info: ["Organization"], home: ["Organization", "WebSite"], project: [page.schema], scorecard: ["Dataset"] }[page.kind];
     const asks = page.kind === "tool" || page.kind === "reference";
     const faq = asks || page.faq.length ? ["FAQPage"] : [];
     if (asks) assert.ok(page.faq.length, `${page.slug || "home"} has no FAQ`);

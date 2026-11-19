@@ -55,18 +55,6 @@ jobs:
         run: npm run layout-check
       - name: Typing in the editor, on desktop keys and composing phone keyboards
         run: npm run typing-check
-      - name: Install Chromium, Firefox and WebKit for the editor tests
-        run: npx playwright install --with-deps --only-shell chromium firefox webkit
-      - name: The editor in Chromium, Firefox and WebKit, on desktops and phones, light and dark
-        run: npx playwright test
-      - uses: actions/upload-artifact@v7
-        if: failure()
-        with:
-          name: editor-tests
-          path: |
-            playwright-report
-            test-results
-          retention-days: 14
       - name: Lighthouse, mobile
         run: npx lhci autorun
       - name: Build and check the Kannada drafts, which wait for a native reader
@@ -87,11 +75,60 @@ jobs:
           include-hidden-files: true
           retention-days: 14
 
+  # The editor in Chromium, Firefox and WebKit, on desktops and phones, light and dark: on today's core, and on the
+  # ProseMirror core that ?editor=next opens.
+  editor:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        core: [doc, next]
+    steps:
+      - uses: actions/checkout@v7
+      - id: kannadi
+        run: echo "rev=$(tr -d '[:space:]' < kannadi.rev)" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v7
+        with:
+          repository: openkannada/kannadi
+          ref: ${{ steps.kannadi.outputs.rev }}
+          path: .kannadi
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: .kannadi
+      - id: wasm-bindgen
+        run: echo "version=$(awk '/^name = "wasm-bindgen"$/ { getline; gsub(/version = |"/, ""); print }' .kannadi/Cargo.lock)" >> "$GITHUB_OUTPUT"
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-bindgen@${{ steps.wasm-bindgen.outputs.version }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: KANNADI_DIR=.kannadi scripts/build-wasm.sh
+      - run: npm run build
+      - run: npx playwright install --with-deps --only-shell chromium firefox webkit
+      - name: The editor on the ${{ matrix.core }} core
+        run: npx playwright test
+        env:
+          EDITOR_NEXT: ${{ matrix.core == 'next' && '1' || '' }}
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: editor-tests-${{ matrix.core }}
+          path: |
+            playwright-report
+            test-results
+          retention-days: 14
+
   # Every push to main that passes the checks above goes live at https://openkannada.org. Every action here is
   # pinned to a commit, since this job holds the Cloudflare token.
   deploy:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: site
+    needs: [site, editor]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7

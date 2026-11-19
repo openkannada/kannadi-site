@@ -96,9 +96,9 @@ test("project pages say what each tool does, its license and where to get it, wi
     const page = ALL_PAGES.find((p) => p.slug === slug);
     const section = (id) => page.sections.find((s) => s.id === id);
     for (const n of figures(JSON.stringify(page.sections) + page.description + page.intro)) assert.ok(BRIEF.includes(n), `${slug} shows ${n}, a figure the brief does not give`);
-    assert.deepEqual(section("result").stats.map((s) => s.value), ["3,798", "13,887", "47.8%"], `${slug} stats`);
-    assert.deepEqual(figures(section("result").paragraphs[0]), ["47.8%", "21.7%"], `${slug}: running words with forms, then exact`);
-    assert.deepEqual(figures(section("method").paragraphs[0]).filter((n) => n.endsWith("%")), ["1.6%", "21.6%"], `${slug}: distinct words exact, then with forms, in the method`);
+    assert.deepEqual(section("result").stats.map((s) => s.value), ["47.8%", "3,798", "13,887"], `${slug} stats`);
+    assert.equal(section("result").paragraphs, undefined, `${slug}: the result is the stat cards, led by 47.8%`);
+    assert.deepEqual(figures(section("method").paragraphs[0]).filter((n) => n.endsWith("%")), ["21.7%", "1.6%", "21.6%"], `${slug}: running words exact, then distinct exact and with forms, in the method`);
     assert.deepEqual(figures(section("limits").items[0]).filter((n) => n.length === 2), ["27", "28", "25", "24"], `${slug}: judged fine, then wrong`);
     assert.deepEqual(figures(section("next").items[2]).filter((n) => n.endsWith("%")), ["7.6%", "12.4%", "22.7%", "30.1%"], `${slug}: Ziegler ours then stock, Kittel ours then stock`);
     assert.deepEqual(figures(section("next").items[3]).filter((n) => n.endsWith("%")), ["6.2%", "7.5%"], `${slug}: headwords, Ziegler then Kittel`);

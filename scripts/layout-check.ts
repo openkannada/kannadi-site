@@ -84,7 +84,7 @@ try {
               const r = c.getBoundingClientRect();
               const parts: Record<string, number> = {};
               for (const p of c.querySelectorAll<HTMLElement>("[data-align]")) if (p.getBoundingClientRect().height > 0) parts[p.dataset.align!] = p.getBoundingClientRect().top;
-              return { top: r.top, width: r.width, parts };
+              return { top: r.top, bottom: r.bottom, width: r.width, parts };
             }),
           })),
         );

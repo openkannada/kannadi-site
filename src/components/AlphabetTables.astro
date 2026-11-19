@@ -7,11 +7,11 @@ import LetterTile from "./LetterTile.astro";
 ---
 <section aria-labelledby="vowels-heading">
   <h2 id="vowels-heading">Vowels <span lang="kn">ಸ್ವರಗಳು</span></h2>
-  <ul class="tiles" role="list">{VOWELS.map((k) => <LetterTile letter={k} />)}</ul>
+  <ul class="tiles" role="list" data-cards="letters">{VOWELS.map((k) => <LetterTile letter={k} />)}</ul>
 </section>
 <section aria-labelledby="yogavaha-heading">
   <h2 id="yogavaha-heading">Yogavahas <span lang="kn">ಯೋಗವಾಹಗಳು</span></h2>
-  <ul class="tiles" role="list">{YOGAVAHAS.map((k) => <LetterTile letter={k} />)}</ul>
+  <ul class="tiles" role="list" data-cards="letters">{YOGAVAHAS.map((k) => <LetterTile letter={k} />)}</ul>
 </section>
 <section aria-labelledby="structured-heading">
   <h2 id="structured-heading">Structured consonants <span lang="kn">ವರ್ಗೀಯ ವ್ಯಂಜನಗಳು</span></h2>
@@ -37,11 +37,11 @@ import LetterTile from "./LetterTile.astro";
 </section>
 <section aria-labelledby="unstructured-heading">
   <h2 id="unstructured-heading">Unstructured consonants <span lang="kn">ಅವರ್ಗೀಯ ವ್ಯಂಜನಗಳು</span></h2>
-  <ul class="tiles" role="list">{UNSTRUCTURED.map((k) => <LetterTile letter={k} />)}</ul>
+  <ul class="tiles" role="list" data-cards="letters">{UNSTRUCTURED.map((k) => <LetterTile letter={k} />)}</ul>
 </section>
 <section aria-labelledby="digits-heading">
   <h2 id="digits-heading">Kannada digits <span lang="kn">ಅಂಕಿಗಳು</span></h2>
-  <ul class="tiles" role="list">
+  <ul class="tiles" role="list" data-cards="letters">
     {DIGITS.map((d, i) => <li><span class="tile-kn" lang="kn">{d}</span><span class="sr-only">: </span><span class="tile-iso">{i}</span></li>)}
   </ul>
 </section>

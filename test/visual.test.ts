@@ -126,11 +126,14 @@ test("illustrations start once each, in view, and show at once where they cannot
   }
 });
 
-test("cards side by side line up part by part, and a wide card or a lone card is left alone", () => {
-  const card = (top, width, parts) => ({ top, width, parts });
-  assert.deepEqual(misaligned([card(0, 300, { value: 20, label: 60 }), card(0, 300, { value: 20, label: 60 }), card(0.5, 300, { value: 21, label: 60 })]), []);
+test("cards side by side line up part by part, and a wider card or a lone card is left alone", () => {
+  const card = (top, width, parts, height = 100) => ({ top, bottom: top + height, width, parts });
+  assert.deepEqual(misaligned([card(0, 300, { value: 20, label: 60 }), card(0, 300, { value: 20, label: 60 }), card(0.5, 300, { value: 21, label: 60 }, 99.5)]), []);
   assert.deepEqual(misaligned([card(0, 300, { value: 20 }), card(0, 300, { value: 44 })]), ["value sits 24px apart across 2 cards"]);
   assert.deepEqual(misaligned([card(0, 300, { value: 20 }), card(200, 300, { value: 300 })]), [], "cards on different rows");
   assert.deepEqual(misaligned([card(0, 300, { name: 20 }), card(0, 620, { name: 90 })]), [], "a card twice as wide has its own layout");
   assert.deepEqual(misaligned([card(0, 300, { name: 20, extra: 80 }), card(0, 300, { name: 20 })]), [], "a part only 1 card has");
+  assert.deepEqual(misaligned([card(0, 300, { name: 60 }), card(20, 300, { name: 100 })]), ["card tops sit 20px apart across 2 cards", "card bottoms sit 20px apart across 2 cards", "name sits 40px apart across 2 cards"], "centered cards still form 1 row");
+  assert.deepEqual(misaligned([card(0, 180, {}), card(0, 300, { name: 80 }), card(0, 300, { name: 20 })]), ["name sits 60px apart across 2 cards"], "a narrow card does not hide the others");
+  assert.deepEqual(misaligned([card(0, 300, {}), card(0, 300, {}, 80)]), ["card bottoms sit 20px apart across 2 cards"], "equal heights");
 });

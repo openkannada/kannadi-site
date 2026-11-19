@@ -21,31 +21,43 @@ export function layoutProblems(m: Measure): string[] {
   return out;
 }
 
-/** A card in a row of cards: where it sits, and the top of each part marked with `data-align`. */
+/** A card in a row of cards: its box, and the top of each part marked with `data-align`. */
 export interface Card {
   top: number;
+  bottom: number;
   width: number;
   parts: Record<string, number>;
 }
 
+const apart = (values: number[]) => Math.max(...values) - Math.min(...values);
+
 /**
- * The parts that do not line up across cards side by side. Cards sharing a top form a row; a card much wider than the
- * narrowest in its row is laid out on its own terms and is left out.
+ * What does not line up across cards side by side. Cards whose heights overlap form a row, and only cards of the same
+ * width are compared, so a card spanning 2 columns keeps its own layout. Within those, tops, bottoms and every marked
+ * part must agree to 1px.
  */
 export function misaligned(cards: Card[]): string[] {
-  const rows = new Map<number, Card[]>();
-  for (const c of cards) {
-    const key = [...rows.keys()].find((t) => Math.abs(t - c.top) <= 1) ?? c.top;
-    rows.set(key, [...(rows.get(key) ?? []), c]);
+  const rows: Card[][] = [];
+  for (const c of [...cards].sort((a, b) => a.top - b.top)) {
+    const row = rows.find((r) => r.some((o) => c.top < o.bottom - 1 && o.top < c.bottom - 1));
+    if (row) row.push(c);
+    else rows.push([c]);
   }
   const out: string[] = [];
-  for (const row of rows.values()) {
-    const narrowest = Math.min(...row.map((c) => c.width));
-    const alike = row.filter((c) => c.width < narrowest * 1.5);
-    if (alike.length < 2) continue;
-    for (const part of new Set(alike.flatMap((c) => Object.keys(c.parts)))) {
-      const tops = alike.map((c) => c.parts[part]).filter((t): t is number => t !== undefined);
-      if (tops.length > 1 && Math.max(...tops) - Math.min(...tops) > 1) out.push(`${part} sits ${Math.round(Math.max(...tops) - Math.min(...tops))}px apart across ${tops.length} cards`);
+  for (const row of rows) {
+    const widths = new Map<number, Card[]>();
+    for (const c of row) {
+      const key = [...widths.keys()].find((w) => Math.abs(w - c.width) <= 1) ?? c.width;
+      widths.set(key, [...(widths.get(key) ?? []), c]);
+    }
+    for (const alike of widths.values()) {
+      if (alike.length < 2) continue;
+      if (apart(alike.map((c) => c.top)) > 1) out.push(`card tops sit ${Math.round(apart(alike.map((c) => c.top)))}px apart across ${alike.length} cards`);
+      if (apart(alike.map((c) => c.bottom)) > 1) out.push(`card bottoms sit ${Math.round(apart(alike.map((c) => c.bottom)))}px apart across ${alike.length} cards`);
+      for (const part of new Set(alike.flatMap((c) => Object.keys(c.parts)))) {
+        const tops = alike.map((c) => c.parts[part]).filter((t): t is number => t !== undefined);
+        if (tops.length > 1 && apart(tops) > 1) out.push(`${part} sits ${Math.round(apart(tops))}px apart across ${tops.length} cards`);
+      }
     }
   }
   return out;

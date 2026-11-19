@@ -674,18 +674,15 @@ export const ALL_PAGES: Page[] = [
       {
         id: "result",
         stats: [
+          { value: "47.8%", label: "of Kannada words in running text find a page, with inflected forms" },
           { value: "3,798", label: "English word pages" },
           { value: "13,887", label: "distinct Kannada words on those pages" },
-          { value: "47.8%", label: "of Kannada words in running text find a page, with inflected forms" },
-        ],
-        paragraphs: [
-          "With inflected forms, 47.8% of the Kannada words in running text find a page. By the exact word alone, 21.7% do.",
         ],
       },
       {
         id: "method",
         paragraphs: [
-          'The text is the 2.2 million held-out words of Kannada Wikipedia that the <a href="/spell-check/">spell checker</a> is measured on. Counted once each, 1.6% of distinct words find a page by the exact word, and 21.6% with forms. Search matches each page\'s main Kannada word and the next 4, 10,827 Kannada words in all.',
+          'The text is the 2.2 million held-out words of Kannada Wikipedia that the <a href="/spell-check/">spell checker</a> is measured on. By the exact word alone, 21.7% of its running words find a page. Counted once each, 1.6% of distinct words find a page by the exact word, and 21.6% with forms. Search matches each page\'s main Kannada word and the next 4, 10,827 Kannada words in all.',
           "The main Kannada word of 100 pages was checked in 2 independent reviews.",
         ],
       },
@@ -693,7 +690,7 @@ export const ALL_PAGES: Page[] = [
         id: "limits",
         items: [
           'About 1 page in 4 leads with a Kannada word whose modern meaning differs, such as <span lang="kn">ವರ್ತನೆ</span> for <i>profession</i>. In the 2 reviews, the main word was judged fine on 27 and 28 pages, and wrong on 25 and 24.',
-          "86 of the 400 most frequent English words have a page, such as <i>house</i> and <i>water</i>: the words where Alar and Ziegler's 1876 dictionary give the same main Kannada word. The rest, such as <i>home</i>, have none yet.",
+          "86 of the 400 most frequent English words, such as <i>house</i> and <i>water</i>, have a page: the words where Alar and Ziegler's 1876 dictionary give the same main Kannada word. The rest, such as <i>home</i>, have none yet.",
         ],
       },
       {
@@ -1159,18 +1156,15 @@ export const ALL_PAGES: Page[] = [
       {
         id: "result",
         stats: [
+          { value: "47.8%", label: "ಪಠ್ಯದ ಕನ್ನಡ ಪದಗಳಿಗೆ, ರೂಪಾಂತರಗಳೂ ಸೇರಿ, ಪುಟ ಸಿಗುತ್ತದೆ" },
           { value: "3,798", label: "ಇಂಗ್ಲಿಷ್ ಪದ ಪುಟಗಳು" },
           { value: "13,887", label: "ಆ ಪುಟಗಳಲ್ಲಿರುವ ಬೇರೆ ಬೇರೆ ಕನ್ನಡ ಪದಗಳು" },
-          { value: "47.8%", label: "ಪಠ್ಯದ ಕನ್ನಡ ಪದಗಳಿಗೆ, ರೂಪಾಂತರಗಳೂ ಸೇರಿ, ಪುಟ ಸಿಗುತ್ತದೆ" },
-        ],
-        paragraphs: [
-          "ರೂಪಾಂತರಗಳೂ ಸೇರಿ ಹುಡುಕಿದರೆ, ಪಠ್ಯದ 47.8% ಕನ್ನಡ ಪದಗಳಿಗೆ ಪುಟ ಸಿಗುತ್ತದೆ. ಪದವನ್ನು ಇದ್ದಂತೆಯೇ ಹುಡುಕಿದರೆ 21.7% ಪದಗಳಿಗೆ ಸಿಗುತ್ತದೆ.",
         ],
       },
       {
         id: "method",
         paragraphs: [
-          'ಅಳತೆಗೆ ಬಳಸಿದ ಪಠ್ಯ, <a href="/kn/spell-check/">ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ</a>ವನ್ನು ಅಳೆಯಲು ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಟ್ಟ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದ ಅದೇ 22 ಲಕ್ಷ ಪದಗಳು. ಪ್ರತಿ ಪದವನ್ನು ಒಮ್ಮೆ ಮಾತ್ರ ಎಣಿಸಿದರೆ, ಇದ್ದಂತೆಯೇ ಹುಡುಕಿದಾಗ 1.6% ಮತ್ತು ರೂಪಾಂತರಗಳೂ ಸೇರಿ 21.6% ಪದಗಳಿಗೆ ಪುಟ ಸಿಗುತ್ತದೆ. ಹುಡುಕಾಟವು ಪ್ರತಿ ಪುಟದ ಮುಖ್ಯ ಕನ್ನಡ ಪದ ಮತ್ತು ಅದರ ನಂತರದ 4 ಪದಗಳೊಂದಿಗೆ ಹೋಲಿಸುತ್ತದೆ, ಒಟ್ಟು 10,827 ಕನ್ನಡ ಪದಗಳು.',
+          'ಅಳತೆಗೆ ಬಳಸಿದ ಪಠ್ಯ, <a href="/kn/spell-check/">ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ</a>ವನ್ನು ಅಳೆಯಲು ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಟ್ಟ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದ ಅದೇ 22 ಲಕ್ಷ ಪದಗಳು. ಪದವನ್ನು ಇದ್ದಂತೆಯೇ ಹುಡುಕಿದರೆ ಈ ಪಠ್ಯದ 21.7% ಪದಗಳಿಗೆ ಪುಟ ಸಿಗುತ್ತದೆ. ಪ್ರತಿ ಪದವನ್ನು ಒಮ್ಮೆ ಮಾತ್ರ ಎಣಿಸಿದರೆ, ಇದ್ದಂತೆಯೇ ಹುಡುಕಿದಾಗ 1.6% ಮತ್ತು ರೂಪಾಂತರಗಳೂ ಸೇರಿ 21.6% ಪದಗಳಿಗೆ ಪುಟ ಸಿಗುತ್ತದೆ. ಹುಡುಕಾಟವು ಪ್ರತಿ ಪುಟದ ಮುಖ್ಯ ಕನ್ನಡ ಪದ ಮತ್ತು ಅದರ ನಂತರದ 4 ಪದಗಳೊಂದಿಗೆ ಹೋಲಿಸುತ್ತದೆ, ಒಟ್ಟು 10,827 ಕನ್ನಡ ಪದಗಳು.',
           "100 ಪುಟಗಳ ಮುಖ್ಯ ಕನ್ನಡ ಪದವನ್ನು 2 ಸ್ವತಂತ್ರ ಪರಿಶೀಲನೆಗಳಲ್ಲಿ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.",
         ],
       },
@@ -1178,7 +1172,7 @@ export const ALL_PAGES: Page[] = [
         id: "limits",
         items: [
           'ಸುಮಾರು 4 ಪುಟಗಳಲ್ಲಿ 1 ಪುಟ, ಇಂದಿನ ಅರ್ಥ ಬೇರೆಯಾಗಿರುವ ಕನ್ನಡ ಪದದಿಂದ ಆರಂಭವಾಗುತ್ತದೆ, ಉದಾಹರಣೆಗೆ <i lang="en">profession</i> ಗೆ ವರ್ತನೆ. 2 ಪರಿಶೀಲನೆಗಳಲ್ಲಿ ಮುಖ್ಯ ಪದ 27 ಮತ್ತು 28 ಪುಟಗಳಲ್ಲಿ ಸರಿ ಎಂದು, 25 ಮತ್ತು 24 ಪುಟಗಳಲ್ಲಿ ತಪ್ಪು ಎಂದು ತೀರ್ಮಾನವಾಯಿತು.',
-          '<i lang="en">house</i>, <i lang="en">water</i> ಸೇರಿದಂತೆ, ಅತಿ ಹೆಚ್ಚು ಬಳಕೆಯ 400 ಇಂಗ್ಲಿಷ್ ಪದಗಳಲ್ಲಿ 86 ಪದಗಳಿಗೆ ಪುಟವಿದೆ. ಅಲರ್ ಮತ್ತು 1876ರ ಜೀಗ್ಲರ್ ನಿಘಂಟು ಒಂದೇ ಮುಖ್ಯ ಕನ್ನಡ ಪದವನ್ನು ಕೊಡುವ ಪದಗಳು ಇವು. <i lang="en">home</i> ನಂತಹ ಉಳಿದ ಪದಗಳಿಗೆ ಇನ್ನೂ ಪುಟವಿಲ್ಲ.',
+          'ಅತಿ ಹೆಚ್ಚು ಬಳಕೆಯ 400 ಇಂಗ್ಲಿಷ್ ಪದಗಳಲ್ಲಿ, <i lang="en">house</i>, <i lang="en">water</i> ಸೇರಿದಂತೆ 86 ಪದಗಳಿಗೆ ಪುಟವಿದೆ. ಅಲರ್ ಮತ್ತು 1876ರ ಜೀಗ್ಲರ್ ನಿಘಂಟು ಒಂದೇ ಮುಖ್ಯ ಕನ್ನಡ ಪದವನ್ನು ಕೊಡುವ ಪದಗಳು ಇವು. <i lang="en">home</i> ನಂತಹ ಉಳಿದ ಪದಗಳಿಗೆ ಇನ್ನೂ ಪುಟವಿಲ್ಲ.',
         ],
       },
       {

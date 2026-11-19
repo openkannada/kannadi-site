@@ -39,3 +39,9 @@ test("each tool and the AI benchmark has a mark of Kannada letters", () => {
     assert.ok(PAGES.some((p) => p.slug === slug));
   }
 });
+
+test("each converter page compares all 4 converters and links each one", async () => {
+  const { CONVERTERS } = await import("../src/content/converters.ts");
+  assert.deepEqual([...CONVERTERS.slugs].sort(), [...NAV.converters].sort());
+  CONVERTERS.slugs.forEach((slug, i) => assert.ok(CONVERTERS.rows[i]?.[0]?.includes(`href="/${slug}/"`), `row ${i} links ${slug}`));
+});

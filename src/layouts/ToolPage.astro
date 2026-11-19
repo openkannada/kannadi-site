@@ -4,7 +4,9 @@ import { EDITOR_STRINGS } from "../i18n/editor.ts";
 import { illustrationFor } from "../lib/illustrations.ts";
 import LetterChart from "../components/LetterChart.astro";
 import WordTable from "../components/WordTable.astro";
+import CompareTable from "../components/CompareTable.astro";
 import Faq from "../components/Faq.astro";
+import { CONVERTERS, CONVERTERS_HEADING } from "../content/converters.ts";
 import type { ToolPage } from "../content/pages.ts";
 import { isHome } from "../content/pages.ts";
 import { TAGLINE } from "../content/story.ts";
@@ -17,6 +19,7 @@ interface Props {
 }
 const { page } = Astro.props;
 const illo = illustrationFor(page);
+const converter = CONVERTERS.slugs.indexOf(page.slug);
 ---
 <Base page={page}>
   <PageHero page={page} illo={illo} art="tool" tagline={isHome(page) ? TAGLINE[page.lang ?? "en"] : undefined} />
@@ -31,6 +34,12 @@ const illo = illustrationFor(page);
     </section>
     {page.chart === "letters" && <LetterChart />}
     {page.chart === "words" && <WordTable />}
+    {converter >= 0 && (
+      <section aria-labelledby="converters-heading">
+        <h2 id="converters-heading">{CONVERTERS_HEADING}</h2>
+        <CompareTable table={CONVERTERS} current={converter} />
+      </section>
+    )}
     <Faq faq={page.faq} lang={page.lang ?? "en"} />
   </div>
 </Base>

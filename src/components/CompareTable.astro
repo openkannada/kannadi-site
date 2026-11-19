@@ -1,11 +1,14 @@
 ---
 // Options side by side, with our own column in the action color. Scrolls sideways on narrow screens.
 import type { Comparison } from "../content/pages.ts";
+import { withBase } from "../lib/paths.ts";
 
 interface Props {
   table: Comparison;
+  /** The row of the page being read, marked as the current one. */
+  current?: number;
 }
-const { table } = Astro.props;
+const { table, current } = Astro.props;
 // A column of figures lines up on the right, by column, so 1 word among numbers does not break it.
 const numeric = (s: string) => /^[\d.,%\s]+$/.test(s);
 const num = table.head.map((_, i) => i > 0 && table.rows.every((r) => numeric(r[i] ?? "")));
@@ -18,9 +21,9 @@ const num = table.head.map((_, i) => i > 0 && table.rows.every((r) => numeric(r[
       </tr>
     </thead>
     <tbody>
-      {table.rows.map((r) => (
-        <tr>
-          {r.map((c, i) => (i === 0 ? <th scope="row">{c}</th> : <td class:list={[i === table.ours && "ours", num[i] && "num"]}>{c}</td>))}
+      {table.rows.map((r, j) => (
+        <tr class:list={[j === current && "current"]}>
+          {r.map((c, i) => (i === 0 ? <th scope="row" set:html={withBase(c)} /> : <td class:list={[i === table.ours && "ours", num[i] && "num"]} set:html={withBase(c)} />))}
         </tr>
       ))}
     </tbody>
@@ -71,6 +74,13 @@ const num = table.head.map((_, i) => i > 0 && table.rows.every((r) => numeric(r[
     color: var(--primary);
     font-weight: 650;
     background: oklch(from var(--primary) l c h / 0.06);
+  }
+  .compare tr.current > * {
+    background: oklch(from var(--primary) l c h / 0.06);
+  }
+  .compare tr.current th :global(a) {
+    color: var(--foreground);
+    text-decoration: none;
   }
   @media (hover: hover) {
     .compare tbody tr {

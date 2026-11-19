@@ -50,7 +50,7 @@ const srcset = ([x2, x3]: { src: string }[]) => `${x2!.src} 2x, ${x3!.src} 3x`;
   <ul class="people" role="list">
     {ABOUT.people.map((p) => (
       <li>
-        <picture>
+        <picture data-md-skip>
           <source type="image/avif" srcset={srcset(PHOTOS[p.photo].avif)} />
           <img src={PHOTOS[p.photo].webp[0]!.src} srcset={srcset(PHOTOS[p.photo].webp)} alt={p.alt} width="80" height="80" loading="lazy" decoding="async" />
         </picture>
@@ -112,7 +112,7 @@ const srcset = ([x2, x3]: { src: string }[]) => `${x2!.src} 2x, ${x3!.src} 3x`;
   }
   .people {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
     gap: 0.75rem;
     margin: 0;
     padding: 0;
@@ -132,14 +132,17 @@ const srcset = ([x2, x3]: { src: string }[]) => `${x2!.src} 2x, ${x3!.src} 3x`;
     gap: 0.125rem;
     min-width: 0;
   }
+  .people picture {
+    flex: none;
+  }
   .people img {
     display: block;
-    flex: none;
     width: 5rem;
     height: 5rem;
     border-radius: 50%;
     background: var(--muted);
     object-fit: cover;
+    box-shadow: 0 0 0 1px var(--border);
   }
   .dedication {
     border-left: 3px solid var(--primary);

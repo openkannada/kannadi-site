@@ -733,7 +733,7 @@ export const ALL_PAGES: Page[] = [
     name: "OCR",
     title: "Kannada OCR: a Tesseract model for old Kannada print",
     description:
-      "A Tesseract model that turns old printed Kannada books into text, with fewer characters read wrong than stock Tesseract.",
+      "A Tesseract model that turns old printed Kannada books into text and misreads fewer characters than stock Tesseract.",
     h1: "Kannada OCR",
     intro:
       "A fine-tuned Tesseract model for Kannada print, especially old print. On old printed books it reads fewer characters wrong than stock Tesseract.",
@@ -1140,7 +1140,7 @@ export const ALL_PAGES: Page[] = [
     name: "ನಿಘಂಟು",
     title: "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ಕನ್ನಡ ಪದಗಳು, ಲಿಪ್ಯಂತರ ಮತ್ತು ಅರ್ಥಗಳು",
     description:
-      "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ ಕನ್ನಡ ಪದಗಳು, ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರ, ಪದವರ್ಗ, ಅಲರ್‌ನಿಂದ ಅರ್ಥಗಳು.",
+      "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ ಕನ್ನಡ ಪದಗಳು, ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರ, ಪದವರ್ಗ ಮತ್ತು ಅಲರ್‌ನಿಂದ ಇಂಗ್ಲಿಷ್ ಅರ್ಥಗಳು.",
     h1: "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು",
     intro:
       "ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ 1 ಪುಟವಿರುವ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು. ಪ್ರತಿ ಪುಟದಲ್ಲಿ ಕನ್ನಡ ಪದಗಳು, ಅವುಗಳ ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರ, ಪದವರ್ಗ, ಮತ್ತು ಅಲರ್ ನಿಘಂಟಿನಿಂದ ಪಡೆದ ಇಂಗ್ಲಿಷ್ ಅರ್ಥಗಳು ಇರುತ್ತವೆ.",

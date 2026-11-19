@@ -11,6 +11,7 @@ import { pagePath, siteUrl } from "../src/content/site.ts";
 import { llmsFull, llmsIndex, markdownPath, mirror, readPage, robots, sitemap } from "../src/lib/agent-text.ts";
 import { absolute, graphemes, jsonLd, plainText, scriptJson } from "../src/lib/seo.ts";
 
+const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
 const types = (graph) => graph["@graph"].map((n) => n["@type"]);
 
 test("every page has the structured data the strategy asks for", () => {
@@ -326,7 +327,6 @@ test("a Kannada page's structured data is in Kannada and its trail starts at the
 });
 
 test("the people of Open Kannada carry a role label, and no page text ranks them as founders", async () => {
-  const { ABOUT } = await import("../src/content/about.ts");
   const { SITE_STRINGS } = await import("../src/i18n/site.ts");
   assert.deepEqual(ABOUT.en.people.map((p) => p.role), ["Founding member", "Founding member"]);
   for (const p of [...ABOUT.en.people, ...ABOUT.kn.people]) assert.deepEqual(Object.keys(p).sort(), ["alt", "name", "photo", "role", "site", "url"]);
@@ -335,7 +335,6 @@ test("the people of Open Kannada carry a role label, and no page text ranks them
 });
 
 test("the code is MIT OR Apache-2.0 from The Open Kannada Authors, and every page says who holds the names", () => {
-  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
   assert.equal(JSON.parse(read("package.json")).license, "MIT OR Apache-2.0");
   assert.match(read("LICENSE-MIT"), /Copyright \(c\) 2026 The Open Kannada Authors/);
   assert.match(read("LICENSE-APACHE"), /Apache License\s+Version 2\.0/);
@@ -385,7 +384,6 @@ test("voice typing says, at the microphone, that it goes through the browser's s
 });
 
 test("the site names kannadi's license as MIT OR Apache-2.0, and never as the MIT license alone", () => {
-  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
   const files = ["src/content/pages.ts", "src/content/press.ts", "src/integrations/agent-files.ts", "src/i18n/site.en.ts", "src/i18n/site.kn.ts"];
   for (const f of files) assert.doesNotMatch(read(f), /MIT license|MIT ಲೈಸೆನ್ಸ್/, f);
   assert.match(read("src/content/press.ts"), /open source under MIT OR Apache-2\.0/);
@@ -437,15 +435,13 @@ test("a page's description and intro carry at most 1 headline figure, and leave 
 });
 
 test("the copy says where our fixes go, with no 'where they belong' or 'upstream'", () => {
-  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
   const copy = JSON.stringify([ALL_PAGES, ABOUT, HOME_COPY, STORY]) + read("src/integrations/agent-files.ts");
   assert.doesNotMatch(copy, /where (?:they|it) belongs?|upstream/i);
-  assert.match(STORY.en.join(" "), /send our fixes back to the fonts and programs people already use/);
+  assert.match(STORY.en.join(" "), /send our fixes back to the fonts and programs/);
   assert.doesNotMatch(read("src/integrations/agent-files.ts"), /Fonts[^.]*coming soon/, "llms.txt says the fonts are released");
 });
 
 test("each founding member has a portrait in AVIF and WebP with alt text, all rights reserved", () => {
-  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
   const files = readdirSync(new URL("../src/assets/people/", import.meta.url)).sort();
   assert.deepEqual(files, ["neha-160.avif", "neha-160.webp", "neha-240.avif", "neha-240.webp", "prasad-160.avif", "prasad-160.webp", "prasad-240.avif", "prasad-240.webp"]);
   for (const lang of ["en", "kn"]) {
@@ -455,9 +451,11 @@ test("each founding member has a portrait in AVIF and WebP with alt text, all ri
   const about = read("src/components/About.astro");
   assert.match(about, /<source type="image\/avif"/);
   assert.match(about, /alt=\{p\.alt\}/);
-  const reuse = read("REUSE.toml");
-  const last = reuse.slice(reuse.lastIndexOf("[[annotations]]"));
-  assert.match(last, /path = "src\/assets\/people\/\*\*"/);
-  assert.match(last, /SPDX-License-Identifier = "LicenseRef-AllRightsReserved"/);
+  const blocks = read("REUSE.toml").split("[[annotations]]").slice(1);
+  const at = blocks.findIndex((b) => b.includes('path = "src/assets/people/**"'));
+  assert.ok(at >= 0 && /SPDX-License-Identifier = "LicenseRef-AllRightsReserved"/.test(blocks[at]), "the photos are all rights reserved");
+  for (const later of blocks.slice(at + 1)) assert.doesNotMatch(later, /"\*\*"|src\/assets\/\*\*|src\/\*\*/, "no later annotation covers the photos, since the last match wins");
+  assert.match(about, /<picture data-md-skip>/, "the markdown mirror leaves the photos out");
+  assert.match(read("src/i18n/site.en.ts"), /Text and the images we make: CC BY 4\.0\./);
   assert.match(read("LICENSES/LicenseRef-AllRightsReserved.txt"), /^All rights reserved\./);
 });

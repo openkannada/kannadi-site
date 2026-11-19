@@ -161,6 +161,13 @@ A pane (`@utility glass` on the site):
 - **Tool card** (home): mark and name, 1 line, and a foot with the other converters or "Coming soon" and an arrow. The whole card is the link. From 640px the cards sit in a grid where each row of cards shares 4 subgrid rows, so illustrations, names, lines and feet line up across a row.
 - **Stat cards** (project pages): each card spans 2 subgrid rows, so values share a baseline and labels start on 1 line.
 - **Hero actions** (project pages): a release's zip as a button for each font, the first solid; pages with nothing to download yet link to their result.
+- **Problem cards** (`Problems.astro`): an icon and a short name, the 1 number, and 1 or 2 short sentences, in 3 subgrid rows so the numbers share a baseline; 2 across on phones, 4 from 1024px.
+- **Help cards** (`HelpCards.astro`): an icon tile, the question in bold, and the ask.
+- **Steps** (tool pages): numbered cards, side by side from 768px (3 across, or 2 by 2 for 4 steps).
+- **Comparison table** (`CompareTable.astro`): options side by side, the first column naming each row; a column of figures aligns right in tabular numbers, and our own column is in the action color on a faint tint. It scrolls sideways on narrow screens.
+- **On this page rail** (project pages, from 1024px): the section names beside the prose, sticky, with a 2px indigo bar that grows beside the section being read.
+- **Icon tile** (`.icon-tile`): an icon on a small accent tile lit from above, as the tool marks are.
+- **Reveal** (`.reveal` with `data-inview`): cards rise 10px into place once, staggered by 60ms, when they first come into view; without script or under reduced motion they are simply there.
 - **Quiet button** (`.btn-quiet`): an outlined pill for a secondary action beside a solid one.
 - **Footer**: the 4 groups of pages first, then the credits and licensing in a quieter block, in 2 columns from 1024px.
 - **Content sections**: numbered steps with accent discs, a letter chart of tiles (Kannada, the Baraha key, ISO), a 3-column word table, and an FAQ of `details` elements with a rotating chevron.
@@ -168,10 +175,16 @@ A pane (`@utility glass` on the site):
 
 ## Layout
 
-- 3 widths, as custom properties in `global.css`: `--page` 72rem for the header, the home page and the footer; `--column` 54rem for every inner page, the same as the editor; `--prose` 46rem, the measure of running text. `.wrap-page` and `.wrap-column` center a block at those widths with the gutter inside, as the editor does, so the hero, the sheet and the sections share 1 left edge. Prose (`.measure`) starts on that edge rather than centering on its own.
+- 4 widths, as custom properties in `global.css`, each with its wrapper class (`.wrap-page`, `.wrap-wide`, `.wrap-column`, `.wrap-prose`) that centers a block with the gutter inside, as the editor does:
+  - `--page` 80rem: the header, the home page and the footer;
+  - `--wide` 68rem: project pages, the prose with the On this page rail beside it;
+  - `--column` 54rem: tool and reference pages, the same as the editor, so the hero, the sheet, the steps and the tables share 1 left edge;
+  - `--prose` 46rem: the measure of running text, and the whole width of the short info pages.
+- Use the width. Below a hero, no section leaves a wide empty column beside a narrow one: put cards, tables, figures or a rail beside the prose, or center the reading column. Check 1280, 1440 and 1920px.
+- Structure over walls of text: paragraphs of 1 to 3 sentences, and cards, numbered steps, comparison tables and lists where the content has that shape.
 - Side gutters (`--gutter`) are 16px on phones and 24px from 640px.
 - Every inner page opens with `PageHero.astro`: the trail and Ask AI across the full column, so Ask AI lines up with the sheet's right edge; then the heading, the answer-first intro, any actions, and the illustration.
-- Home: the heading, intro and a link to the editor beside the paste card; the 6 tools at once; the AI benchmark band; then Why and How to help, each with its heading on the left of the prose from 1024px.
+- Home: the heading, intro and a link to the editor beside the paste card; the 6 tools at once; the AI benchmark band; Why as 1 lead line, 4 problem cards and How we work in 3 parts; How to help as 3 cards.
 - Below 768px the counts move from the sheet's foot to its top, because the dock covers the bottom edge.
 
 ## Constraints

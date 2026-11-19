@@ -7,7 +7,7 @@ import { INTEREST_PATH, type InterestEnv, handleInterest } from "../src/lib/inte
 
 export default {
   fetch(request: Request, env: { ASSETS: Assets } & InterestEnv): Promise<Response> {
-    if (new URL(request.url).pathname === INTEREST_PATH) return handleInterest(request, env, INTEREST.open);
+    if (new URL(request.url).pathname === INTEREST_PATH) return handleInterest(request, env, INTEREST.open, { host: LIVE.host });
     return handle(request, env.ASSETS, { host: LIVE.host, launched: LIVE.launched });
   },
 };

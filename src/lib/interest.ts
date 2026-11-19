@@ -4,6 +4,12 @@ import { HELP_AREAS, HOURS, KANNADA, type HelpArea } from "../content/interest.t
 
 export const INTEREST_PATH = "/api/interest";
 
+/** The honeypot's field name: one no autofill fills, so a person never trips it. */
+export const HONEYPOT = "ok_fax_extension";
+
+/** The largest body read, in bytes; a real submission is under 2 KB. */
+export const MAX_BODY = 8192;
+
 /** The few D1 calls the handler makes, so tests can stand in for the database. */
 export interface InterestDb {
   prepare(sql: string): { bind(...values: unknown[]): { run(): Promise<unknown> } };
@@ -12,6 +18,11 @@ export interface InterestDb {
 export interface InterestEnv {
   DB?: InterestDb;
   TURNSTILE_SECRET?: string;
+}
+
+/** Where submissions may come from: the site itself, or a local dev server. */
+export interface InterestOrigin {
+  host: string;
 }
 
 export interface Submission {
@@ -30,6 +41,7 @@ export interface Submission {
 export const LIMITS = { name: 120, email: 254, place: 120, link: 300, experience: 600 } as const;
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const LOCAL = /^(localhost|127\.0\.0\.1|\[::1\])$/;
 
 /** A submission from the form's fields, or the names of the fields that are missing or wrong. */
 export function parseSubmission(input: Record<string, unknown>): { ok: true; value: Submission } | { ok: false; errors: string[] } {
@@ -41,7 +53,7 @@ export function parseSubmission(input: Record<string, unknown>): { ok: true; val
     place: text("place"),
     link: text("link"),
     experience: text("experience"),
-    areas: (Array.isArray(input.areas) ? input.areas : [input.areas]).filter((a): a is HelpArea => (HELP_AREAS as readonly unknown[]).includes(a)),
+    areas: [...new Set(Array.isArray(input.areas) ? input.areas : [input.areas])].filter((a): a is HelpArea => (HELP_AREAS as readonly unknown[]).includes(a)),
     hours: typeof input.hours === "string" ? input.hours : "",
     kannada: typeof input.kannada === "string" ? input.kannada : "",
     consent: input.consent === true || input.consent === "on" || input.consent === "yes",
@@ -61,7 +73,7 @@ export function parseSubmission(input: Record<string, unknown>): { ok: true; val
 }
 
 /** Asks Cloudflare whether the Turnstile token came from a person on this page. */
-export async function turnstileOk(token: string, secret: string, ip: string | null, fetcher: typeof fetch = fetch): Promise<boolean> {
+export async function turnstileOk(token: string, secret: string, ip: string | null, host: string, fetcher: typeof fetch = fetch): Promise<boolean> {
   if (!token || !secret) return false;
   const body = new FormData();
   body.set("secret", secret);
@@ -69,34 +81,45 @@ export async function turnstileOk(token: string, secret: string, ip: string | nu
   if (ip) body.set("remoteip", ip);
   const res = await fetcher("https://challenges.cloudflare.com/turnstile/v0/siteverify", { method: "POST", body });
   if (!res.ok) return false;
-  const data = (await res.json()) as { success?: boolean };
-  return data.success === true;
+  const data = (await res.json()) as { success?: boolean; hostname?: string };
+  return data.success === true && (data.hostname === host || LOCAL.test(data.hostname ?? ""));
 }
 
 const json = (status: number, body: Record<string, unknown>) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
 
 /** Answers POST /api/interest: 503 while closed, 400 for a bad submission, 200 once stored. */
-export async function handleInterest(request: Request, env: InterestEnv, open: boolean, fetcher: typeof fetch = fetch): Promise<Response> {
+export async function handleInterest(request: Request, env: InterestEnv, open: boolean, origin: InterestOrigin, fetcher: typeof fetch = fetch): Promise<Response> {
   if (request.method !== "POST") return new Response(null, { status: 405, headers: { allow: "POST" } });
   if (!open || !env.DB || !env.TURNSTILE_SECRET) return json(503, { error: "closed" });
+  // Only the site's own page posts here: JSON, from the canonical origin, and small.
+  const from = request.headers.get("origin");
+  const sameSite = from === `https://${origin.host}` || (from !== null && LOCAL.test(new URL(from).hostname));
+  if (!sameSite || !request.headers.get("content-type")?.startsWith("application/json")) return json(403, { error: "origin" });
+  if (Number(request.headers.get("content-length") ?? MAX_BODY + 1) > MAX_BODY) return json(413, { error: "too large" });
   let input: Record<string, unknown>;
   try {
-    input = (await request.json()) as Record<string, unknown>;
+    const body: unknown = JSON.parse(await request.text());
+    if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("not an object");
+    input = body as Record<string, unknown>;
   } catch {
     return json(400, { error: "invalid", fields: [] });
   }
   // A person never sees the honeypot field; a bot that fills it is told it worked and nothing is kept.
-  if (typeof input.website === "string" && input.website !== "") return json(200, { ok: true });
+  if (typeof input[HONEYPOT] === "string" && input[HONEYPOT] !== "") return json(200, { ok: true });
   const parsed = parseSubmission(input);
   if (!parsed.ok) return json(400, { error: "invalid", fields: parsed.errors });
   const token = typeof input.turnstile === "string" ? input.turnstile : "";
-  if (!(await turnstileOk(token, env.TURNSTILE_SECRET, request.headers.get("cf-connecting-ip"), fetcher))) return json(403, { error: "check" });
-  const s = parsed.value;
-  await env.DB.prepare(
-    "INSERT INTO interest (created_at, name, email, place, link, areas, experience, hours, kannada, lang) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-  )
-    .bind(new Date().toISOString(), s.name, s.email, s.place, s.link, s.areas.join(","), s.experience, s.hours, s.kannada, input.lang === "kn" ? "kn" : "en")
-    .run();
+  try {
+    if (!(await turnstileOk(token, env.TURNSTILE_SECRET, request.headers.get("cf-connecting-ip"), origin.host, fetcher))) return json(403, { error: "check" });
+    const s = parsed.value;
+    await env.DB.prepare(
+      "INSERT INTO interest (created_at, name, email, place, link, areas, experience, hours, kannada, lang) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    )
+      .bind(new Date().toISOString(), s.name, s.email, s.place, s.link, s.areas.join(","), s.experience, s.hours, s.kannada, input.lang === "kn" ? "kn" : "en")
+      .run();
+  } catch {
+    return json(502, { error: "unavailable" });
+  }
   return json(200, { ok: true });
 }

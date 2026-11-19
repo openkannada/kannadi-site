@@ -3,7 +3,7 @@
 // false it renders with its button disabled and sends nothing.
 import { HELP_AREAS, HOURS, INTEREST, INTEREST_COPY, KANNADA } from "../content/interest.ts";
 import type { Lang } from "../i18n/core.ts";
-import { INTEREST_PATH } from "../lib/interest.ts";
+import { HONEYPOT, INTEREST_PATH } from "../lib/interest.ts";
 import { withBase } from "../lib/paths.ts";
 import Icon from "./Icon.astro";
 
@@ -14,23 +14,25 @@ const { lang } = Astro.props;
 const C = INTEREST_COPY[lang];
 const open = INTEREST.open && !!INTEREST.turnstileSiteKey;
 ---
-<form class="interest" id="interest" novalidate data-md-skip data-open={open ? "" : undefined} data-endpoint={INTEREST_PATH} data-lang={lang} data-sending={C.sending} data-sent={C.sent} data-failed={C.failed}>
+<form class="interest" id="interest" novalidate data-md-skip data-open={open ? "" : undefined} data-endpoint={INTEREST_PATH} data-honeypot={HONEYPOT} data-lang={lang} data-sending={C.sending} data-sent={C.sent} data-failed={C.failed} data-areas-needed={C.areasNeeded}>
+  {!open && <p class="interest-closed"><Icon name="mail" /><span><b>{C.closed}.</b> <span set:html={withBase(C.closedNote)} /></span></p>}
+  <fieldset class="interest-fields" disabled={!open}>
   <div class="interest-grid">
     <label class="field">
       <span class="field-label">{C.fields.name}</span>
-      <input name="name" autocomplete="name" required maxlength="120" />
+      <input name="name" autocomplete="name" required maxlength="120" pattern=".*\S.*" />
     </label>
     <label class="field">
       <span class="field-label">{C.fields.email}</span>
-      <input name="email" type="email" autocomplete="email" required maxlength="254" />
+      <input name="email" type="email" autocomplete="email" required maxlength="254" pattern="[^\s@]+@[^\s@]+\.[^\s@]+" />
     </label>
     <label class="field">
       <span class="field-label">{C.fields.place}</span>
-      <input name="place" autocomplete="address-level2" required maxlength="120" placeholder={C.fields.placeHint} />
+      <input name="place" autocomplete="address-level2" required maxlength="120" pattern=".*\S.*" placeholder={C.fields.placeHint} />
     </label>
     <label class="field">
       <span class="field-label">{C.fields.link} <span class="field-optional">{C.fields.optional}</span></span>
-      <input name="link" type="url" inputmode="url" autocomplete="url" maxlength="300" placeholder="https://" />
+      <input name="link" type="url" inputmode="url" autocomplete="url" maxlength="300" pattern="https?://\S+" placeholder="https://" />
     </label>
   </div>
 
@@ -74,19 +76,21 @@ const open = INTEREST.open && !!INTEREST.turnstileSiteKey;
     <span>{C.fields.consent}</span>
   </label>
 
+  </fieldset>
+
   {/* Left empty by people; the Worker drops any submission that fills it. */}
   <div class="honeypot" aria-hidden="true">
-    <label>Website <input name="website" tabindex="-1" autocomplete="off" /></label>
+    <label>Leave empty <input name={HONEYPOT} tabindex="-1" autocomplete="off" /></label>
   </div>
 
   {open && <div class="cf-turnstile" data-sitekey={INTEREST.turnstileSiteKey}></div>}
 
   <div class="interest-actions">
     <button type="submit" class="btn btn-primary" disabled={!open}>
-      <Icon name={open ? "arrow" : "mail"} />
-      {open ? C.send : C.closed}
+      <Icon name="arrow" />
+      {C.send}
     </button>
-    <p class="interest-status" role="status" aria-live="polite" set:html={open ? "" : withBase(C.closedNote)} />
+    <p class="interest-status" role="status" aria-live="polite"></p>
   </div>
   <p class="interest-privacy" set:html={withBase(C.privacy)} />
 </form>
@@ -100,6 +104,11 @@ const open = INTEREST.open && !!INTEREST.turnstileSiteKey;
     document.head.append(script);
     const status = form.querySelector<HTMLElement>(".interest-status")!;
     const button = form.querySelector<HTMLButtonElement>("button[type=submit]")!;
+    const areas = [...form.querySelectorAll<HTMLInputElement>("input[name=areas]")];
+    const checkAreas = () => areas[0]?.setCustomValidity(areas.some((a) => a.checked) ? "" : (form.dataset.areasNeeded ?? ""));
+    for (const a of areas) a.addEventListener("change", checkAreas);
+    checkAreas();
+    form.addEventListener("input", (e) => (e.target as HTMLElement).removeAttribute("aria-invalid"));
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       if (!form.reportValidity()) return;
@@ -114,7 +123,7 @@ const open = INTEREST.open && !!INTEREST.turnstileSiteKey;
         hours: data.get("hours"),
         kannada: data.get("kannada"),
         consent: data.get("consent") === "on",
-        website: data.get("website"),
+        [form.dataset.honeypot ?? ""]: data.get(form.dataset.honeypot ?? ""),
         turnstile: data.get("cf-turnstile-response"),
         lang: form.dataset.lang,
       };
@@ -122,12 +131,20 @@ const open = INTEREST.open && !!INTEREST.turnstileSiteKey;
       status.textContent = form.dataset.sending ?? "";
       try {
         const res = await fetch(form.dataset.endpoint ?? "", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-        if (!res.ok) throw new Error(String(res.status));
+        if (!res.ok) {
+          // The server names any field it refused; mark those so the person can see what to change.
+          const fields = ((await res.json().catch(() => ({}))) as { fields?: string[] }).fields ?? [];
+          for (const name of fields) form.querySelector(`[name="${name}"]`)?.setAttribute("aria-invalid", "true");
+          throw new Error(String(res.status));
+        }
         form.reset();
+        checkAreas();
         status.textContent = form.dataset.sent ?? "";
       } catch {
         status.innerHTML = form.dataset.failed ?? "";
         button.disabled = false;
+        // A Turnstile token is good once; a retry needs a fresh one.
+        (globalThis as { turnstile?: { reset(): void } }).turnstile?.reset();
       }
     });
   }
@@ -137,6 +154,39 @@ const open = INTEREST.open && !!INTEREST.turnstileSiteKey;
   .interest {
     display: grid;
     gap: 1.25rem;
+  }
+  .interest-fields {
+    display: grid;
+    gap: 1.25rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .interest-fields:disabled {
+    opacity: 0.75;
+  }
+  .interest-closed {
+    max-width: none;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    margin: 0;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: var(--accent-foreground);
+    font-size: 0.9375rem;
+  }
+  .interest-closed :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    flex: none;
+  }
+  .interest [aria-invalid="true"] {
+    outline: 2px solid var(--ring);
+    outline-offset: 1px;
   }
   .interest-grid {
     display: grid;

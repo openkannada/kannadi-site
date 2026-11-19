@@ -458,9 +458,10 @@ test("each founding member has a portrait, and the dedication our family photo, 
   assert.match(about, /<picture data-md-skip>/, "the markdown mirror leaves the photos out");
   const family = readdirSync(new URL("../src/assets/family/", import.meta.url)).sort();
   assert.deepEqual(family, [480, 720, 960, 1200].flatMap((w) => [`family-2023-${w}.avif`, `family-2023-${w}.webp`]).sort());
-  assert.deepEqual(ABOUT.en.family.caption, "Subramanya, Veena, Pramodini, me and Neha.");
-  assert.deepEqual(ABOUT.kn.family.caption, "ಸುಬ್ರಹ್ಮಣ್ಯ, ವೀಣಾ, ಪ್ರಮೋದಿನಿ, ನಾನು ಮತ್ತು ನೇಹಾ.");
-  for (const lang of ["en", "kn"]) assert.ok(ABOUT[lang].family.alt.length > 20, `${lang}: the family photo has alt text`);
+  assert.equal(ABOUT.en.family.caption, "Subramanya, Veena, Pramodini, me and Neha.");
+  assert.equal(ABOUT.kn.family.caption, "ಸುಬ್ರಹ್ಮಣ್ಯ, ವೀಣಾ, ಪ್ರಮೋದಿನಿ, ನಾನು ಮತ್ತು ನೇಹಾ.");
+  for (const lang of ["en", "kn"]) assert.match(ABOUT[lang].family.alt, /5/, `${lang}: the family photo has alt text that says who is in it`);
+  assert.match(about, /srcset=\{widths\(FAMILY\.webp\)\} sizes=\{FAMILY_SIZES\} alt=\{ABOUT\.family\.alt\} width=\{[^}]+\} height=\{[^}]+\} loading="lazy"/, "the family photo is lazy, sized and has alt text");
   assert.equal((about.match(/<picture data-md-skip>/g) ?? []).length, 2, "both pictures stay out of the mirror");
   assert.match(about, /srcset=\{widths\(FAMILY\.avif\)\} sizes=\{FAMILY_SIZES\}/);
   const fam = blocks.findIndex((b) => b.includes('path = "src/assets/family/**"'));

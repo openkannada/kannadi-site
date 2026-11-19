@@ -35,8 +35,8 @@ const PHOTOS = {
 const srcset = ([x2, x3]: { src: string }[]) => `${x2!.src} 2x, ${x3!.src} 3x`;
 const widths = (files: { src: string; width: number }[]) => files.map((f) => `${f.src} ${f.width}w`).join(", ");
 const FAMILY = { avif: [family480avif, family720avif, family960avif, family1200avif], webp: [family480webp, family720webp, family960webp, family1200webp] };
-// Beside the text from 48rem at 18rem wide; full column width below that.
-const FAMILY_SIZES = "(min-width: 48rem) 18rem, calc(100vw - 2rem)";
+// Beside the text from 48rem at 18rem wide; below that, the column width up to 24rem.
+const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
 ---
 {ABOUT.sections.map((s) => (
   <section>
@@ -180,6 +180,7 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, calc(100vw - 2rem)";
     }
   }
   .family {
+    max-width: 24rem;
     margin: 0;
   }
   .family img {

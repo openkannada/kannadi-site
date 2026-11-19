@@ -77,12 +77,13 @@ test("project pages say what each tool does, its license and where to get it, wi
     assert.ok(p.licenses.length, p.slug);
   }
   const text = (slug) => JSON.stringify(PAGES.find((p) => p.slug === slug));
-  const ocr = PAGES.find((p) => p.slug === "ocr").sections.find((s) => s.id === "result").items;
-  assert.deepEqual(ocr, [
-    "Old printed books, 60 Wikisource pages: 6.0%, against 8.7%.",
-    "Degraded words, 400: 17.0%, against 24.4%.",
-    "MILE pages from IISc, 30: 5.4%, against 7.3%.",
-    "MILE lines from IISc, 600: 2.8%, against 3.8%.",
+  const ocr = PAGES.find((p) => p.slug === "ocr").sections.find((s) => s.id === "result").compare;
+  assert.deepEqual(ocr.head, ["Test set", "Open Kannada 0.2", "Stock Tesseract"]);
+  assert.deepEqual(ocr.rows, [
+    ["Old printed books, 60 Wikisource pages", "6.0%", "8.7%"],
+    ["Degraded words, 400", "17.0%", "24.4%"],
+    ["MILE pages from IISc, 30", "5.4%", "7.3%"],
+    ["MILE lines from IISc, 600", "2.8%", "3.8%"],
   ], "the v0.2 results as released, and no other");
   assert.doesNotMatch(text("ocr"), /dots/i);
   const BRIEF = ["3,712", "13,887", "10,654", "20.0%", "45.1%", "1.6%", "21.1%", "2.2", "22", "100", "27", "28", "25", "24", "400", "1876", "1894", "20", "7.6%", "12.4%", "22.7%", "30.1%", "60", "6.2%", "7.5%", "10", "0.2", "4", "1", "2"];
@@ -102,7 +103,7 @@ test("project pages say what each tool does, its license and where to get it, wi
     assert.ok(page.description.includes("3,712"), `${slug} description`);
     assert.equal(section("downloads").paragraphs.length, 1, `${slug}: downloads stay coming soon until the dictionary is hosted`);
   }
-  for (const slug of ["fonts"]) assert.doesNotMatch(text(slug).replace(/U\+[0-9A-F]{4}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 |\d\.\d{3}|SHA-256|Article 1\b/g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
+  for (const slug of ["fonts"]) assert.doesNotMatch(text(slug).replace(/U\+[0-9A-F]{4}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 |\d\.\d{3}|SHA-256|Article 1\b|\b100 to 900\b|"400"/g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
   const bench = PAGES.find((p) => p.slug === "ai-benchmark");
   const rows = bench.sections.find((s) => s.id === "result").table.rows;
   assert.deepEqual(rows.map((r) => [r.name, r.ratio, r.low, r.high]), [

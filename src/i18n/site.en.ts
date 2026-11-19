@@ -81,6 +81,7 @@ export const SITE_EN = {
     sources: "Sources",
     downloads: "Downloads",
     license: "License",
+    onPage: "On this page",
     name: "Tokenizer",
     ratio: "Kannada tokens per English token",
     interval: "95% interval",

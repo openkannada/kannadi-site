@@ -1,0 +1,83 @@
+---
+// Options side by side, with our own column in the action color. Scrolls sideways on narrow screens.
+import type { Comparison } from "../content/pages.ts";
+
+interface Props {
+  table: Comparison;
+}
+const { table } = Astro.props;
+// A column of figures lines up on the right, by column, so 1 word among numbers does not break it.
+const numeric = (s: string) => /^[\d.,%\s]+$/.test(s);
+const num = table.head.map((_, i) => i > 0 && table.rows.every((r) => numeric(r[i] ?? "")));
+---
+<div class="compare-wrap">
+  <table class="compare">
+    <thead>
+      <tr>
+        {table.head.map((h, i) => <th scope="col" class:list={[i === table.ours && "ours", num[i] && "num"]}>{h}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {table.rows.map((r) => (
+        <tr>
+          {r.map((c, i) => (i === 0 ? <th scope="row">{c}</th> : <td class:list={[i === table.ours && "ours", num[i] && "num"]}>{c}</td>))}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .compare-wrap {
+    overflow-x: auto;
+    margin: 1.25rem 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+  }
+  .compare {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9375rem;
+  }
+  .compare th,
+  .compare td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    vertical-align: baseline;
+  }
+  .compare thead th {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--muted-foreground);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .compare tbody tr + tr > * {
+    border-top: 1px solid var(--border);
+  }
+  .compare tbody th {
+    font-weight: 600;
+  }
+  .compare .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .compare thead .ours {
+    color: var(--primary);
+  }
+  .compare td.ours {
+    color: var(--primary);
+    font-weight: 650;
+    background: oklch(from var(--primary) l c h / 0.06);
+  }
+  @media (hover: hover) {
+    .compare tbody tr {
+      transition: background-color var(--duration-quick) var(--ease-standard);
+    }
+    .compare tbody tr:hover {
+      background: oklch(from var(--foreground) l c h / 0.03);
+    }
+  }
+</style>

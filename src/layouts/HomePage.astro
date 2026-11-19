@@ -100,27 +100,53 @@ const main = items.filter((t) => t.slug !== "ai-benchmark");
   </section>
 
   <section class="home-section wrap-page" aria-labelledby="why">
-    <h2 id="why" class="home-h2">{C.story.heading}</h2>
-    <div class="prose-kn measure">
-      {C.story.paragraphs.map((p) => <p set:html={withBase(p)} />)}
-      <p set:html={withBase(C.story.more)} />
+    <div class="why-head">
+      <h2 id="why" class="home-h2">{C.story.heading}</h2>
+      <p class="why-lead">{C.why.lead}</p>
+    </div>
+    <ul class="problems" role="list">
+      {C.why.problems.map((p) => (
+        <li class="problem reveal" data-inview>
+          <p class="problem-title"><Icon name={p.icon} filled />{p.title}</p>
+          <p class="problem-value">{p.value}</p>
+          <p class="problem-text">{p.text}</p>
+        </li>
+      ))}
+    </ul>
+    <div class="practices">
+      <h3 class="practices-heading">{C.why.practiceHeading}</h3>
+      <ol class="practice-list" role="list">
+        {C.why.practices.map((p) => (
+          <li class="practice reveal" data-inview>
+            <span class="practice-icon"><Icon name={p.icon} /></span>
+            <b>{p.title}</b>
+            <span>{p.text}</span>
+          </li>
+        ))}
+      </ol>
+      <p class="practices-more" set:html={withBase(C.story.more)} />
     </div>
   </section>
 
   <section class="home-section wrap-page" aria-labelledby="help">
-    <h2 id="help" class="home-h2">{C.help.heading}</h2>
-    <div class="prose-kn measure">
-      <p set:html={withBase(C.help.intro)} />
-      <ul class="help-list">
-        {C.help.items.map((h) => <li set:html={withBase(h)} />)}
-      </ul>
-      <p>
-        <a class="btn btn-primary help-cta" href={url(to("contribute"))} lang={otherLang(to("contribute"))}>
-          <Icon name="people" />
-          {C.help.contribute}
-        </a>
-      </p>
+    <div class="why-head">
+      <h2 id="help" class="home-h2">{C.help.heading}</h2>
+      <p class="why-lead">{C.help.intro}</p>
     </div>
+    <ul class="helps" role="list">
+      {C.help.items.map((h, i) => (
+        <li class="help reveal" data-inview>
+          <span class="practice-icon"><Icon name={C.help.icons[i] ?? "people"} /></span>
+          <p set:html={withBase(h)} />
+        </li>
+      ))}
+    </ul>
+    <p class="help-cta-row">
+      <a class="btn btn-primary help-cta" href={url(to("contribute"))} lang={otherLang(to("contribute"))}>
+        <Icon name="people" />
+        {C.help.contribute}
+      </a>
+    </p>
   </section>
 </Base>
 
@@ -155,11 +181,11 @@ const main = items.filter((t) => t.slug !== "ai-benchmark");
     padding-top: 2rem;
   }
   .home-title {
-    font-size: clamp(2.125rem, 1.5rem + 3vw, 3.5rem);
+    font-size: clamp(2.125rem, 1.4rem + 3vw, 4rem);
     line-height: 1.1;
     font-weight: 650;
     letter-spacing: var(--type-heading-tracking);
-    max-width: 18ch;
+    max-width: 17ch;
   }
   .home-title:lang(kn) {
     line-height: 1.5;
@@ -245,7 +271,7 @@ const main = items.filter((t) => t.slug !== "ai-benchmark");
   }
   @media (min-width: 64rem) {
     .home-hero {
-      grid-template-columns: minmax(0, 1fr) 25rem;
+      grid-template-columns: minmax(0, 1fr) 27rem;
       gap: 4rem;
       padding-top: 4.5rem;
     }
@@ -267,15 +293,218 @@ const main = items.filter((t) => t.slug !== "ai-benchmark");
   .home-h2:lang(kn) {
     line-height: 1.6;
   }
-  /* Editorial sections: the heading on the left, the prose beside it, on wide screens. */
-  @media (min-width: 64rem) {
-    .home-section {
-      display: grid;
-      grid-template-columns: 15rem minmax(0, var(--prose));
-      gap: 0 3rem;
+  /* Why and How to help: a lead line, then cards across the full width. */
+  .why-head {
+    max-width: var(--prose);
+  }
+  .why-lead {
+    font-size: 1.1875rem;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+  .why-lead:lang(kn) {
+    line-height: var(--type-kn-leading);
+  }
+  .problems,
+  .helps,
+  .practice-list {
+    display: grid;
+    gap: 0.75rem;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .problem,
+  .help {
+    padding: 1.125rem 1.25rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+  }
+  .problem {
+    display: grid;
+    gap: 0.25rem;
+  }
+  .problem-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .problem-title :global(svg),
+  .practice-icon :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: none;
+    color: var(--primary);
+  }
+  .problem-value {
+    margin-top: 0.5rem;
+    color: var(--foreground);
+    font-size: 2.25rem;
+    line-height: 1.15;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .problem-value:lang(kn) {
+    line-height: 1.5;
+  }
+  .problem-text {
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+  .problem-text:lang(kn) {
+    line-height: var(--type-kn-leading);
+  }
+  .practices {
+    display: grid;
+    gap: 0 2rem;
+    margin-top: 2.5rem;
+    align-items: start;
+  }
+  .practices-heading {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  .practice-list {
+    margin-top: 1rem;
+    gap: 1.25rem;
+  }
+  .practice {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.125rem 0.75rem;
+  }
+  .practice-icon {
+    display: grid;
+    grid-row: span 2;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.875rem;
+    background: var(--accent);
+    box-shadow: inset 0 1px 0 var(--glass-rim);
+  }
+  .practice b {
+    align-self: end;
+    font-weight: 600;
+  }
+  .practice span:last-child {
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+  .practices-more {
+    margin-top: 1.5rem;
+  }
+  .help {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0.875rem;
+  }
+  .help p {
+    line-height: 1.55;
+  }
+  .help p :global(b) {
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+  .help-cta-row {
+    margin-top: 1.5rem;
+  }
+  /* Cards rise a little into place the first time they are on screen; with reduced motion they are simply there. */
+  @media (prefers-reduced-motion: no-preference) {
+    .illo-wait .reveal:not(.is-in) {
+      opacity: 0;
+      transform: translateY(10px);
     }
-    .home-section > .prose-kn > :first-child {
+    .reveal {
+      transition:
+        opacity 0.5s var(--ease-settle),
+        transform 0.6s var(--ease-settle),
+        border-color var(--duration-quick) var(--ease-standard),
+        box-shadow var(--duration-lift) var(--ease-settle);
+    }
+    .reveal:nth-child(2) { transition-delay: 60ms; }
+    .reveal:nth-child(3) { transition-delay: 120ms; }
+    .reveal:nth-child(4) { transition-delay: 180ms; }
+  }
+  @media (hover: hover) {
+    .problem:hover,
+    .help:hover {
+      border-color: oklch(from var(--primary) l c h / 0.35);
+      box-shadow: var(--shadow-sheet);
+    }
+  }
+  /* Side by side, titles, numbers and lines each share a row, 2 across even on phones. */
+  .problems {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 0.625rem;
+  }
+  .problem {
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    gap: 0;
+    margin-bottom: 0.625rem;
+    padding: 0.875rem 0.875rem 1rem;
+  }
+  .problem-value {
+    align-self: end;
+    font-size: 1.75rem;
+  }
+  .problem-text {
+    margin-top: 0.375rem;
+    font-size: 0.875rem;
+  }
+  @media (min-width: 40rem) {
+    .problems {
+      gap: 0 1rem;
+    }
+    .problem {
+      margin-bottom: 1rem;
+      padding: 1.125rem 1.25rem 1.25rem;
+    }
+    .problem-value {
+      font-size: 2.25rem;
+    }
+    .problem-text {
+      font-size: 0.9375rem;
+    }
+    .helps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .help {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+  @media (min-width: 48rem) {
+    .practice-list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .problems {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .practices {
+      grid-template-columns: 12rem minmax(0, 1fr);
+      padding: 1.5rem 1.75rem;
+      border-radius: var(--radius-2xl);
+      background: oklch(from var(--card) l c h / 0.55);
+      border: 1px solid var(--border);
+    }
+    .practice-list {
       margin-top: 0;
+    }
+    .practices-more {
+      grid-column: 2;
     }
   }
 
@@ -464,12 +693,6 @@ const main = items.filter((t) => t.slug !== "ai-benchmark");
     }
   }
 
-  .help-list {
-    display: grid;
-    gap: 0.75rem;
-    padding-left: 1.25rem;
-    list-style: disc;
-  }
   .help-cta {
     margin-top: 0.5rem;
     text-decoration: none;

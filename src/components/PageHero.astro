@@ -12,12 +12,14 @@ interface Props {
   illo?: IllustrationProps | null;
   /** Tool pages show the illustration from 1024px, so the editor stays in the first viewport; others from 768px. */
   art?: "tool" | "reference";
+  /** The width the page lines up on: the editor's column, a wider one with a rail, or a line of prose. */
+  width?: "column" | "wide" | "prose";
   /** The brand line, on a page that is also a home. */
   tagline?: string | undefined;
 }
-const { page, illo = null, art = "reference", tagline } = Astro.props;
+const { page, illo = null, art = "reference", width = "column", tagline } = Astro.props;
 ---
-<div class="page-hero wrap-column">
+<div class:list={["page-hero", `wrap-${width}`]}>
   <PageTop page={page} />
   <div class:list={["hero", art === "reference" && "hero-reference"]}>
     <div class="hero-text">

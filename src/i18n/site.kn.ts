@@ -77,6 +77,7 @@ export const SITE_KN: SiteStrings = {
     sources: "ಮೂಲಗಳು",
     downloads: "ಡೌನ್‌ಲೋಡ್‌ಗಳು",
     license: "ಲೈಸೆನ್ಸ್",
+    onPage: "ಈ ಪುಟದಲ್ಲಿ",
     name: "ಟೋಕನೈಸರ್",
     ratio: "ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಟೋಕನ್‌ಗೆ ಕನ್ನಡ ಟೋಕನ್‌ಗಳು",
     interval: "95% ವಿಶ್ವಾಸಾಂತರ",

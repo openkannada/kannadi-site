@@ -13,8 +13,8 @@ interface Props {
 const { page } = Astro.props;
 ---
 <Base page={page}>
-  <PageHero page={page} width="prose" />
-  <div class="wrap-prose"><div class="prose-kn">
+  <PageHero page={page} width={page.body === "contribute" ? "wide" : "prose"} />
+  <div class:list={[page.body === "contribute" ? "wrap-wide" : "wrap-prose"]}><div class="prose-kn">
     {page.body === "about" && <About lang={page.lang ?? "en"} />}
     {page.body === "brand" && <Brand lang={page.lang ?? "en"} />}
     {page.body === "press" && <Press lang={page.lang ?? "en"} />}

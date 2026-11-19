@@ -1,0 +1,283 @@
+---
+// The interest form: who you are, how you'd like to help, and consent to be contacted. While INTEREST.open is
+// false it renders with its button disabled and sends nothing.
+import { HELP_AREAS, HOURS, INTEREST, INTEREST_COPY, KANNADA } from "../content/interest.ts";
+import type { Lang } from "../i18n/core.ts";
+import { INTEREST_PATH } from "../lib/interest.ts";
+import { withBase } from "../lib/paths.ts";
+import Icon from "./Icon.astro";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const C = INTEREST_COPY[lang];
+const open = INTEREST.open && !!INTEREST.turnstileSiteKey;
+---
+<form class="interest" id="interest" novalidate data-md-skip data-open={open ? "" : undefined} data-endpoint={INTEREST_PATH} data-lang={lang} data-sending={C.sending} data-sent={C.sent} data-failed={C.failed}>
+  <div class="interest-grid">
+    <label class="field">
+      <span class="field-label">{C.fields.name}</span>
+      <input name="name" autocomplete="name" required maxlength="120" />
+    </label>
+    <label class="field">
+      <span class="field-label">{C.fields.email}</span>
+      <input name="email" type="email" autocomplete="email" required maxlength="254" />
+    </label>
+    <label class="field">
+      <span class="field-label">{C.fields.place}</span>
+      <input name="place" autocomplete="address-level2" required maxlength="120" placeholder={C.fields.placeHint} />
+    </label>
+    <label class="field">
+      <span class="field-label">{C.fields.link} <span class="field-optional">{C.fields.optional}</span></span>
+      <input name="link" type="url" inputmode="url" autocomplete="url" maxlength="300" placeholder="https://" />
+    </label>
+  </div>
+
+  <fieldset class="field areas">
+    <legend class="field-label">{C.fields.areas} <span class="field-optional">{C.fields.areasHint}</span></legend>
+    <div class="area-grid">
+      {HELP_AREAS.map((a) => (
+        <label class="area">
+          <input type="checkbox" name="areas" value={a} />
+          <span>{C.areas[a]}</span>
+          <Icon name="check" class="area-check" />
+        </label>
+      ))}
+    </div>
+  </fieldset>
+
+  <label class="field">
+    <span class="field-label">{C.fields.experience} <span class="field-optional">{C.fields.experienceHint}</span></span>
+    <textarea name="experience" rows="3" required maxlength="600"></textarea>
+  </label>
+
+  <div class="interest-grid">
+    <label class="field">
+      <span class="field-label">{C.fields.hours}</span>
+      <select name="hours" required>
+        <option value="">{C.choose}</option>
+        {HOURS.map((h) => <option value={h}>{C.hours[h]}</option>)}
+      </select>
+    </label>
+    <label class="field">
+      <span class="field-label">{C.fields.kannada}</span>
+      <select name="kannada" required>
+        <option value="">{C.choose}</option>
+        {KANNADA.map((k) => <option value={k}>{C.kannada[k]}</option>)}
+      </select>
+    </label>
+  </div>
+
+  <label class="consent">
+    <input type="checkbox" name="consent" required />
+    <span>{C.fields.consent}</span>
+  </label>
+
+  {/* Left empty by people; the Worker drops any submission that fills it. */}
+  <div class="honeypot" aria-hidden="true">
+    <label>Website <input name="website" tabindex="-1" autocomplete="off" /></label>
+  </div>
+
+  {open && <div class="cf-turnstile" data-sitekey={INTEREST.turnstileSiteKey}></div>}
+
+  <div class="interest-actions">
+    <button type="submit" class="btn btn-primary" disabled={!open}>
+      <Icon name={open ? "arrow" : "mail"} />
+      {open ? C.send : C.closed}
+    </button>
+    <p class="interest-status" role="status" aria-live="polite" set:html={open ? "" : withBase(C.closedNote)} />
+  </div>
+  <p class="interest-privacy" set:html={withBase(C.privacy)} />
+</form>
+
+<script>
+  const form = document.getElementById("interest") as HTMLFormElement | null;
+  if (form?.dataset.open !== undefined) {
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    script.async = true;
+    document.head.append(script);
+    const status = form.querySelector<HTMLElement>(".interest-status")!;
+    const button = form.querySelector<HTMLButtonElement>("button[type=submit]")!;
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!form.reportValidity()) return;
+      const data = new FormData(form);
+      const body = {
+        name: data.get("name"),
+        email: data.get("email"),
+        place: data.get("place"),
+        link: data.get("link"),
+        areas: data.getAll("areas"),
+        experience: data.get("experience"),
+        hours: data.get("hours"),
+        kannada: data.get("kannada"),
+        consent: data.get("consent") === "on",
+        website: data.get("website"),
+        turnstile: data.get("cf-turnstile-response"),
+        lang: form.dataset.lang,
+      };
+      button.disabled = true;
+      status.textContent = form.dataset.sending ?? "";
+      try {
+        const res = await fetch(form.dataset.endpoint ?? "", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+        if (!res.ok) throw new Error(String(res.status));
+        form.reset();
+        status.textContent = form.dataset.sent ?? "";
+      } catch {
+        status.innerHTML = form.dataset.failed ?? "";
+        button.disabled = false;
+      }
+    });
+  }
+</script>
+
+<style>
+  .interest {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .interest-grid {
+    display: grid;
+    gap: 1rem;
+  }
+  @media (min-width: 40rem) {
+    .interest-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .field {
+    display: grid;
+    gap: 0.375rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .field-label {
+    padding: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .field-optional {
+    color: var(--muted-foreground);
+    font-weight: 400;
+  }
+  .interest input:not([type="checkbox"]),
+  .interest select,
+  .interest textarea {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid var(--input);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--foreground);
+    font: inherit;
+    font-size: 1rem;
+    transition: border-color var(--duration-quick) var(--ease-standard), box-shadow var(--duration-quick) var(--ease-standard);
+  }
+  .interest textarea {
+    resize: vertical;
+  }
+  .interest input:not([type="checkbox"]):focus-visible,
+  .interest select:focus-visible,
+  .interest textarea:focus-visible {
+    outline: none;
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px oklch(from var(--ring) l c h / 0.25);
+  }
+  .area-grid {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+  }
+  @media (min-width: 40rem) {
+    .area-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  /* Each way to help is a chip; checked, it takes the action color and a tick. */
+  .area {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.875rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    font-size: 0.9375rem;
+    cursor: pointer;
+    transition: border-color var(--duration-quick) var(--ease-standard), background-color var(--duration-quick) var(--ease-standard);
+  }
+  .area input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .area :global(.area-check) {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-left: auto;
+    flex: none;
+    color: var(--primary);
+    opacity: 0;
+    transform: scale(0.6);
+    transition: opacity var(--duration-quick) var(--ease-standard), transform var(--duration-morph) var(--ease-spring);
+  }
+  .area:has(input:checked) {
+    border-color: oklch(from var(--primary) l c h / 0.6);
+    background: oklch(from var(--primary) l c h / 0.08);
+  }
+  .area:has(input:checked) :global(.area-check) {
+    opacity: 1;
+    transform: none;
+  }
+  .area:has(input:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+  .consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.625rem;
+    font-size: 0.9375rem;
+  }
+  .consent input {
+    width: 1.125rem;
+    height: 1.125rem;
+    margin-top: 0.25rem;
+    flex: none;
+    accent-color: var(--primary);
+  }
+  .honeypot {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+  .interest-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+  }
+  .interest-actions .btn:disabled {
+    opacity: 0.7;
+  }
+  .interest-status,
+  .interest-privacy {
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+  }
+  .interest-privacy {
+    max-width: none;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+</style>

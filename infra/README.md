@@ -60,3 +60,14 @@ The word list is served as `text/plain`, so the edge compresses it.
 The site is live but asks search engines not to index it. To launch, set `LIVE.launched` to `true` in `src/content/site.ts` in a pull request. Once merged, the next deploy drops the noindex header, runs the placeholder check before it publishes, and sends the pages to IndexNow after the live check, when `INDEXNOW.enabled` is on.
 
 Never run `wrangler login` or `wrangler logout` on my Mac: the login there belongs to another account.
+
+## The interest form
+
+The form on /contribute/ renders closed: its button says the form opens soon, the page loads no Turnstile script, and `POST /api/interest` answers 503 without reading the request. To open it, in 1 pull request:
+
+1. Create the database: `npx wrangler d1 create openkannada-interest`, then apply `migrations/0001_interest.sql` with `npx wrangler d1 migrations apply openkannada-interest --remote`.
+2. Add the binding to `wrangler.jsonc`: `"d1_databases": [{ "binding": "DB", "database_name": "openkannada-interest", "database_id": "<id>", "migrations_dir": "migrations" }]`.
+3. Create a Turnstile widget for openkannada.org in the dashboard. Put its site key in `INTEREST.turnstileSiteKey` and its secret in the Worker: `npx wrangler secret put TURNSTILE_SECRET`.
+4. Set `INTEREST.open` to `true` in `src/content/interest.ts`. That also adds `https://challenges.cloudflare.com` to the page's script and frame sources, and updates the test that keeps the form closed.
+
+Read submissions with `npx wrangler d1 execute openkannada-interest --remote --command "SELECT * FROM interest ORDER BY created_at DESC"`. To delete someone's details, `DELETE FROM interest WHERE email = '<their email>'`.

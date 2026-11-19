@@ -197,9 +197,9 @@ function ours(html: string): boolean {
  */
 function ownText(html: string): string | null {
   const doc = parseHtml(html);
-  // The parser moves the renamed <style>, a textarea, out of <head> into the body; it holds no text of ours.
+  // The parser moves the renamed <style>, a textarea, out of <head> into the body; it and comments hold no text of ours.
   const blocks = [...doc.body.childNodes].filter((n) =>
-    n.nodeType === Node.TEXT_NODE ? (n as Text).data.trim() : n.nodeType !== Node.ELEMENT_NODE || !(n as Element).hasAttribute(STYLE),
+    n.nodeType === Node.TEXT_NODE ? (n as Text).data.trim() : n.nodeType === Node.ELEMENT_NODE && !(n as Element).hasAttribute(STYLE),
   );
   const plain = (p: Element) => p.tagName === "P" && [...p.childNodes].every((n) => n.nodeType === Node.TEXT_NODE);
   if (!blocks.every((n) => n.nodeType === Node.ELEMENT_NODE && plain(n as Element))) return null;

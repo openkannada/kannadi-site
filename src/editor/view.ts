@@ -28,13 +28,16 @@ export class View {
     const band = () => this.band();
     addEventListener("scroll", band, { passive: true });
     addEventListener("resize", band);
-    addEventListener("pointerdown", () => (this.pressed = true), { capture: true, passive: true });
+    // Only a primary mouse button drags a selection; touch and pens move the caret their own way.
+    addEventListener("pointerdown", (e) => (this.pressed = e.pointerType === "mouse" && e.button === 0), { capture: true, passive: true });
     const release = () => {
       this.pressed = false;
       if (this.waiting) this.keepCaret();
     };
-    addEventListener("pointerup", release, { capture: true, passive: true });
-    addEventListener("pointercancel", release, { capture: true, passive: true });
+    // A press can end with no pointerup, as when a context menu or a drag takes over, or the window loses focus.
+    for (const type of ["pointerup", "pointercancel", "contextmenu", "dragstart", "keydown", "beforeinput", "blur"]) {
+      addEventListener(type, release, { capture: true, passive: true });
+    }
     band();
   }
 
@@ -85,12 +88,16 @@ export class View {
       if (document.activeElement !== this.editor.el) return;
       const sel = document.getSelection();
       if (!sel?.isCollapsed) return;
-      this.band();
-      const caret = this.editor.caretRect();
-      if (!caret) return;
-      const zone = this.clear();
-      if (caret.top < zone.top) scrollBy({ top: caret.top - zone.top, behavior: "instant" });
-      else if (caret.bottom > zone.bottom) scrollBy({ top: caret.bottom - zone.bottom, behavior: "instant" });
+      // A scroll can change whether the band shows, and so the clear part; 1 more pass settles it.
+      for (let pass = 0; pass < 2; pass++) {
+        this.band();
+        const caret = this.editor.caretRect();
+        if (!caret) return;
+        const zone = this.clear();
+        if (caret.top < zone.top) scrollBy({ top: caret.top - zone.top, behavior: "instant" });
+        else if (caret.bottom > zone.bottom) scrollBy({ top: caret.bottom - zone.bottom, behavior: "instant" });
+        else break;
+      }
       this.band();
     });
   }

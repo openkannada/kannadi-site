@@ -71,6 +71,11 @@ test("with the shipped list, common words, short ones and the final-a spelling c
     assert.ok(s.suggest(typed).includes(want), `${typed}: ${s.suggest(typed).join(" ")}`);
   }
   assert.ok(!s.suggest("sar").includes("ಸರ"), s.suggest("sar").join(" "));
+  // 2 letters are the start of a word: common words beat rare letters that sound the same.
+  const na = s.suggest("na");
+  assert.ok(na.includes("ನಂತರ") && !na.includes("ಙ") && !na.includes("ಞ"), na.join(" "));
+  // A whole word keeps every word that sounds the same ahead of longer forms.
+  assert.ok(s.suggest("maadu").includes("ಮಾಡು"), s.suggest("maadu").join(" "));
   // Whole words typed in full keep their best spelling first.
   for (const [typed, want] of [["namaskara", "ನಮಸ್ಕಾರ"], ["mane", "ಮನೆ"], ["beku", "ಬೇಕು"], ["bengaluru", "ಬೆಂಗಳೂರು"]]) assert.equal(s.suggest(typed)[0], want, typed);
 });

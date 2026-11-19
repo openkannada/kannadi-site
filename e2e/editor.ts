@@ -177,6 +177,19 @@ export const layout = async (page: Page): Promise<Layout> => {
       caret = box(own.height ? own : block!.getBoundingClientRect());
     } else if (sel?.rangeCount && doc.contains(sel.getRangeAt(0).endContainer)) {
       const range = sel.getRangeAt(0);
+      // The letter after the caret gives its line; a marker, measured at the start of a text in Firefox above the
+      // line, is only for an empty line.
+      const after = range.cloneRange();
+      after.collapse(false);
+      const node = after.endContainer;
+      if (node.nodeType === Node.TEXT_NODE && after.endOffset < (node as Text).length && (node as Text).data[after.endOffset] !== "\n") {
+        after.setEnd(node, after.endOffset + 1);
+        const r = after.getClientRects()[0];
+        if (r) caret = { top: r.top, bottom: r.bottom, left: r.left, right: r.left };
+      }
+    }
+    if (!caret && !prose && sel?.rangeCount && doc.contains(sel.getRangeAt(0).endContainer)) {
+      const range = sel.getRangeAt(0);
       const { endContainer, endOffset } = range;
       const marker = document.createElement("span");
       marker.textContent = "​";

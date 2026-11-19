@@ -1,7 +1,7 @@
 // The toolbar, the suggestions and the caret line never cover each other, at every width, light and dark. @layout
 import { expect, test } from "@playwright/test";
 
-import { caretOffset, docText, expectClearLayout, focusDoc, isPhone, layout, openEditor, settle } from "./editor.ts";
+import { caretAt, caretOffset, docText, expectClearLayout, focusDoc, isPhone, layout, openEditor, settle } from "./editor.ts";
 
 test.describe("@layout", () => {
   test("after a word, the first line is clear of the toolbar and the suggestions", async ({ page }, info) => {
@@ -130,6 +130,8 @@ test.describe("@layout", () => {
     await openEditor(page);
     await focusDoc(page);
     await page.keyboard.insertText(Array.from({ length: 60 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
+    // The caret starts elsewhere, so only the click can bring it to the end.
+    await caretAt(page, 0);
     await page.locator("#doc").evaluate((doc) => (doc as HTMLElement).blur());
     const sheet = (await page.locator("#sheet").boundingBox())!;
     await page.evaluate((bottom) => scrollTo(0, scrollY + bottom - innerHeight + 20), sheet.y + sheet.height);
@@ -146,6 +148,57 @@ test.describe("@layout", () => {
     expect(await caretOffset(page)).toBe((await docText(page)).length);
     expect(Math.abs((await page.evaluate(() => scrollY)) - before)).toBeLessThan(120);
     await expectClearLayout(page, info, "sheet-margin");
+    // A click in the side margin puts the caret on the line beside it.
+    const side = await page.evaluate(() => {
+      const doc = document.getElementById("doc")!.getBoundingClientRect();
+      return { x: doc.left - 12, y: (Math.max(doc.top, 120) + Math.min(doc.bottom, innerHeight)) / 2 };
+    });
+    await page.mouse.click(side.x, side.y);
+    const at = await caretOffset(page);
+    expect(at).toBeGreaterThan(0);
+    expect(at).toBeLessThan((await docText(page)).length);
+  });
+
+  test("a drag from the text that ends in the sheet's margin keeps its selection", async ({ page }) => {
+    test.skip(isPhone(page), "A mouse drag.");
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.insertText("ಒಂದು ಎರಡು ಮೂರು\nನಾಲ್ಕು");
+    const doc = (await page.locator("#doc").boundingBox())!;
+    const sheet = (await page.locator("#sheet").boundingBox())!;
+    await page.mouse.move(doc.x + 4, doc.y + 12);
+    await page.mouse.down();
+    await page.mouse.move(sheet.x + sheet.width - 8, doc.y + 12, { steps: 6 });
+    await page.mouse.up();
+    expect(await page.evaluate(() => getSelection()!.toString().length)).toBeGreaterThan(4);
+  });
+
+  test("a press that never ends, as under a context menu, stops holding the page once keys are typed", async ({ page }, info) => {
+    test.skip(isPhone(page), "A mouse button.");
+    await openEditor(page);
+    await focusDoc(page);
+    const doc = (await page.locator("#doc").boundingBox())!;
+    await page.mouse.move(doc.x + 4, doc.y + 12);
+    await page.mouse.down();
+    await page.keyboard.press("End");
+    for (let i = 0; i < 30; i++) await page.keyboard.press("Enter");
+    await expectClearLayout(page, info, "held-press-then-keys");
+    await page.mouse.up();
+  });
+
+  test("a right button held down never holds the page", async ({ page }, info) => {
+    test.skip(isPhone(page), "A mouse button.");
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.insertText(Array.from({ length: 60 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
+    await settle(page);
+    const doc = (await page.locator("#doc").boundingBox())!;
+    await page.mouse.move(doc.x + 4, Math.max(doc.y, 0) + 200);
+    await page.mouse.down({ button: "right" });
+    // The caret moves to the top of the document, far out of view, with no key typed.
+    await caretAt(page, 0);
+    await expectClearLayout(page, info, "right-button-held");
+    await page.mouse.up({ button: "right" });
   });
 
   test("clicking a line half under the toolbar brings it into view", async ({ page }, info) => {

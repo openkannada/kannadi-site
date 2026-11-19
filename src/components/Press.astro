@@ -24,12 +24,12 @@ const T = SITE_STRINGS[lang].press;
 <section aria-labelledby="logos">
   <h2 id="logos" class="icon-heading"><Icon name="image" filled class="size-6 text-primary" />{T.logos}</h2>
   <p>{T.logosIntro}</p>
-  <div class="logos">
+  <div class="logos" data-cards="logos">
     {LOGOS.map((l) => (
       <figure class="logo-card">
         <div class="logo-preview light"><img src={href(`/brand/${l.mark}-wordmark-light.svg`)} alt={fmt(T.logoLight, { name: l.name })} width={l.width} height="48" /></div>
         <div class="logo-preview dark"><img src={href(`/brand/${l.mark}-wordmark-dark.svg`)} alt={fmt(T.logoDark, { name: l.name })} width={l.width} height="48" /></div>
-        <figcaption>
+        <figcaption data-align="caption">
           <b>{l.name}</b>
           <ul class="files" role="list">
             {l.files.map((f) => <li><a class="file-link" href={href(`/brand/${l.mark}-${f}`)} download><Icon name="save" class="size-4" /><span class="sr-only">{l.name} </span>{f}</a></li>)}
@@ -43,11 +43,11 @@ const T = SITE_STRINGS[lang].press;
 
 <section aria-labelledby="colors">
   <h2 id="colors" class="icon-heading"><Icon name="palette" filled class="size-6 text-primary" />{T.colors}</h2>
-  <ul class="colors" role="list">
+  <ul class="colors" role="list" data-cards="colors">
     {COLORS.map((c) => (
       <li>
         <svg viewBox="0 0 40 40" width="40" height="40" aria-hidden="true"><rect width="40" height="40" rx="10" fill={c.hex} /></svg>
-        <span><b>{c.name}</b> <code>{c.hex}</code><br /><span class="text-muted-foreground">{c.use}</span></span>
+        <span><b data-align="name">{c.name}</b> <code>{c.hex}</code><br /><span class="text-muted-foreground">{c.use}</span></span>
       </li>
     ))}
   </ul>
@@ -65,14 +65,14 @@ const T = SITE_STRINGS[lang].press;
 
 <section aria-labelledby="people">
   <h2 id="people" class="icon-heading"><Icon name="people" filled class="size-6 text-primary" />{T.people}</h2>
-  <div class="bios">
+  <div class="bios" data-cards="bios">
     {BIOS.map((b, i) => (
       <article class="bio">
         <div class="photo"><mark class="todo">{fmt(T.photo, { name: PHOTOS[i] ?? "" })}</mark></div>
-        <h3>{b.name}</h3>
-        <p class="text-muted-foreground">{b.role}</p>
-        <p set:html={b.text} />
-        <p><a href={b.source}>{new URL(b.source).host}</a></p>
+        <h3 data-align="name">{b.name}</h3>
+        <p class="text-muted-foreground" data-align="role">{b.role}</p>
+        <p data-align="text" set:html={b.text} />
+        <p data-align="link"><a href={b.source}>{new URL(b.source).host}</a></p>
       </article>
     ))}
   </div>
@@ -156,7 +156,7 @@ const T = SITE_STRINGS[lang].press;
   }
   .colors li {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
   }
   .colors svg { flex: none; outline: 1px solid var(--border); border-radius: 10px; }
@@ -168,6 +168,10 @@ const T = SITE_STRINGS[lang].press;
     border: 1px dashed var(--border);
     border-radius: var(--radius-xl);
     text-align: center;
+  }
+  /* Bios side by side share 5 rows, so names, roles, text and links line up. */
+  @media (min-width: 40rem) {
+    .bio { display: grid; grid-row: span 5; grid-template-rows: subgrid; row-gap: 0; align-items: start; }
   }
   .bio h3 { margin-bottom: 0; }
   .bio h3 + p { margin-top: 0; }

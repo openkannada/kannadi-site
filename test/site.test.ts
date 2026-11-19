@@ -3,11 +3,15 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
+import { ABOUT } from "../src/content/about.ts";
+import { HOME_COPY } from "../src/content/home.ts";
+import { STORY } from "../src/content/story.ts";
 import { ALL_PAGES, EDITOR, HOME, HOMES, NAV, PAGES, inLanguage, isHome, published } from "../src/content/pages.ts";
 import { pagePath, siteUrl } from "../src/content/site.ts";
 import { llmsFull, llmsIndex, markdownPath, mirror, readPage, robots, sitemap } from "../src/lib/agent-text.ts";
 import { absolute, graphemes, jsonLd, plainText, scriptJson } from "../src/lib/seo.ts";
 
+const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
 const types = (graph) => graph["@graph"].map((n) => n["@type"]);
 
 test("every page has the structured data the strategy asks for", () => {
@@ -86,21 +90,21 @@ test("project pages say what each tool does, its license and where to get it, wi
     ["MILE lines from IISc, 600", "2.8%", "3.8%"],
   ], "the v0.2 results as released, and no other");
   assert.doesNotMatch(text("ocr"), /dots/i);
-  const BRIEF = ["3,712", "13,887", "10,654", "20.0%", "45.1%", "1.6%", "21.1%", "2.2", "22", "100", "27", "28", "25", "24", "400", "1876", "1894", "20", "7.6%", "12.4%", "22.7%", "30.1%", "60", "6.2%", "7.5%", "10", "0.2", "4", "1", "2"];
-  const figures = (html) => plainText(html).replace(/15919|ODbL-1\.0|Apache-2\.0|BY-SA 4\.0|License 1\.0/g, "").match(/\d[\d,.]*\d%?|\d%?/g) ?? [];
+  const BRIEF = ["3,798", "13,887", "10,827", "21.7%", "47.8%", "1.6%", "21.6%", "86", "2.2", "22", "100", "27", "28", "25", "24", "400", "1876", "1894", "20", "7.6%", "12.4%", "22.7%", "30.1%", "60", "6.2%", "7.5%", "10", "0.2", "4", "1", "2"];
+  const figures = (html) => plainText(html).replace(/15919|ODbL-1\.0|Apache-2\.0|BY(?:-SA)? 4\.0|License 1\.0/g, "").match(/\d[\d,.]*\d%?|\d%?/g) ?? [];
   const CREDIT = 'Contains information from Alar by V. Krishna (<a href="https://alar.ink">https://alar.ink</a>), made available under the Open Database License 1.0.';
   for (const slug of ["dictionary", "kn/dictionary"]) {
     const page = ALL_PAGES.find((p) => p.slug === slug);
     const section = (id) => page.sections.find((s) => s.id === id);
     for (const n of figures(JSON.stringify(page.sections) + page.description + page.intro)) assert.ok(BRIEF.includes(n), `${slug} shows ${n}, a figure the brief does not give`);
-    assert.deepEqual(section("result").stats.map((s) => s.value), ["3,712", "13,887", "45.1%"], `${slug} stats`);
-    assert.deepEqual(figures(section("result").paragraphs[0]), ["20.0%", "45.1%", "1.6%", "21.1%"], `${slug}: running words exact, with forms, then distinct`);
+    assert.deepEqual(section("result").stats.map((s) => s.value), ["47.8%", "3,798", "13,887"], `${slug} stats`);
+    assert.equal(section("result").paragraphs, undefined, `${slug}: the result is the stat cards, led by 47.8%`);
+    assert.deepEqual(figures(section("method").paragraphs[0]).filter((n) => n.endsWith("%")), ["21.7%", "1.6%", "21.6%"], `${slug}: running words exact, then distinct exact and with forms, in the method`);
     assert.deepEqual(figures(section("limits").items[0]).filter((n) => n.length === 2), ["27", "28", "25", "24"], `${slug}: judged fine, then wrong`);
     assert.deepEqual(figures(section("next").items[2]).filter((n) => n.endsWith("%")), ["7.6%", "12.4%", "22.7%", "30.1%"], `${slug}: Ziegler ours then stock, Kittel ours then stock`);
     assert.deepEqual(figures(section("next").items[3]).filter((n) => n.endsWith("%")), ["6.2%", "7.5%"], `${slug}: headwords, Ziegler then Kittel`);
-    assert.ok(figures(section("method").paragraphs[0]).includes("10,654"), `${slug} lacks the searched words`);
+    assert.ok(figures(section("method").paragraphs[0]).includes("10,827"), `${slug} lacks the searched words`);
     assert.equal(section("license").items.at(-1), CREDIT, `${slug}: the Alar credit, word for word`);
-    assert.ok(page.description.includes("3,712"), `${slug} description`);
     assert.equal(section("downloads").paragraphs.length, 1, `${slug}: downloads stay coming soon until the dictionary is hosted`);
   }
   for (const slug of ["fonts"]) assert.doesNotMatch(text(slug).replace(/U\+[0-9A-F]{4}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 |\d\.\d{3}|SHA-256|Article 1\b|\b100 to 900\b|"400"/g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
@@ -325,16 +329,14 @@ test("a Kannada page's structured data is in Kannada and its trail starts at the
 });
 
 test("the people of Open Kannada carry a role label, and no page text ranks them as founders", async () => {
-  const { ABOUT } = await import("../src/content/about.ts");
   const { SITE_STRINGS } = await import("../src/i18n/site.ts");
   assert.deepEqual(ABOUT.en.people.map((p) => p.role), ["Founding member", "Founding member"]);
-  for (const p of [...ABOUT.en.people, ...ABOUT.kn.people]) assert.deepEqual(Object.keys(p).sort(), ["name", "role", "site", "url"]);
+  for (const p of [...ABOUT.en.people, ...ABOUT.kn.people]) assert.deepEqual(Object.keys(p).sort(), ["alt", "name", "photo", "role", "site", "url"]);
   const shown = [JSON.stringify(ABOUT.en), JSON.stringify(SITE_STRINGS.en)].join("\n");
   assert.doesNotMatch(shown.replace(/founders@luminik\.io/g, ""), /co-founder|\bfounded\b|>Founders</i);
 });
 
 test("the code is MIT OR Apache-2.0 from The Open Kannada Authors, and every page says who holds the names", () => {
-  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
   assert.equal(JSON.parse(read("package.json")).license, "MIT OR Apache-2.0");
   assert.match(read("LICENSE-MIT"), /Copyright \(c\) 2026 The Open Kannada Authors/);
   assert.match(read("LICENSE-APACHE"), /Apache License\s+Version 2\.0/);
@@ -384,7 +386,6 @@ test("voice typing says, at the microphone, that it goes through the browser's s
 });
 
 test("the site names kannadi's license as MIT OR Apache-2.0, and never as the MIT license alone", () => {
-  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
   const files = ["src/content/pages.ts", "src/content/press.ts", "src/integrations/agent-files.ts", "src/i18n/site.en.ts", "src/i18n/site.kn.ts"];
   for (const f of files) assert.doesNotMatch(read(f), /MIT license|MIT ಲೈಸೆನ್ಸ್/, f);
   assert.match(read("src/content/press.ts"), /open source under MIT OR Apache-2\.0/);
@@ -421,4 +422,53 @@ test("the editor and the Nudi converter say how to convert a folder with the kan
     assert.ok(answer.includes("brew install openkannada/tap/kannadi"), `${slug} lacks Homebrew`);
     assert.ok(answer.includes("--layout akruti"), `${slug} does not say Akruti text files need --layout akruti`);
   }
+});
+
+test("a page's description and intro carry at most 1 headline figure, and leave methods and baselines to the sections below", () => {
+  const leads = [
+    ...ALL_PAGES.flatMap((p) => [[`${p.slug} description`, p.description], [`${p.slug} intro`, p.intro]]),
+    ...Object.values(HOME_COPY).flatMap((h) => h.tools.items.map((c) => [`home card ${c.slug}`, c.text])),
+  ];
+  for (const [where, text] of leads) {
+    const figures = plainText(text).match(/\d+(?:\.\d+)?%|\d{1,3}(?:,\d{3})+/g) ?? [];
+    assert.ok(figures.length <= 1, `${where} has ${figures.length} headline figures: ${figures.join(", ")}`);
+    assert.doesNotMatch(text, /held[- ]out|measured|against \d|segments|benchmark of|Fedora|hunspell-kn|word pages|ಹೊರಗಿಟ್ಟ|ಅಳೆದ|ಮಾನದಂಡದೊಂದಿಗೆ|ಮಾನದಂಡವೂ|ಪದ ಪುಟಗಳ/i, `${where} gives a method or baseline`);
+  }
+});
+
+test("the copy says where our fixes go, with no 'where they belong' or 'upstream'", () => {
+  const copy = JSON.stringify([ALL_PAGES, ABOUT, HOME_COPY, STORY]) + read("src/integrations/agent-files.ts");
+  assert.doesNotMatch(copy, /where (?:they|it) belongs?|upstream/i);
+  assert.match(STORY.en.join(" "), /send our fixes back to the fonts and programs/);
+  assert.doesNotMatch(read("src/integrations/agent-files.ts"), /Fonts[^.]*coming soon/, "llms.txt says the fonts are released");
+});
+
+test("each founding member has a portrait, and the dedication our family photo, in AVIF and WebP with alt text, all rights reserved", () => {
+  const files = readdirSync(new URL("../src/assets/people/", import.meta.url)).sort();
+  assert.deepEqual(files, ["neha-160.avif", "neha-160.webp", "neha-240.avif", "neha-240.webp", "prasad-160.avif", "prasad-160.webp", "prasad-240.avif", "prasad-240.webp"]);
+  for (const lang of ["en", "kn"]) {
+    assert.deepEqual(ABOUT[lang].people.map((p) => p.photo), ["prasad", "neha"], lang);
+    for (const p of ABOUT[lang].people) assert.ok(p.alt.includes(p.name), `${lang}: the alt text of ${p.name} names them`);
+  }
+  const about = read("src/components/About.astro");
+  assert.match(about, /<source type="image\/avif"/);
+  assert.match(about, /alt=\{p\.alt\}/);
+  const blocks = read("REUSE.toml").split("[[annotations]]").slice(1);
+  const at = blocks.findIndex((b) => b.includes('path = "src/assets/people/**"'));
+  assert.ok(at >= 0 && /SPDX-License-Identifier = "LicenseRef-AllRightsReserved"/.test(blocks[at]), "the photos are all rights reserved");
+  for (const later of blocks.slice(at + 1)) assert.doesNotMatch(later, /"\*\*"|src\/assets\/\*\*|src\/\*\*/, "no later annotation covers the photos, since the last match wins");
+  assert.match(about, /<picture data-md-skip>/, "the markdown mirror leaves the photos out");
+  const family = readdirSync(new URL("../src/assets/family/", import.meta.url)).sort();
+  assert.deepEqual(family, [480, 720, 960, 1200].flatMap((w) => [`family-2023-${w}.avif`, `family-2023-${w}.webp`]).sort());
+  assert.equal(ABOUT.en.family.caption, "Subramanya, Veena, Pramodini, me and Neha.");
+  assert.equal(ABOUT.kn.family.caption, "ಸುಬ್ರಹ್ಮಣ್ಯ, ವೀಣಾ, ಪ್ರಮೋದಿನಿ, ನಾನು ಮತ್ತು ನೇಹಾ.");
+  for (const lang of ["en", "kn"]) assert.match(ABOUT[lang].family.alt, /5/, `${lang}: the family photo has alt text that says who is in it`);
+  assert.match(about, /srcset=\{widths\(FAMILY\.webp\)\} sizes=\{FAMILY_SIZES\} alt=\{ABOUT\.family\.alt\} width=\{[^}]+\} height=\{[^}]+\} loading="lazy"/, "the family photo is lazy, sized and has alt text");
+  assert.equal((about.match(/<picture data-md-skip>/g) ?? []).length, 2, "both pictures stay out of the mirror");
+  assert.match(about, /srcset=\{widths\(FAMILY\.avif\)\} sizes=\{FAMILY_SIZES\}/);
+  const fam = blocks.findIndex((b) => b.includes('path = "src/assets/family/**"'));
+  assert.ok(fam >= 0 && /SPDX-License-Identifier = "LicenseRef-AllRightsReserved"/.test(blocks[fam]), "the family photo is all rights reserved");
+  for (const later of blocks.slice(fam + 1)) assert.doesNotMatch(later, /"\*\*"|src\/assets\/\*\*|src\/\*\*/, "no later annotation covers the family photo");
+  assert.match(read("src/i18n/site.en.ts"), /Text and the images we make: CC BY 4\.0\./);
+  assert.match(read("LICENSES/LicenseRef-AllRightsReserved.txt"), /^All rights reserved\./);
 });

@@ -11,10 +11,13 @@ interface Props {
   page: InfoPage;
 }
 const { page } = Astro.props;
+// About has cards, photos and a pull-out, so it takes the column; the other info pages are 1 line of prose wide.
+const WIDTH = { about: "column", contribute: "prose", press: "prose", brand: "prose" } as const;
+const width = WIDTH[page.body];
 ---
 <Base page={page}>
-  <PageHero page={page} width="prose" />
-  <div class="wrap-prose"><div class="prose-kn">
+  <PageHero page={page} width={width} />
+  <div class={`wrap-${width}`}><div class="prose-kn">
     {page.body === "about" && <About lang={page.lang ?? "en"} />}
     {page.body === "brand" && <Brand lang={page.lang ?? "en"} />}
     {page.body === "press" && <Press lang={page.lang ?? "en"} />}

@@ -178,6 +178,56 @@ test.describe("text with line breaks", () => {
   });
 });
 
+test.describe("phone keyboard compositions", () => {
+  // What Gboard and similar keyboards send: a composition growing letter by letter, then the word committed whole.
+  test.skip(({ browserName }) => browserName !== "chromium", "Compositions are driven through the Chrome DevTools Protocol.");
+
+  const compose = async (page: import("@playwright/test").Page, steps: ({ compose: string; from?: number; to?: number } | { commit: string })[]) => {
+    const cdp = await page.context().newCDPSession(page);
+    for (const step of steps) {
+      if ("commit" in step) await cdp.send("Input.insertText", { text: step.commit });
+      else {
+        const replace = step.from === undefined || step.to === undefined ? {} : { replacementStart: step.from, replacementEnd: step.to };
+        await cdp.send("Input.imeSetComposition", { text: step.compose, selectionStart: step.compose.length, selectionEnd: step.compose.length, ...replace });
+      }
+    }
+  };
+  const growing = (word: string) => [...word].map((_, i) => ({ compose: word.slice(0, i + 1) }));
+
+  for (const [word, want] of [["hello", /^[\u0C80-\u0CFF]+ $/u], ["namaskara", /^ನಮಸ್ಕಾರ $/u]] as const) {
+    test(`english: "${word}" composed letter by letter, then committed with a space`, async ({ page }) => {
+      await openEditor(page, { mode: "english" });
+      await focusDoc(page);
+      await compose(page, [...growing(word), { commit: `${word} ` }]);
+      await expect.poll(async () => (await docText(page)).replace(/\u00a0/g, " ")).toMatch(want);
+    });
+  }
+
+  test("english: a first letter sent alone, then the rest composed, stays 1 word", async ({ page }) => {
+    await openEditor(page, { mode: "english" });
+    await focusDoc(page);
+    await compose(page, [{ commit: "n" }, ...growing("amaskara"), { commit: "amaskara " }]);
+    await expect.poll(async () => (await docText(page)).replace(/\u00a0/g, " ")).toBe("ನಮಸ್ಕಾರ ");
+  });
+
+  test("english: composed words after Select all and Backspace convert", async ({ page }) => {
+    await openEditor(page, { mode: "english" });
+    await focusDoc(page);
+    await page.keyboard.type("abc ");
+    await page.keyboard.press("ControlOrMeta+a");
+    await page.keyboard.press("Backspace");
+    await compose(page, [...growing("namaskara"), { commit: "namaskara " }]);
+    await expect.poll(() => savedText(page)).toBe("ನಮಸ್ಕಾರ ");
+  });
+
+  test("english: a word composed after a word and a space converts", async ({ page }) => {
+    await openEditor(page, { mode: "english" });
+    await focusDoc(page);
+    await compose(page, [...growing("hi"), { commit: "hi " }, ...growing("kannada"), { commit: "kannada " }]);
+    await expect.poll(() => savedText(page)).toBe("ಹಿ ಕನ್ನಡ ");
+  });
+});
+
 test.describe("Kannada keys", () => {
   test("Kannada letters go in as typed and Latin stays Latin", async ({ page }) => {
     await openEditor(page);

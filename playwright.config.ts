@@ -2,6 +2,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = 4321;
+/** EDITOR_URL runs the tests against a deployed site, such as https://openkannada.org, instead of the local build. */
+const deployed = process.env.EDITOR_URL?.replace(/\/$/, "");
 const desktop = (width: number) => ({ viewport: { width, height: 900 } });
 /** Runs on every project: the layout checks. The rest runs on 1 desktop size per engine and on phones. */
 const LAYOUT = /@layout/;
@@ -15,12 +17,12 @@ export default defineConfig({
   reporter: process.env.CI ? [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]] : "list",
   outputDir: "test-results",
   use: {
-    baseURL: `http://127.0.0.1:${PORT}`,
+    baseURL: deployed ?? `http://127.0.0.1:${PORT}`,
     screenshot: "only-on-failure",
     trace: "off",
     video: "off",
   },
-  webServer: { command: `node scripts/serve.ts dist ${PORT}`, url: `http://127.0.0.1:${PORT}/editor/`, reuseExistingServer: !process.env.CI },
+  ...(deployed ? {} : { webServer: { command: `node scripts/serve.ts dist ${PORT}`, url: `http://127.0.0.1:${PORT}/editor/`, reuseExistingServer: !process.env.CI } }),
   projects: [
     { name: "chromium-1280", use: { ...devices["Desktop Chrome"], ...desktop(1280) } },
     { name: "firefox-1280", use: { ...devices["Desktop Firefox"], ...desktop(1280) } },

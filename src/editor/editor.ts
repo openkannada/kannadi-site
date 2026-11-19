@@ -318,21 +318,33 @@ export class DocEditor {
   caretRect(): DOMRect | null {
     const sel = document.getSelection();
     if (!sel?.rangeCount || !sel.focusNode || !this.el.contains(sel.focusNode)) return null;
-    const text = this.text;
-    const at = Math.min(this.offsetOf(sel.focusNode, sel.focusOffset), text.length);
-    const next = at < text.length && text[at] !== "\n" ? this.range(at, at + 1).getClientRects()[0] : undefined;
-    if (next) return new DOMRect(next.left, next.top, 0, next.height);
-    const prev = at > 0 && text[at - 1] !== "\n" ? [...this.range(at - 1, at).getClientRects()].at(-1) : undefined;
-    if (prev) return new DOMRect(prev.right, prev.top, 0, prev.height);
+    // Read only: a keyboard may be composing, and changing the DOM under it cuts the word in 2.
+    const node = this.el.firstChild;
+    const box = this.el.getBoundingClientRect();
     const style = getComputedStyle(this.el);
+    const left = box.left + parseFloat(style.paddingLeft);
     const size = parseFloat(style.fontSize);
     const line = style.lineHeight.endsWith("px") ? parseFloat(style.lineHeight) : (parseFloat(style.lineHeight) || 1.6) * size;
+    if (!node || node.nodeType !== Node.TEXT_NODE || this.el.childNodes.length > 1) {
+      const own = sel.getRangeAt(0).getBoundingClientRect();
+      return own.height ? own : new DOMRect(left, box.top + parseFloat(style.paddingTop) + (line - size) / 2, 0, size);
+    }
+    const text = (node as Text).data;
+    const span = (from: number, to: number) => {
+      const range = document.createRange();
+      range.setStart(node, Math.min(from, text.length));
+      range.setEnd(node, Math.min(to, text.length));
+      return range.getClientRects();
+    };
+    const at = Math.min(this.offsetOf(sel.focusNode, sel.focusOffset), text.length);
+    const next = at < text.length && text[at] !== "\n" ? span(at, at + 1)[0] : undefined;
+    if (next) return new DOMRect(next.left, next.top, 0, next.height);
+    const prev = at > 0 && text[at - 1] !== "\n" ? [...span(at - 1, at)].at(-1) : undefined;
+    if (prev) return new DOMRect(prev.right, prev.top, 0, prev.height);
     let from = at;
     while (from > 0 && text[from - 1] === "\n") from--;
     const breaks = at - from;
-    const box = this.el.getBoundingClientRect();
-    const left = box.left + parseFloat(style.paddingLeft);
-    const above = from > 0 ? [...this.range(from - 1, from).getClientRects()].at(-1) : undefined;
+    const above = from > 0 ? [...span(from - 1, from)].at(-1) : undefined;
     if (above) return new DOMRect(left, above.top + breaks * line, 0, above.height);
     return new DOMRect(left, box.top + parseFloat(style.paddingTop) + breaks * line + (line - size) / 2, 0, size);
   }

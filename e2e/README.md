@@ -10,6 +10,7 @@ npx playwright test
 ```
 
 `npx playwright test --project=webkit-390` runs 1 project, and `-g "til"` the tests whose names match.
+`EDITOR_URL=https://openkannada.org npx playwright test` runs them against the live site.
 
 ## What runs where
 

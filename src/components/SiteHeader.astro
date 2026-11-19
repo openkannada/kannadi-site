@@ -217,8 +217,16 @@ const themeLabels = JSON.stringify({ ...T.theme });
     .header-end {
       margin: 0;
     }
+    .brand {
+      justify-self: start;
+    }
+    .header-end {
+      justify-self: end;
+    }
+    /* The capsule centers on the page, whatever the widths on either side. */
     .site-header {
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
       gap: 1rem;
     }
   }

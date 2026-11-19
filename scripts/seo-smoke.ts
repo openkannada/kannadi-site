@@ -5,7 +5,7 @@ import { join, relative, sep } from "node:path";
 
 import { parseHTML } from "linkedom";
 
-import { PAGES, isHome, type Page } from "../src/content/pages.ts";
+import { PAGES, isDraft, isHome, type Page } from "../src/content/pages.ts";
 import { AUTHOR, LIVE, pagePath } from "../src/content/site.ts";
 import { fmt } from "../src/i18n/core.ts";
 import { SITE_STRINGS } from "../src/i18n/site.ts";
@@ -32,7 +32,7 @@ function pngSize(path: string): [number, number] | null {
   const b = readFileSync(path);
   return b.toString("latin1", 1, 4) === "PNG" ? [b.readUInt32BE(16), b.readUInt32BE(20)] : null;
 }
-const BY_KIND: Record<Page["kind"], string[]> = { tool: ["WebApplication", "HowTo"], reference: ["LearningResource"], info: ["Organization"], home: ["Organization", "WebSite"], project: [] };
+const BY_KIND: Record<Page["kind"], string[]> = { tool: ["WebApplication", "HowTo"], reference: ["LearningResource"], info: ["Organization"], home: ["Organization", "WebSite"], project: [], scorecard: ["Dataset"] };
 
 /** The dist file a site link points at, or null for links that leave the site. */
 function target(href: string, from: string): string | null {
@@ -114,7 +114,7 @@ for (const page of PAGES) {
   if (document.documentElement.getAttribute("lang") !== (page.lang ?? "en")) fail(where, `html lang is ${document.documentElement.getAttribute("lang")}`);
   const card = file(`/og/${page.slug || "home"}.png`);
   // A draft is read in a local build only; its card is made when it is published.
-  if (!page.needsReview && (!existsSync(card) || pngSize(card)?.join("x") !== "1200x630")) fail(where, "Open Graph card is not a 1200x630 PNG");
+  if (!isDraft(page) && (!existsSync(card) || pngSize(card)?.join("x") !== "1200x630")) fail(where, "Open Graph card is not a 1200x630 PNG");
   if (!og("image:alt") && og("image")) fail(where, "og:image has no alt text");
   for (const img of document.querySelectorAll("img")) {
     const src = img.getAttribute("src") ?? "";
@@ -126,7 +126,7 @@ for (const page of PAGES) {
   }
   hreflangs.set(path, [...document.querySelectorAll("link[rel=alternate][hreflang]")].map((l) => l.getAttribute("href") ?? ""));
   // A draft gets its fingerprint when it is published; a local KANNADA_DRAFTS=1 build only reads it.
-  if (!page.needsReview) hashes.push({ path, hash: contentHash(readPage(html, path).markdown) });
+  if (!isDraft(page)) hashes.push({ path, hash: contentHash(readPage(html, path).markdown) });
 
   const md = document.querySelector('link[rel="alternate"][type="text/markdown"]')?.getAttribute("href");
   const mdTarget = md ? target(md, path) : null;

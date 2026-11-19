@@ -36,6 +36,11 @@
   --mark-unknown-line: light-dark(oklch(0.53 0.2 20), oklch(0.75 0.15 20));
   --mark-malformed: light-dark(oklch(0.84 0.15 80 / 0.38), oklch(0.72 0.14 75 / 0.3));
   --mark-malformed-line: light-dark(oklch(0.56 0.13 60), oklch(0.82 0.13 80));
+  --score-1: light-dark(oklch(0.741 0.110 192), oklch(0.423 0.073 192));
+  --score-2: light-dark(oklch(0.652 0.112 192), oklch(0.520 0.089 192));
+  --score-3: light-dark(oklch(0.563 0.097 192), oklch(0.621 0.105 192));
+  --score-4: light-dark(oklch(0.474 0.081 192), oklch(0.719 0.110 192));
+  --score-5: light-dark(oklch(0.383 0.066 193), oklch(0.820 0.100 192));
 
   /* shadow */
   --shadow-float: 0 1px 1px -0.5px oklch(0.2 0.03 268 / 0.08), 0 6px 12px -4px oklch(0.2 0.03 268 / 0.12), 0 18px 40px -12px light-dark(oklch(0.2 0.04 268 / 0.22), oklch(0 0 0 / 0.6));

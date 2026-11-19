@@ -1,0 +1,1469 @@
+{
+ "scorecard": "Kannada readiness scorecard",
+ "edition": 0,
+ "quarter": "2026-Q4",
+ "generated_at": "2026-11-19T16:56:15Z",
+ "scale": "0 to 100 per task: 100 means the task is as easy in Kannada as in English.",
+ "bands": [
+  {
+   "low": 0,
+   "label": "Far behind",
+   "light": "#40c1bd",
+   "dark": "#005a58"
+  },
+  {
+   "low": 25,
+   "label": "Behind",
+   "light": "#00a5a1",
+   "dark": "#007976"
+  },
+  {
+   "low": 50,
+   "label": "Partway",
+   "light": "#008784",
+   "dark": "#0a9a96"
+  },
+  {
+   "low": 75,
+   "label": "Close",
+   "light": "#006a68",
+   "dark": "#37bab6"
+  },
+  {
+   "low": 95,
+   "label": "At parity",
+   "light": "#004e4d",
+   "dark": "#6dd9d5"
+  }
+ ],
+ "index": {
+  "score": 35,
+  "band": "Behind",
+  "tasks": 12,
+  "method": "Mean of the task scores."
+ },
+ "inputs": {
+  "repos": {
+   "ocr_benchmark": {
+    "repo": "openkannada/kannada-ocr-benchmark",
+    "ref": "fceb56b893e9e9ab56a66517ae342c25d2854c8c"
+   },
+   "llm_bench": {
+    "repo": "openkannada/kannada-llm-bench",
+    "ref": "29283392dccfc54544cabf0bdad8095764cb49ee"
+   },
+   "kannada_spell": {
+    "repo": "openkannada/kannada-spell",
+    "ref": "9366c23f32324d0ac631e1c61276d237a4151336"
+   },
+   "kannadi": {
+    "repo": "openkannada/kannadi",
+    "ref": "cb39f43ffb36e2f02df9531d07cd4f8b30a76c15"
+   }
+  },
+  "downloads": {
+   "hunspell_kn_aff": {
+    "url": "https://raw.githubusercontent.com/LibreOffice/dictionaries/c0865a85eb67dc377f2cf8e8fe2c4fa9e53f0dcb/kn_IN/kn_IN.aff",
+    "sha256": "fb798ef1d1a23718694c03793fd5b74cfc41c2009f242f0394d8764501d0935a"
+   },
+   "hunspell_kn_dic": {
+    "url": "https://raw.githubusercontent.com/LibreOffice/dictionaries/c0865a85eb67dc377f2cf8e8fe2c4fa9e53f0dcb/kn_IN/kn_IN.dic",
+    "sha256": "9c02e401a4aa26bec76bca045af4a58d322c371a4267e8f1b062450001b29f51"
+   },
+   "hunspell_en_aff": {
+    "url": "https://raw.githubusercontent.com/LibreOffice/dictionaries/c0865a85eb67dc377f2cf8e8fe2c4fa9e53f0dcb/en/en_US.aff",
+    "sha256": "e746c882dd6f303c2c46e7452804b9201115a6942cfeb15f18f8edf774d2e24e"
+   },
+   "hunspell_en_dic": {
+    "url": "https://raw.githubusercontent.com/LibreOffice/dictionaries/c0865a85eb67dc377f2cf8e8fe2c4fa9e53f0dcb/en/en_US.dic",
+    "sha256": "f0b1a234bd178bdd01875b2a392a9647f888b8fe879f79c52aae62c2759b3647"
+   },
+   "wmt24pp": {
+    "url": "https://huggingface.co/datasets/google/wmt24pp/resolve/fd7405c06494bc66a57b25f55d217a72f96e60dc/en-kn_IN.jsonl",
+    "sha256": "b5ac7ca05c4f6fc30aa8a0c37490ae0786d954969d4152fbd19f1e41e4f5c757"
+   },
+   "tesseract_eng": {
+    "url": "https://github.com/tesseract-ocr/tessdata_best/raw/e12c65a915945e4c28e237a9b52bc4a8f39a0cec/eng.traineddata",
+    "sha256": "8280aed0782fe27257a68ea10fe7ef324ca0f8d85bd2fd145d1c2b560bcb66ba"
+   },
+   "tesseract_kan": {
+    "url": "https://github.com/tesseract-ocr/tessdata_best/raw/9ddc24e750eec0994223a9edc3fcb434a2244f3b/kan.traineddata",
+    "sha256": "6f195e0f33f0ec5118c97eff777ed70ac453d67c32bf06a43f79dab875f8ebfe"
+   },
+   "tesseract_kan_open_kannada": {
+    "url": "https://github.com/openkannada/kannada-ocr/releases/download/v0.2.0/kan_ft_ofl3.traineddata",
+    "sha256": "a4fc2be41bda405b792dcdf50c9a9ec84a64f241e997a52dedf108d93ee5a922"
+   }
+  },
+  "live": [
+   "https://api.cognitive.microsofttranslator.com/languages?api-version=3.0&scope=translation",
+   "https://commonvoice.mozilla.org/api/v1/stats/languages",
+   "https://firefox.settings.services.mozilla.com/v1/buckets/main/collections/translations-models/records",
+   "https://fonts.google.com/metadata/fonts",
+   "https://l10n.gnome.org/releases/gnome-51/",
+   "https://pontoon.mozilla.org/api/v2/kn/firefox/",
+   "https://translations.documentfoundation.org/api/projects/libo_ui-master/languages/"
+  ]
+ },
+ "tasks": [
+  {
+   "id": "typing",
+   "title": "Type a letter on a laptop and a phone",
+   "question": "Is a Kannada keyboard built in, and is it the KGP layout that Karnataka's typists learn?",
+   "score": 58,
+   "kannada": {
+    "value": 0.5833,
+    "text": "6 of 6 built in, 1 with KGP"
+   },
+   "english": {
+    "value": 1.0,
+    "text": "6 of 6 built in, all with QWERTY"
+   },
+   "line": "All 6 platforms have a Kannada keyboard built in; only Ubuntu ships the KGP (Nudi) layout.",
+   "basis": "documented",
+   "method": "6 platforms: Windows 11, macOS, ChromeOS, Ubuntu, Android with Gboard, iOS. Half the score for any built-in Kannada keyboard, half for the KGP layout, the standard taught for Nudi.",
+   "sources": [
+    {
+     "label": "Windows 11",
+     "url": "https://learn.microsoft.com/en-us/globalization/input/kannada-ime",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "ChromeOS",
+     "url": "https://chromium.googlesource.com/chromium/src/+/refs/heads/main/ui/base/ime/ash/input_method_util.cc",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Ubuntu desktop (GNOME)",
+     "url": "https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/raw/743d4eea0f9b51d352e20736993962d7b45d52e8/symbols/in",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Android (Gboard)",
+     "url": "https://support.google.com/gboard/answer/6380730?hl=en&co=GENIE.Platform%3DAndroid",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "iOS/iPadOS 27",
+     "url": "https://www.apple.com/ios/feature-availability/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "macOS 27",
+     "url": "",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Windows 11",
+     "url": "https://learn.microsoft.com/en-us/globalization/input/kannada-ime",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "macOS 27",
+     "url": "",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "ChromeOS",
+     "url": "https://chromium.googlesource.com/chromium/src/+/refs/heads/main/ui/base/ime/ash/input_method_util.cc",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Ubuntu desktop (GNOME)",
+     "url": "https://gitlab.freedesktop.org/xkeyboard-config/xkeyboard-config/-/raw/743d4eea0f9b51d352e20736993962d7b45d52e8/symbols/in",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Android (Gboard)",
+     "url": "https://support.google.com/gboard/answer/6380730?hl=en&co=GENIE.Platform%3DAndroid",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "iOS/iPadOS 27",
+     "url": "https://www.apple.com/ios/feature-availability/",
+     "ref": "2026-11-19"
+    }
+   ],
+   "notes": [
+    "Half the score rests on the KGP layout: Karnataka's government offices type on it with Nudi. Phones ship InScript and phonetic layouts instead.",
+    "Typing speed with each layout is not measured yet. Method: keystrokes per sentence on the same parallel text, Kannada InScript and phonetic against English QWERTY."
+   ],
+   "with_open_kannada": "",
+   "details": {
+    "keyboard": [
+     {
+      "platform": "Windows 11",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Kannada keyboard layout KLID 0000044B (learn.microsoft.com/en-us/globalization/windows-keyboard-layouts lists Kannada). Official KGP/Nudi not mentioned; IME is phonetic plus Kannada layout. English implied by 101-105 key keyboard base."
+     },
+     {
+      "platform": "ChromeOS",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Kannada Phonetic is a built-in ChromeOS input method (Chromium source; Google's help page lists no layouts). No InScript or KGP found."
+     },
+     {
+      "platform": "Ubuntu desktop (GNOME)",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "xkeyboard-config ships the Kannada and Kannada (KaGaPa, phonetic) layouts; IBus with m17n-db adds kn-inscript, kn-itrans and kn-kgp."
+     },
+     {
+      "platform": "Android (Gboard)",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Gboard list has Kannada (Kannada script), Kannada Latin, Kannada Transliteration. No KGP/Nudi named."
+     },
+     {
+      "platform": "iOS/iPadOS 27",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "QuickType Keyboard Language Support lists Kannada (Alphabetic), (InScript), (Transliteration). No KGP/Nudi."
+     },
+     {
+      "platform": "macOS 27",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Checked with scripts/macos-probe.swift on macOS 27.0.1: Kannada, Kannada QWERTY and Kannada transliteration are installed; none is KGP."
+     }
+    ],
+    "kgp": [
+     {
+      "platform": "Windows 11",
+      "kannada": "no",
+      "english": "yes",
+      "note": "The Kannada IME and the Kannada layout; neither is KGP. English counterpart: QWERTY, built in everywhere."
+     },
+     {
+      "platform": "macOS 27",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Kannada, Kannada QWERTY and transliteration are installed; none is KGP. English counterpart: QWERTY, built in everywhere."
+     },
+     {
+      "platform": "ChromeOS",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Kannada Phonetic only. English counterpart: QWERTY, built in everywhere."
+     },
+     {
+      "platform": "Ubuntu desktop (GNOME)",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "xkeyboard-config, the keyboard data every GNOME desktop ships, includes Kannada (KaGaPa, phonetic). m17n-db adds kn-kgp for IBus. English counterpart: QWERTY, built in everywhere."
+     },
+     {
+      "platform": "Android (Gboard)",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Kannada, Kannada Latin and transliteration; no KGP. English counterpart: QWERTY, built in everywhere."
+     },
+     {
+      "platform": "iOS/iPadOS 27",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Alphabetic, InScript and transliteration; no KGP. English counterpart: QWERTY, built in everywhere."
+     }
+    ]
+   },
+   "order": 1,
+   "score_exact": 58.33,
+   "band": "Partway"
+  },
+  {
+   "id": "spell-check",
+   "title": "Spell-check a letter",
+   "question": "How many correctly spelled words does the spell checker wrongly flag?",
+   "score": 6,
+   "kannada": {
+    "value": 0.4361,
+    "text": "44% of words flagged"
+   },
+   "english": {
+    "value": 0.0275,
+    "text": "3% of words flagged"
+   },
+   "line": "On the same correct text, the Kannada dictionary flags 44% of words and the English one 3%.",
+   "basis": "measured",
+   "method": "Hunspell with LibreOffice's kn_IN and en_US dictionaries on the 960 professionally translated segments of WMT24++ (Apache 2.0). Nearly every flagged word is a false alarm.",
+   "sources": [
+    {
+     "label": "LibreOffice dictionaries",
+     "url": "https://github.com/LibreOffice/dictionaries",
+     "ref": "c0865a85eb67dc377f2cf8e8fe2c4fa9e53f0dcb"
+    },
+    {
+     "label": "WMT24++ en-kn_IN",
+     "url": "https://huggingface.co/datasets/google/wmt24pp",
+     "ref": "fd7405c06494bc66a57b25f55d217a72f96e60dc"
+    },
+    {
+     "label": "Microsoft Word / Microsoft 365 (Editor)",
+     "url": "https://support.microsoft.com/en-us/office/editor-s-spelling-grammar-and-refinement-availability-by-language-ecd60e9f-6b2e-4070-b30c-42efa6cff55a",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Windows 11 system spell checker",
+     "url": "https://support.microsoft.com/en-us/accessibility/windows/enable-text-suggestions-in-windows",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Google Docs",
+     "url": "https://support.google.com/docs/answer/57859?hl=en&co=GENIE.Platform%3DDesktop",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Gboard (Android)",
+     "url": "https://support.google.com/gboard/answer/6380730?hl=en&co=GENIE.Platform%3DAndroid",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "LibreOffice default install",
+     "url": "https://github.com/LibreOffice/dictionaries/tree/master/kn_IN",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Firefox (default dictionaries)",
+     "url": "https://addons.mozilla.org/api/v5/addons/addon/kannada-spell-checker/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "macOS 27 system spell checker",
+     "url": "",
+     "ref": "2026-11-19"
+    }
+   ],
+   "notes": [
+    "Correct words flagged include ಆದ್ದರಿಂದ (therefore), ಹೇಳಿದರು (said) and ಮೊದಲ (first).",
+    "Built-in Kannada spell checking: Microsoft Word / Microsoft 365 (Editor). Word's Kannada checker is not measured."
+   ],
+   "with_open_kannada": "Open Kannada's kn_IN dictionary flags 22% of the same words; it is not shipped anywhere yet.",
+   "details": {
+    "measurement": {
+     "segments": 960,
+     "english": {
+      "tokens": 31985,
+      "types": 6930,
+      "rejected_tokens": 881,
+      "rejected_share": 0.027544161325621385,
+      "top_rejected": [
+       "Cohren",
+       "Nyssi",
+       "Kayel",
+       "Thassalin",
+       "Tenuk",
+       "Eirwen",
+       "Nemic",
+       "TeaganAir",
+       "Craith",
+       "Siso",
+       "Greggs",
+       "lol",
+       "crypto",
+       "DCU",
+       "MLS"
+      ]
+     },
+     "kannada": {
+      "tokens": 23041,
+      "types": 9981,
+      "rejected_tokens": 10048,
+      "rejected_share": 0.4360921834989801,
+      "top_rejected": [
+       "ಅನ್ನು",
+       "ಆದ್ದರಿಂದ",
+       "ತುಂಬಾ",
+       "ಎಲ್ಲಾ",
+       "ಕೊಹ್ರೆನ್",
+       "ಹೇಳಿದರು",
+       "ನಿಜವಾಗಿಯೂ",
+       "ಎಂಬುದನ್ನು",
+       "ಥಸ್ಸಾಲಿನ್",
+       "ಮೊದಲ",
+       "ಬಿಯರ್",
+       "ಕಯೆಲ್",
+       "ಮಾಡಬಹುದು",
+       "ಇನ್ನಷ್ಟು",
+       "ಎಂದಿಗೂ"
+      ]
+     },
+     "kannada_open_kannada": {
+      "tokens": 23041,
+      "types": 9981,
+      "rejected_tokens": 4989,
+      "rejected_share": 0.21652706045744544,
+      "top_rejected": [
+       "ಕೊಹ್ರೆನ್",
+       "ಥಸ್ಸಾಲಿನ್",
+       "ಬಿಯರ್",
+       "ಕಯೆಲ್",
+       "ಹಾಗಾಗಿ",
+       "ಇನ್ನಷ್ಟು",
+       "ಎಂದಿಗೂ",
+       "ನಿಸ್ಸಿ",
+       "ಐವರಿ",
+       "ಈಗಾಗಲೇ",
+       "ಟೆನುಕ್",
+       "ಮಿಲಿಯನ್",
+       "ಬಹಳಷ್ಟು",
+       "ಐರ್ವೆನ್",
+       "ಇತ್ತೀಚಿನ"
+      ]
+     }
+    },
+    "platforms": [
+     {
+      "platform": "Microsoft Word / Microsoft 365 (Editor)",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Columns are Spell check, Grammar check, Writing refinements: spell check only. Whether proofing tools download needs a language accessory pack is not in this page."
+     },
+     {
+      "platform": "Windows 11 system spell checker",
+      "kannada": "unclear",
+      "english": "yes",
+      "note": "No official Microsoft language list found for OS-level spell check. Settle by typing Kannada in Notepad with Kannada keyboard active."
+     },
+     {
+      "platform": "Google Docs",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Help lists six languages only (page may be dated). Kannada voice and OCR are separate features. Settle by typing Kannada in Docs."
+     },
+     {
+      "platform": "Gboard (Android)",
+      "kannada": "unclear",
+      "english": "yes",
+      "note": "Kannada keyboard exists; Gboard help gives no spell check language list. Settle with a device test."
+     },
+     {
+      "platform": "LibreOffice default install",
+      "kannada": "partial",
+      "english": "yes",
+      "note": "Official LibreOffice dictionaries repo has kn_IN spelling and hyphenation (Hunspell, derived from Harisha M G Firefox add-on). Whether the current installer bundles it by default is not documented; check Tools > Options > Language Settings > Writing Aids on a fresh install."
+     },
+     {
+      "platform": "Firefox (default dictionaries)",
+      "kannada": "partial",
+      "english": "yes",
+      "note": "Not a default dictionary: a community add-on (type dictionary, v2.0.1.2, by Harisha M G, 2024) exists on addons.mozilla.org. Needs install."
+     },
+     {
+      "platform": "macOS 27 system spell checker",
+      "kannada": "no",
+      "english": "yes",
+      "note": "scripts/macos-probe.swift on macOS 27.0.1: the system spell checker has 10 English variants and no Kannada."
+     }
+    ]
+   },
+   "order": 2,
+   "score_exact": 6.32,
+   "band": "Far behind"
+  },
+  {
+   "id": "fonts",
+   "title": "Find a Kannada font that renders every letter",
+   "question": "Of the free Kannada fonts people download, how many draw every modern letter and conjunct correctly?",
+   "score": 73,
+   "kannada": {
+    "value": 0.7297,
+    "text": "27 of 37 fonts"
+   },
+   "english": {
+    "value": 1.0,
+    "text": "every Latin font"
+   },
+   "line": "27 of 37 free Kannada fonts render every modern letter, including 11 of 11 on Google Fonts.",
+   "basis": "measured",
+   "method": "fontqa shapes 1,851 modern syllables, vowels and conjuncts with HarfBuzz. A font fails if any upright style has a missing glyph, a dotted circle, a broken conjunct or arkavattu, or draws 2 different strings the same.",
+   "sources": [
+    {
+     "label": "fontqa results in kannadi",
+     "url": "https://github.com/openkannada/kannadi/tree/cb39f43ffb36e2f02df9531d07cd4f8b30a76c15",
+     "ref": "cb39f43ffb36e2f02df9531d07cd4f8b30a76c15"
+    },
+    {
+     "label": "Google Fonts catalog",
+     "url": "https://fonts.google.com/metadata/fonts",
+     "ref": ""
+    }
+   ],
+   "notes": [
+    "Fail: Cheluvi, Gubbi, Kanishka, Kannada Pixel, Karnata Bandipur, Karnata F Kittel, Karnata German Mission Press, Nishchaya, Nudi Unicode fonts (KaGaPa), Sriraju.",
+    "Choice is a separate gap: Google Fonts has 11 Kannada families and 1,840 Latin ones.",
+    "Rare and old letters (ಱ, ೞ, ೝ, ೳ, U+0CDC, vocalic L) are left out; of the fonts tested, only Nanni has them all.",
+    "An English writer gets every Latin font; Google Fonts' Latin subset covers the English alphabet by definition."
+   ],
+   "with_open_kannada": "",
+   "details": {
+    "fonts": {
+     "Akaya Kanadaka": {
+      "upright_styles_failing": 0
+     },
+     "Anek Kannada": {
+      "upright_styles_failing": 0
+     },
+     "Baloo Tamma 2": {
+      "upright_styles_failing": 0
+     },
+     "Benne": {
+      "upright_styles_failing": 0
+     },
+     "Google Sans": {
+      "upright_styles_failing": 0
+     },
+     "Hind Mysuru": {
+      "upright_styles_failing": 0
+     },
+     "Hubballi": {
+      "upright_styles_failing": 0
+     },
+     "Noto Sans Kannada": {
+      "upright_styles_failing": 0
+     },
+     "Noto Serif Kannada": {
+      "upright_styles_failing": 0
+     },
+     "Padyakke Expanded One": {
+      "upright_styles_failing": 0
+     },
+     "Tiro Kannada": {
+      "upright_styles_failing": 0
+     },
+     "Gubbi": {
+      "upright_styles_failing": 1
+     },
+     "Navilu": {
+      "upright_styles_failing": 0
+     },
+     "Lohit Kannada": {
+      "upright_styles_failing": 0
+     },
+     "Kedage": {
+      "upright_styles_failing": 0
+     },
+     "Mallige": {
+      "upright_styles_failing": 0
+     },
+     "Mallige (2012 fix)": {
+      "upright_styles_failing": 0
+     },
+     "Sampige": {
+      "upright_styles_failing": 0
+     },
+     "Ambarisha": {
+      "upright_styles_failing": 0
+     },
+     "Badami": {
+      "upright_styles_failing": 0
+     },
+     "Kaveri": {
+      "upright_styles_failing": 0
+     },
+     "Nudi Unicode fonts (KaGaPa)": {
+      "upright_styles_failing": 63
+     },
+     "Karnata Bandipur": {
+      "upright_styles_failing": 1
+     },
+     "Karnata GTN": {
+      "upright_styles_failing": 0
+     },
+     "Karnata F Kittel": {
+      "upright_styles_failing": 2
+     },
+     "Karnata Wesleyan Mission Press": {
+      "upright_styles_failing": 0
+     },
+     "Karnata German Mission Press": {
+      "upright_styles_failing": 1
+     },
+     "Sriraju": {
+      "upright_styles_failing": 6
+     },
+     "Nanni": {
+      "upright_styles_failing": 0
+     },
+     "Anchu": {
+      "upright_styles_failing": 0
+     },
+     "Cheluvi": {
+      "upright_styles_failing": 1
+     },
+     "Bandipur One": {
+      "upright_styles_failing": 0
+     },
+     "Kolar": {
+      "upright_styles_failing": 0
+     },
+     "Kanishka": {
+      "upright_styles_failing": 1
+     },
+     "Nishchaya": {
+      "upright_styles_failing": 2
+     },
+     "Kannada Pixel": {
+      "upright_styles_failing": 1
+     },
+     "Sakal Bharati": {
+      "upright_styles_failing": 0
+     }
+    },
+    "modern_cases": 1851,
+    "google_fonts": {
+     "kannada_families": 11,
+     "latin_families": 1840
+    }
+   },
+   "order": 3,
+   "score_exact": 72.97,
+   "band": "Partway"
+  },
+  {
+   "id": "legacy-files",
+   "title": "Open an old Nudi or Baraha file",
+   "question": "Does a common document tool turn an old Nudi or Baraha file into readable, searchable Kannada?",
+   "score": 0,
+   "kannada": {
+    "value": 0.0,
+    "text": "0 of 5 tools"
+   },
+   "english": {
+    "value": 1.0,
+    "text": "5 of 5 tools"
+   },
+   "line": "None of 5 common document tools convert Nudi or Baraha text; an old English file opens in all of them.",
+   "basis": "documented",
+   "method": "Each tool's documentation, searched for a built-in legacy Kannada converter. Without one, a Nudi file shows Latin gibberish such as PÀ£ÁðlPÀ for ಕರ್ನಾಟಕ.",
+   "sources": [
+    {
+     "label": "Microsoft Word",
+     "url": "https://support.microsoft.com/en-us/office/editor-s-spelling-grammar-and-refinement-availability-by-language-ecd60e9f-6b2e-4070-b30c-42efa6cff55a",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "LibreOffice",
+     "url": "https://help.libreoffice.org/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Google Docs",
+     "url": "https://support.google.com/docs/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Apple Pages",
+     "url": "https://support.apple.com/guide/pages/welcome/mac",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Adobe Acrobat",
+     "url": "https://helpx.adobe.com/acrobat/",
+     "ref": "2026-11-19"
+    }
+   ],
+   "notes": [
+    "The problem is current: 53 of 123 Karnataka government PDFs with Kannada text, sampled in November 2026, store some or all of it as legacy font codes.",
+    "A 'no' records that the vendor documents no converter; a device check would confirm it."
+   ],
+   "with_open_kannada": "Open Kannada's kannadi converter reads Nudi and Baraha, but no common tool has it built in yet.",
+   "details": {
+    "tools": [
+     {
+      "platform": "Microsoft Word",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Absence of documentation, not a positive statement from the vendor; general web search found only third-party converters (CIS India, Baraha's own tool, ascii2unicode). No vendor page found on legacy-font conversion; searched. Word has no documented Nudi/Baraha-to-Unicode converter."
+     },
+     {
+      "platform": "LibreOffice",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Absence of documentation, not a positive statement from the vendor; general web search found only third-party converters (CIS India, Baraha's own tool, ascii2unicode). No legacy Kannada font conversion documented (Writer has none; searched)."
+     },
+     {
+      "platform": "Google Docs",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Absence of documentation, not a positive statement from the vendor; general web search found only third-party converters (CIS India, Baraha's own tool, ascii2unicode). No documented legacy Kannada font conversion; searched."
+     },
+     {
+      "platform": "Apple Pages",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Absence of documentation, not a positive statement from the vendor; general web search found only third-party converters (CIS India, Baraha's own tool, ascii2unicode). No documented legacy Kannada font conversion; searched."
+     },
+     {
+      "platform": "Adobe Acrobat",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Absence of documentation, not a positive statement from the vendor; general web search found only third-party converters (CIS India, Baraha's own tool, ascii2unicode). No documented legacy Kannada font conversion; searched."
+     }
+    ],
+    "audit": {
+     "pdfs": 552,
+     "with_text": 123,
+     "legacy_or_mixed": 53,
+     "clean": 8
+    }
+   },
+   "order": 4,
+   "score_exact": 0.0,
+   "band": "Far behind"
+  },
+  {
+   "id": "gov-pdf-search",
+   "title": "Search a government PDF",
+   "question": "When a Karnataka government PDF has a text layer, does searching or copying it give the right words?",
+   "score": 7,
+   "kannada": {
+    "value": 0.065,
+    "text": "8 of 123 PDFs"
+   },
+   "english": {
+    "value": 0.9537,
+    "text": "103 of 108 PDFs"
+   },
+   "line": "8 of 123 Kannada PDFs give correct text when searched, against 103 of 108 English PDFs from the same sites.",
+   "basis": "measured",
+   "method": "552 PDFs sampled from 50 Karnataka government sites in November 2026. A Kannada PDF counts if its text is Unicode and under 15% of its words are broken; an English PDF if under 15% of its words are broken and 60% or more are dictionary words.",
+   "sources": [
+    {
+     "label": "Karnataka government PDF audit, PDF rows",
+     "url": "data/gov-pdfs/audit-pdfs.csv",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "English text layers of the same sample",
+     "url": "data/gov-pdfs/english-text-layers.jsonl",
+     "ref": "2026-11-19"
+    }
+   ],
+   "notes": [
+    "53 of the 123 Kannada PDFs store some or all of their text as legacy font codes; most of the rest lose their conjuncts when the text is extracted.",
+    "315 of the 552 PDFs are scans with no text layer; they are left out of both sides.",
+    "6 more have a text layer that is not readable words in any language (some are Kannada in fonts with no Unicode map); they are left out too."
+   ],
+   "with_open_kannada": "kannadi converts the legacy-coded text once it is copied out; the broken conjuncts need fixing where the PDFs are made.",
+   "details": {
+    "kannada": {
+     "pdfs": 552,
+     "with_text": 123,
+     "legacy_or_mixed": 53,
+     "clean": 8
+    },
+    "english": {
+     "candidates": 114,
+     "unreachable": 0,
+     "no_text": 1,
+     "unreadable": 5,
+     "with_text": 108,
+     "clean": 103
+    }
+   },
+   "order": 5,
+   "score_exact": 6.82,
+   "band": "Far behind"
+  },
+  {
+   "id": "ocr-print",
+   "title": "OCR a printed page",
+   "question": "How many words does free OCR get wrong on a page printed since 1950?",
+   "score": 14,
+   "kannada": {
+    "value": 0.2656,
+    "text": "27% of words wrong"
+   },
+   "english": {
+    "value": 0.038,
+    "text": "4% of words wrong"
+   },
+   "line": "Tesseract gets 27% of Kannada words wrong and 4% of English words, so Kannada needs 7.0 times the corrections.",
+   "basis": "measured",
+   "method": "Tesseract 5 with its stock model and default page mode, on validated Wikisource pages read at 1280 pixels: 70 Kannada pages from 11 books (kannada-ocr-benchmark's gold set) and 40 English pages from 10 printed books, both scored the same way.",
+   "sources": [
+    {
+     "label": "kannada-ocr-benchmark gold pages",
+     "url": "https://github.com/openkannada/kannada-ocr-benchmark/tree/fceb56b893e9e9ab56a66517ae342c25d2854c8c",
+     "ref": "fceb56b893e9e9ab56a66517ae342c25d2854c8c"
+    },
+    {
+     "label": "Kannada outputs at 1280 pixels",
+     "url": "data/ocr-kannada/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "English Wikisource control pages",
+     "url": "data/ocr-english/pages.jsonl",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Google Lens",
+     "url": "https://support.google.com/websearch/answer/16577498?hl=en",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Apple Live Text (iOS 27)",
+     "url": "https://www.apple.com/ios/feature-availability/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Apple Live Text (macOS 27)",
+     "url": "https://www.apple.com/macos/feature-availability/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Windows OCR (Windows.Media.Ocr, Snipping Tool, Photos)",
+     "url": "https://learn.microsoft.com/en-us/windows/powertoys/text-extractor",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Microsoft OneNote",
+     "url": "https://support.microsoft.com/en-us/office/copy-text-from-pictures-and-file-printouts-using-ocr-in-onenote-93a70a2f-ebcd-42dc-9f0b-19b09fd775b4",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Google Drive (open as Google Docs OCR)",
+     "url": "https://support.google.com/drive/answer/176692?hl=en&co=GENIE.Platform%3DDesktop",
+     "ref": "2026-11-19"
+    }
+   ],
+   "notes": [
+    "Character error rate: Kannada 6.0%, English 2.4%.",
+    "95% intervals for word errors, resampling books: Kannada 20% to 36%, English 2% to 6%.",
+    "Paid OCR services are not measured yet. Consumer tools that read Kannada: Google Drive (open as Google Docs OCR)."
+   ],
+   "with_open_kannada": "Open Kannada's fine-tuned Tesseract model gets 22% of Kannada words wrong.",
+   "details": {
+    "kannada": {
+     "pages": 70,
+     "books": 11,
+     "cer": 0.060130584545781705,
+     "wer": 0.2655944174963833,
+     "wer_95": [
+      0.19722307456274932,
+      0.36020050125313285
+     ]
+    },
+    "kannada_open_kannada": {
+     "pages": 70,
+     "books": 11,
+     "cer": 0.04688704950902267,
+     "wer": 0.22244915326355205,
+     "wer_95": [
+      0.1633155845187952,
+      0.30081376859040315
+     ]
+    },
+    "english": {
+     "pages": 40,
+     "books": 10,
+     "cer": 0.02398267366078525,
+     "wer": 0.038025594149908595,
+     "wer_95": [
+      0.01575940639569243,
+      0.06476323119777158
+     ]
+    },
+    "consumer_tools": [
+     {
+      "platform": "Google Lens",
+      "kannada": "unclear",
+      "english": "yes",
+      "note": "The page is the Google app for desktop supported-languages list, not a Lens-specific OCR list; secondary. Settle by pointing Lens at Kannada text."
+     },
+     {
+      "platform": "Apple Live Text (iOS 27)",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Live Text list has Thai, Korean, Japanese, Chinese, Latin-script languages; no Hindi or Kannada."
+     },
+     {
+      "platform": "Apple Live Text (macOS 27)",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Live Text section has no Kannada, consistent with local Vision measurement."
+     },
+     {
+      "platform": "Windows OCR (Windows.Media.Ocr, Snipping Tool, Photos)",
+      "kannada": "unclear",
+      "english": "yes",
+      "note": "Microsoft gives no static language list, only Get-WindowsCapability -Online | Language.OCR* and OcrEngine.AvailableRecognizerLanguages. Secondary sources say about 25 Latin/CJK/Cyrillic languages, no Indic. Settle by running those commands on Windows 11."
+     },
+     {
+      "platform": "Microsoft OneNote",
+      "kannada": "unclear",
+      "english": "yes",
+      "note": "Official page names no language list. Settle with a Kannada image in OneNote desktop."
+     },
+     {
+      "platform": "Google Drive (open as Google Docs OCR)",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Kannada is in the page's Supported languages list. Auto-detects language; image under 2 MB, text at least 10 px."
+     }
+    ]
+   },
+   "order": 6,
+   "score_exact": 14.32,
+   "band": "Far behind"
+  },
+  {
+   "id": "ocr-old-book",
+   "title": "OCR an old book page",
+   "question": "How many words does free OCR get wrong on a page printed between 1848 and 1948?",
+   "score": 8,
+   "kannada": {
+    "value": 0.5029,
+    "text": "50% of words wrong"
+   },
+   "english": {
+    "value": 0.0417,
+    "text": "4% of words wrong"
+   },
+   "line": "Tesseract gets 50% of Kannada words wrong and 4% of English words, so Kannada needs 12.1 times the corrections.",
+   "basis": "measured",
+   "method": "Tesseract 5 with its stock model and default page mode, on validated Wikisource pages read at 1280 pixels: 112 Kannada pages from 30 books (kannada-ocr-benchmark's gold set) and 60 English pages from 20 printed books, both scored the same way.",
+   "sources": [
+    {
+     "label": "kannada-ocr-benchmark gold pages",
+     "url": "https://github.com/openkannada/kannada-ocr-benchmark/tree/fceb56b893e9e9ab56a66517ae342c25d2854c8c",
+     "ref": "fceb56b893e9e9ab56a66517ae342c25d2854c8c"
+    },
+    {
+     "label": "Kannada outputs at 1280 pixels",
+     "url": "data/ocr-kannada/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "English Wikisource control pages",
+     "url": "data/ocr-english/pages.jsonl",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Google Lens",
+     "url": "https://support.google.com/websearch/answer/16577498?hl=en",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Apple Live Text (iOS 27)",
+     "url": "https://www.apple.com/ios/feature-availability/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Apple Live Text (macOS 27)",
+     "url": "https://www.apple.com/macos/feature-availability/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Windows OCR (Windows.Media.Ocr, Snipping Tool, Photos)",
+     "url": "https://learn.microsoft.com/en-us/windows/powertoys/text-extractor",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Microsoft OneNote",
+     "url": "https://support.microsoft.com/en-us/office/copy-text-from-pictures-and-file-printouts-using-ocr-in-onenote-93a70a2f-ebcd-42dc-9f0b-19b09fd775b4",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Google Drive (open as Google Docs OCR)",
+     "url": "https://support.google.com/drive/answer/176692?hl=en&co=GENIE.Platform%3DDesktop",
+     "ref": "2026-11-19"
+    }
+   ],
+   "notes": [
+    "Character error rate: Kannada 11.4%, English 1.4%.",
+    "95% intervals for word errors, resampling books: Kannada 43% to 58%, English 3% to 6%.",
+    "Paid OCR services are not measured yet. Consumer tools that read Kannada: Google Drive (open as Google Docs OCR)."
+   ],
+   "with_open_kannada": "Open Kannada's fine-tuned Tesseract model gets 44% of Kannada words wrong.",
+   "details": {
+    "kannada": {
+     "pages": 112,
+     "books": 30,
+     "cer": 0.11362964346296901,
+     "wer": 0.5029467003432421,
+     "wer_95": [
+      0.43305903866248696,
+      0.5761240310077519
+     ]
+    },
+    "kannada_open_kannada": {
+     "pages": 112,
+     "books": 30,
+     "cer": 0.08304153633067214,
+     "wer": 0.4376659542775727,
+     "wer_95": [
+      0.373466457843905,
+      0.5096656534954407
+     ]
+    },
+    "english": {
+     "pages": 60,
+     "books": 20,
+     "cer": 0.013808249608724189,
+     "wer": 0.04171356218345526,
+     "wer_95": [
+      0.02848017034868246,
+      0.056595230908542106
+     ]
+    },
+    "consumer_tools": [
+     {
+      "platform": "Google Lens",
+      "kannada": "unclear",
+      "english": "yes",
+      "note": "The page is the Google app for desktop supported-languages list, not a Lens-specific OCR list; secondary. Settle by pointing Lens at Kannada text."
+     },
+     {
+      "platform": "Apple Live Text (iOS 27)",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Live Text list has Thai, Korean, Japanese, Chinese, Latin-script languages; no Hindi or Kannada."
+     },
+     {
+      "platform": "Apple Live Text (macOS 27)",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Live Text section has no Kannada, consistent with local Vision measurement."
+     },
+     {
+      "platform": "Windows OCR (Windows.Media.Ocr, Snipping Tool, Photos)",
+      "kannada": "unclear",
+      "english": "yes",
+      "note": "Microsoft gives no static language list, only Get-WindowsCapability -Online | Language.OCR* and OcrEngine.AvailableRecognizerLanguages. Secondary sources say about 25 Latin/CJK/Cyrillic languages, no Indic. Settle by running those commands on Windows 11."
+     },
+     {
+      "platform": "Microsoft OneNote",
+      "kannada": "unclear",
+      "english": "yes",
+      "note": "Official page names no language list. Settle with a Kannada image in OneNote desktop."
+     },
+     {
+      "platform": "Google Drive (open as Google Docs OCR)",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Kannada is in the page's Supported languages list. Auto-detects language; image under 2 MB, text at least 10 px."
+     }
+    ]
+   },
+   "order": 7,
+   "score_exact": 8.29,
+   "band": "Far behind"
+  },
+  {
+   "id": "apps-in-kannada",
+   "title": "Use LibreOffice, Firefox and GNOME in Kannada",
+   "question": "What share of each app's interface is translated into Kannada?",
+   "score": 38,
+   "kannada": {
+    "value": 0.3826,
+    "text": "38% translated on average"
+   },
+   "english": {
+    "value": 1.0,
+    "text": "100%, the source language"
+   },
+   "line": "Translated into Kannada: LibreOffice 48%, Firefox 34%, GNOME 51 34%. The rest shows in English.",
+   "basis": "measured",
+   "method": "Translated interface strings over all strings, from each project's translation platform: Weblate for LibreOffice, Pontoon for Firefox (approved strings), Damned Lies for GNOME.",
+   "sources": [
+    {
+     "label": "LibreOffice",
+     "url": "https://translations.documentfoundation.org/api/projects/libo_ui-master/languages/",
+     "ref": ""
+    },
+    {
+     "label": "Firefox",
+     "url": "https://pontoon.mozilla.org/api/v2/kn/firefox/",
+     "ref": ""
+    },
+    {
+     "label": "GNOME 51",
+     "url": "https://l10n.gnome.org/releases/gnome-51/",
+     "ref": ""
+    }
+   ],
+   "notes": [
+    "Read live from the platforms' public APIs on the run date."
+   ],
+   "with_open_kannada": "",
+   "details": {
+    "apps": [
+     {
+      "app": "LibreOffice",
+      "translated": 19584,
+      "total": 41092,
+      "share": 0.4766
+     },
+     {
+      "app": "Firefox",
+      "translated": 5690,
+      "total": 16927,
+      "share": 0.3361
+     },
+     {
+      "app": "GNOME 51",
+      "translated": 10132,
+      "total": 30235,
+      "share": 0.3351
+     }
+    ]
+   },
+   "order": 8,
+   "score_exact": 38.26,
+   "band": "Behind"
+  },
+  {
+   "id": "screen-reader",
+   "title": "Hear a screen reader read Kannada",
+   "question": "Can the platform's own screen reader speak Kannada with a voice it ships or downloads for free?",
+   "score": 80,
+   "kannada": {
+    "value": 0.8,
+    "text": "4 of 5 platforms"
+   },
+   "english": {
+    "value": 1.0,
+    "text": "5 of 5 platforms"
+   },
+   "line": "4 of 5 built-in screen readers speak Kannada; Windows does not.",
+   "basis": "documented",
+   "method": "Vendor language lists for Narrator, VoiceOver on macOS and iOS, TalkBack, ChromeVox and Orca; the macOS voice was checked on a Mac.",
+   "sources": [
+    {
+     "label": "Windows 11 Narrator",
+     "url": "https://support.microsoft.com/en-us/windows/appendix-a-supported-languages-and-voices-4486e345-7730-53da-fcfe-55cc64300f01",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "iOS/iPadOS 27 VoiceOver",
+     "url": "https://www.apple.com/ios/feature-availability/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Android TalkBack (Speech Services by Google)",
+     "url": "https://support.google.com/accessibility/android/answer/11101402?hl=en",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "ChromeOS ChromeVox",
+     "url": "https://support.google.com/chromebook/answer/7031755?hl=en",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Linux Orca (eSpeak NG)",
+     "url": "https://raw.githubusercontent.com/espeak-ng/espeak-ng/master/docs/languages.md",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "macOS 27 VoiceOver",
+     "url": "",
+     "ref": "2026-11-19"
+    }
+   ],
+   "notes": [
+    "Not scored until checked on a device: ChromeOS ChromeVox.",
+    "Voice quality is not scored yet. Linux uses eSpeak NG, whose Kannada rules last changed in 2013. Method: native listeners rate the same 50 sentences on each platform, and word error rate when a speech recognizer transcribes the voice."
+   ],
+   "with_open_kannada": "",
+   "details": {
+    "platforms": [
+     {
+      "platform": "Windows 11 Narrator",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Narrator Appendix A (voices tables) has English and Tamil, Hindi, Telugu but no Kannada. Fetched page text; grep for Kannada empty."
+     },
+     {
+      "platform": "iOS/iPadOS 27 VoiceOver",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Kannada appears in that row's language list (row also covers Live Speech and Read and Speak). Voice download is free in Settings."
+     },
+     {
+      "platform": "Android TalkBack (Speech Services by Google)",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Listed under 'Google Text-to-Speech languages that TalkBack currently supports'; English (India) etc also listed. Page notes some devices may not support all languages."
+     },
+     {
+      "platform": "ChromeOS ChromeVox",
+      "kannada": "unclear",
+      "english": "yes",
+      "note": "Help says ChromeVox picks a voice by Chromebook language and lets you choose another; no language list. Settle by checking ChromeOS Settings > Text-to-speech > Voices for Kannada."
+     },
+     {
+      "platform": "Linux Orca (eSpeak NG)",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "eSpeak NG language list has Kannada (kn, Dravidian). English listed too. Voice quality is robotic; Orca uses speech-dispatcher with eSpeak NG on Ubuntu."
+     },
+     {
+      "platform": "macOS 27 VoiceOver",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "scripts/macos-probe.swift on macOS 27.0.1 finds the Kannada voice Soumya, which VoiceOver can use."
+     }
+    ]
+   },
+   "order": 9,
+   "score_exact": 80.0,
+   "band": "Close"
+  },
+  {
+   "id": "dictation",
+   "title": "Dictate a message",
+   "question": "Does the platform's built-in dictation understand Kannada?",
+   "score": 25,
+   "kannada": {
+    "value": 0.25,
+    "text": "1 of 4 platforms"
+   },
+   "english": {
+    "value": 1.0,
+    "text": "4 of 4 platforms"
+   },
+   "line": "1 of 4 built-in dictation tools understands Kannada; Windows, macOS and iOS do not.",
+   "basis": "documented",
+   "method": "Vendor language lists for Windows voice typing, Apple Dictation on macOS and iOS, Gboard voice typing and ChromeOS dictation; the macOS speech recognizer was checked on a Mac.",
+   "sources": [
+    {
+     "label": "Windows 11 voice typing (Win+H)",
+     "url": "https://support.microsoft.com/en-us/windows/use-voice-typing-to-talk-instead-of-type-on-your-pc-fec94565-c4bd-329d-e59a-af033fa5689f",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "macOS 27 Dictation",
+     "url": "https://www.apple.com/macos/feature-availability/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "iOS/iPadOS 27 Dictation",
+     "url": "https://www.apple.com/ios/feature-availability/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Android Gboard voice typing",
+     "url": "https://india.googleblog.com/2017/08/type-less-talk-more-in-eight-indian.html",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "ChromeOS dictation",
+     "url": "https://support.google.com/chromebook/answer/12001244?hl=en",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Common Voice language statistics",
+     "url": "https://commonvoice.mozilla.org/api/v1/stats/languages",
+     "ref": ""
+    }
+   ],
+   "notes": [
+    "Not scored until checked on a device: ChromeOS dictation.",
+    "Open speech data: Kannada is not live on Common Voice, with 12% of its site translated and 55 of 5,000 sentences needed.",
+    "Recognition accuracy is not scored yet. Method: word error rate on the same read sentences in both languages, once an open Kannada test set exists."
+   ],
+   "with_open_kannada": "",
+   "details": {
+    "platforms": [
+     {
+      "platform": "Windows 11 voice typing (Win+H)",
+      "kannada": "no",
+      "english": "yes",
+      "note": "List includes English (UK/US), Hindi, Marathi, Tamil (India), Telugu, Gujarati; no Kannada."
+     },
+     {
+      "platform": "macOS 27 Dictation",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Dictation sections (including On-Device and Modeless) have no Kannada. On macOS 27.0.1 the speech recognizer has 13 English locales and no Kannada (data/local/macos.json)."
+     },
+     {
+      "platform": "iOS/iPadOS 27 Dictation",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Dictation list has Hindi (India), English (India) etc; no Kannada. Same for On-Device Dictation."
+     },
+     {
+      "platform": "Android Gboard voice typing",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Google India blog, August 2017: voice typing in Gboard on Android for 8 Indian languages, Kannada among them. Gboard's current help names no languages; recheck on a device."
+     },
+     {
+      "platform": "ChromeOS dictation",
+      "kannada": "unclear",
+      "english": "yes",
+      "note": "No language list. Settle by enabling Kannada as ChromeOS language and testing dictation. Related: Google Docs voice typing does list Kannada (Chrome)."
+     }
+    ],
+    "common_voice": {
+     "id": 76503,
+     "english_name": "Kannada",
+     "is_contributable": 0,
+     "localizedPercentage": 12,
+     "recordedHours": 0,
+     "validatedHours": 0,
+     "invalidatedHours": 0,
+     "speakersCount": 0,
+     "sentencesCount": {
+      "targetSentenceCount": 5000,
+      "currentCount": 55
+     },
+     "locale": "kn",
+     "lastFetched": "2026-11-19T10:29:41.945Z"
+    }
+   },
+   "order": 10,
+   "score_exact": 25.0,
+   "band": "Behind"
+  },
+  {
+   "id": "translation",
+   "title": "Translate a paragraph",
+   "question": "Does the translator offer Kannada at all?",
+   "score": 60,
+   "kannada": {
+    "value": 0.6,
+    "text": "3 of 5 services"
+   },
+   "english": {
+    "value": 1.0,
+    "text": "5 of 5 services"
+   },
+   "line": "3 of 5 common translators offer Kannada; DeepL and Apple do not.",
+   "basis": "documented",
+   "method": "Each service's language list; Microsoft Translator and Firefox were read from their public APIs on the run date.",
+   "sources": [
+    {
+     "label": "Google Translate",
+     "url": "https://support.google.com/translate/answer/6142474?hl=en&co=GENIE.Platform%3DAndroid",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Microsoft Translator",
+     "url": "https://learn.microsoft.com/en-us/azure/ai-services/translator/language-support",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "DeepL",
+     "url": "https://developers.deepl.com/docs/getting-started/supported-languages",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Apple Translate (iOS 27 and macOS 27)",
+     "url": "https://www.apple.com/ios/feature-availability/",
+     "ref": "2026-11-19"
+    },
+    {
+     "label": "Firefox built-in translation",
+     "url": "https://www.firefox.com/en-GB/features/translate/",
+     "ref": "2026-11-19"
+    }
+   ],
+   "notes": [
+    "Translation quality is not scored yet. Method: translate the same English paragraphs into Kannada and back, and compare the round trip with the same test into a high-resource language."
+   ],
+   "with_open_kannada": "",
+   "details": {
+    "services": [
+     {
+      "platform": "Google Translate",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Consumer main language list page not fetched (404/403 via fetch). Live translate help list has Kannada; Cloud Translation docs (docs.cloud.google.com/translate/docs/languages) list kn. Treat as yes."
+     },
+     {
+      "platform": "Microsoft Translator",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Azure Translator cloud text and document translation, LLM translation yes, transliteration kn Knda<->Latn. Consumer Translator app list not fetched."
+     },
+     {
+      "platform": "DeepL",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Developer docs language data runs Japanese, Javanese, Kapampangan, Kazakh with no Kannada. Malayalam, Tamil, Telugu also present as listed (Tamil/Telugu/Malayalam yes). Support-center page returned 403 to the fetcher."
+     },
+     {
+      "platform": "Apple Translate (iOS 27 and macOS 27)",
+      "kannada": "no",
+      "english": "yes",
+      "note": "Translate App and System-Wide Translation lists include Hindi, Thai, Vietnamese but no Kannada."
+     },
+     {
+      "platform": "Firefox built-in translation",
+      "kannada": "yes",
+      "english": "yes",
+      "note": "Listed in 'languages currently supported by the Firefox Translations feature'; on-device. Page lists English."
+     }
+    ],
+    "live": {
+     "Microsoft Translator": true,
+     "Firefox built-in translation": true
+    }
+   },
+   "order": 11,
+   "score_exact": 60.0,
+   "band": "Partway"
+  },
+  {
+   "id": "ai-cost",
+   "title": "Ask an AI model in Kannada",
+   "question": "How many more tokens, and so how much more money and context, does the same message cost in Kannada?",
+   "score": 55,
+   "kannada": {
+    "value": 1.831,
+    "text": "1.83 tokens per English token"
+   },
+   "english": {
+    "value": 1.0,
+    "text": "1 token"
+   },
+   "line": "The same message costs 1.83 times as many tokens in Kannada with o200k, the tokenizer of GPT-4o, GPT-4.1 and the o-series.",
+   "basis": "measured",
+   "method": "Tokens for the 960 parallel WMT24++ segments, Kannada over English, counted with the public tokenizer (kannada-llm-bench). Price, speed and context use scale with tokens.",
+   "sources": [
+    {
+     "label": "kannada-llm-bench token tax",
+     "url": "https://github.com/openkannada/kannada-llm-bench/tree/29283392dccfc54544cabf0bdad8095764cb49ee",
+     "ref": "29283392dccfc54544cabf0bdad8095764cb49ee"
+    }
+   ],
+   "notes": [
+    "Across 12 distinct public tokenizers (tokenizers with identical counts count once) the ratio runs from 1.14 to 8.27.",
+    "tiktoken 0.14 maps GPT-5 to o200k as well.",
+    "Claude and Gemini are not measured: their tokenizers are not public and counting needs an API key.",
+    "Answer quality in Kannada is not scored here; kannada-llm-bench has the test suite."
+   ],
+   "with_open_kannada": "",
+   "details": {
+    "tokenizer": {
+     "tokenizer": "o200k",
+     "label": "GPT-4o (o200k)",
+     "models": "GPT-4o, GPT-4.1, o-series",
+     "en_tokens": "40372",
+     "kn_tokens": "73920",
+     "ratio": "1.8310",
+     "ratio_low": "1.7964",
+     "ratio_high": "1.8682",
+     "kn_tokens_per_word": "3.11",
+     "ratio_news": "2.019",
+     "ratio_social": "1.810",
+     "ratio_speech": "1.725",
+     "ratio_literary": "1.774",
+     "same_counts_as": "gpt-oss phi-4-mini"
+    },
+    "range": [
+     1.1407,
+     8.2701
+    ]
+   },
+   "order": 12,
+   "score_exact": 54.61,
+   "band": "Partway"
+  }
+ ]
+}

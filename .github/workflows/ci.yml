@@ -69,10 +69,11 @@ jobs:
           retention-days: 14
       - name: Lighthouse, mobile
         run: npx lhci autorun
-      - name: Build and check the Kannada drafts, which wait for a native reader
+      - name: Build and check the drafts, which wait for a native reader or for approval
         run: |
           KANNADA_DRAFTS=1 npx astro build --outDir dist-drafts
           KANNADA_DRAFTS=1 node scripts/seo-smoke.ts dist-drafts
+          KANNADA_DRAFTS=1 node scripts/voice-lint.ts dist-drafts
           node scripts/layout-check.ts dist-drafts
       - name: Build and check with a site URL
         run: |

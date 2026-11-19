@@ -35,6 +35,8 @@ The page is a sheet of paper you can write Kannada on at once. Every tool floats
 
 Rose and amber appear only in and about the text being edited. No other element may use them.
 
+`--score-1` to `--score-5` are 1 teal hue in 5 steps for the readiness scorecard's bands, from far behind to at parity: darker for higher scores in light mode and lighter in dark mode, so the strongest score is always the most visible. They are data colors only, for bars and swatches, never text, actions or marks, and a score is always printed beside its color.
+
 ### Type
 
 - 1 family: Neha Sans for Kannada and Noto Sans for Latin (`--type-sans`), self-hosted as variable woff2 files under the SIL Open Font License. Neha Sans carries only Kannada, so Latin comes from Noto Sans. Neha Serif (`--type-serif`), with the Latin subset of Noto Serif Kannada, is the document's alternative face. Gari loads only where a page sets it, as on the fonts page.

@@ -14,6 +14,6 @@ const found = readdirSync(dist, { recursive: true, withFileTypes: true })
 const waiting = unreviewed(PAGES);
 if (found.length) console.error(`${found.length} placeholders still need their words or photos:\n${found.join("\n")}`);
 // Drafts are left out of PAGES; any here means a build that included them, such as KANNADA_DRAFTS=1.
-if (waiting.length) console.error(`${waiting.length} pages wait for a native reader (needsReview in src/content/pages.ts):\n${waiting.join("\n")}`);
+if (waiting.length) console.error(`${waiting.length} pages wait for a native reader or for approval (needsReview or held in src/content/pages.ts):\n${waiting.join("\n")}`);
 if (found.length || waiting.length) process.exit(1);
 console.log("No placeholders left.");

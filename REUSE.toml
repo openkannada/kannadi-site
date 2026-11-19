@@ -72,3 +72,9 @@ path = "src/assets/family/**"
 precedence = "override"
 SPDX-FileCopyrightText = "2023 Prasad Subrahmanya"
 SPDX-License-Identifier = "LicenseRef-AllRightsReserved"
+
+[[annotations]]
+path = "data/scorecard/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 The Open Kannada Authors"
+SPDX-License-Identifier = "CC-BY-4.0"

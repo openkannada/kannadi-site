@@ -241,12 +241,14 @@ test.describe("save and reopen", () => {
   }
 
   test("saved HTML edited elsewhere, with a comment added, still opens", async ({ page }) => {
-    await page.keyboard.insertText("ಕನ್ನಡ ನಾಡು");
+    const text = "ಕನ್ನಡ  ನಾಡು\n\n  ಎರಡು\n";
+    await paste(page, { plain: text });
+    await expect.poll(() => docText(page)).toBe(text);
     const file = await save(page, "html");
     const edited = file.body.toString("utf8").replace("<body>", "<body>\n<!-- edited in another program -->");
     await newDocument(page);
     await openFile(page, "edited.html", edited, "text/html");
-    await expect.poll(() => docText(page)).toBe("ಕನ್ನಡ ನಾಡು");
+    await expect.poll(() => docText(page)).toBe(text);
   });
 
   test("Nudi keeps the text when converted back", async ({ page }) => {

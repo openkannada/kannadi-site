@@ -542,9 +542,13 @@ function wire(): void {
     if (e.key === "Escape" && composer.revert()) e.preventDefault();
     if (e.key === "Escape" && issues.open) issues.close(false);
   });
-  // A click in the sheet's margin puts the caret at the nearest place in the text, without jumping to the top.
+  // A click in the sheet's margin puts the caret at the nearest place in the text, without jumping to the top. Only
+  // a press that starts there counts: a drag from the text that ends there is a selection, kept as it is.
+  let marginPress = false;
+  byId("sheet").addEventListener("pointerdown", (e) => (marginPress = e.target === e.currentTarget && !e.shiftKey));
   byId("sheet").addEventListener("click", (e) => {
-    if (e.target !== e.currentTarget) return;
+    if (e.target !== e.currentTarget || !marginPress) return;
+    marginPress = false;
     editor.el.focus({ preventScroll: true });
     const box = editor.el.getBoundingClientRect();
     if (e.clientY >= box.bottom || !editor.text) {

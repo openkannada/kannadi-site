@@ -55,6 +55,21 @@ export async function focusDoc(page: Page): Promise<void> {
   });
 }
 
+/** The collapsed caret as a text offset, counting 1 for each line, in either editor; -1 when it is not in the text. */
+export const caretOffset = (page: Page) =>
+  page.evaluate(() => {
+    const doc = document.getElementById("doc")!;
+    const sel = getSelection()!;
+    if (!sel.rangeCount || !doc.contains(sel.focusNode)) return -1;
+    const range = document.createRange();
+    range.setStart(doc, 0);
+    range.setEnd(sel.focusNode!, sel.focusOffset);
+    const paragraphs = [...doc.querySelectorAll(":scope > p")];
+    if (!paragraphs.length) return range.toString().length;
+    const at = paragraphs.findIndex((p) => p.contains(sel.focusNode));
+    return range.toString().length + Math.max(0, at);
+  });
+
 /**
  * The document's text, without the extra final line break that gives an empty last line its place. That break comes
  * only after a line break of the text's own, so a single final break is left in: a stray one shows.
@@ -131,6 +146,19 @@ export const layout = async (page: Page): Promise<Layout> => {
     const sel = getSelection();
     let caret: Box | null = null;
     if (sel?.rangeCount && doc.contains(sel.getRangeAt(0).endContainer)) {
+      const range = sel.getRangeAt(0);
+      // The letter after the caret gives its line; a marker, measured at the start of a text in Firefox above the
+      // line, is only for an empty line.
+      const after = range.cloneRange();
+      after.collapse(false);
+      const node = after.endContainer;
+      if (node.nodeType === Node.TEXT_NODE && after.endOffset < (node as Text).length && (node as Text).data[after.endOffset] !== "\n") {
+        after.setEnd(node, after.endOffset + 1);
+        const r = after.getClientRects()[0];
+        if (r) caret = { top: r.top, bottom: r.bottom, left: r.left, right: r.left };
+      }
+    }
+    if (!caret && sel?.rangeCount && doc.contains(sel.getRangeAt(0).endContainer)) {
       const range = sel.getRangeAt(0);
       const { endContainer, endOffset } = range;
       const marker = document.createElement("span");

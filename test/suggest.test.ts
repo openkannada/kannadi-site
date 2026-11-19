@@ -58,3 +58,16 @@ test("the word list file reads in order of frequency, skipping its header", () =
   assert.equal(shipped[0], "ಮತ್ತು");
   assert.equal(new Set(shipped).size, shipped.length);
 });
+
+test("with the shipped list, short common words and the final-a spelling come before long forms", async () => {
+  const words = parseWords(readFileSync(new URL("../data/words.tsv", import.meta.url), "utf8"));
+  const s = await Suggester.create({ ...k, strict: (l) => transliterate(l.toLowerCase(), "baraha", "kannada") }, words, [], async () => {});
+  const til = s.suggest("til");
+  assert.equal(til[0], "ತಿಲ್");
+  assert.ok(til.includes("ತಿಳಿ") && til.includes("ತಿಲ"), til.join(" "));
+  assert.ok(til.indexOf("ತಿಳಿ") < til.indexOf("ತಿಳಿದು"), til.join(" "));
+  assert.ok(!til.includes("ತಿಳಿದುಬರುತ್ತದೆ"), til.join(" "));
+  assert.ok(s.suggest("hal").includes("ಹಾಲು"), s.suggest("hal").join(" "));
+  // Whole words typed in full keep their best spelling first.
+  for (const [typed, want] of [["namaskara", "ನಮಸ್ಕಾರ"], ["mane", "ಮನೆ"], ["beku", "ಬೇಕು"], ["bengaluru", "ಬೆಂಗಳೂರು"]]) assert.equal(s.suggest(typed)[0], want, typed);
+});

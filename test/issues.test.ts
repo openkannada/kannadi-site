@@ -5,7 +5,7 @@ import { test } from "node:test";
 
 import { parseHTML } from "linkedom";
 
-import { Issues } from "../src/editor/issues.ts";
+import { Issues, syllableAt } from "../src/editor/issues.ts";
 import { fixes, malformed, transliterate, typos } from "../src/editor/kannadi.ts";
 import type { Edit } from "../src/editor/text.ts";
 import { initSync } from "../src/editor/wasm/kannadi_wasm.js";
@@ -139,4 +139,10 @@ test("F8 reaches a malformed sign right after a typo, in both directions", () =>
   assert.deepEqual(issues.next(sign.start, sign.end, -1), typo);
   assert.deepEqual(issues.next(typo.start, typo.end, -1), sign);
   assert.deepEqual(issues.next(0, 0, 1), typo);
+});
+
+test("a caret at the edge of a syllable finds the mark inside it", () => {
+  // ಕ್ಾ is 1 syllable at 6..9; a tap puts the caret at 6 or 9, never at 8 where the mark starts.
+  assert.deepEqual(syllableAt("ಕನ್ನಡ ಕ್ಾ", 6), { start: 6, end: 9 });
+  assert.deepEqual(syllableAt("ab\ncd", 2), { start: 2, end: 2 });
 });

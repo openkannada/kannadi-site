@@ -6,8 +6,8 @@ import { extname, join } from "node:path";
 
 const TYPES: Record<string, string> = { ".html": "text/html; charset=utf-8", ".css": "text/css", ".js": "text/javascript", ".svg": "image/svg+xml", ".png": "image/png", ".woff2": "font/woff2", ".wasm": "application/wasm", ".json": "application/json", ".tsv": "text/plain; charset=utf-8" };
 
-/** Serves `dist` on a free local port. */
-export function serve(dist: string): { server: Server; port: number } {
+/** Serves `dist` on `port`, or on a free local port. */
+export function serve(dist: string, port = 0): { server: Server; port: number } {
   const server = createServer(async (req, res) => {
     const path = decodeURIComponent(new URL(req.url ?? "/", "http://x").pathname);
     const file = join(dist, path.endsWith("/") ? `${path}index.html` : path);
@@ -17,7 +17,7 @@ export function serve(dist: string): { server: Server; port: number } {
     } catch {
       res.writeHead(404).end();
     }
-  }).listen(0);
+  }).listen(port);
   return { server, port: (server.address() as { port: number }).port };
 }
 

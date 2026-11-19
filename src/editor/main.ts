@@ -10,6 +10,7 @@ import { Issues } from "./issues.ts";
 import * as kannadi from "./kannadi.ts";
 import { EnglishTyping } from "./english.ts";
 import { SuggestStrip } from "./strip.ts";
+import { View } from "./view.ts";
 import type { Plural } from "../i18n/core.ts";
 import { count, type EditorStrings, fmt, nodes, num, pick, S } from "./strings.ts";
 import { convertPlan, countWords, type Layout, looksLegacy, nudiNotes, type TypingMode } from "./text.ts";
@@ -164,6 +165,14 @@ const editor = new DocEditor(ui.doc, (edit, after, inputType) => {
   issues.edited(edit, after);
   composer.handle(edit, after, inputType);
   update(after);
+  view.keepCaret();
+});
+
+const view = new View(editor, {
+  dock: document.querySelector<HTMLElement>(".dock")!,
+  toolbar: document.querySelector<HTMLElement>(".toolbar")!,
+  sheet: byId("sheet"),
+  strip: byId("suggest"),
 });
 
 const issues = new Issues(editor, kannadi, {
@@ -206,7 +215,7 @@ const english = new EnglishTyping({
       }
     },
   },
-  strip: new SuggestStrip(byId("suggest"), (start, end) => editor.rect(start, end), (i) => english.pick(i)),
+  strip: new SuggestStrip(byId("suggest"), { rect: (start, end) => editor.rect(start, end), avoid: () => view.avoid() }, (i) => english.pick(i)),
   text: () => editor.text,
   replace: (start, end, text) => editor.replace(start, end, text),
   caret: () => {
@@ -215,6 +224,7 @@ const english = new EnglishTyping({
   },
   select: (at) => editor.select(at),
   announce: (message) => (ui.announce.textContent = message),
+  onReady: () => (ui.section.dataset.words = "ready"),
 });
 
 const composer = new Composer(
@@ -539,6 +549,7 @@ function wire(): void {
     composer.selectionChanged();
     const sel = editor.selection();
     english.caretMoved(sel && sel.start === sel.end ? sel.start : null);
+    view.keepCaret();
   });
   // The word list loads when English letters are chosen, or the page opens in them, and not with any other page.
   ui.doc.addEventListener("focus", () => {
@@ -593,10 +604,9 @@ function wire(): void {
     b.addEventListener("click", () => void exportAs(b.dataset.export as ExportFormat | "nudi"));
   }
   for (const input of document.querySelectorAll<HTMLInputElement>('input[name="mode"]')) {
-    input.addEventListener("change", () => {
-      setMode(input.value as TypingMode);
-      editor.el.focus();
-    });
+    input.addEventListener("change", () => setMode(input.value as TypingMode));
+    // A click on the chosen mode changes nothing, but the keys that follow still belong in the document.
+    input.addEventListener("click", () => editor.el.focus({ preventScroll: true }));
   }
   for (const input of document.querySelectorAll<HTMLInputElement>('input[name="font"]')) {
     input.addEventListener("change", () => setFont(input.value as Settings["font"]));
@@ -639,10 +649,14 @@ function wire(): void {
   // iOS keeps fixed elements behind the on-screen keyboard; --kb lifts them above it.
   const vv = window.visualViewport;
   if (vv) {
+    let height = vv.height;
     const inset = () => {
       // A pinch zoom also shrinks the visual viewport; only a keyboard should lift the dock.
       if (vv.scale !== 1) return;
       document.documentElement.style.setProperty("--kb", `${Math.max(0, innerHeight - vv.height - vv.offsetTop)}px`);
+      // A keyboard opening covers the caret; scrolling, or the address bar hiding, must not pull the page back to it.
+      if (vv.height < height - 100) view.keepCaret();
+      height = vv.height;
     };
     vv.addEventListener("resize", inset);
     vv.addEventListener("scroll", inset);
@@ -658,10 +672,13 @@ function restore(): void {
   ui.autoConvert.checked = settings.autoConvert;
   ui.zero.checked = settings.zero;
   ui.digits.checked = settings.digits;
-  // Typing pages open ready to type in English letters, without changing the saved choice.
+  // A mode picked while the converter loaded wins; otherwise typing pages open in English letters, keeping the saved choice.
+  const picked = [...document.querySelectorAll<HTMLInputElement>('input[name="mode"]')].find((i) => i.checked && !i.defaultChecked);
   const pageMode = ui.section.dataset.defaultMode as TypingMode | undefined;
-  if (pageMode && pageMode !== "kannada") setMode(pageMode, false);
+  if (picked) setMode(picked.value as TypingMode);
+  else if (pageMode && pageMode !== "kannada") setMode(pageMode, false);
   else setMode(MODES.includes(settings.mode) ? settings.mode : "kannada", false);
+  if (picked && document.activeElement === picked) editor.el.focus({ preventScroll: true });
   setFont(settings.font === "serif" ? "serif" : "sans", false);
   if (saved?.text) {
     ui.doc.textContent = saved.text;

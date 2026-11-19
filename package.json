@@ -28,7 +28,9 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.12",
+    "@axe-core/playwright": "4.14.0",
     "@lhci/cli": "0.16.1",
+    "@playwright/test": "1.65.1",
     "@tailwindcss/vite": "4.3.5",
     "@types/node": "26.6.6",
     "linkedom": "0.18.15",

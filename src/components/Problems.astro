@@ -1,0 +1,104 @@
+---
+// The problems Open Kannada works on, as cards: side by side, titles, numbers and lines each share a row.
+import type { Problem } from "../content/home.ts";
+import Icon from "./Icon.astro";
+
+interface Props {
+  problems: Problem[];
+}
+const { problems } = Astro.props;
+---
+<ul class="problems" role="list">
+  {problems.map((p) => (
+    <li class="problem reveal" data-inview>
+      <p class="problem-title"><Icon name={p.icon} filled />{p.title}</p>
+      <p class="problem-value">{p.value}</p>
+      <p class="problem-text">{p.text}</p>
+    </li>
+  ))}
+</ul>
+
+<style>
+  .problems {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 0.625rem;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .problem {
+    display: grid;
+    grid-row: span 3;
+    grid-template-rows: subgrid;
+    gap: 0;
+    margin-bottom: 0.625rem;
+    padding: 0.875rem 0.875rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+  }
+  .problem-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .problem-title :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: none;
+    color: var(--primary);
+  }
+  .problem-value {
+    align-self: end;
+    margin: 0.5rem 0 0;
+    color: var(--foreground);
+    font-size: 1.75rem;
+    line-height: 1.15;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+  }
+  .problem-value:lang(kn) {
+    line-height: 1.5;
+  }
+  .problem-text {
+    margin: 0.375rem 0 0;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    line-height: 1.55;
+  }
+  .problem-text:lang(kn) {
+    line-height: var(--type-kn-leading);
+  }
+  @media (hover: hover) {
+    .problem:hover {
+      border-color: oklch(from var(--primary) l c h / 0.35);
+      box-shadow: var(--shadow-sheet);
+    }
+  }
+  @media (min-width: 40rem) {
+    .problems {
+      gap: 0 1rem;
+    }
+    .problem {
+      margin-bottom: 1rem;
+      padding: 1.125rem 1.25rem 1.25rem;
+    }
+    .problem-value {
+      font-size: 2.25rem;
+    }
+    .problem-text {
+      font-size: 0.9375rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .problems {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+</style>

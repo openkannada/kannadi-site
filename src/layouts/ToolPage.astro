@@ -26,7 +26,7 @@ const illo = illustrationFor(page);
     <section aria-labelledby="how-heading">
       <h2 id="how-heading">{page.howTitle}</h2>
       <ol class="steps" role="list">
-        {page.steps.map((s) => <li class="step" data-inview><span set:html={withBase(s)} /></li>)}
+        {page.steps.map((s) => <li class="step reveal" data-inview><span set:html={withBase(s)} /></li>)}
       </ol>
     </section>
     {page.chart === "letters" && <LetterChart />}
@@ -95,17 +95,5 @@ const illo = illustrationFor(page);
       align-items: start;
       padding: 1.125rem 1.25rem 1.25rem;
     }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .illo-wait .step:not(.is-in) {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    .step {
-      transition: opacity 0.5s var(--ease-settle), transform 0.6s var(--ease-settle);
-    }
-    .step:nth-child(2) { transition-delay: 60ms; }
-    .step:nth-child(3) { transition-delay: 120ms; }
-    .step:nth-child(4) { transition-delay: 180ms; }
   }
 </style>

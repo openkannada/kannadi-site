@@ -369,6 +369,42 @@
   max-width: var(--prose);
 }
 
+/* An icon on a small tile of the accent color, lit from above. */
+.icon-tile {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.875rem;
+  background: var(--accent);
+  box-shadow: inset 0 1px 0 var(--glass-rim);
+  color: var(--primary);
+}
+.icon-tile svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Cards rise a little into place the first time they are on screen (inview.ts adds .is-in); without
+   script, and under reduced motion, they are simply there. */
+@media (prefers-reduced-motion: no-preference) {
+  .illo-wait .reveal:not(.is-in) {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  .reveal {
+    transition:
+      opacity 0.5s var(--ease-settle),
+      transform 0.6s var(--ease-settle),
+      border-color var(--duration-quick) var(--ease-standard),
+      box-shadow var(--duration-lift) var(--ease-settle);
+  }
+  .reveal:nth-child(2) { transition-delay: 60ms; }
+  .reveal:nth-child(3) { transition-delay: 120ms; }
+  .reveal:nth-child(4) { transition-delay: 180ms; }
+}
+
 /* A page heading with its illustration beside it: on wide screens for tool pages, from tablets elsewhere.
    Unlayered and 2 classes deep, to win over the illustration's own display rule. */
 .hero {

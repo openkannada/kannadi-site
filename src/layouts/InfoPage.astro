@@ -11,8 +11,8 @@ interface Props {
   page: InfoPage;
 }
 const { page } = Astro.props;
-// About has cards, photos and a pull-out, so it takes the column; the other info pages are 1 line of prose wide.
-const WIDTH = { about: "column", contribute: "prose", press: "prose", brand: "prose" } as const;
+// About and contribute have cards, photos or a form, so they take more width; the other info pages are 1 line of prose wide.
+const WIDTH = { about: "column", contribute: "wide", press: "prose", brand: "prose" } as const;
 const width = WIDTH[page.body];
 ---
 <Base page={page}>

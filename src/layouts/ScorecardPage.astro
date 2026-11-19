@@ -1,0 +1,440 @@
+---
+// The Kannada readiness scorecard: the index and 1 row per task, each opening to its question, method,
+// notes and sources, then what we build next and how we measure.
+import Icon from "../components/Icon.astro";
+import PageHero from "../components/PageHero.astro";
+import type { ScorecardPage } from "../content/pages.ts";
+import { pagePath } from "../content/site.ts";
+import { NEXT, SCORECARD, SCORECARD_COPY as C, TASKS, bandOf, lowest, monthOf, shortRef, sourcesOf } from "../content/scorecard.ts";
+import { fmt } from "../i18n/core.ts";
+import { href, withBase } from "../lib/paths.ts";
+import Base from "./Base.astro";
+
+interface Props {
+  page: ScorecardPage;
+}
+const { page } = Astro.props;
+const index = SCORECARD.index;
+const indexBand = bandOf(index.score);
+const next = lowest().map((t) => ({ task: t, next: NEXT[t.id] }));
+const json = href(`${pagePath(page.slug)}${page.quarter}.json`);
+const published = new Date(SCORECARD.generated_at).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+// Kannada words inside the data's English sentences, marked so they are read and shaped as Kannada.
+const kn = (text: string) => text.replace(/[ಀ-೿‌‍]+/g, (w) => `<span lang="kn">${w}</span>`);
+const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const rich = (s: string) => kn(esc(s));
+---
+<Base page={page}>
+  <PageHero page={page} width="wide">
+    <p slot="lead" set:html={fmt(C.answer, { month: monthOf(), tasks: String(index.tasks), score: String(index.score) })} />
+    <div slot="aside" class="index-tile">
+      <p class="index-number">{index.score}</p>
+      <p class="index-band"><span class={`swatch band-${indexBand.step}`}></span>{index.band}</p>
+      <p class="index-edition">{fmt(C.edition, { edition: String(SCORECARD.edition), quarter: SCORECARD.quarter.replace("-", " ") })}</p>
+    </div>
+  </PageHero>
+
+  <div class="wrap-wide">
+    <section class="tasks-section" aria-labelledby="tasks-heading">
+      <h2 id="tasks-heading" class="sr-only">{fmt(C.caption, { tasks: String(index.tasks) })}</h2>
+      <div class="tasks">
+        <div class="tasks-head" aria-hidden="true">
+          <span>{C.head.task}</span>
+          <span>{C.head.score}</span>
+          <span>{C.head.kannada}</span>
+          <span>{C.head.english}</span>
+          <span></span>
+        </div>
+        {TASKS.map((t) => {
+          const b = bandOf(t.score);
+          return (
+            <details class="task" id={t.id}>
+              <summary>
+                <span class="task-title">
+                  <span class="task-name">{t.title}</span><span class="sr-only">, </span>
+                  <span class="basis">{C.basis[t.basis]}</span><span class="sr-only">. </span>
+                  <span class="task-line" set:html={rich(t.line)} />
+                </span>
+                <span class="task-score">
+                  <span class="sr-only"> {C.head.score} </span><span class="score-number">{t.score}</span><span class="sr-only">, {t.band.toLowerCase()}. </span>
+                  <svg class="bar" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+                    <rect class="bar-track" width="100" height="8" rx="4" />
+                    {t.score > 0 && <rect class={`bar-fill band-${b.step}`} width={Math.max(t.score, 2)} height="8" rx="4" />}
+                  </svg>
+                </span>
+                <span class="task-side"><span class="side-label">{C.head.kannada}<span class="sr-only">: </span></span><span set:html={rich(t.kannada.text)} /><span class="sr-only">. </span></span>
+                <span class="task-side"><span class="side-label">{C.head.english}<span class="sr-only">: </span></span>{t.english.text}</span>
+                <span class="task-chevron" aria-hidden="true"><Icon name="chevron" /></span>
+              </summary>
+              <div class="task-body">
+                <dl>
+                  <div><dt>{C.details.question}</dt><dd set:html={rich(t.question)} /></div>
+                  <div><dt>{C.details.method}</dt><dd set:html={rich(t.method)} /></div>
+                  {t.notes?.length ? (
+                    <div><dt>{C.details.notes}</dt><dd><ul>{t.notes.slice(0, 4).map((n) => <li set:html={rich(n)} />)}</ul></dd></div>
+                  ) : null}
+                  {t.with_open_kannada && <div><dt>{C.details.withOk}</dt><dd set:html={rich(t.with_open_kannada)} /></div>}
+                  <div>
+                    <dt>{C.details.sources}</dt>
+                    <dd>
+                      <ul class="sources">
+                        {sourcesOf(t).map((s) => <li>{s.url ? <a href={s.url}>{s.label}</a> : s.label} <span class="source-ref">{shortRef(s.ref)}</span></li>)}
+                      </ul>
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+            </details>
+          );
+        })}
+      </div>
+      <p class="basis-legend" set:html={C.basis.legend} />
+      <section class="scale" aria-labelledby="scale-heading">
+        <h3 id="scale-heading" class="scale-heading">{C.scale}</h3>
+        <ul class="scale-list" role="list">
+          {SCORECARD.bands.map((b, i) => {
+            const high = SCORECARD.bands[i + 1] ? SCORECARD.bands[i + 1]!.low - 1 : 100;
+            return <li><span class={`swatch band-${i + 1}`}></span><b>{b.label}</b> {b.low} to {high}</li>;
+          })}
+        </ul>
+      </section>
+    </section>
+
+    <section class="next" aria-labelledby="next-heading">
+      <h2 id="next-heading">{C.next.heading}</h2>
+      <p class="next-intro">{C.next.intro}</p>
+      <ul class="next-cards" role="list" data-cards="next">
+        {next.map(({ task, next: n }) => (
+          <li class="next-card reveal" data-inview>
+            <p class="next-task" data-align="task"><span class="next-score">{task.score}</span> {task.title}</p>
+            <p class="next-text">{n?.text ?? task.with_open_kannada}</p>
+            {n && <a class="next-link" href={href(n.href)}>{n.link}<Icon name="arrow" /></a>}
+          </li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="measure-section prose-kn" aria-labelledby="measure-heading">
+      <h2 id="measure-heading">{C.measure.heading}</h2>
+      <ul class="measure-list">
+        {C.measure.items.map((m) => <li>{m}</li>)}
+      </ul>
+      <p><a href={json} download>{C.measure.data}</a></p>
+      <p set:html={withBase(C.measure.report)} />
+      <h2>{C.editions.heading}</h2>
+      <p>{fmt(C.editions.row, { edition: String(SCORECARD.edition), quarter: SCORECARD.quarter.replace("-", " "), date: published })}</p>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .index-tile {
+    display: grid;
+    gap: 0.25rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+    box-shadow: var(--shadow-sheet);
+  }
+  .index-tile p {
+    margin: 0;
+  }
+  .index-number {
+    font-size: 5rem;
+    line-height: 1;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+  }
+  .index-band {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 600;
+  }
+  .index-edition {
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+  }
+  .swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    flex: none;
+    border-radius: 3px;
+  }
+  .band-1 { background: var(--score-1); fill: var(--score-1); }
+  .band-2 { background: var(--score-2); fill: var(--score-2); }
+  .band-3 { background: var(--score-3); fill: var(--score-3); }
+  .band-4 { background: var(--score-4); fill: var(--score-4); }
+  .band-5 { background: var(--score-5); fill: var(--score-5); }
+
+  .tasks-section {
+    margin-top: 2.5rem;
+  }
+  /* 1 column template for the head and every row, so the columns line up without a table. */
+  .tasks {
+    --cols: minmax(0, 2.2fr) 9.5rem minmax(0, 1fr) minmax(0, 1fr) 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+  }
+  .tasks-head {
+    display: none;
+    grid-template-columns: var(--cols);
+    gap: 1.25rem;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+  .task + .task {
+    border-top: 1px solid var(--border);
+  }
+  .task summary {
+    display: grid;
+    gap: 0.5rem 1.25rem;
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    list-style: none;
+    transition: background-color var(--duration-quick) var(--ease-standard);
+  }
+  .task summary::-webkit-details-marker {
+    display: none;
+  }
+  @media (hover: hover) {
+    .task summary:hover {
+      background: oklch(from var(--foreground) l c h / 0.03);
+    }
+  }
+  .task summary:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: -2px;
+  }
+  .task-title {
+    display: block;
+  }
+  .task-name {
+    font-weight: 600;
+  }
+  .basis {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 9999px;
+    color: var(--muted-foreground);
+    font-size: 0.75rem;
+    line-height: 1.5rem;
+    vertical-align: 0.1em;
+  }
+  .task-line {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  .task-score {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .score-number {
+    min-width: 2ch;
+    font-size: 1.25rem;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+  .bar {
+    flex: 1;
+    height: 8px;
+    min-width: 4rem;
+  }
+  .bar-track {
+    fill: var(--muted);
+  }
+  .task-side {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+  }
+  .side-label {
+    color: var(--muted-foreground);
+    font-size: 0.8125rem;
+  }
+  .task-chevron {
+    display: none;
+  }
+  .task-chevron :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--muted-foreground);
+    transition: transform var(--duration-lift) var(--ease-settle);
+  }
+  .task[open] .task-chevron :global(svg) {
+    transform: rotate(180deg);
+  }
+  .task-body {
+    padding: 0 1.25rem 1.25rem;
+  }
+  .task-body dl {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    margin: 0;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-xl);
+    background: var(--muted);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+  .task-body dt {
+    font-weight: 600;
+  }
+  .task-body dd {
+    margin: 0.125rem 0 0;
+  }
+  .task-body ul {
+    margin: 0;
+    padding-left: 1.125rem;
+    list-style: disc;
+  }
+  .task-body .sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+  }
+  .source-ref {
+    overflow-wrap: anywhere;
+    color: var(--muted-foreground);
+  }
+  /* From 768px the rows line up as a table: task, score, Kannada, English, and the chevron. */
+  @media (min-width: 48rem) {
+    .tasks-head {
+      display: grid;
+    }
+    .task summary {
+      grid-template-columns: var(--cols);
+      align-items: center;
+    }
+    .task-side {
+      display: block;
+    }
+    .side-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .task-chevron {
+      display: block;
+    }
+  }
+  .basis-legend,
+  .next-intro {
+    margin-top: 1rem;
+    color: var(--muted-foreground);
+    font-size: 0.875rem;
+  }
+  .scale {
+    margin-top: 1rem;
+  }
+  .scale-heading {
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+  .scale-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: 0.875rem;
+  }
+  .scale-list li {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+  }
+  .next {
+    margin-top: 4rem;
+  }
+  .next h2,
+  .measure-section h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+  .next-cards {
+    display: grid;
+    gap: 1rem;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 48rem) {
+    .next-cards {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .next-card {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 0.5rem;
+    padding: 1.125rem 1.25rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+  }
+  .next-card p {
+    margin: 0;
+  }
+  .next-task {
+    display: flex;
+    align-items: baseline;
+    gap: 0.625rem;
+    font-weight: 600;
+  }
+  .next-score {
+    font-size: 1.75rem;
+    font-weight: 650;
+    font-variant-numeric: tabular-nums;
+  }
+  .next-text {
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+  .next-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-weight: 500;
+    font-size: 0.9375rem;
+  }
+  .next-link :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+  .measure-section {
+    max-width: var(--prose);
+    margin-top: 3rem;
+  }
+  .measure-list {
+    display: grid;
+    gap: 0.5rem;
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+</style>

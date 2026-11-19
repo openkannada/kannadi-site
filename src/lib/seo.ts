@@ -1,4 +1,5 @@
-import { isEditor, isHome, type Page, type ProjectPage } from "../content/pages.ts";
+import { isEditor, isHome, type Page, type ProjectPage, type ScorecardPage } from "../content/pages.ts";
+import { SCORECARD } from "../content/scorecard.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
 import { AUTHOR, ORG, SITE, pagePath } from "../content/site.ts";
 
@@ -30,7 +31,7 @@ export function absolute(path: string, site: URL | null): string {
 }
 
 /** What a page is about, by kind: its main node's id in the page. */
-const MAIN: Record<Page["kind"], string> = { tool: "app", reference: "resource", project: "project", info: "", home: "" };
+const MAIN: Record<Page["kind"], string> = { tool: "app", reference: "resource", project: "project", scorecard: "dataset", info: "", home: "" };
 
 /**
  * The page's JSON-LD graph: the page, what it offers (the editor with its
@@ -123,6 +124,7 @@ export function jsonLd(page: Page, site: URL | null, home: Page): Node {
 function mainNodes(page: Page, url: string, id: (name: string, base?: string) => string, author: Node, root: string, library: string): Node[] {
   if (page.kind === "info" || page.kind === "home") return organization(id, author, root);
   if (page.kind === "project") return [project(page, url, id, author, root)];
+  if (page.kind === "scorecard") return [scorecard(page, url, id, author, root)];
   if (page.kind === "reference") {
     return [
       {
@@ -196,6 +198,28 @@ function project(page: ProjectPage, url: string, id: (name: string, base?: strin
           })),
         }
       : {}),
+  };
+}
+
+/** The scorecard as a Dataset: the quarter it covers, its CC BY 4.0 license, and the JSON beside the page. */
+function scorecard(page: ScorecardPage, url: string, id: (name: string, base?: string) => string, author: Node, root: string): Node {
+  return {
+    "@type": "Dataset",
+    "@id": id("dataset"),
+    name: page.h1,
+    url,
+    description: plainText(page.description),
+    inLanguage: SITE.language,
+    license: "https://creativecommons.org/licenses/by/4.0/",
+    isAccessibleForFree: true,
+    temporalCoverage: page.quarter,
+    dateModified: SCORECARD.generated_at,
+    version: String(SCORECARD.edition),
+    measurementTechnique: plainText(SCORECARD.index.method),
+    variableMeasured: SCORECARD.tasks.map((t) => t.title),
+    creator: { "@type": "Organization", "@id": id("organization", root), name: ORG.name, url: root },
+    author,
+    distribution: { "@type": "DataDownload", encodingFormat: "application/json", contentUrl: `${url}${page.quarter}.json` },
   };
 }
 

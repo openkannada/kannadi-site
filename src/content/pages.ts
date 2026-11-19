@@ -21,6 +21,8 @@ interface PageBase {
   twin?: string;
   /** Copy that waits for a native reader; the page is left out of the build until the mark is removed. */
   needsReview?: true;
+  /** A page built and checked in CI but kept off the site until it is approved for publishing. */
+  held?: true;
   /** Short name for navigation and breadcrumbs. */
   name: string;
   title: string;
@@ -125,7 +127,13 @@ export interface ProjectPage extends PageBase {
   releases?: FontRelease[];
 }
 
-export type Page = ToolPage | ReferencePage | InfoPage | HomePage | ProjectPage;
+/** The Kannada readiness scorecard: 1 quarter's task scores from data/scorecard/. */
+export interface ScorecardPage extends PageBase {
+  kind: "scorecard";
+  quarter: string;
+}
+
+export type Page = ToolPage | ReferencePage | InfoPage | HomePage | ProjectPage | ScorecardPage;
 
 const PRIVATE: Faq = {
   q: "Is my text uploaded anywhere?",
@@ -915,6 +923,20 @@ export const ALL_PAGES: Page[] = [
     og: { from: "kannadi", to: "ಕನ್ನಡಿ" },
     keywords: "",
   },
+  {
+    slug: "scorecard",
+    kind: "scorecard",
+    held: true,
+    quarter: "2026-Q4",
+    name: "Scorecard",
+    title: "Kannada readiness scorecard: how hard is computing in Kannada?",
+    description: "12 everyday computer tasks, each scored for how close Kannada is to English, updated every quarter.",
+    h1: "Kannada readiness scorecard",
+    intro: "The Kannada readiness scorecard measures how much harder 12 everyday computer tasks are in Kannada than in English, from typing a letter to asking an AI model.",
+    faq: [],
+    og: { from: "English", to: "ಕನ್ನಡ" },
+    keywords: "",
+  },
   // Kannada pages, each the twin of an English page.
   {
     slug: "kn",
@@ -1369,13 +1391,18 @@ export const ALL_PAGES: Page[] = [
   },
 ];
 
+/** A page kept off the site: Kannada waiting for a native reader, or a page waiting for approval. */
+export function isDraft(page: { needsReview?: true; held?: true }): boolean {
+  return !!(page.needsReview || page.held);
+}
+
 /**
- * The pages to build: drafts that wait for a native reader are left out, and so are links to them from their twins.
+ * The pages to build: drafts that wait for a native reader or for approval are left out, and so are links to them from their twins.
  * KANNADA_DRAFTS=1 keeps them, to read them in a local build.
  */
 export function published(pages: Page[], drafts: boolean): Page[] {
   if (drafts) return pages;
-  const kept = pages.filter((p) => !p.needsReview);
+  const kept = pages.filter((p) => !isDraft(p));
   const slugs = new Set(kept.map((p) => p.slug));
   return kept.map((p) => {
     if (p.twin === undefined || slugs.has(p.twin)) return p;

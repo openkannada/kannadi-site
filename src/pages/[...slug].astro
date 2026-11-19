@@ -6,6 +6,7 @@ import HomePage from "../layouts/HomePage.astro";
 import ProjectPage from "../layouts/ProjectPage.astro";
 import ReferencePage from "../layouts/ReferencePage.astro";
 import InfoPage from "../layouts/InfoPage.astro";
+import ScorecardPage from "../layouts/ScorecardPage.astro";
 import ToolPage from "../layouts/ToolPage.astro";
 
 export const getStaticPaths = (() =>
@@ -21,3 +22,4 @@ const { page } = Astro.props;
 {page.kind === "info" && <InfoPage page={page} />}
 {page.kind === "home" && <HomePage page={page} />}
 {page.kind === "project" && <ProjectPage page={page} />}
+{page.kind === "scorecard" && <ScorecardPage page={page} />}

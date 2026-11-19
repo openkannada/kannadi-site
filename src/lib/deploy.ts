@@ -58,9 +58,9 @@ export function placeholders(text: string): string[] {
   return [...notes, ...marks];
 }
 
-/** Pages whose copy still waits for a native reader, by path. */
-export function unreviewed(pages: { slug: string; needsReview?: true }[]): string[] {
-  return pages.filter((p) => p.needsReview).map((p) => (p.slug ? `/${p.slug}/` : "/"));
+/** Pages still waiting for a native reader or for approval, by path. */
+export function unreviewed(pages: { slug: string; needsReview?: true; held?: true }[]): string[] {
+  return pages.filter((p) => p.needsReview || p.held).map((p) => (p.slug ? `/${p.slug}/` : "/"));
 }
 
 /**

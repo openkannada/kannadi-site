@@ -34,7 +34,8 @@ function visibleText(path: string): string {
     const strings = raw.replace(/^\s*(\/\/|\*|\/\*).*$/gm, "").match(/"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g) ?? [];
     return strings.filter((s) => / [a-z]/.test(s)).join("\n");
   }
-  if (!path.endsWith(".html")) return raw;
+  // A link's target is an address, not prose; markdown and llms.txt keep only the link text.
+  if (!path.endsWith(".html")) return raw.replace(/\]\([^)\s]*\)/g, "]").replace(/https?:\/\/\S+/g, "");
   const { document } = parseHTML(raw);
   for (const el of document.querySelectorAll("script, style, kbd, code")) el.remove();
   const attrs = [...document.querySelectorAll("[title], [aria-label], [placeholder], meta[name='description']")]

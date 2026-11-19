@@ -1,7 +1,7 @@
 // The toolbar, the suggestions and the caret line never cover each other, at every width, light and dark. @layout
 import { expect, test } from "@playwright/test";
 
-import { caretAt, caretOffset, docText, expectClearLayout, focusDoc, isPhone, layout, openEditor, settle } from "./editor.ts";
+import { caretAt, caretOffset, docText, expectClearLayout, focusDoc, isPhone, layout, NEXT, openEditor, settle } from "./editor.ts";
 
 test.describe("@layout", () => {
   test("after a word, the first line is clear of the toolbar and the suggestions", async ({ page }, info) => {
@@ -175,6 +175,7 @@ test.describe("@layout", () => {
 
   test("a press that never ends, as under a context menu, stops holding the page once keys are typed", async ({ page }, info) => {
     test.skip(isPhone(page), "A mouse button.");
+    test.skip(NEXT, "ProseMirror holds the browser's selection while a mouse button is down, so typing then is not a case.");
     await openEditor(page);
     await focusDoc(page);
     const doc = (await page.locator("#doc").boundingBox())!;

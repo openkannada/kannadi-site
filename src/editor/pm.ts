@@ -73,6 +73,8 @@ export class PmEditor implements EditorSurface {
   private before = "";
   /** Between compositionstart and the report of the composed word. */
   private composed = false;
+  /** The pending report of a word whose composition ended. */
+  private ending: ReturnType<typeof setTimeout> | undefined;
   /** Text with line breaks that the browser is inserting with spaces in their place. */
   private lines = "";
 
@@ -122,16 +124,22 @@ export class PmEditor implements EditorSurface {
     );
     // A composition counts from its start, before ProseMirror sees it, until its word is reported. ProseMirror applies
     // the last change after compositionend, so the word is reported once it has.
-    el.addEventListener("compositionstart", () => (this.composed = true), true);
+    const ended = () => {
+      clearTimeout(this.ending);
+      this.ending = undefined;
+      this.composed = false;
+      this.report("insertCompositionText");
+    };
+    // A keyboard can start the next word before the last one is reported; that one is reported first.
     el.addEventListener(
-      "compositionend",
-      () =>
-        setTimeout(() => {
-          this.composed = false;
-          this.report("insertCompositionText");
-        }),
+      "compositionstart",
+      () => {
+        if (this.ending !== undefined) ended();
+        this.composed = true;
+      },
       true,
     );
+    el.addEventListener("compositionend", () => (this.ending = setTimeout(ended)), true);
     // A composition the keyboard abandons, with no compositionend, ends when the editor loses focus.
     el.addEventListener("focusout", () => {
       if (!this.composed) return;

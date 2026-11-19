@@ -168,6 +168,25 @@ test.describe("input methods", () => {
   });
 });
 
+test("english: 2 words composed back to back, the second starting at once, both convert", async ({ page }) => {
+  await openEditor(page, { mode: "english" });
+  await focusDoc(page);
+  // A fast phone keyboard can start the next word in the same moment the last one ends.
+  // Between events the page reads what changed, as between real key events, but no timer runs.
+  await page.evaluate(async () => {
+    const doc = document.getElementById("doc")!;
+    const settle = () => new Promise<void>((done) => queueMicrotask(done));
+    for (const word of ["hi ", "kannada "]) {
+      doc.dispatchEvent(new CompositionEvent("compositionstart", { data: "" }));
+      document.execCommand("insertText", false, word);
+      await settle();
+      doc.dispatchEvent(new CompositionEvent("compositionend", { data: word }));
+      await settle();
+    }
+  });
+  await expect.poll(() => savedText(page)).toBe("ಹಿ ಕನ್ನಡ ");
+});
+
 test.describe("text with line breaks", () => {
   test("inserted text keeps its line breaks", async ({ page }) => {
     await openEditor(page);

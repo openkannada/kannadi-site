@@ -8,6 +8,17 @@ export interface SuggestKannadi {
 }
 
 export const SHOWN = 5;
+/** A longer word counts as half as common for every this many extra letters in its key. */
+const LENGTH_HALVES = 3;
+const CONSONANT_END = /[bcdfghjklmnpqrstvwxyz]$/;
+/** Up to this many key letters, a word that sounds the same leads only when at most RARER times rarer than the best longer word. */
+const PREFIX = 2;
+const RARER = 16;
+
+interface Scored {
+  word: string;
+  score: number;
+}
 const CHUNK = 2000;
 const REMEMBERED = 500;
 
@@ -60,41 +71,53 @@ export class Suggester {
     return lo;
   }
 
-  /** Words whose key equals `key`, and words whose key starts with it, each by rank. */
-  private lookup(key: string): { exact: string[]; longer: string[] } {
-    const exact: number[] = [];
-    // The commonest few longer words, kept sorted while scanning: a 1-letter key can match thousands.
-    const longer: number[] = [];
+  /**
+   * Words whose key is `key`, by rank, and the best of the words whose key starts with it. Each has a score: its rank,
+   * doubled for every few letters its key has beyond `key`, so a long form does not crowd out a short common word.
+   */
+  private lookup(key: string): { exact: Scored[]; longer: Scored[] } {
+    const exact: Scored[] = [];
+    // Kept sorted by score while scanning: a 1-letter key can match thousands.
+    const longer: Scored[] = [];
     for (let i = this.lowerBound(key); i < this.keys.length && this.keys[i]!.startsWith(key); i++) {
       const id = this.order[i]!;
-      if (this.keys[i] === key) {
-        exact.push(id);
-      } else if (longer.length < SHOWN || id < longer[SHOWN - 1]!) {
-        const at = longer.findIndex((r) => r > id);
-        longer.splice(at < 0 ? longer.length : at, 0, id);
-        longer.length = Math.min(longer.length, SHOWN);
+      const extra = this.keys[i]!.length - key.length;
+      const scored = { word: this.words[id]!, score: (id + 1) * 2 ** (extra / LENGTH_HALVES) };
+      const list = extra ? longer : exact;
+      if (list.length < SHOWN || scored.score < list[SHOWN - 1]!.score) {
+        const at = list.findIndex((l) => l.score > scored.score);
+        list.splice(at < 0 ? list.length : at, 0, scored);
+        list.length = Math.min(list.length, SHOWN);
       }
     }
-    const words = (ids: number[]) => ids.map((i) => this.words[i]!);
-    return { exact: words(exact.sort((a, b) => a - b)), longer: words(longer) };
+    return { exact, longer };
   }
 
   /**
-   * Kannada words for `latin`, best first: a word chosen before for the same
-   * letters, words that sound the same, the strict Baraha spelling, then longer
-   * words that start the same way.
+   * Kannada words for `latin`, best first: a word chosen before for the same letters; words that sound the same,
+   * unless 1 or 2 letters were typed and they are far rarer than the best longer word, with the strict Baraha spelling by its rank, or after them when it
+   * is not a known word; then the other words by score, with the spelling with a final a 2 words in when no known
+   * word sounds the same.
    */
   suggest(latin: string): string[] {
     const typed = latin.toLowerCase();
     if (!typed) return [];
     const key = this.k.latinKey(latin);
     const { exact, longer } = key ? this.lookup(key) : { exact: [], longer: [] };
+    // 1 or 2 letters are the start of a word, where a rare letter that sounds the same should not lead.
+    const limit = key.length > PREFIX ? Infinity : RARER * (longer[0]?.score ?? Infinity);
+    const lead = exact.filter((e) => e.score <= limit).map((e) => e.word);
+    const rest = [...exact.filter((e) => e.score > limit), ...longer].sort((a, b) => a.score - b.score).map((e) => e.word);
     const strict = this.k.strict(latin);
     const known = this.rank.has(strict);
+    // "til" is often ತಿಲ, not ತಿಲ್: a word typed without its final a.
+    const withA = !known && !exact.length && typed.length >= 3 && CONSONANT_END.test(typed) ? [this.k.strict(`${latin}a`)] : [];
     const ranked = [
       ...(this.picks.has(typed) ? [this.picks.get(typed)!] : []),
-      ...(known ? mergeByRank(exact, strict, this.rank) : [...exact, strict]),
-      ...longer,
+      ...(known ? mergeByRank(lead, strict, this.rank) : [...lead, strict]),
+      ...rest.slice(0, 2),
+      ...withA,
+      ...rest.slice(2),
     ];
     return [...new Set(ranked)].slice(0, SHOWN);
   }

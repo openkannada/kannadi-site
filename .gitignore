@@ -9,3 +9,5 @@ dist-site/
 .wrangler/
 .deploy/
 dist-drafts
+test-results/
+playwright-report/

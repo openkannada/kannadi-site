@@ -1,0 +1,79 @@
+// Word suggestions while typing in English letters: what they offer, and choosing one by click, tap or keyboard.
+import { expect, test } from "@playwright/test";
+
+import { currentSuggestion, docText, focusDoc, isPhone, openEditor, suggestions } from "./editor.ts";
+
+test.beforeEach(async ({ page }) => {
+  await openEditor(page, { mode: "english" });
+  await focusDoc(page);
+});
+
+test("the suggestions match the word being typed, and the shown word is the first", async ({ page }) => {
+  await page.keyboard.type("til");
+  const list = await suggestions(page);
+  expect(list[0]).toBe(await docText(page));
+  expect(await currentSuggestion(page)).toBe(list[0]);
+  // Short common words that start the same way, and the word with its final a, come before long forms.
+  expect(list).toContain("ತಿಳಿ");
+  expect(list).toContain("ತಿಲ");
+  expect(list).not.toContain("ತಿಳಿದುಬರುತ್ತದೆ");
+});
+
+test("each suggestion sounds like the letters typed", async ({ page }) => {
+  for (const [typed, want] of [["namaskara", "ನಮಸ್ಕಾರ"], ["kannada", "ಕನ್ನಡ"], ["mane", "ಮನೆ"], ["haalu", "ಹಾಲು"], ["bengaluru", "ಬೆಂಗಳೂರು"]] as const) {
+    await page.keyboard.type(typed);
+    expect(await docText(page), typed).toBe(want);
+    await page.keyboard.press("ControlOrMeta+a");
+    await page.keyboard.press("Backspace");
+  }
+});
+
+test("a suggestion chosen by click or tap replaces the word", async ({ page }) => {
+  await page.keyboard.type("til");
+  const list = await suggestions(page);
+  const second = page.locator("#suggest button").nth(1);
+  await (isPhone(page) ? second.tap() : second.click());
+  expect(await docText(page)).toBe(list[1]);
+  await expect(page.locator("#doc")).toBeFocused();
+  await page.keyboard.type(" ka");
+  expect((await docText(page)).replace(/ /g, " ")).toBe(`${list[1]} ಕ`);
+});
+
+test("Tab and Shift+Tab move through the suggestions, and Space keeps the chosen one", async ({ page }) => {
+  await page.keyboard.type("til");
+  const list = await suggestions(page);
+  await page.keyboard.press("Tab");
+  expect(await docText(page)).toBe(list[1]);
+  expect(await currentSuggestion(page)).toBe(list[1]);
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Shift+Tab");
+  expect(await docText(page)).toBe(list[1]);
+  await expect(page.locator("#announce")).toContainText(list[1]!);
+  await page.keyboard.press("Space");
+  expect((await docText(page)).replace(/ /g, " ")).toBe(`${list[1]} `);
+});
+
+test("a chosen word comes first the next time", async ({ page }) => {
+  await page.keyboard.type("til");
+  const list = await suggestions(page);
+  await page.keyboard.press("Tab");
+  await page.keyboard.press("Space");
+  await page.keyboard.type("til");
+  expect(await docText(page)).toMatch(new RegExp(`${list[1]}$`));
+});
+
+test("after a word is done its alternatives stay until the next edit, and a pick swaps it", async ({ page }) => {
+  await page.keyboard.type("til ");
+  const list = await suggestions(page);
+  expect(list.length).toBeGreaterThan(1);
+  const second = page.locator("#suggest button").nth(1);
+  await (isPhone(page) ? second.tap() : second.click());
+  expect((await docText(page)).replace(/ /g, " ")).toBe(`${list[1]} `);
+  await page.keyboard.type("ka");
+  expect((await docText(page)).replace(/ /g, " ")).toBe(`${list[1]} ಕ`);
+});
+
+test("digits after a word are typed as digits", async ({ page }) => {
+  await page.keyboard.type("ward12");
+  expect(await docText(page)).toMatch(/^[ಀ-೿]+12$/u);
+});

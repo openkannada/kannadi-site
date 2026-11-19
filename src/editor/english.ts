@@ -20,6 +20,8 @@ export interface EnglishDeps {
   caret: () => number | null;
   select: (at: number) => void;
   announce: (message: string) => void;
+  /** The word list is loaded and suggestions are ready. */
+  onReady?: () => void;
 }
 
 /** What the composer offers this class: the word being typed and ways to change it. */
@@ -89,6 +91,7 @@ export class EnglishTyping {
       const k = { ...this.deps.kannadi, strict: (latin: string) => this.strict(latin) };
       this.suggester = await Suggester.create(k, words, validPicks(this.deps.picks.read()));
       this.respellCurrent();
+      this.deps.onReady?.();
     })()
       .catch(() => {
         this.failedAt = Date.now();

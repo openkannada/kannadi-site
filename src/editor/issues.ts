@@ -147,7 +147,12 @@ export class Issues {
 
   /** The problem that contains or touches `offset`. */
   at(offset: number): Problem | null {
-    return this.items().find((i) => i.start <= offset && offset <= i.end) ?? null;
+    const items = this.items();
+    const exact = items.find((i) => i.start <= offset && offset <= i.end);
+    if (exact) return exact;
+    // A tap puts the caret at the edge of a syllable, never inside it, so a mark inside the syllable counts.
+    const { start, end } = syllableAt(this.editor.text, offset);
+    return items.find((i) => i.start < end && i.end > start) ?? null;
   }
 
   /**
@@ -372,4 +377,18 @@ function wordAround(text: string, start: number, end: number, replacement: strin
   let to = end;
   while (to < text.length && !/\s/.test(text[to]!) && to - end < 24) to++;
   return text.slice(from, start) + replacement + text.slice(end, to);
+}
+
+const graphemes = typeof Intl !== "undefined" && "Segmenter" in Intl ? new Intl.Segmenter("kn", { granularity: "grapheme" }) : null;
+
+/** The user-perceived character that starts at `offset`, or ends there at the end of a line. */
+export function syllableAt(text: string, offset: number): { start: number; end: number } {
+  if (!graphemes) return { start: offset, end: offset };
+  const from = Math.max(0, offset - 32);
+  for (const g of graphemes.segment(text.slice(from, offset + 32))) {
+    const start = from + g.index;
+    const end = start + g.segment.length;
+    if (start <= offset && offset < end && g.segment !== "\n") return { start, end };
+  }
+  return { start: offset, end: offset };
 }

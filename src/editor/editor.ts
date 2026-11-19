@@ -92,6 +92,14 @@ export class DocEditor {
         e.preventDefault();
         this.redo();
         break;
+      case "insertText": {
+        // Text with line breaks, as from dictation or a keyboard shortcut; the browser would drop the breaks.
+        if (!e.data?.includes("\n") || !e.cancelable) break;
+        e.preventDefault();
+        const sel = this.selection();
+        if (sel) this.replace(sel.start, sel.end, e.data.replace(/\r\n?/g, "\n"), "insertText");
+        break;
+      }
       case "insertParagraph":
       case "insertLineBreak": {
         e.preventDefault();
@@ -117,13 +125,18 @@ export class DocEditor {
     return this.tail && dom.endsWith("\n") ? dom.slice(0, -1) : dom;
   }
 
-  /** While the text ends with "\n", 1 more "\n" follows in the element only, to give the empty last line a caret. */
-  private keepTail(text: string): void {
+  /**
+   * While the text ends with "\n", 1 more "\n" follows in the element only, to give the empty last line a caret.
+   * Returns true when it added that "\n".
+   */
+  private keepTail(text: string): boolean {
     const want = text.endsWith("\n");
     const dom = this.el.textContent ?? "";
-    if (want && dom === text) this.node().appendData("\n");
+    const add = want && dom === text;
+    if (add) this.node().appendData("\n");
     else if (!want && dom.length > text.length) this.node().deleteData(text.length, dom.length - text.length);
     this.tail = want;
+    return add;
   }
 
   node(): Text {
@@ -140,10 +153,12 @@ export class DocEditor {
   sync(inputType = "", record = true): void {
     this.flatten();
     const after = this.text;
-    this.keepTail(after);
+    const added = this.keepTail(after);
     if (after === this.before) return;
     const sel = this.selection();
     const edit = diff(this.before, after, sel && sel.start === sel.end ? sel.start : -1);
+    // Safari moves a caret at the very end back before a final "\n"; with the extra "\n" in, it goes after it again.
+    if (added && sel && sel.start === sel.end && document.activeElement === this.el) this.select(edit.newEnd);
     if (record) this.record(edit, this.before, after, inputType);
     this.before = after;
     this.onEdit(edit, after, inputType);
@@ -293,6 +308,45 @@ export class DocEditor {
   rect(start: number, end: number): DOMRect {
     const rects = this.range(start, end).getClientRects();
     return rects[0] ?? this.el.getBoundingClientRect();
+  }
+
+  /**
+   * Screen box of the caret's line, or null when the caret is outside the editor. Browsers disagree on the box of a
+   * collapsed range next to a line break, so it comes from the letter after the caret, or the one before it, and for
+   * an empty line from the last letter above it, 1 line height lower for each line break in between.
+   */
+  caretRect(): DOMRect | null {
+    const sel = document.getSelection();
+    if (!sel?.rangeCount || !sel.focusNode || !this.el.contains(sel.focusNode)) return null;
+    // Read only: a keyboard may be composing, and changing the DOM under it cuts the word in 2.
+    const node = this.el.firstChild;
+    const box = this.el.getBoundingClientRect();
+    const style = getComputedStyle(this.el);
+    const left = box.left + parseFloat(style.paddingLeft);
+    const size = parseFloat(style.fontSize);
+    const line = style.lineHeight.endsWith("px") ? parseFloat(style.lineHeight) : (parseFloat(style.lineHeight) || 1.6) * size;
+    if (!node || node.nodeType !== Node.TEXT_NODE || this.el.childNodes.length > 1) {
+      const own = sel.getRangeAt(0).getBoundingClientRect();
+      return own.height ? own : new DOMRect(left, box.top + parseFloat(style.paddingTop) + (line - size) / 2, 0, size);
+    }
+    const text = (node as Text).data;
+    const span = (from: number, to: number) => {
+      const range = document.createRange();
+      range.setStart(node, Math.min(from, text.length));
+      range.setEnd(node, Math.min(to, text.length));
+      return range.getClientRects();
+    };
+    const at = Math.min(this.offsetOf(sel.focusNode, sel.focusOffset), text.length);
+    const next = at < text.length && text[at] !== "\n" ? span(at, at + 1)[0] : undefined;
+    if (next) return new DOMRect(next.left, next.top, 0, next.height);
+    const prev = at > 0 && text[at - 1] !== "\n" ? [...span(at - 1, at)].at(-1) : undefined;
+    if (prev) return new DOMRect(prev.right, prev.top, 0, prev.height);
+    let from = at;
+    while (from > 0 && text[from - 1] === "\n") from--;
+    const breaks = at - from;
+    const above = from > 0 ? [...span(from - 1, from)].at(-1) : undefined;
+    if (above) return new DOMRect(left, above.top + breaks * line, 0, above.height);
+    return new DOMRect(left, box.top + parseFloat(style.paddingTop) + breaks * line + (line - size) / 2, 0, size);
   }
 
   /** Scrolls a range into the middle third at once, so a popover can be placed next to it. */

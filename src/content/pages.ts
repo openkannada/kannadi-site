@@ -607,7 +607,7 @@ export const ALL_PAGES: Page[] = [
     name: "Spell check",
     title: "Kannada spell check: a Hunspell dictionary for LibreOffice and Firefox",
     description:
-      "A Kannada Hunspell dictionary that accepts 88.9% of held-out Wikipedia words, against 65.7% for hunspell-kn 1.0.3, the dictionary Fedora ships, from 2009.",
+      "A Kannada spell-check dictionary for LibreOffice and Firefox that accepts 88.9% of the words in Kannada Wikipedia text.",
     h1: "Kannada spell check",
     intro:
       "A Kannada Hunspell dictionary for LibreOffice and Firefox, with an analyzer, a stemmer and sound-alike keys generated from the same paradigm rules.",
@@ -656,7 +656,7 @@ export const ALL_PAGES: Page[] = [
     name: "Dictionary",
     title: "English to Kannada dictionary: Kannada words, spellings and meanings",
     description:
-      "An English to Kannada dictionary with 3,712 word pages: Kannada words with ISO 15919 and Baraha spellings, part of speech and meanings from Alar.",
+      "An English to Kannada dictionary: the Kannada words for each English word, with ISO 15919 and Baraha spellings, part of speech and meanings from Alar.",
     h1: "English to Kannada dictionary",
     intro:
       "An English to Kannada dictionary, with 1 page per English word. Each page gives the Kannada words with their ISO 15919 and Baraha spellings, the part of speech, and what each Kannada word means in English, from the Alar dictionary.",
@@ -733,10 +733,10 @@ export const ALL_PAGES: Page[] = [
     name: "OCR",
     title: "Kannada OCR: a Tesseract model for old Kannada print",
     description:
-      "A Tesseract model for Kannada print. On old printed books it reads 6.0% of characters wrong, against 8.7% for stock Tesseract.",
+      "A Tesseract model that turns old printed Kannada books into text, with fewer characters read wrong than stock Tesseract.",
     h1: "Kannada OCR",
     intro:
-      "A fine-tuned Tesseract model for Kannada print, especially old print, with a benchmark of 4 sets to measure how well it reads.",
+      "A fine-tuned Tesseract model for Kannada print, especially old print. On old printed books it reads fewer characters wrong than stock Tesseract.",
     art: "scan",
     schema: "CreativeWork",
     licenses: [MIT, APACHE],
@@ -775,7 +775,7 @@ export const ALL_PAGES: Page[] = [
     name: "AI benchmark",
     title: "The Kannada token tax: what Kannada costs in AI tokenizers",
     description:
-      "The same text costs between 1.1 and 8.3 times as many tokens in Kannada as in English, measured on 960 professionally translated segments.",
+      "The same text costs between 1.1 and 8.3 times as many tokens in Kannada as in English, depending on the AI tokenizer.",
     h1: "The Kannada token tax",
     intro:
       "The token tax is how many tokens Kannada text costs compared with the same text in English. In public tokenizers, Kannada costs between 1.1 and 8.3 times as many.",
@@ -1089,7 +1089,7 @@ export const ALL_PAGES: Page[] = [
     name: "ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ",
     title: "ಕನ್ನಡ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ: LibreOffice ಮತ್ತು Firefox ಗಾಗಿ Hunspell ನಿಘಂಟು",
     description:
-      "ಹೊರಗಿಟ್ಟ ವಿಕಿಪೀಡಿಯ ಪದಗಳಲ್ಲಿ 88.9% ಅನ್ನು ಒಪ್ಪುವ ಕನ್ನಡ Hunspell ನಿಘಂಟು. ಹೆಚ್ಚಿನ ವ್ಯವಸ್ಥೆಗಳಲ್ಲಿರುವ 2009ರ ನಿಘಂಟು 65.7% ಒಪ್ಪುತ್ತದೆ.",
+      "ಕನ್ನಡ ವಿಕಿಪೀಡಿಯ ಪಠ್ಯದ 88.9% ಪದಗಳನ್ನು ಒಪ್ಪುವ, LibreOffice ಮತ್ತು Firefox ಗಾಗಿ ಕನ್ನಡ Hunspell ನಿಘಂಟು.",
     h1: "ಕನ್ನಡ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ",
     intro:
       "LibreOffice ಮತ್ತು Firefox ಗಾಗಿ ಕನ್ನಡ Hunspell ನಿಘಂಟು. ಅದರ ಜೊತೆಗೆ ಒಂದು ಪದ ವಿಶ್ಲೇಷಕ, ಒಂದು ಪದಮೂಲ ಶೋಧಕ ಮತ್ತು ಉಚ್ಚಾರ ಹೋಲಿಕೆಯ ಕೀಲಿಗಳು ಇವೆ, ಎಲ್ಲವೂ ಒಂದೇ ರೂಪನಿಯಮಗಳಿಂದ ರಚಿತವಾದವು.",
@@ -1140,7 +1140,7 @@ export const ALL_PAGES: Page[] = [
     name: "ನಿಘಂಟು",
     title: "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ಕನ್ನಡ ಪದಗಳು, ಲಿಪ್ಯಂತರ ಮತ್ತು ಅರ್ಥಗಳು",
     description:
-      "3,712 ಪದ ಪುಟಗಳಿರುವ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರದೊಂದಿಗೆ ಕನ್ನಡ ಪದಗಳು, ಪದವರ್ಗ, ಅಲರ್‌ನಿಂದ ಅರ್ಥಗಳು.",
+      "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ ಕನ್ನಡ ಪದಗಳು, ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರ, ಪದವರ್ಗ, ಅಲರ್‌ನಿಂದ ಅರ್ಥಗಳು.",
     h1: "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು",
     intro:
       "ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ 1 ಪುಟವಿರುವ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು. ಪ್ರತಿ ಪುಟದಲ್ಲಿ ಕನ್ನಡ ಪದಗಳು, ಅವುಗಳ ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರ, ಪದವರ್ಗ, ಮತ್ತು ಅಲರ್ ನಿಘಂಟಿನಿಂದ ಪಡೆದ ಇಂಗ್ಲಿಷ್ ಅರ್ಥಗಳು ಇರುತ್ತವೆ.",
@@ -1219,10 +1219,10 @@ export const ALL_PAGES: Page[] = [
     name: "OCR",
     title: "ಕನ್ನಡ OCR: ಹಳೆಯ ಕನ್ನಡ ಮುದ್ರಣಕ್ಕಾಗಿ Tesseract ಮಾದರಿ",
     description:
-      "ಕನ್ನಡ ಮುದ್ರಣವನ್ನು, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣವನ್ನು, ಪಠ್ಯವಾಗಿ ಓದುವ Tesseract ಮಾದರಿ, 4 ಸೆಟ್‌ಗಳ ಮಾನದಂಡದೊಂದಿಗೆ. ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳಲ್ಲಿ ಅದು 6.0% ಅಕ್ಷರಗಳನ್ನು ತಪ್ಪಾಗಿ ಓದುತ್ತದೆ, ಸಾಮಾನ್ಯ Tesseract ನಲ್ಲಿ 8.7%.",
+      "ಹಳೆಯ ಮುದ್ರಿತ ಕನ್ನಡ ಪುಸ್ತಕಗಳನ್ನು ಪಠ್ಯವಾಗಿ ಓದುವ Tesseract ಮಾದರಿ. ಅವುಗಳಲ್ಲಿ ಅದು ಸಾಮಾನ್ಯ Tesseract ಗಿಂತ ಕಡಿಮೆ ಅಕ್ಷರಗಳನ್ನು ತಪ್ಪಾಗಿ ಓದುತ್ತದೆ.",
     h1: "ಕನ್ನಡ OCR",
     intro:
-      "ಕನ್ನಡ ಮುದ್ರಣಕ್ಕಾಗಿ, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣಕ್ಕಾಗಿ, ಹೆಚ್ಚಿನ ತರಬೇತಿ ನೀಡಿದ Tesseract ಮಾದರಿ. ಅದು ಎಷ್ಟು ಚೆನ್ನಾಗಿ ಓದುತ್ತದೆ ಎಂದು ಅಳೆಯಲು 4 ಸೆಟ್‌ಗಳ ಮಾನದಂಡವೂ ಇದೆ.",
+      "ಕನ್ನಡ ಮುದ್ರಣಕ್ಕಾಗಿ, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣಕ್ಕಾಗಿ, ಹೆಚ್ಚಿನ ತರಬೇತಿ ನೀಡಿದ Tesseract ಮಾದರಿ. ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳಲ್ಲಿ ಅದು ಸಾಮಾನ್ಯ Tesseract ಗಿಂತ ಕಡಿಮೆ ಅಕ್ಷರಗಳನ್ನು ತಪ್ಪಾಗಿ ಓದುತ್ತದೆ.",
     art: "scan",
     schema: "CreativeWork",
     licenses: [MIT, APACHE],
@@ -1263,7 +1263,7 @@ export const ALL_PAGES: Page[] = [
     name: "AI ಮಾನದಂಡ",
     title: "ಕನ್ನಡದ ಟೋಕನ್ ತೆರಿಗೆ: AI ಟೋಕನೈಸರ್‌ಗಳಲ್ಲಿ ಕನ್ನಡಕ್ಕೆ ತಗಲುವ ವೆಚ್ಚ",
     description:
-      "ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿರುವ ಪಠ್ಯಕ್ಕೆ ಹೋಲಿಸಿದರೆ ಅದೇ ಪಠ್ಯಕ್ಕೆ ಕನ್ನಡದಲ್ಲಿ 1.1 ರಿಂದ 8.3 ಪಟ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು. ವೃತ್ತಿಪರವಾಗಿ ಅನುವಾದಿಸಿದ 960 ಭಾಗಗಳ ಮೇಲೆ ಅಳೆದದ್ದು.",
+      "ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿರುವ ಪಠ್ಯಕ್ಕೆ ಹೋಲಿಸಿದರೆ ಅದೇ ಪಠ್ಯಕ್ಕೆ ಕನ್ನಡದಲ್ಲಿ 1.1 ರಿಂದ 8.3 ಪಟ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು.",
     h1: "ಕನ್ನಡದ ಟೋಕನ್ ತೆರಿಗೆ",
     intro:
       "ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿರುವ ಅದೇ ಪಠ್ಯಕ್ಕೆ ಹೋಲಿಸಿದರೆ ಕನ್ನಡ ಪಠ್ಯಕ್ಕೆ ಎಷ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು ಎಂಬುದೇ ಟೋಕನ್ ತೆರಿಗೆ. ಸಾರ್ವಜನಿಕ ಟೋಕನೈಸರ್‌ಗಳಲ್ಲಿ ಕನ್ನಡಕ್ಕೆ 1.1 ರಿಂದ 8.3 ಪಟ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು.",

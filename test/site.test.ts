@@ -3,6 +3,9 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { test } from "node:test";
 
+import { ABOUT } from "../src/content/about.ts";
+import { HOME_COPY } from "../src/content/home.ts";
+import { STORY } from "../src/content/story.ts";
 import { ALL_PAGES, EDITOR, HOME, HOMES, NAV, PAGES, inLanguage, isHome, published } from "../src/content/pages.ts";
 import { pagePath, siteUrl } from "../src/content/site.ts";
 import { llmsFull, llmsIndex, markdownPath, mirror, readPage, robots, sitemap } from "../src/lib/agent-text.ts";
@@ -99,7 +102,6 @@ test("project pages say what each tool does, its license and where to get it, wi
     assert.deepEqual(figures(section("next").items[3]).filter((n) => n.endsWith("%")), ["6.2%", "7.5%"], `${slug}: headwords, Ziegler then Kittel`);
     assert.ok(figures(section("method").paragraphs[0]).includes("10,654"), `${slug} lacks the searched words`);
     assert.equal(section("license").items.at(-1), CREDIT, `${slug}: the Alar credit, word for word`);
-    assert.ok(page.description.includes("3,712"), `${slug} description`);
     assert.equal(section("downloads").paragraphs.length, 1, `${slug}: downloads stay coming soon until the dictionary is hosted`);
   }
   for (const slug of ["fonts"]) assert.doesNotMatch(text(slug).replace(/U\+[0-9A-F]{4}|15919|1\.1\b|2\.0\b|1\.0\b|\b3 |\d\.\d{3}|SHA-256|Article 1\b/g, ""), /\d+(\.\d+)?%|\d{2,}/, `${slug} shows a figure`);
@@ -327,7 +329,7 @@ test("the people of Open Kannada carry a role label, and no page text ranks them
   const { ABOUT } = await import("../src/content/about.ts");
   const { SITE_STRINGS } = await import("../src/i18n/site.ts");
   assert.deepEqual(ABOUT.en.people.map((p) => p.role), ["Founding member", "Founding member"]);
-  for (const p of [...ABOUT.en.people, ...ABOUT.kn.people]) assert.deepEqual(Object.keys(p).sort(), ["name", "role", "site", "url"]);
+  for (const p of [...ABOUT.en.people, ...ABOUT.kn.people]) assert.deepEqual(Object.keys(p).sort(), ["alt", "name", "photo", "role", "site", "url"]);
   const shown = [JSON.stringify(ABOUT.en), JSON.stringify(SITE_STRINGS.en)].join("\n");
   assert.doesNotMatch(shown.replace(/founders@luminik\.io/g, ""), /co-founder|\bfounded\b|>Founders</i);
 });
@@ -420,4 +422,42 @@ test("the editor and the Nudi converter say how to convert a folder with the kan
     assert.ok(answer.includes("brew install openkannada/tap/kannadi"), `${slug} lacks Homebrew`);
     assert.ok(answer.includes("--layout akruti"), `${slug} does not say Akruti text files need --layout akruti`);
   }
+});
+
+test("a page's description and intro carry at most 1 headline figure, and leave methods and baselines to the sections below", () => {
+  const leads = [
+    ...ALL_PAGES.flatMap((p) => [[`${p.slug} description`, p.description], [`${p.slug} intro`, p.intro]]),
+    ...Object.values(HOME_COPY).flatMap((h) => h.tools.items.map((c) => [`home card ${c.slug}`, c.text])),
+  ];
+  for (const [where, text] of leads) {
+    const figures = plainText(text).match(/\d+(?:\.\d+)?%|\d{1,3}(?:,\d{3})+/g) ?? [];
+    assert.ok(figures.length <= 1, `${where} has ${figures.length} headline figures: ${figures.join(", ")}`);
+    assert.doesNotMatch(text, /held[- ]out|measured|against \d|segments|benchmark of|Fedora|hunspell-kn|word pages|ಹೊರಗಿಟ್ಟ|ಅಳೆದ|ಮಾನದಂಡದೊಂದಿಗೆ|ಮಾನದಂಡವೂ|ಪದ ಪುಟಗಳ/i, `${where} gives a method or baseline`);
+  }
+});
+
+test("the copy says where our fixes go, with no 'where they belong' or 'upstream'", () => {
+  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
+  const copy = JSON.stringify([ALL_PAGES, ABOUT, HOME_COPY, STORY]) + read("src/integrations/agent-files.ts");
+  assert.doesNotMatch(copy, /where (?:they|it) belongs?|upstream/i);
+  assert.match(STORY.en.join(" "), /send our fixes back to the fonts and programs people already use/);
+  assert.doesNotMatch(read("src/integrations/agent-files.ts"), /Fonts[^.]*coming soon/, "llms.txt says the fonts are released");
+});
+
+test("each founding member has a portrait in AVIF and WebP with alt text, all rights reserved", () => {
+  const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), "utf8");
+  const files = readdirSync(new URL("../src/assets/people/", import.meta.url)).sort();
+  assert.deepEqual(files, ["neha-160.avif", "neha-160.webp", "neha-240.avif", "neha-240.webp", "prasad-160.avif", "prasad-160.webp", "prasad-240.avif", "prasad-240.webp"]);
+  for (const lang of ["en", "kn"]) {
+    assert.deepEqual(ABOUT[lang].people.map((p) => p.photo), ["prasad", "neha"], lang);
+    for (const p of ABOUT[lang].people) assert.ok(p.alt.includes(p.name), `${lang}: the alt text of ${p.name} names them`);
+  }
+  const about = read("src/components/About.astro");
+  assert.match(about, /<source type="image\/avif"/);
+  assert.match(about, /alt=\{p\.alt\}/);
+  const reuse = read("REUSE.toml");
+  const last = reuse.slice(reuse.lastIndexOf("[[annotations]]"));
+  assert.match(last, /path = "src\/assets\/people\/\*\*"/);
+  assert.match(last, /SPDX-License-Identifier = "LicenseRef-AllRightsReserved"/);
+  assert.match(read("LICENSES/LicenseRef-AllRightsReserved.txt"), /^All rights reserved\./);
 });

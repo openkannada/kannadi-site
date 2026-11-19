@@ -16,10 +16,10 @@ const ABOUT_EN = {
       { illustration: "scan" as const, label: "Reading old printed books with OCR" },
     ],
   },
-  /** The people of Open Kannada, in 1 list with 1 layout: a role is a label, never a rank. */
+  /** The people of Open Kannada, in 1 list with 1 layout: a role is a label, never a rank. `photo` names a portrait in src/assets/people. */
   people: [
-    { name: "Prasad Subrahmanya", role: "Founding member", url: "https://prasad.tech", site: "prasad.tech" },
-    { name: "Neha Prasad", role: "Founding member", url: "https://neha-prasad.com/", site: "neha-prasad.com" },
+    { name: "Prasad Subrahmanya", role: "Founding member", url: "https://prasad.tech", site: "prasad.tech", photo: "prasad" as const, alt: "Portrait of Prasad Subrahmanya" },
+    { name: "Neha Prasad", role: "Founding member", url: "https://neha-prasad.com/", site: "neha-prasad.com", photo: "neha" as const, alt: "Portrait of Neha Prasad" },
   ],
   dedication: [
     'I dedicate this work to my parents, Veena and Subramanya. They were farmers, and the values and principles they lived by made my sister <a href="https://www.pramodinisubramanya.com/">Pramodini</a> and me who we are today.',
@@ -53,8 +53,8 @@ const ABOUT_KN: About = {
     ],
   },
   people: [
-    { name: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ", role: "ಸ್ಥಾಪಕ ಸದಸ್ಯ", url: "https://prasad.tech", site: "prasad.tech" },
-    { name: "ನೇಹಾ ಪ್ರಸಾದ್", role: "ಸ್ಥಾಪಕ ಸದಸ್ಯೆ", url: "https://neha-prasad.com/", site: "neha-prasad.com" },
+    { name: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ", role: "ಸ್ಥಾಪಕ ಸದಸ್ಯ", url: "https://prasad.tech", site: "prasad.tech", photo: "prasad", alt: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ ಅವರ ಭಾವಚಿತ್ರ" },
+    { name: "ನೇಹಾ ಪ್ರಸಾದ್", role: "ಸ್ಥಾಪಕ ಸದಸ್ಯೆ", url: "https://neha-prasad.com/", site: "neha-prasad.com", photo: "neha", alt: "ನೇಹಾ ಪ್ರಸಾದ್ ಅವರ ಭಾವಚಿತ್ರ" },
   ],
   dedication: [
     'ಈ ಕೆಲಸವನ್ನು ನನ್ನ ತಂದೆ ತಾಯಿ, ವೀಣಾ ಮತ್ತು ಸುಬ್ರಮಣ್ಯ ಅವರಿಗೆ ಅರ್ಪಿಸುತ್ತೇನೆ. ಅವರು ರೈತರು. ಅವರು ಬದುಕಿದ ಮೌಲ್ಯಗಳು ಮತ್ತು ತತ್ವಗಳೇ ನನ್ನ ತಂಗಿ <a href="https://www.pramodinisubramanya.com/">ಪ್ರಮೋದಿನಿ</a> ಮತ್ತು ನನ್ನನ್ನು ಇಂದು ಇರುವಂತೆ ರೂಪಿಸಿವೆ.',

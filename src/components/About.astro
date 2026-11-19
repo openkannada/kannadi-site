@@ -4,6 +4,14 @@ import type { Lang } from "../i18n/core.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
 import Illustration from "./Illustration.astro";
 import { withBase } from "../lib/paths.ts";
+import prasad160avif from "../assets/people/prasad-160.avif";
+import prasad240avif from "../assets/people/prasad-240.avif";
+import prasad160webp from "../assets/people/prasad-160.webp";
+import prasad240webp from "../assets/people/prasad-240.webp";
+import neha160avif from "../assets/people/neha-160.avif";
+import neha240avif from "../assets/people/neha-240.avif";
+import neha160webp from "../assets/people/neha-160.webp";
+import neha240webp from "../assets/people/neha-240.webp";
 
 interface Props {
   lang: Lang;
@@ -11,6 +19,12 @@ interface Props {
 const { lang } = Astro.props;
 const ABOUT = ALL[lang];
 const T = SITE_STRINGS[lang].about;
+// Shown at 80 CSS pixels: 160 for 2x screens, 240 for 3x.
+const PHOTOS = {
+  prasad: { avif: [prasad160avif, prasad240avif], webp: [prasad160webp, prasad240webp] },
+  neha: { avif: [neha160avif, neha240avif], webp: [neha160webp, neha240webp] },
+};
+const srcset = ([x2, x3]: { src: string }[]) => `${x2!.src} 2x, ${x3!.src} 3x`;
 ---
 {ABOUT.sections.map((s) => (
   <section>
@@ -36,9 +50,15 @@ const T = SITE_STRINGS[lang].about;
   <ul class="people" role="list">
     {ABOUT.people.map((p) => (
       <li>
-        <b>{p.name}</b><span class="sr-only">, </span>
-        <span class="text-muted-foreground">{p.role}</span><span class="sr-only">, </span>
-        <a href={p.url}>{p.site}</a>
+        <picture>
+          <source type="image/avif" srcset={srcset(PHOTOS[p.photo].avif)} />
+          <img src={PHOTOS[p.photo].webp[0]!.src} srcset={srcset(PHOTOS[p.photo].webp)} alt={p.alt} width="80" height="80" loading="lazy" decoding="async" />
+        </picture>
+        <div>
+          <b>{p.name}</b><span class="sr-only">, </span>
+          <span class="text-muted-foreground">{p.role}</span><span class="sr-only">, </span>
+          <a href={p.url}>{p.site}</a>
+        </div>
       </li>
     ))}
   </ul>
@@ -99,12 +119,27 @@ const T = SITE_STRINGS[lang].about;
     list-style: none;
   }
   .people li {
-    display: grid;
-    gap: 0.125rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     padding: 1rem 1.25rem;
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     background: var(--card);
+  }
+  .people li div {
+    display: grid;
+    gap: 0.125rem;
+    min-width: 0;
+  }
+  .people img {
+    display: block;
+    flex: none;
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    background: var(--muted);
+    object-fit: cover;
   }
   .dedication {
     border-left: 3px solid var(--primary);

@@ -58,3 +58,10 @@ path = "public/fonts/**"
 precedence = "override"
 SPDX-FileCopyrightText = ["2022 The Noto Project Authors", "2026 The Open Kannada Authors", "2011-2012 Aravinda VK", "2005-2010 Indian Institute of Science, Bangalore"]
 SPDX-License-Identifier = "OFL-1.1"
+
+# Photos of the founding members, not covered by the licenses above.
+[[annotations]]
+path = "src/assets/people/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2026 Prasad Subrahmanya and Neha Prasad"
+SPDX-License-Identifier = "LicenseRef-AllRightsReserved"

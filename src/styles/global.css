@@ -103,7 +103,7 @@
 
 @layer base {
   :root {
-    /* The 3 widths every page lines up on: the page, the column of an inner page, and a line of prose. */
+    /* The 4 widths pages line up on: the page, a wide page with a rail, the column of an inner page, and a line of prose. */
     --page: 80rem;
     --column: 54rem;
     --prose: 46rem;
@@ -362,7 +362,7 @@
   max-width: var(--column);
 }
 .wrap-prose {
-  max-width: calc(var(--prose) + 2 * var(--gutter));
+  max-width: var(--prose);
 }
 /* Prose starts on the column's left edge and stops at a readable measure. */
 .measure {
@@ -400,9 +400,21 @@
       border-color var(--duration-quick) var(--ease-standard),
       box-shadow var(--duration-lift) var(--ease-settle);
   }
-  .reveal:nth-child(2) { transition-delay: 60ms; }
-  .reveal:nth-child(3) { transition-delay: 120ms; }
-  .reveal:nth-child(4) { transition-delay: 180ms; }
+  /* The stagger delays only the rise, so hover colors answer at once. */
+  .reveal:nth-child(2) { transition-delay: 60ms, 60ms, 0s, 0s; }
+  .reveal:nth-child(3) { transition-delay: 120ms, 120ms, 0s, 0s; }
+  .reveal:nth-child(4) { transition-delay: 180ms, 180ms, 0s, 0s; }
+}
+/* A printed page shows every card, mark and illustration at rest, scrolled to or not. */
+@media print {
+  .reveal,
+  .illo-art {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .tool-mark {
+    font-weight: 650 !important;
+  }
 }
 
 /* A page heading with its illustration beside it: on wide screens for tool pages, from tablets elsewhere.

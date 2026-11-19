@@ -53,7 +53,7 @@ const illo = illustrationFor(page);
         )}
         {s.paragraphs?.map((p) => <p set:html={withBase(p)} />)}
         {s.table && <RatioTable table={s.table} lang={lang} />}
-        {s.compare && <CompareTable table={s.compare} />}
+        {s.compare && <CompareTable table={s.compare} label={T[s.id]} />}
         {s.items && (
           <ul class="project-list">
             {s.items.map((i) => <li set:html={withBase(i)} />)}
@@ -81,7 +81,10 @@ const illo = illustrationFor(page);
     const line = innerHeight / 3;
     let current = headings[0];
     for (const h of headings) if (h.getBoundingClientRect().top < line) current = h;
-    for (const [id, a] of links) a.toggleAttribute("aria-current", id === current?.id);
+    for (const [id, a] of links) {
+      if (id === current?.id) a.setAttribute("aria-current", "location");
+      else a.removeAttribute("aria-current");
+    }
   };
   if (headings.length) {
     addEventListener("scroll", () => (frame ||= requestAnimationFrame(mark)), { passive: true });

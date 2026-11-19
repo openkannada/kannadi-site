@@ -37,7 +37,7 @@ const converter = CONVERTERS.slugs.indexOf(page.slug);
     {converter >= 0 && (
       <section aria-labelledby="converters-heading">
         <h2 id="converters-heading">{CONVERTERS_HEADING}</h2>
-        <CompareTable table={CONVERTERS} current={converter} />
+        <CompareTable table={CONVERTERS} current={converter} label={CONVERTERS_HEADING} />
       </section>
     )}
     <Faq faq={page.faq} lang={page.lang ?? "en"} />

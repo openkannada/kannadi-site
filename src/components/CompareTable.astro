@@ -6,14 +6,16 @@ import { withBase } from "../lib/paths.ts";
 interface Props {
   table: Comparison;
   /** The row of the page being read, marked as the current one. */
-  current?: number;
+  current?: number | undefined;
+  /** What the table compares, for the scrolling region's name. */
+  label: string;
 }
-const { table, current } = Astro.props;
+const { table, current, label } = Astro.props;
 // A column of figures lines up on the right, by column, so 1 word among numbers does not break it.
 const numeric = (s: string) => /^[\d.,%\s]+$/.test(s);
 const num = table.head.map((_, i) => i > 0 && table.rows.every((r) => numeric(r[i] ?? "")));
 ---
-<div class="compare-wrap">
+<div class="compare-wrap" role="region" aria-label={label} tabindex="0">
   <table class="compare">
     <thead>
       <tr>
@@ -37,6 +39,10 @@ const num = table.head.map((_, i) => i > 0 && table.rows.every((r) => numeric(r[
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     background: var(--card);
+  }
+  .compare-wrap:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
   }
   .compare {
     width: 100%;

@@ -542,8 +542,21 @@ function wire(): void {
     if (e.key === "Escape" && composer.revert()) e.preventDefault();
     if (e.key === "Escape" && issues.open) issues.close(false);
   });
+  // A click in the sheet's margin puts the caret at the nearest place in the text, without jumping to the top.
   byId("sheet").addEventListener("click", (e) => {
-    if (e.target === e.currentTarget) editor.el.focus();
+    if (e.target !== e.currentTarget) return;
+    editor.el.focus({ preventScroll: true });
+    const box = editor.el.getBoundingClientRect();
+    if (e.clientY >= box.bottom || !editor.text) {
+      editor.select(editor.text.length);
+      return;
+    }
+    const x = Math.min(Math.max(e.clientX, box.left + 1), box.right - 1);
+    const y = Math.max(e.clientY, box.top + 1);
+    const at = document.caretPositionFromPoint?.(x, y) ?? null;
+    const node = at?.offsetNode ?? document.caretRangeFromPoint?.(x, y)?.startContainer;
+    const offset = at?.offset ?? document.caretRangeFromPoint?.(x, y)?.startOffset ?? 0;
+    editor.select(node && editor.el.contains(node) ? Math.min(editor.offsetOf(node, offset), editor.text.length) : editor.text.length);
   });
   document.addEventListener("selectionchange", () => {
     composer.selectionChanged();
@@ -649,14 +662,19 @@ function wire(): void {
   // iOS keeps fixed elements behind the on-screen keyboard; --kb lifts them above it.
   const vv = window.visualViewport;
   if (vv) {
-    let height = vv.height;
+    // The tallest the visual viewport has been at this width: its height with no keyboard open.
+    let full = vv.height;
+    let width = vv.width;
+    let last = vv.height;
     const inset = () => {
       // A pinch zoom also shrinks the visual viewport; only a keyboard should lift the dock.
       if (vv.scale !== 1) return;
       document.documentElement.style.setProperty("--kb", `${Math.max(0, innerHeight - vv.height - vv.offsetTop)}px`);
-      // A keyboard opening covers the caret; scrolling, or the address bar hiding, must not pull the page back to it.
-      if (vv.height < height - 100) view.keepCaret();
-      height = vv.height;
+      if (vv.width !== width) [full, width] = [vv.height, vv.width];
+      full = Math.max(full, vv.height);
+      // A keyboard opening, even in small steps, covers the caret; scrolling or the address bar must not pull the page back to it.
+      if (vv.height < full - 100 && vv.height < last) view.keepCaret();
+      last = vv.height;
     };
     vv.addEventListener("resize", inset);
     vv.addEventListener("scroll", inset);

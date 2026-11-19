@@ -8,11 +8,8 @@ export interface SuggestKannadi {
 }
 
 export const SHOWN = 5;
-/** Words that add only a final vowel shown before the spelling with a final a. */
-const VOWEL_SHOWN = 2;
 /** A longer word counts as half as common for every this many extra letters in its key. */
 const LENGTH_HALVES = 3;
-const FINAL_VOWEL = /^(a|e|i|o|u|ai|au)$/;
 const CONSONANT_END = /[bcdfghjklmnpqrstvwxyz]$/;
 const CHUNK = 2000;
 const REMEMBERED = 500;
@@ -67,53 +64,50 @@ export class Suggester {
   }
 
   /**
-   * Words whose key equals `key`, words whose key is `key` and 1 final vowel, and the best of the words whose key
-   * starts with it, longer words counting as rarer, so a long form does not crowd out a short common word.
+   * Words whose key equals `key`, by rank, and the best of the words whose key starts with it: each counts as half as
+   * common for every few extra letters, so a long form does not crowd out a short common word.
    */
-  private lookup(key: string): { exact: string[]; vowel: string[]; longer: string[] } {
+  private lookup(key: string): { exact: string[]; longer: string[] } {
     const exact: number[] = [];
-    const vowel: number[] = [];
     // The best longer words, kept sorted by score while scanning: a 1-letter key can match thousands.
     const longer: { id: number; score: number }[] = [];
     for (let i = this.lowerBound(key); i < this.keys.length && this.keys[i]!.startsWith(key); i++) {
       const id = this.order[i]!;
-      const rest = this.keys[i]!.slice(key.length);
-      if (!rest) exact.push(id);
-      else if (FINAL_VOWEL.test(rest)) vowel.push(id);
-      else {
-        const score = (id + 1) * 2 ** (rest.length / LENGTH_HALVES);
-        if (longer.length < SHOWN || score < longer[SHOWN - 1]!.score) {
-          const at = longer.findIndex((l) => l.score > score);
-          longer.splice(at < 0 ? longer.length : at, 0, { id, score });
-          longer.length = Math.min(longer.length, SHOWN);
-        }
+      const extra = this.keys[i]!.length - key.length;
+      if (!extra) {
+        exact.push(id);
+        continue;
+      }
+      const score = (id + 1) * 2 ** (extra / LENGTH_HALVES);
+      if (longer.length < SHOWN || score < longer[SHOWN - 1]!.score) {
+        const at = longer.findIndex((l) => l.score > score);
+        longer.splice(at < 0 ? longer.length : at, 0, { id, score });
+        longer.length = Math.min(longer.length, SHOWN);
       }
     }
-    const byRank = (ids: number[]) => ids.sort((a, b) => a - b).map((i) => this.words[i]!);
-    return { exact: byRank(exact), vowel: byRank(vowel), longer: longer.map((l) => this.words[l.id]!) };
+    return { exact: exact.sort((a, b) => a - b).map((i) => this.words[i]!), longer: longer.map((l) => this.words[l.id]!) };
   }
 
   /**
    * Kannada words for `latin`, best first: a word chosen before for the same letters, words that sound the same and
-   * the strict Baraha spelling, words that only add a final vowel, the spelling with a final a, then longer words
-   * that start the same way.
+   * the strict Baraha spelling, then longer words that start the same way, with the spelling with a final a after
+   * the best 2 of them when no known word sounds the same.
    */
   suggest(latin: string): string[] {
     const typed = latin.toLowerCase();
     if (!typed) return [];
     const key = this.k.latinKey(latin);
-    const { exact, vowel, longer } = key ? this.lookup(key) : { exact: [], vowel: [], longer: [] };
+    const { exact, longer } = key ? this.lookup(key) : { exact: [], longer: [] };
     const strict = this.k.strict(latin);
     const known = this.rank.has(strict);
     // "til" is often ತಿಲ, not ತಿಲ್: a word typed without its final a.
-    const withA = CONSONANT_END.test(typed) ? this.k.strict(`${latin}a`) : "";
+    const withA = !known && !exact.length && typed.length >= 3 && CONSONANT_END.test(typed) ? this.k.strict(`${latin}a`) : "";
     const ranked = [
       ...(this.picks.has(typed) ? [this.picks.get(typed)!] : []),
       ...(known ? mergeByRank(exact, strict, this.rank) : [...exact, strict]),
-      ...vowel.slice(0, VOWEL_SHOWN),
+      ...longer.slice(0, 2),
       ...(withA ? [withA] : []),
-      ...vowel.slice(VOWEL_SHOWN),
-      ...longer,
+      ...longer.slice(2),
     ];
     return [...new Set(ranked)].slice(0, SHOWN);
   }

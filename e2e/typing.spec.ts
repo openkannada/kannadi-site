@@ -111,6 +111,15 @@ test.describe("input methods", () => {
     expect(await docText(page)).toMatch(KANNADA_WORD);
   });
 
+  test("a typing page opens in English letters again after a reload, whatever the form showed", async ({ page }) => {
+    await openEditor(page, { path: "/english-to-kannada-typing/" });
+    await chooseMode(page, "kannada");
+    // Browsers that restore form fields on reload would bring back Kannada keys and count it as a fresh choice.
+    await page.reload();
+    await page.waitForFunction(() => document.documentElement.classList.contains("ready"));
+    await expect(page.locator("#mode-english")).toBeChecked();
+  });
+
   test("switching mode with the toolbar keeps the caret where it was", async ({ page }) => {
     await openEditor(page, { mode: "baraha" });
     await focusDoc(page);

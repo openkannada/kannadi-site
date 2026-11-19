@@ -37,7 +37,7 @@ const counts = [
         <legend class="sr-only">{t.toolbar.typeWith}</legend>
         {modes.map((m) => (
           <>
-            <input type="radio" name="mode" id={`mode-${m.value}`} value={m.value} checked={m.value === mode} class:list={[m.wide && "wide-only"]} />
+            <input type="radio" name="mode" id={`mode-${m.value}`} value={m.value} checked={m.value === mode} autocomplete="off" class:list={[m.wide && "wide-only"]} />
             <label for={`mode-${m.value}`} title={fmt(t.toolbar.typeWithMode, { name: t.modes[m.value].name })} lang={m.lang}>
               {t.modes[m.value].label}
               {m.value === "kannada" && <span class="sr-only" lang={lang}>{t.modes.kannada.spoken}</span>}

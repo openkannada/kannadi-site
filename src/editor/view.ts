@@ -18,6 +18,9 @@ export class View {
   private readonly editor: DocEditor;
   private readonly parts: ViewParts;
   private frame = 0;
+  /** A pointer is down, as in a drag selection: scrolling now would move the page under it. */
+  private pressed = false;
+  private waiting = false;
 
   constructor(editor: DocEditor, parts: ViewParts) {
     this.editor = editor;
@@ -25,6 +28,13 @@ export class View {
     const band = () => this.band();
     addEventListener("scroll", band, { passive: true });
     addEventListener("resize", band);
+    addEventListener("pointerdown", () => (this.pressed = true), { capture: true, passive: true });
+    const release = () => {
+      this.pressed = false;
+      if (this.waiting) this.keepCaret();
+    };
+    addEventListener("pointerup", release, { capture: true, passive: true });
+    addEventListener("pointercancel", release, { capture: true, passive: true });
     band();
   }
 
@@ -62,6 +72,8 @@ export class View {
 
   /** Scrolls the caret line into the clear part of the window, after the browser has laid out the latest change. */
   keepCaret(): void {
+    this.waiting = this.pressed;
+    if (this.pressed) return;
     cancelAnimationFrame(this.frame);
     this.frame = requestAnimationFrame(() => {
       if (document.activeElement !== this.editor.el) return;

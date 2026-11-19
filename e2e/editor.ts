@@ -48,8 +48,15 @@ export async function focusDoc(page: Page): Promise<void> {
   });
 }
 
-/** The document's text, without the extra final line break that gives an empty last line its place. */
-export const docText = (page: Page) => page.evaluate(() => (document.getElementById("doc")?.textContent ?? "").replace(/\n$/, ""));
+/**
+ * The document's text, without the extra final line break that gives an empty last line its place. That break comes
+ * only after a line break of the text's own, so a single final break is left in: a stray one shows.
+ */
+export const docText = (page: Page) =>
+  page.evaluate(() => {
+    const text = document.getElementById("doc")?.textContent ?? "";
+    return text.endsWith("\n\n") ? text.slice(0, -1) : text;
+  });
 
 /** The text as saved on this device, half a second after the last edit; exact, unlike the element's text. */
 export const savedText = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem("kannadi.editor.v1") ?? "{}") as { text?: string }).text ?? null);
@@ -117,7 +124,8 @@ export const layout = async (page: Page): Promise<Layout> => {
       marker.remove();
       doc.normalize();
       const node = doc.firstChild;
-      if (node && endContainer.nodeType === Node.TEXT_NODE) sel.collapse(node, Math.min(endOffset + (endContainer === node ? 0 : 0), node.textContent!.length));
+      if (node && endContainer.nodeType === Node.TEXT_NODE) sel.collapse(node, Math.min(endOffset, node.textContent!.length));
+      else sel.collapse(doc, Math.min(endOffset, doc.childNodes.length));
     }
     const lines: Box[] = [];
     const node = doc.firstChild;
@@ -126,8 +134,15 @@ export const layout = async (page: Page): Promise<Layout> => {
       all.selectNodeContents(node);
       for (const r of all.getClientRects()) if (r.width > 1 && r.bottom > 0 && r.top < innerHeight) lines.push(box(r));
     }
+    // The band is the dock's ::before, inset from the dock's own box.
     const dock = document.querySelector<HTMLElement>(".dock")!;
-    const band = dock.dataset.stuck !== undefined ? box(dock.getBoundingClientRect()) : null;
+    const d = dock.getBoundingClientRect();
+    const inset = getComputedStyle(dock, "::before");
+    const px = (v: string) => parseFloat(v) || 0;
+    const band =
+      dock.dataset.stuck !== undefined
+        ? { top: d.top + px(inset.top), bottom: d.bottom - px(inset.bottom), left: d.left + px(inset.left), right: d.right - px(inset.right) }
+        : null;
     return {
       viewport: { width: innerWidth, height: innerHeight },
       toolbar: box(document.querySelector(".toolbar")!.getBoundingClientRect()),

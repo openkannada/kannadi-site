@@ -11,6 +11,9 @@ test("the editor has no accessibility violations, with and without suggestions s
   const label = page.locator('label[for="mode-english"]');
   await (isPhone(page) ? label.tap() : label.click());
   await page.keyboard.type("namaskara");
+  // Scanned mid fade-in, the strip's text would read as low contrast.
+  await expect(page.locator("#suggest")).toBeVisible();
+  await page.evaluate(() => Promise.all(document.getAnimations().map((a) => a.finished)));
   expect((await scan()).violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
 });
 

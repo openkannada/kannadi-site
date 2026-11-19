@@ -68,21 +68,81 @@ test.describe("@layout", () => {
     expect(await page.evaluate(() => scrollY)).toBeLessThan(end - 400);
   });
 
-  test("on phones, the visual viewport moving while reading does not pull the page back to the caret", async ({ page }) => {
+  test("on phones, a keyboard opening in small steps keeps the caret line clear, and reading with it open is left alone", async ({ page }, info) => {
     test.skip(!isPhone(page), "Phones only.");
     await openEditor(page);
     await focusDoc(page);
     await page.keyboard.insertText(Array.from({ length: 60 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
     await page.waitForTimeout(500);
+    // Emulators have no on-screen keyboard; the visual viewport shrinks here as a keyboard would make it, 60px at a time.
+    const shrink = (by: number) =>
+      page.evaluate((by) => {
+        const vv = visualViewport!;
+        const height = innerHeight - by;
+        Object.defineProperty(vv, "height", { configurable: true, get: () => height });
+        vv.dispatchEvent(new Event("resize"));
+      }, by);
+    for (const by of [60, 120, 180, 240, 300]) await shrink(by);
+    await expectClearLayout(page, info, "keyboard-open");
     const end = await page.evaluate(() => scrollY);
-    // With the keyboard open, iOS pans the visual viewport as the page scrolls; emulators do not, so it is sent here.
+    // With the keyboard open, iOS pans the visual viewport as the page scrolls.
     await page.evaluate(() => {
       scrollBy(0, -600);
-      visualViewport?.dispatchEvent(new Event("scroll"));
-      visualViewport?.dispatchEvent(new Event("resize"));
+      visualViewport!.dispatchEvent(new Event("scroll"));
     });
     await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
     expect(await page.evaluate(() => scrollY)).toBeLessThan(end - 400);
+  });
+
+  test("a drag that starts near the bottom edge does not scroll the page until it ends", async ({ page }) => {
+    test.skip(isPhone(page), "A mouse drag.");
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.insertText(Array.from({ length: 60 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
+    await page.waitForTimeout(500);
+    // A line from the middle of the text, scrolled to straddle the window's bottom edge.
+    const at = await page.evaluate(() => {
+      const node = document.getElementById("doc")!.firstChild!;
+      const range = document.createRange();
+      range.setStart(node, Math.floor(node.textContent!.length / 2));
+      range.setEnd(node, Math.floor(node.textContent!.length / 2) + 1);
+      const line = range.getBoundingClientRect();
+      scrollBy({ top: line.top - (innerHeight - line.height / 2), behavior: "instant" });
+      const moved = range.getBoundingClientRect();
+      return { x: moved.left + 2, y: Math.min(innerHeight - 2, moved.top + 4) };
+    });
+    await page.waitForTimeout(300);
+    const before = await page.evaluate(() => scrollY);
+    await page.mouse.move(at.x, at.y);
+    await page.mouse.down();
+    await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+    expect(await page.evaluate(() => scrollY)).toBe(before);
+    await page.mouse.up();
+    await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(before);
+  });
+
+  test("clicking the sheet's margin below the text puts the caret at the end without jumping to the top", async ({ page }, info) => {
+    test.skip(isPhone(page), "The phone sheet has the same handler; a tap there is covered by the dock.");
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.insertText(Array.from({ length: 60 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
+    await page.locator("#doc").evaluate((doc) => (doc as HTMLElement).blur());
+    const sheet = (await page.locator("#sheet").boundingBox())!;
+    await page.evaluate((bottom) => scrollTo(0, scrollY + bottom - innerHeight + 20), sheet.y + sheet.height);
+    await page.waitForTimeout(300);
+    const before = await page.evaluate(() => scrollY);
+    // Between the last line and the counts at the foot of the sheet.
+    const gap = await page.evaluate(() => {
+      const doc = document.getElementById("doc")!.getBoundingClientRect();
+      const foot = document.querySelector(".sheet-foot")!.getBoundingClientRect();
+      return { x: doc.left + 60, y: (doc.bottom + foot.top) / 2 };
+    });
+    await page.mouse.click(gap.x, gap.y);
+    await expect(page.locator("#doc")).toBeFocused();
+    expect(await page.evaluate(() => getSelection()!.focusOffset)).toBe((await docText(page)).length);
+    expect(Math.abs((await page.evaluate(() => scrollY)) - before)).toBeLessThan(120);
+    await expectClearLayout(page, info, "sheet-margin");
   });
 
   test("clicking a line half under the toolbar brings it into view", async ({ page }, info) => {

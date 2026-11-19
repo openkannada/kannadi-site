@@ -1,0 +1,69 @@
+---
+// A tool's mark: the first letter of its Kannada name on a small tile. Its weight swells into place once,
+// when it first comes into view, and again on hover; the rest frame is the full weight.
+import { TOOL_MARK } from "../content/tools.ts";
+
+interface Props {
+  slug: string;
+  size?: "sm" | "md";
+  class?: string;
+}
+const { slug, size = "md", class: className } = Astro.props;
+const glyph = TOOL_MARK[slug];
+---
+{glyph && <span class:list={["tool-mark", `tool-mark-${size}`, className]} lang="kn" aria-hidden="true" data-inview>{glyph}</span>}
+
+<style is:global>
+  .tool-mark {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    border-radius: 0.875rem;
+    background:
+      radial-gradient(120% 90% at 30% 0%, oklch(from var(--primary) l c h / 0.16), transparent 70%),
+      var(--accent);
+    box-shadow:
+      inset 0 1px 0 var(--glass-rim),
+      inset 0 0 0 1px oklch(from var(--primary) l c h / 0.12);
+    color: var(--primary);
+    font-family: var(--type-sans);
+    font-weight: 650;
+    line-height: 1;
+    /* Room for the vowel signs that rise above and hang below the letter. */
+    padding-bottom: 0.08em;
+    transition: font-weight var(--duration-morph) var(--ease-spring);
+  }
+  .tool-mark-md {
+    width: 2.75rem;
+    height: 2.75rem;
+    font-size: 1.375rem;
+  }
+  .tool-mark-sm {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+    font-size: 1.125rem;
+  }
+  @media (hover: hover) {
+    :is(a, .tool-card):hover > .tool-mark,
+    .tool-card:hover .tool-mark {
+      font-weight: 780;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .illo-wait .tool-mark:not(.is-in) {
+      font-weight: 360;
+    }
+    .tool-mark.is-in {
+      animation: tool-mark-swell 1.1s var(--ease-settle) backwards;
+    }
+  }
+  @keyframes tool-mark-swell {
+    from {
+      font-weight: 360;
+    }
+    to {
+      font-weight: 650;
+    }
+  }
+</style>

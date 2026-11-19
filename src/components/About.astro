@@ -2,6 +2,8 @@
 import { ABOUT as ALL } from "../content/about.ts";
 import type { Lang } from "../i18n/core.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
+import { PULL_OUT } from "../content/story.ts";
+import HelpCards from "./HelpCards.astro";
 import Illustration from "./Illustration.astro";
 import { withBase } from "../lib/paths.ts";
 import prasad160avif from "../assets/people/prasad-160.avif";
@@ -41,7 +43,7 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
 {ABOUT.sections.map((s) => (
   <section>
     <h2>{s.heading}</h2>
-    {s.paragraphs.map((p) => <p set:html={withBase(p)} />)}
+    {s.paragraphs.map((p, i) => <p class:list={[i === PULL_OUT && "pull"]} set:html={withBase(p)} />)}
   </section>
 ))}
 
@@ -100,9 +102,7 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
 
 <section aria-labelledby="help">
   <h2 id="help">{T.help}</h2>
-  <ul class="help">
-    {ABOUT.help.map((h) => <li set:html={h} />)}
-  </ul>
+  <HelpCards items={ABOUT.help} icons={["legacy", "book", "type"]} />
 </section>
 
 <section aria-labelledby="contact">
@@ -113,24 +113,39 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
 </section>
 
 <style>
+  /* Side by side, the art sits on 1 row and every label starts on the next. */
   .work {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0 0.75rem;
     margin: 0;
     padding: 0;
     list-style: none;
   }
   .work li {
     display: grid;
-    gap: 0.5rem;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    row-gap: 0.625rem;
+    margin-bottom: 0.75rem;
     padding: 0.75rem 0.75rem 1rem;
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     background: var(--card);
-    align-content: start;
     font-weight: 600;
     line-height: 1.35;
+  }
+  @media (min-width: 48rem) {
+    .work {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .work li span {
+    align-self: start;
+    padding-inline: 0.25rem;
+  }
+  .work li span:lang(kn) {
+    line-height: 1.7;
   }
   .people {
     display: grid;
@@ -167,8 +182,13 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
     box-shadow: 0 0 0 1px var(--border);
   }
   .dedication {
-    border-left: 3px solid var(--primary);
-    padding-left: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+  }
+  .dedication > :first-child {
+    margin-top: 0;
   }
   .dedication-layout {
     display: grid;
@@ -196,6 +216,21 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
     margin-top: 0.5rem;
     color: var(--muted-foreground);
     font-size: 0.9375rem;
+  }
+  /* 1 line of the story set large, between hairlines. */
+  .pull {
+    margin: 1.75rem 0;
+    padding: 1.25rem 0;
+    border-block: 1px solid var(--border);
+    color: var(--foreground);
+    font-size: 1.375rem;
+    line-height: 1.45;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  .pull:lang(kn) {
+    line-height: 1.8;
   }
   .signature {
     font-weight: 600;

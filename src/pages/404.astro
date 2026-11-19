@@ -1,5 +1,7 @@
 ---
+import ToolMark from "../components/ToolMark.astro";
 import { HOME, PAGES } from "../content/pages.ts";
+import { PRIMARY_TOOLS } from "../content/tools.ts";
 import Base from "../layouts/Base.astro";
 import { href } from "../lib/paths.ts";
 
@@ -10,13 +12,66 @@ const page = {
   title: "Page not found: Open Kannada",
   description: "This page does not exist. The Kannada editor, converters and typing pages are listed here instead.",
 };
+const link = (slug: string) => href(slug ? `/${slug}/` : "/");
+const tools = PRIMARY_TOOLS.map((slug) => PAGES.find((p) => p.slug === slug)!).filter(Boolean);
+const rest = PAGES.filter((p) => !(PRIMARY_TOOLS as readonly string[]).includes(p.slug));
 ---
 <Base page={page} noindex>
-  <div class="mx-auto max-w-[46rem] px-4 py-16 sm:px-6">
+  <div class="wrap-column not-found">
     <h1 class="text-3xl font-semibold tracking-tight">This page is not here</h1>
     <p class="mt-3 text-lg text-muted-foreground">Try one of these instead.</p>
-    <ul class="mt-6 grid gap-2" role="list">
-      {PAGES.map((p) => <li><a href={href(p.slug ? `/${p.slug}/` : "/")} lang={p.lang === "kn" ? "kn" : undefined}>{p.name}</a></li>)}
+    <ul class="nf-tools" role="list">
+      {tools.map((p) => (
+        <li>
+          <a class="nf-tool" href={link(p.slug)}>
+            <ToolMark slug={p.slug} size="sm" />
+            <span>{p.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <ul class="nf-rest" role="list">
+      {rest.map((p) => <li><a href={link(p.slug)} lang={p.lang === "kn" ? "kn" : undefined}>{p.name}</a></li>)}
     </ul>
   </div>
 </Base>
+
+<style>
+  .not-found {
+    padding-top: 4rem;
+  }
+  .nf-tools {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: 0.5rem;
+    margin: 2rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .nf-tool {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    background: var(--card);
+    color: var(--foreground);
+    font-weight: 500;
+    text-decoration: none;
+  }
+  .nf-tool:hover {
+    border-color: oklch(from var(--primary) l c h / 0.4);
+  }
+  .nf-rest {
+    columns: 3 11rem;
+    column-gap: 2rem;
+    margin: 2rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .nf-rest li {
+    padding-block: 0.25rem;
+    break-inside: avoid;
+  }
+</style>

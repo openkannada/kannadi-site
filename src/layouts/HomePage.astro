@@ -1,6 +1,9 @@
 ---
 import Icon from "../components/Icon.astro";
 import Illustration from "../components/Illustration.astro";
+import HelpCards from "../components/HelpCards.astro";
+import Problems from "../components/Problems.astro";
+import ToolMark from "../components/ToolMark.astro";
 import { HOME_COPY } from "../content/home.ts";
 import { inLanguage, type HomePage, type Page } from "../content/pages.ts";
 import { pagePath } from "../content/site.ts";
@@ -17,12 +20,22 @@ const to = (slug: string) => inLanguage(slug, lang);
 const url = (p: Page | undefined) => href(pagePath(p?.slug ?? ""));
 const otherLang = (p: Page | undefined) => (p && (p.lang ?? "en") !== lang ? (p.lang ?? "en") : undefined);
 const editor = to("editor");
+const items = C.tools.items;
+const research = items.filter((t) => t.slug === "ai-benchmark");
+const main = items.filter((t) => t.slug !== "ai-benchmark");
 ---
 <Base page={page}>
-  <div class="home-hero mx-auto max-w-[68rem] px-4 pt-8 sm:px-6 sm:pt-14">
+  <div class="home-hero wrap-page">
     <div class="home-lede">
       <h1 class="home-title">{page.h1}</h1>
       <p class="home-intro" set:html={withBase(page.intro)} />
+      <p class="home-cta">
+        <a class="btn btn-quiet" href={url(editor)} lang={otherLang(editor)}>
+          <Icon name="edit" />
+          {C.paste.open}
+          <Icon name="arrow" class="home-cta-arrow" />
+        </a>
+      </p>
     </div>
     <form class="paste-card" id="handoff" data-editor={url(editor)} data-failed={C.paste.failed} data-md-skip>
       <label for="handoff-text" class="paste-label">
@@ -36,62 +49,92 @@ const editor = to("editor");
           <Icon name="convert" />
           {C.paste.button}
         </button>
-        <a class="paste-open" href={url(editor)} lang={otherLang(editor)}>{C.paste.open}</a>
       </div>
     </form>
   </div>
 
-  <div class="mx-auto max-w-[68rem] px-4 sm:px-6">
-    <section class="home-section home-story prose-kn" aria-labelledby="why">
-      <h2 id="why">{C.story.heading}</h2>
-      {C.story.paragraphs.map((p) => <p set:html={withBase(p)} />)}
-      <p set:html={withBase(C.story.more)} />
-    </section>
+  <section class="home-tools wrap-page" aria-labelledby="tools">
+    <h2 id="tools" class="home-h2">{C.tools.heading}</h2>
+    <ul class="tool-grid" role="list" data-cards="tools">
+      {main.map((t) => {
+        const target = to(t.slug);
+        return (
+          <li class="tool-card">
+            <Illustration name={t.art} class="tool-art" />
+            <h3 class="tool-name" data-align="name">
+              <ToolMark slug={t.slug} />
+              <a class="tool-link" href={url(target)} lang={otherLang(target)}>{t.name}</a>
+            </h3>
+            <p class="tool-line" data-align="line">{t.text}</p>
+            <div class="tool-foot" data-align="foot">
+              {t.also ? (
+                <ul class="tool-also" role="list" aria-label={C.tools.also}>
+                  {t.also.map((s) => {
+                    const p = to(s);
+                    return <li><a href={url(p)} lang={otherLang(p)}>{p?.name}</a></li>;
+                  })}
+                </ul>
+              ) : t.soon ? (
+                <span class="tool-soon">{C.tools.soon}</span>
+              ) : <span />}
+              <span class="tool-go" aria-hidden="true"><Icon name="arrow" /></span>
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+    {research.map((t) => {
+      const target = to(t.slug);
+      return (
+        <div class="tool-card tool-band">
+          <div class="tool-band-text">
+            <h3 class="tool-name">
+              <ToolMark slug={t.slug} />
+              <a class="tool-link" href={url(target)} lang={otherLang(target)}>{t.name}</a>
+            </h3>
+            <p class="tool-line">{t.text}</p>
+          </div>
+          <Illustration name={t.art} class="tool-art" />
+          <span class="tool-go" aria-hidden="true"><Icon name="arrow" /></span>
+        </div>
+      );
+    })}
+  </section>
 
-    <section class="home-section" aria-labelledby="tools">
-      <h2 id="tools" class="home-h2">{C.tools.heading}</h2>
-      <ul class="tools" role="list" data-cards="tools">
-        {C.tools.items.map((t) => {
-          const target = to(t.slug);
-          return (
-            <li class:list={["tool", t.slug === "editor" && "tool-wide", t.slug === "ai-benchmark" && "tool-wide-lg"]}>
-              <Illustration name={t.art} class="tool-illo" />
-              <div class="tool-text">
-                <h3 class="tool-name" data-align="name">
-                  <Icon name={t.icon} filled />
-                  <a class="tool-link" href={url(target)} lang={otherLang(target)}>{t.name}</a>
-                </h3>
-                <p class="tool-line" data-align="line">{t.text}</p>
-                {t.soon && <p class="tool-soon" data-align="extra">{C.tools.soon}</p>}
-                {t.also && (
-                  <ul class="tool-also" data-align="extra" role="list" aria-label={C.tools.also}>
-                    {t.also.map((s) => {
-                      const p = to(s);
-                      return <li><a href={url(p)} lang={otherLang(p)}>{p?.name}</a></li>;
-                    })}
-                  </ul>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
+  <section class="home-section wrap-page" aria-labelledby="why">
+    <div class="why-head">
+      <h2 id="why" class="home-h2">{C.story.heading}</h2>
+      <p class="why-lead">{C.why.lead}</p>
+    </div>
+    <Problems problems={C.why.problems} />
+    <div class="practices">
+      <h3 class="practices-heading">{C.why.practiceHeading}</h3>
+      <ol class="practice-list" role="list">
+        {C.why.practices.map((p) => (
+          <li class="practice reveal" data-inview>
+            <span class="icon-tile"><Icon name={p.icon} /></span>
+            <b>{p.title}</b>
+            <span>{p.text}</span>
+          </li>
+        ))}
+      </ol>
+      <p class="practices-more" set:html={withBase(C.story.more)} />
+    </div>
+  </section>
 
-    <section class="home-section home-help prose-kn" aria-labelledby="help">
-      <h2 id="help">{C.help.heading}</h2>
-      <p set:html={withBase(C.help.intro)} />
-      <ul class="help-list">
-        {C.help.items.map((h) => <li set:html={withBase(h)} />)}
-      </ul>
-      <p>
-        <a class="btn btn-primary help-cta" href={url(to("contribute"))} lang={otherLang(to("contribute"))}>
-          <Icon name="people" />
-          {C.help.contribute}
-        </a>
-      </p>
-    </section>
-  </div>
+  <section class="home-section wrap-page" aria-labelledby="help">
+    <div class="why-head">
+      <h2 id="help" class="home-h2">{C.help.heading}</h2>
+      <p class="why-lead">{C.help.intro}</p>
+    </div>
+    <HelpCards items={C.help.items} icons={C.help.icons} />
+    <p class="help-cta-row">
+      <a class="btn btn-primary help-cta" href={url(to("contribute"))} lang={otherLang(to("contribute"))}>
+        <Icon name="people" />
+        {C.help.contribute}
+      </a>
+    </p>
+  </section>
 </Base>
 
 <script>
@@ -122,13 +165,14 @@ const editor = to("editor");
     display: grid;
     gap: 2rem;
     align-items: center;
+    padding-top: 2rem;
   }
   .home-title {
-    font-size: clamp(2.125rem, 1.5rem + 3vw, 3.5rem);
-    line-height: 1.12;
+    font-size: clamp(2.125rem, 1.4rem + 2.8vw, 3.75rem);
+    line-height: 1.1;
     font-weight: 650;
     letter-spacing: var(--type-heading-tracking);
-    max-width: 18ch;
+    max-width: 19ch;
   }
   .home-title:lang(kn) {
     line-height: 1.5;
@@ -139,6 +183,27 @@ const editor = to("editor");
     font-size: 1.125rem;
     line-height: 1.65;
     color: var(--muted-foreground);
+  }
+  .home-intro:lang(kn) {
+    line-height: var(--type-kn-leading);
+  }
+  .home-cta {
+    margin-top: 1.5rem;
+  }
+  .home-cta .btn {
+    height: 2.75rem;
+    padding-inline: 1.125rem;
+    text-decoration: none;
+  }
+  .home-cta :global(.home-cta-arrow) {
+    width: 1.125rem;
+    height: 1.125rem;
+    transition: transform var(--duration-lift) var(--ease-settle);
+  }
+  @media (hover: hover) {
+    .home-cta .btn:hover :global(.home-cta-arrow) {
+      transform: translateX(3px);
+    }
   }
   .paste-card {
     display: grid;
@@ -186,67 +251,147 @@ const editor = to("editor");
     align-items: center;
     gap: 0.75rem 1.25rem;
   }
-  .paste-open {
-    font-size: var(--type-ui);
+  @media (min-width: 40rem) {
+    .home-hero {
+      padding-top: 3.5rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .home-hero {
+      grid-template-columns: minmax(0, 1fr) 27rem;
+      gap: 4rem;
+      padding-top: 4.5rem;
+    }
+  }
+
+  .home-tools {
+    margin-top: 3.5rem;
   }
   .home-section {
-    margin-top: 4.5rem;
-  }
-  .home-story,
-  .home-help {
-    max-width: 46rem;
-  }
-  .home-story h2,
-  .home-help h2 {
-    margin-top: 0;
+    margin-top: 5rem;
   }
   .home-h2 {
     margin-bottom: 1.25rem;
     font-size: 1.5rem;
+    line-height: 1.3;
     font-weight: 600;
     letter-spacing: -0.01em;
   }
-  .tools {
+  .home-h2:lang(kn) {
+    line-height: 1.6;
+  }
+  /* Why and How to help: a lead line, then cards across the full width. */
+  .why-head {
+    max-width: var(--prose);
+  }
+  .why-lead {
+    font-size: 1.1875rem;
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+  .why-lead:lang(kn) {
+    line-height: var(--type-kn-leading);
+  }
+  .practice-list {
     display: grid;
-    gap: 1rem;
+    gap: 1.25rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .practices {
+    display: grid;
+    gap: 0 2rem;
+    margin-top: 2.5rem;
+    align-items: start;
+  }
+  .practices-heading {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  .practice {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.125rem 0.75rem;
+  }
+  .practice :global(.icon-tile) {
+    grid-row: span 2;
+  }
+  .practice b {
+    align-self: end;
+    font-weight: 600;
+  }
+  .practice span:last-child {
+    color: var(--muted-foreground);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+  .practices-more {
+    margin-top: 1.5rem;
+  }
+  .help-cta-row {
+    margin-top: 1.5rem;
+  }
+  @media (min-width: 48rem) {
+    .practice-list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .practices {
+      grid-template-columns: 12rem minmax(0, 1fr);
+      padding: 1.5rem 1.75rem;
+      border-radius: var(--radius-2xl);
+      background: oklch(from var(--card) l c h / 0.55);
+      border: 1px solid var(--border);
+    }
+    .practice-list {
+      margin-top: 0;
+    }
+    .practices-more {
+      grid-column: 2;
+    }
+  }
+
+  /* Tool cards: on wide screens each row of cards shares 4 rows, so art, names, lines and links align. */
+  .tool-grid {
+    display: grid;
+    gap: 0.75rem;
     margin: 0;
     padding: 0;
     list-style: none;
   }
-  .tool {
+  .tool-card {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr);
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.625rem 0.75rem 0.625rem 0.625rem;
+    gap: 0.375rem 0.875rem;
+    padding: 1rem 1.125rem;
     border: 1px solid var(--border);
     border-radius: var(--radius-2xl);
     background: var(--card);
-    transition: border-color var(--duration-quick) var(--ease-standard), box-shadow var(--duration-quick) var(--ease-standard);
+    transition:
+      border-color var(--duration-quick) var(--ease-standard),
+      box-shadow var(--duration-lift) var(--ease-settle),
+      transform var(--duration-lift) var(--ease-settle);
   }
-  .tool:hover,
-  .tool:focus-within {
-    border-color: oklch(from var(--primary) l c h / 0.45);
-    box-shadow: var(--shadow-sheet);
+  @media (hover: hover) {
+    .tool-card:hover {
+      border-color: oklch(from var(--primary) l c h / 0.4);
+      box-shadow: var(--shadow-sheet);
+      transform: translateY(-2px);
+    }
   }
-  .tool-text {
-    display: grid;
-    gap: 0.375rem;
-    min-width: 0;
+  .tool-card :global(.tool-art) {
+    display: none;
   }
   .tool-name {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.75rem;
     font-size: 1.125rem;
+    line-height: 1.3;
     font-weight: 600;
-  }
-  .tool-name :global(svg) {
-    width: 1.375rem;
-    height: 1.375rem;
-    flex: none;
-    color: var(--primary);
   }
   .tool-link {
     color: var(--foreground);
@@ -261,18 +406,26 @@ const editor = to("editor");
   .tool-link:focus-visible {
     outline: none;
   }
-  .tool:has(.tool-link:focus-visible) {
+  .tool-card:has(.tool-link:focus-visible) {
     outline: 2px solid var(--ring);
     outline-offset: 2px;
   }
   .tool-line {
     color: var(--muted-foreground);
     font-size: 0.9375rem;
-    line-height: 1.5;
+    line-height: 1.55;
+  }
+  .tool-line:lang(kn) {
+    line-height: var(--type-kn-leading);
+  }
+  .tool-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 1.75rem;
   }
   .tool-soon {
-    justify-self: start;
-    margin-top: 0.125rem;
     padding: 0.125rem 0.625rem;
     border-radius: 9999px;
     background: var(--muted);
@@ -291,83 +444,103 @@ const editor = to("editor");
     list-style: none;
     font-size: 0.875rem;
   }
-  @media (min-width: 40rem) {
-    .tools {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      grid-auto-rows: auto auto auto 1fr;
+  .tool-go {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    margin-left: auto;
+    border-radius: 9999px;
+    color: var(--primary);
+    background: var(--accent);
+    transition: transform var(--duration-lift) var(--ease-settle), background-color var(--duration-quick) var(--ease-standard), color var(--duration-quick) var(--ease-standard);
+  }
+  .tool-go :global(svg) {
+    width: 1rem;
+    height: 1rem;
+  }
+  @media (hover: hover) {
+    .tool-card:hover .tool-go {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      transform: translateX(2px);
     }
-    /* Cards in a row share 4 rows (picture, name, line, extras), so their content lines up. */
-    .tool {
+  }
+  .tool-band {
+    margin-top: 0.75rem;
+    align-items: center;
+  }
+  /* On phones a card is 1 compact row: the mark, then the name, with the line and links under the name. */
+  @media (max-width: 39.99rem) {
+    .tool-card .tool-line,
+    .tool-card .tool-foot {
+      padding-left: 3.625rem;
+    }
+    .tool-card .tool-go {
+      display: none;
+    }
+    .tool-foot:not(:has(.tool-also, .tool-soon)) {
+      display: none;
+    }
+    .tool-foot {
+      min-height: 0;
+    }
+  }
+  .tool-band-text {
+    display: grid;
+    gap: 0.375rem;
+  }
+  @media (min-width: 40rem) {
+    .tool-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0 1rem;
+    }
+    .tool-grid .tool-card {
       grid-row: span 4;
       grid-template-rows: subgrid;
-      grid-template-columns: minmax(0, 1fr);
-      row-gap: 0.375rem;
-      align-items: start;
-      padding: 0.75rem 0.75rem 1.25rem;
+      gap: 0;
+      margin-bottom: 1rem;
+      padding: 0.75rem 0.75rem 1rem;
     }
-    .tool-illo {
-      grid-row: 1;
-      margin-bottom: 0.375rem;
+    .tool-grid .tool-card :global(.tool-art) {
+      display: block;
+      margin-bottom: 0.5rem;
     }
-    .tool-text {
-      grid-row: 2 / span 3;
-      grid-template-rows: subgrid;
+    .tool-grid .tool-name,
+    .tool-grid .tool-line,
+    .tool-grid .tool-foot {
       padding-inline: 0.5rem;
     }
-    .tool-soon,
-    .tool-also {
-      grid-row: 3;
+    .tool-grid .tool-line {
+      margin-top: 0.375rem;
     }
-    .tool-wide {
-      grid-column: span 2;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      padding: 1rem 1rem 1rem 1.25rem;
+    /* The foot fills its shared row and keeps its links and arrow at the bottom, so every foot lines up. */
+    .tool-grid .tool-foot {
+      align-self: stretch;
+      align-items: flex-end;
+      margin-top: 0.875rem;
     }
-    .tool-wide .tool-illo {
-      grid-column: 2;
-      grid-row: 1 / -1;
-      align-self: center;
-      margin-bottom: 0;
+    .tool-band {
+      margin-top: 0;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 13rem) auto;
+      gap: 1.5rem;
+      padding: 0.5rem 1.25rem;
     }
-    .tool-wide .tool-text {
-      grid-column: 1;
-      grid-row: 1 / -1;
-      grid-template-rows: none;
-      align-self: center;
+    .tool-band :global(.tool-art) {
+      display: block;
     }
   }
   @media (min-width: 64rem) {
-    .home-hero {
-      grid-template-columns: minmax(0, 1fr) 24rem;
-      gap: 3.5rem;
-    }
-    .tools {
+    .tool-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
-    .tool-wide-lg {
-      grid-column: span 2;
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-      padding: 1rem 1rem 1rem 1.25rem;
-    }
-    .tool-wide-lg .tool-illo {
-      grid-column: 2;
-      grid-row: 1 / -1;
-      align-self: center;
-      margin-bottom: 0;
-    }
-    .tool-wide-lg .tool-text {
-      grid-column: 1;
-      grid-row: 1 / -1;
-      grid-template-rows: none;
-      align-self: center;
+    .tool-band {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 15rem) auto;
+      padding-inline: 1.5rem;
     }
   }
-  .help-list {
-    display: grid;
-    gap: 0.75rem;
-    padding-left: 1.25rem;
-    list-style: disc;
-  }
+
   .help-cta {
     margin-top: 0.5rem;
     text-decoration: none;

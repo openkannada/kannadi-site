@@ -93,6 +93,14 @@ export interface FontRelease {
   source: string;
 }
 
+/** Options side by side: a heading row, then 1 row per option, named in the first cell. */
+export interface Comparison {
+  head: string[];
+  rows: string[][];
+  /** The column of our own work, set in the action color. */
+  ours?: number;
+}
+
 /** 1 part of a project page; its heading comes from the site strings, so every project page reads alike. */
 export interface ProjectSection {
   id: "what" | "specimen" | "based" | "fixed" | "result" | "method" | "limits" | "next" | "sources" | "downloads" | "license";
@@ -101,6 +109,7 @@ export interface ProjectSection {
   stats?: Stat[];
   table?: RatioTable;
   specimen?: Specimen;
+  compare?: Comparison;
 }
 
 /** A project of Open Kannada beyond the editor: what it does, what it measured, where to get it, its license. */
@@ -568,6 +577,14 @@ export const ALL_PAGES: Page[] = [
           "<b>Neha Sans</b> and <b>Neha Serif</b> are based on Noto Sans Kannada and Noto Serif Kannada by Google. They are named for Neha Prasad, a founding member of Open Kannada.",
           "<b>Gari</b> is a handwriting-style font based on Navilu by Aravinda VK, which built on work by IISc Bangalore.",
         ],
+        compare: {
+          head: ["Font", "Style", "Based on", "Weights", "Version"],
+          rows: [
+            ["Neha Sans", "Sans serif", "Noto Sans Kannada", "100 to 900", NEHA_SANS.version],
+            ["Neha Serif", "Serif", "Noto Serif Kannada", "100 to 900", NEHA_SERIF.version],
+            ["Gari", "Handwriting", "Navilu", "400", GARI.version],
+          ],
+        },
       },
       {
         id: "fixed",
@@ -748,12 +765,16 @@ export const ALL_PAGES: Page[] = [
       {
         id: "result",
         paragraphs: ["The share of characters read wrong, lower is better, for version 0.2 of the model against stock Tesseract for Kannada:"],
-        items: [
-          "Old printed books, 60 Wikisource pages: 6.0%, against 8.7%.",
-          "Degraded words, 400: 17.0%, against 24.4%.",
-          "MILE pages from IISc, 30: 5.4%, against 7.3%.",
-          "MILE lines from IISc, 600: 2.8%, against 3.8%.",
-        ],
+        compare: {
+          head: ["Test set", "Open Kannada 0.2", "Stock Tesseract"],
+          rows: [
+            ["Old printed books, 60 Wikisource pages", "6.0%", "8.7%"],
+            ["Degraded words, 400", "17.0%", "24.4%"],
+            ["MILE pages from IISc, 30", "5.4%", "7.3%"],
+            ["MILE lines from IISc, 600", "2.8%", "3.8%"],
+          ],
+          ours: 1,
+        },
       },
       {
         id: "method",
@@ -1046,6 +1067,14 @@ export const ALL_PAGES: Page[] = [
           "<b>Neha Sans</b> ಮತ್ತು <b>Neha Serif</b>, Google ನ Noto Sans Kannada ಮತ್ತು Noto Serif Kannada ಆಧರಿಸಿವೆ. ಓಪನ್ ಕನ್ನಡದ ಸ್ಥಾಪಕ ಸದಸ್ಯೆ ನೇಹಾ ಪ್ರಸಾದ್ ಅವರ ಹೆಸರನ್ನು ಇವುಗಳಿಗೆ ಇಡಲಾಗಿದೆ.",
           "<b>Gari</b>, Aravinda VK ಅವರ Navilu ಆಧರಿಸಿದ ಕೈಬರಹ ಶೈಲಿಯ ಫಾಂಟ್. Navilu, ಬೆಂಗಳೂರಿನ IISc ಯ ಕೆಲಸವನ್ನು ಆಧರಿಸಿದೆ.",
         ],
+        compare: {
+          head: ["ಫಾಂಟ್", "ಶೈಲಿ", "ಆಧಾರ", "ತೂಕಗಳು", "ಆವೃತ್ತಿ"],
+          rows: [
+            ["Neha Sans", "ಸ್ಯಾನ್ಸ್ ಸೆರಿಫ್", "Noto Sans Kannada", "100 ರಿಂದ 900", NEHA_SANS.version],
+            ["Neha Serif", "ಸೆರಿಫ್", "Noto Serif Kannada", "100 ರಿಂದ 900", NEHA_SERIF.version],
+            ["Gari", "ಕೈಬರಹ", "Navilu", "400", GARI.version],
+          ],
+        },
       },
       {
         id: "fixed",
@@ -1232,12 +1261,16 @@ export const ALL_PAGES: Page[] = [
       {
         id: "result",
         paragraphs: ["ತಪ್ಪಾಗಿ ಓದಿದ ಅಕ್ಷರಗಳ ಪ್ರಮಾಣ, ಕಡಿಮೆ ಇದ್ದಷ್ಟೂ ಒಳ್ಳೆಯದು, ಮಾದರಿಯ 0.2 ಆವೃತ್ತಿಗೆ, ಕನ್ನಡಕ್ಕಾಗಿ ಸಾಮಾನ್ಯ Tesseract ಗೆ ಹೋಲಿಸಿದರೆ:"],
-        items: [
-          "ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳು, ವಿಕಿಸೋರ್ಸ್‌ನ 60 ಪುಟಗಳು: 6.0%, ಸಾಮಾನ್ಯದಲ್ಲಿ 8.7%.",
-          "ಮಸುಕಾದ ಪದಗಳು, 400: 17.0%, ಸಾಮಾನ್ಯದಲ್ಲಿ 24.4%.",
-          "IISc ಯ MILE ಪುಟಗಳು, 30: 5.4%, ಸಾಮಾನ್ಯದಲ್ಲಿ 7.3%.",
-          "IISc ಯ MILE ಸಾಲುಗಳು, 600: 2.8%, ಸಾಮಾನ್ಯದಲ್ಲಿ 3.8%.",
-        ],
+        compare: {
+          head: ["ಪರೀಕ್ಷಾ ಸೆಟ್", "ಓಪನ್ ಕನ್ನಡ 0.2", "ಸಾಮಾನ್ಯ Tesseract"],
+          rows: [
+            ["ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳು, ವಿಕಿಸೋರ್ಸ್‌ನ 60 ಪುಟಗಳು", "6.0%", "8.7%"],
+            ["ಮಸುಕಾದ ಪದಗಳು, 400", "17.0%", "24.4%"],
+            ["IISc ಯ MILE ಪುಟಗಳು, 30", "5.4%", "7.3%"],
+            ["IISc ಯ MILE ಸಾಲುಗಳು, 600", "2.8%", "3.8%"],
+          ],
+          ours: 1,
+        },
       },
       {
         id: "method",

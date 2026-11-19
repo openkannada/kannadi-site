@@ -1,6 +1,6 @@
 ---
 import { NAV, inLanguage, type Page } from "../content/pages.ts";
-import { AUTHOR, ORG, SITE, pagePath } from "../content/site.ts";
+import { AUTHOR, LIVE, ORG, SITE, pagePath } from "../content/site.ts";
 import { fmt, type Lang } from "../i18n/core.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
 import { href } from "../lib/paths.ts";
@@ -24,43 +24,113 @@ const groups = [
 ];
 const brand = inLanguage("brand", lang);
 const otherLang = (p: Page) => ((p.lang ?? "en") === lang ? undefined : (p.lang ?? "en"));
-const pageLink = "text-muted-foreground no-underline hover:text-foreground hover:underline";
 ---
-<footer class="mx-auto mt-20 w-full max-w-6xl px-4 pb-[max(2rem,calc(env(safe-area-inset-bottom)+6rem))] text-sm text-muted-foreground sm:px-6 md:pb-10">
-  <div class="grid gap-8 border-t border-border pt-8 lg:grid-cols-[minmax(0,26rem)_minmax(0,1fr)] lg:gap-12">
-    <div class="space-y-2">
-      <p class="flex items-center gap-2.5 font-medium text-foreground">
-        <Logo mark="kannadi" class="size-9" />
-        <span>{SITE.name} <span lang="kn">{SITE.nameKn}</span></span>
-      </p>
+<footer class="site-footer wrap-page">
+  <nav aria-label={nav.allPages} class="footer-nav">
+    {groups.map((g) => (
+      <div>
+        <p class="footer-label">{g.label}</p>
+        <ul class="footer-links" role="list">
+          {g.pages.map((p) => <li><a href={href(pagePath(p.slug))} lang={otherLang(p)}>{p.name}</a></li>)}
+        </ul>
+      </div>
+    ))}
+  </nav>
+  <div class="footer-credits">
+    <p class="footer-brand">
+      <Logo mark="kannadi" class="size-9" />
+      <span>{SITE.name} <span lang="kn">{SITE.nameKn}</span></span>
+    </p>
+    <div class="footer-notes">
       <p set:html={fmt(T.madeBy, { author: link(AUTHOR.url, named(ORG.founders[0]!)), library: link(SITE.repository, "kannadi") })} />
       <p set:html={fmt(T.started, { founders, supporter: link(ORG.supporter.url, ORG.supporter.label) })} />
-      <p set:html={fmt(T.owns, { org: ORG.name, supporter: ORG.supporter.label, names: link(href(pagePath(brand?.slug ?? "brand")), T.names) })} />
-      <p set:html={fmt(T.credit, { site: link(AUTHOR.url, "prasad.tech") })} />
-      <p set:html={fmt(T.words, { wikipedia: link("https://kn.wikipedia.org", T.wikipedia), license: link("https://creativecommons.org/licenses/by-sa/4.0/", "CC BY-SA 4.0") })} />
+      <p set:html={fmt(T.credit, { site: link(LIVE.origin, LIVE.host) })} />
+      <p set:html={fmt(T.licenses, { details: link(href(pagePath(brand?.slug ?? "brand")), T.details) })} />
     </div>
-    <nav aria-label={nav.allPages} class="footer-nav">
-      {groups.map((g) => (
-        <div>
-          <p class="mb-2 font-medium text-foreground">{g.label}</p>
-          <ul class="grid gap-1.5" role="list">
-            {g.pages.map((p) => <li><a class={pageLink} href={href(pagePath(p.slug))} lang={otherLang(p)}>{p.name}</a></li>)}
-          </ul>
-        </div>
-      ))}
-    </nav>
   </div>
 </footer>
 
 <style>
+  .site-footer {
+    margin-top: 6rem;
+    padding-bottom: max(2rem, calc(env(safe-area-inset-bottom) + 6rem));
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+  }
+  @media (min-width: 48rem) {
+    .site-footer {
+      padding-bottom: 2.5rem;
+    }
+  }
   .footer-nav {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.5rem 2rem;
+    gap: 2rem 1.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--border);
   }
   @media (min-width: 48rem) {
     .footer-nav {
       grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .footer-label {
+    margin-bottom: 0.75rem;
+    color: var(--foreground);
+    font-weight: 600;
+  }
+  .footer-links {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .footer-links a {
+    color: var(--muted-foreground);
+    text-decoration: none;
+  }
+  .footer-links a:hover {
+    color: var(--foreground);
+    text-decoration: underline;
+  }
+  .footer-credits {
+    display: grid;
+    gap: 1rem 3rem;
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+  .footer-credits :global(:lang(kn)) {
+    line-height: var(--type-kn-leading);
+  }
+  .footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--foreground);
+    font-size: 0.9375rem;
+    font-weight: 600;
+  }
+  .footer-notes {
+    display: grid;
+    gap: 0.5rem;
+  }
+  @media (min-width: 64rem) {
+    .footer-credits {
+      grid-template-columns: 14rem minmax(0, 1fr);
+      align-items: start;
+    }
+    .footer-notes {
+      display: block;
+      columns: 2;
+      column-gap: 3rem;
+    }
+    .footer-notes p {
+      break-inside: avoid;
+      margin-bottom: 0.5rem;
     }
   }
 </style>

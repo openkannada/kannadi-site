@@ -17,7 +17,7 @@ async function paste(page: Page, data: { plain: string; html?: string }): Promis
     await page.evaluate(({ plain, html }) => {
       const sel = getSelection()!;
       // The caret, kept to put back after copying.
-      (window as unknown as { pasteCaret?: Range }).pasteCaret = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : undefined;
+      (window as unknown as { pasteCaret?: Range | undefined }).pasteCaret = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : undefined;
       const source = document.createElement(html ? "div" : "textarea");
       source.id = "paste-source";
       if (source instanceof HTMLTextAreaElement) source.value = plain;

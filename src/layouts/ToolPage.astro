@@ -28,7 +28,7 @@ const converter = CONVERTERS.slugs.indexOf(page.slug);
   <div class="wrap-column prose-kn">
     <section aria-labelledby="how-heading">
       <h2 id="how-heading">{page.howTitle}</h2>
-      <ol class="steps" role="list">
+      <ol class="steps" role="list" data-cards="steps">
         {page.steps.map((s) => <li class="step reveal" data-inview><span set:html={withBase(s)} /></li>)}
       </ol>
     </section>
@@ -37,7 +37,7 @@ const converter = CONVERTERS.slugs.indexOf(page.slug);
     {converter >= 0 && (
       <section aria-labelledby="converters-heading">
         <h2 id="converters-heading">{CONVERTERS_HEADING}</h2>
-        <CompareTable table={CONVERTERS} current={converter} />
+        <CompareTable table={CONVERTERS} current={converter} label={CONVERTERS_HEADING} />
       </section>
     )}
     <Faq faq={page.faq} lang={page.lang ?? "en"} />

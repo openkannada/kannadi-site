@@ -37,7 +37,7 @@ const more = [
 const themeLabels = JSON.stringify({ ...T.theme });
 ---
 <header class="site-header wrap-page">
-  <a href={href(pagePath(HOMES[lang].slug))} class="brand" aria-current={current === HOMES[lang].slug ? "page" : undefined}>
+  <a href={href(pagePath(HOMES[lang].slug))} class="brand" aria-label={ORG.name} aria-current={current === HOMES[lang].slug && !here ? "page" : undefined}>
     <Logo mark="open-kannada" />
     <span class="brand-name">{ORG.name}</span>
   </a>

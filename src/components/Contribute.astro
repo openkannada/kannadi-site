@@ -34,11 +34,11 @@ const signOff = C.sections.at(-1)!;
   </div>
 </section>
 
-<ul class="ways" role="list">
+<ul class="ways" role="list" data-cards="ways">
   {ways.map((s, i) => (
     <li class="way reveal" data-inview>
       <span class="icon-tile"><Icon name={ICONS[i] ?? "people"} /></span>
-      <h2>{s.heading}</h2>
+      <h2 data-align="heading">{s.heading}</h2>
       {s.paragraphs.map((p) => <p set:html={withBase(p)} />)}
     </li>
   ))}

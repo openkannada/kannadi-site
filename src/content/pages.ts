@@ -93,6 +93,14 @@ export interface FontRelease {
   source: string;
 }
 
+/** Options side by side: a heading row, then 1 row per option, named in the first cell. */
+export interface Comparison {
+  head: string[];
+  rows: string[][];
+  /** The column of our own work, set in the action color. */
+  ours?: number;
+}
+
 /** 1 part of a project page; its heading comes from the site strings, so every project page reads alike. */
 export interface ProjectSection {
   id: "what" | "specimen" | "based" | "fixed" | "result" | "method" | "limits" | "next" | "sources" | "downloads" | "license";
@@ -101,6 +109,7 @@ export interface ProjectSection {
   stats?: Stat[];
   table?: RatioTable;
   specimen?: Specimen;
+  compare?: Comparison;
 }
 
 /** A project of Open Kannada beyond the editor: what it does, what it measured, where to get it, its license. */
@@ -568,6 +577,14 @@ export const ALL_PAGES: Page[] = [
           "<b>Neha Sans</b> and <b>Neha Serif</b> are based on Noto Sans Kannada and Noto Serif Kannada by Google. They are named for Neha Prasad, a founding member of Open Kannada.",
           "<b>Gari</b> is a handwriting-style font based on Navilu by Aravinda VK, which built on work by IISc Bangalore.",
         ],
+        compare: {
+          head: ["Font", "Style", "Based on", "Weights", "Version"],
+          rows: [
+            ["Neha Sans", "Sans serif", "Noto Sans Kannada", "100 to 900", NEHA_SANS.version],
+            ["Neha Serif", "Serif", "Noto Serif Kannada", "100 to 900", NEHA_SERIF.version],
+            ["Gari", "Handwriting", "Navilu", "400", GARI.version],
+          ],
+        },
       },
       {
         id: "fixed",
@@ -607,7 +624,7 @@ export const ALL_PAGES: Page[] = [
     name: "Spell check",
     title: "Kannada spell check: a Hunspell dictionary for LibreOffice and Firefox",
     description:
-      "A Kannada Hunspell dictionary that accepts 88.9% of held-out Wikipedia words, against 65.7% for hunspell-kn 1.0.3, the dictionary Fedora ships, from 2009.",
+      "A Kannada spell-check dictionary for LibreOffice and Firefox that accepts 88.9% of the words in Kannada Wikipedia text.",
     h1: "Kannada spell check",
     intro:
       "A Kannada Hunspell dictionary for LibreOffice and Firefox, with an analyzer, a stemmer and sound-alike keys generated from the same paradigm rules.",
@@ -656,7 +673,7 @@ export const ALL_PAGES: Page[] = [
     name: "Dictionary",
     title: "English to Kannada dictionary: Kannada words, spellings and meanings",
     description:
-      "An English to Kannada dictionary with 3,712 word pages: Kannada words with ISO 15919 and Baraha spellings, part of speech and meanings from Alar.",
+      "An English to Kannada dictionary: the Kannada words for each English word, with ISO 15919 and Baraha spellings, part of speech and meanings from Alar.",
     h1: "English to Kannada dictionary",
     intro:
       "An English to Kannada dictionary, with 1 page per English word. Each page gives the Kannada words with their ISO 15919 and Baraha spellings, the part of speech, and what each Kannada word means in English, from the Alar dictionary.",
@@ -674,18 +691,15 @@ export const ALL_PAGES: Page[] = [
       {
         id: "result",
         stats: [
-          { value: "3,712", label: "English word pages" },
+          { value: "47.8%", label: "of Kannada words in running text find a page, with inflected forms" },
+          { value: "3,798", label: "English word pages" },
           { value: "13,887", label: "distinct Kannada words on those pages" },
-          { value: "45.1%", label: "of Kannada words in running text find a page, with inflected forms" },
-        ],
-        paragraphs: [
-          "In held-out Kannada Wikipedia text, 20.0% of running words find a page by the exact word, and 45.1% by the exact word or the word it is a form of. Counted once each, 1.6% of distinct words find a page by the exact word, and 21.1% with forms.",
         ],
       },
       {
         id: "method",
         paragraphs: [
-          'The text is the 2.2 million held-out words of Kannada Wikipedia that the <a href="/spell-check/">spell checker</a> is measured on. Search matches each page\'s main Kannada word and the next 4, 10,654 Kannada words in all.',
+          'The text is the 2.2 million held-out words of Kannada Wikipedia that the <a href="/spell-check/">spell checker</a> is measured on. By the exact word alone, 21.7% of its running words find a page. Counted once each, 1.6% of distinct words find a page by the exact word, and 21.6% with forms. Search matches each page\'s main Kannada word and the next 4, 10,827 Kannada words in all.',
           "The main Kannada word of 100 pages was checked in 2 independent reviews.",
         ],
       },
@@ -693,7 +707,7 @@ export const ALL_PAGES: Page[] = [
         id: "limits",
         items: [
           'About 1 page in 4 leads with a Kannada word whose modern meaning differs, such as <span lang="kn">ವರ್ತನೆ</span> for <i>profession</i>. In the 2 reviews, the main word was judged fine on 27 and 28 pages, and wrong on 25 and 24.',
-          "The 400 most frequent English words, such as <i>house</i> and <i>water</i>, have no page yet. They are left out until their Kannada meanings can be ranked well.",
+          "86 of the 400 most frequent English words, such as <i>house</i> and <i>water</i>, have a page: the words where Alar and Ziegler's 1876 dictionary give the same main Kannada word. The rest, such as <i>home</i>, have none yet.",
         ],
       },
       {
@@ -714,6 +728,7 @@ export const ALL_PAGES: Page[] = [
           'ISO 15919 and Baraha spellings: <a href="https://github.com/openkannada/kannadi">kannadi</a>, under MIT OR Apache-2.0.',
           "The order of meanings: word counts from Kannada Wikipedia. Only the counts are used; Wikipedia's text is CC BY-SA 4.0.",
           'The choice of English words: ranks from <a href="https://github.com/hermitdave/FrequencyWords">FrequencyWords</a> by Hermit Dave, under CC BY-SA 4.0. Only the ranks are used.',
+          "Confirming the main word on everyday pages: Ziegler's English-Kannada school dictionary of 1876, public domain, read with OCR and not proofread. Its index is CC BY 4.0. Nothing on a page comes from it.",
         ],
       },
       { id: "downloads", paragraphs: [SOON] },
@@ -733,10 +748,10 @@ export const ALL_PAGES: Page[] = [
     name: "OCR",
     title: "Kannada OCR: a Tesseract model for old Kannada print",
     description:
-      "A Tesseract model for Kannada print. On old printed books it reads 6.0% of characters wrong, against 8.7% for stock Tesseract.",
+      "A Tesseract model that turns old printed Kannada books into text and misreads fewer characters than stock Tesseract.",
     h1: "Kannada OCR",
     intro:
-      "A fine-tuned Tesseract model for Kannada print, especially old print, with a benchmark of 4 sets to measure how well it reads.",
+      "A fine-tuned Tesseract model for Kannada print, especially old print. On old printed books it reads fewer characters wrong than stock Tesseract.",
     art: "scan",
     schema: "CreativeWork",
     licenses: [MIT, APACHE],
@@ -750,12 +765,16 @@ export const ALL_PAGES: Page[] = [
       {
         id: "result",
         paragraphs: ["The share of characters read wrong, lower is better, for version 0.2 of the model against stock Tesseract for Kannada:"],
-        items: [
-          "Old printed books, 60 Wikisource pages: 6.0%, against 8.7%.",
-          "Degraded words, 400: 17.0%, against 24.4%.",
-          "MILE pages from IISc, 30: 5.4%, against 7.3%.",
-          "MILE lines from IISc, 600: 2.8%, against 3.8%.",
-        ],
+        compare: {
+          head: ["Test set", "Open Kannada 0.2", "Stock Tesseract"],
+          rows: [
+            ["Old printed books, 60 Wikisource pages", "6.0%", "8.7%"],
+            ["Degraded words, 400", "17.0%", "24.4%"],
+            ["MILE pages from IISc, 30", "5.4%", "7.3%"],
+            ["MILE lines from IISc, 600", "2.8%", "3.8%"],
+          ],
+          ours: 1,
+        },
       },
       {
         id: "method",
@@ -775,7 +794,7 @@ export const ALL_PAGES: Page[] = [
     name: "AI benchmark",
     title: "The Kannada token tax: what Kannada costs in AI tokenizers",
     description:
-      "The same text costs between 1.1 and 8.3 times as many tokens in Kannada as in English, measured on 960 professionally translated segments.",
+      "The same text costs between 1.1 and 8.3 times as many tokens in Kannada as in English, depending on the AI tokenizer.",
     h1: "The Kannada token tax",
     intro:
       "The token tax is how many tokens Kannada text costs compared with the same text in English. In public tokenizers, Kannada costs between 1.1 and 8.3 times as many.",
@@ -1048,6 +1067,14 @@ export const ALL_PAGES: Page[] = [
           "<b>Neha Sans</b> ಮತ್ತು <b>Neha Serif</b>, Google ನ Noto Sans Kannada ಮತ್ತು Noto Serif Kannada ಆಧರಿಸಿವೆ. ಓಪನ್ ಕನ್ನಡದ ಸ್ಥಾಪಕ ಸದಸ್ಯೆ ನೇಹಾ ಪ್ರಸಾದ್ ಅವರ ಹೆಸರನ್ನು ಇವುಗಳಿಗೆ ಇಡಲಾಗಿದೆ.",
           "<b>Gari</b>, Aravinda VK ಅವರ Navilu ಆಧರಿಸಿದ ಕೈಬರಹ ಶೈಲಿಯ ಫಾಂಟ್. Navilu, ಬೆಂಗಳೂರಿನ IISc ಯ ಕೆಲಸವನ್ನು ಆಧರಿಸಿದೆ.",
         ],
+        compare: {
+          head: ["ಫಾಂಟ್", "ಶೈಲಿ", "ಆಧಾರ", "ತೂಕಗಳು", "ಆವೃತ್ತಿ"],
+          rows: [
+            ["Neha Sans", "ಸ್ಯಾನ್ಸ್ ಸೆರಿಫ್", "Noto Sans Kannada", "100 ರಿಂದ 900", NEHA_SANS.version],
+            ["Neha Serif", "ಸೆರಿಫ್", "Noto Serif Kannada", "100 ರಿಂದ 900", NEHA_SERIF.version],
+            ["Gari", "ಕೈಬರಹ", "Navilu", "400", GARI.version],
+          ],
+        },
       },
       {
         id: "fixed",
@@ -1089,7 +1116,7 @@ export const ALL_PAGES: Page[] = [
     name: "ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ",
     title: "ಕನ್ನಡ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ: LibreOffice ಮತ್ತು Firefox ಗಾಗಿ Hunspell ನಿಘಂಟು",
     description:
-      "ಹೊರಗಿಟ್ಟ ವಿಕಿಪೀಡಿಯ ಪದಗಳಲ್ಲಿ 88.9% ಅನ್ನು ಒಪ್ಪುವ ಕನ್ನಡ Hunspell ನಿಘಂಟು. ಹೆಚ್ಚಿನ ವ್ಯವಸ್ಥೆಗಳಲ್ಲಿರುವ 2009ರ ನಿಘಂಟು 65.7% ಒಪ್ಪುತ್ತದೆ.",
+      "ಕನ್ನಡ ವಿಕಿಪೀಡಿಯ ಪಠ್ಯದ 88.9% ಪದಗಳನ್ನು ಒಪ್ಪುವ, LibreOffice ಮತ್ತು Firefox ಗಾಗಿ ಕನ್ನಡ Hunspell ನಿಘಂಟು.",
     h1: "ಕನ್ನಡ ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ",
     intro:
       "LibreOffice ಮತ್ತು Firefox ಗಾಗಿ ಕನ್ನಡ Hunspell ನಿಘಂಟು. ಅದರ ಜೊತೆಗೆ ಒಂದು ಪದ ವಿಶ್ಲೇಷಕ, ಒಂದು ಪದಮೂಲ ಶೋಧಕ ಮತ್ತು ಉಚ್ಚಾರ ಹೋಲಿಕೆಯ ಕೀಲಿಗಳು ಇವೆ, ಎಲ್ಲವೂ ಒಂದೇ ರೂಪನಿಯಮಗಳಿಂದ ರಚಿತವಾದವು.",
@@ -1140,7 +1167,7 @@ export const ALL_PAGES: Page[] = [
     name: "ನಿಘಂಟು",
     title: "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ಕನ್ನಡ ಪದಗಳು, ಲಿಪ್ಯಂತರ ಮತ್ತು ಅರ್ಥಗಳು",
     description:
-      "3,712 ಪದ ಪುಟಗಳಿರುವ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರದೊಂದಿಗೆ ಕನ್ನಡ ಪದಗಳು, ಪದವರ್ಗ, ಅಲರ್‌ನಿಂದ ಅರ್ಥಗಳು.",
+      "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು: ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ ಕನ್ನಡ ಪದಗಳು, ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರ, ಪದವರ್ಗ ಮತ್ತು ಅಲರ್‌ನಿಂದ ಇಂಗ್ಲಿಷ್ ಅರ್ಥಗಳು.",
     h1: "ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು",
     intro:
       "ಪ್ರತಿ ಇಂಗ್ಲಿಷ್ ಪದಕ್ಕೆ 1 ಪುಟವಿರುವ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ನಿಘಂಟು. ಪ್ರತಿ ಪುಟದಲ್ಲಿ ಕನ್ನಡ ಪದಗಳು, ಅವುಗಳ ISO 15919 ಮತ್ತು ಬರಹ ಲಿಪ್ಯಂತರ, ಪದವರ್ಗ, ಮತ್ತು ಅಲರ್ ನಿಘಂಟಿನಿಂದ ಪಡೆದ ಇಂಗ್ಲಿಷ್ ಅರ್ಥಗಳು ಇರುತ್ತವೆ.",
@@ -1158,18 +1185,15 @@ export const ALL_PAGES: Page[] = [
       {
         id: "result",
         stats: [
-          { value: "3,712", label: "ಇಂಗ್ಲಿಷ್ ಪದ ಪುಟಗಳು" },
+          { value: "47.8%", label: "ಪಠ್ಯದ ಕನ್ನಡ ಪದಗಳಿಗೆ, ರೂಪಾಂತರಗಳೂ ಸೇರಿ, ಪುಟ ಸಿಗುತ್ತದೆ" },
+          { value: "3,798", label: "ಇಂಗ್ಲಿಷ್ ಪದ ಪುಟಗಳು" },
           { value: "13,887", label: "ಆ ಪುಟಗಳಲ್ಲಿರುವ ಬೇರೆ ಬೇರೆ ಕನ್ನಡ ಪದಗಳು" },
-          { value: "45.1%", label: "ಪಠ್ಯದ ಕನ್ನಡ ಪದಗಳಿಗೆ, ರೂಪಾಂತರಗಳೂ ಸೇರಿ, ಪುಟ ಸಿಗುತ್ತದೆ" },
-        ],
-        paragraphs: [
-          "ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಟ್ಟ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯ ಪಠ್ಯದಲ್ಲಿ, ಪದವನ್ನು ಇದ್ದಂತೆಯೇ ಹುಡುಕಿದರೆ 20.0% ಪದಗಳಿಗೆ ಪುಟ ಸಿಗುತ್ತದೆ. ಪದ ಯಾವುದರ ರೂಪಾಂತರವೋ ಆ ಮೂಲ ಪದದಿಂದಲೂ ಹುಡುಕಿದರೆ 45.1% ಪದಗಳಿಗೆ ಸಿಗುತ್ತದೆ. ಪ್ರತಿ ಪದವನ್ನು ಒಮ್ಮೆ ಮಾತ್ರ ಎಣಿಸಿದರೆ, ಇವು 1.6% ಮತ್ತು 21.1%.",
         ],
       },
       {
         id: "method",
         paragraphs: [
-          'ಅಳತೆಗೆ ಬಳಸಿದ ಪಠ್ಯ, <a href="/kn/spell-check/">ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ</a>ವನ್ನು ಅಳೆಯಲು ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಟ್ಟ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದ ಅದೇ 22 ಲಕ್ಷ ಪದಗಳು. ಹುಡುಕಾಟವು ಪ್ರತಿ ಪುಟದ ಮುಖ್ಯ ಕನ್ನಡ ಪದ ಮತ್ತು ಅದರ ನಂತರದ 4 ಪದಗಳೊಂದಿಗೆ ಹೋಲಿಸುತ್ತದೆ, ಒಟ್ಟು 10,654 ಕನ್ನಡ ಪದಗಳು.',
+          'ಅಳತೆಗೆ ಬಳಸಿದ ಪಠ್ಯ, <a href="/kn/spell-check/">ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ</a>ವನ್ನು ಅಳೆಯಲು ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಟ್ಟ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದ ಅದೇ 22 ಲಕ್ಷ ಪದಗಳು. ಪದವನ್ನು ಇದ್ದಂತೆಯೇ ಹುಡುಕಿದರೆ ಈ ಪಠ್ಯದ 21.7% ಪದಗಳಿಗೆ ಪುಟ ಸಿಗುತ್ತದೆ. ಪ್ರತಿ ಪದವನ್ನು ಒಮ್ಮೆ ಮಾತ್ರ ಎಣಿಸಿದರೆ, ಇದ್ದಂತೆಯೇ ಹುಡುಕಿದಾಗ 1.6% ಮತ್ತು ರೂಪಾಂತರಗಳೂ ಸೇರಿ 21.6% ಪದಗಳಿಗೆ ಪುಟ ಸಿಗುತ್ತದೆ. ಹುಡುಕಾಟವು ಪ್ರತಿ ಪುಟದ ಮುಖ್ಯ ಕನ್ನಡ ಪದ ಮತ್ತು ಅದರ ನಂತರದ 4 ಪದಗಳೊಂದಿಗೆ ಹೋಲಿಸುತ್ತದೆ, ಒಟ್ಟು 10,827 ಕನ್ನಡ ಪದಗಳು.',
           "100 ಪುಟಗಳ ಮುಖ್ಯ ಕನ್ನಡ ಪದವನ್ನು 2 ಸ್ವತಂತ್ರ ಪರಿಶೀಲನೆಗಳಲ್ಲಿ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.",
         ],
       },
@@ -1177,7 +1201,7 @@ export const ALL_PAGES: Page[] = [
         id: "limits",
         items: [
           'ಸುಮಾರು 4 ಪುಟಗಳಲ್ಲಿ 1 ಪುಟ, ಇಂದಿನ ಅರ್ಥ ಬೇರೆಯಾಗಿರುವ ಕನ್ನಡ ಪದದಿಂದ ಆರಂಭವಾಗುತ್ತದೆ, ಉದಾಹರಣೆಗೆ <i lang="en">profession</i> ಗೆ ವರ್ತನೆ. 2 ಪರಿಶೀಲನೆಗಳಲ್ಲಿ ಮುಖ್ಯ ಪದ 27 ಮತ್ತು 28 ಪುಟಗಳಲ್ಲಿ ಸರಿ ಎಂದು, 25 ಮತ್ತು 24 ಪುಟಗಳಲ್ಲಿ ತಪ್ಪು ಎಂದು ತೀರ್ಮಾನವಾಯಿತು.',
-          '<i lang="en">house</i>, <i lang="en">water</i> ನಂತಹ ಅತಿ ಹೆಚ್ಚು ಬಳಕೆಯ 400 ಇಂಗ್ಲಿಷ್ ಪದಗಳಿಗೆ ಇನ್ನೂ ಪುಟವಿಲ್ಲ. ಅವುಗಳ ಕನ್ನಡ ಅರ್ಥಗಳನ್ನು ಸರಿಯಾಗಿ ಕ್ರಮಗೊಳಿಸುವವರೆಗೆ ಅವನ್ನು ಬಿಡಲಾಗಿದೆ.',
+          'ಅತಿ ಹೆಚ್ಚು ಬಳಕೆಯ 400 ಇಂಗ್ಲಿಷ್ ಪದಗಳಲ್ಲಿ, <i lang="en">house</i>, <i lang="en">water</i> ಸೇರಿದಂತೆ 86 ಪದಗಳಿಗೆ ಪುಟವಿದೆ. ಅಲರ್ ಮತ್ತು 1876ರ ಜೀಗ್ಲರ್ ನಿಘಂಟು ಒಂದೇ ಮುಖ್ಯ ಕನ್ನಡ ಪದವನ್ನು ಕೊಡುವ ಪದಗಳು ಇವು. <i lang="en">home</i> ನಂತಹ ಉಳಿದ ಪದಗಳಿಗೆ ಇನ್ನೂ ಪುಟವಿಲ್ಲ.',
         ],
       },
       {
@@ -1198,6 +1222,7 @@ export const ALL_PAGES: Page[] = [
           'ISO 15919 ಮತ್ತು ಬರಹ ರೂಪಗಳು: <a href="https://github.com/openkannada/kannadi">ಕನ್ನಡಿ</a>, MIT OR Apache-2.0 ಅಡಿಯಲ್ಲಿ.',
           "ಅರ್ಥಗಳ ಕ್ರಮ: ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದ ಪದ ಎಣಿಕೆಗಳು. ಎಣಿಕೆಗಳನ್ನು ಮಾತ್ರ ಬಳಸಲಾಗಿದೆ; ವಿಕಿಪೀಡಿಯದ ಪಠ್ಯ CC BY-SA 4.0.",
           'ಇಂಗ್ಲಿಷ್ ಪದಗಳ ಆಯ್ಕೆ: Hermit Dave ಅವರ <a href="https://github.com/hermitdave/FrequencyWords">FrequencyWords</a> ನ ಕ್ರಮಾಂಕಗಳು, CC BY-SA 4.0 ಅಡಿಯಲ್ಲಿ. ಕ್ರಮಾಂಕಗಳನ್ನು ಮಾತ್ರ ಬಳಸಲಾಗಿದೆ.',
+          "ದಿನನಿತ್ಯದ ಪದಗಳ ಪುಟಗಳಲ್ಲಿ ಮುಖ್ಯ ಪದವನ್ನು ಖಚಿತಪಡಿಸಲು: 1876ರ ಜೀಗ್ಲರ್ ಅವರ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ಶಾಲಾ ನಿಘಂಟು, ಸಾರ್ವಜನಿಕ ಸ್ವತ್ತು, OCR ಮೂಲಕ ಓದಿದ್ದು, ತಿದ್ದಿಲ್ಲ. ಅದರ ಸೂಚಿ CC BY 4.0. ಪುಟಗಳಲ್ಲಿರುವ ಯಾವುದೂ ಅದರಿಂದ ಬಂದಿಲ್ಲ.",
         ],
       },
       { id: "downloads", paragraphs: [SOON_KN] },
@@ -1219,10 +1244,10 @@ export const ALL_PAGES: Page[] = [
     name: "OCR",
     title: "ಕನ್ನಡ OCR: ಹಳೆಯ ಕನ್ನಡ ಮುದ್ರಣಕ್ಕಾಗಿ Tesseract ಮಾದರಿ",
     description:
-      "ಕನ್ನಡ ಮುದ್ರಣವನ್ನು, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣವನ್ನು, ಪಠ್ಯವಾಗಿ ಓದುವ Tesseract ಮಾದರಿ, 4 ಸೆಟ್‌ಗಳ ಮಾನದಂಡದೊಂದಿಗೆ. ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳಲ್ಲಿ ಅದು 6.0% ಅಕ್ಷರಗಳನ್ನು ತಪ್ಪಾಗಿ ಓದುತ್ತದೆ, ಸಾಮಾನ್ಯ Tesseract ನಲ್ಲಿ 8.7%.",
+      "ಹಳೆಯ ಮುದ್ರಿತ ಕನ್ನಡ ಪುಸ್ತಕಗಳನ್ನು ಪಠ್ಯವಾಗಿ ಓದುವ Tesseract ಮಾದರಿ. ಅವುಗಳಲ್ಲಿ ಅದು ಸಾಮಾನ್ಯ Tesseract ಗಿಂತ ಕಡಿಮೆ ಅಕ್ಷರಗಳನ್ನು ತಪ್ಪಾಗಿ ಓದುತ್ತದೆ.",
     h1: "ಕನ್ನಡ OCR",
     intro:
-      "ಕನ್ನಡ ಮುದ್ರಣಕ್ಕಾಗಿ, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣಕ್ಕಾಗಿ, ಹೆಚ್ಚಿನ ತರಬೇತಿ ನೀಡಿದ Tesseract ಮಾದರಿ. ಅದು ಎಷ್ಟು ಚೆನ್ನಾಗಿ ಓದುತ್ತದೆ ಎಂದು ಅಳೆಯಲು 4 ಸೆಟ್‌ಗಳ ಮಾನದಂಡವೂ ಇದೆ.",
+      "ಕನ್ನಡ ಮುದ್ರಣಕ್ಕಾಗಿ, ಅದರಲ್ಲೂ ಹಳೆಯ ಮುದ್ರಣಕ್ಕಾಗಿ, ಹೆಚ್ಚಿನ ತರಬೇತಿ ನೀಡಿದ Tesseract ಮಾದರಿ. ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳಲ್ಲಿ ಅದು ಸಾಮಾನ್ಯ Tesseract ಗಿಂತ ಕಡಿಮೆ ಅಕ್ಷರಗಳನ್ನು ತಪ್ಪಾಗಿ ಓದುತ್ತದೆ.",
     art: "scan",
     schema: "CreativeWork",
     licenses: [MIT, APACHE],
@@ -1236,12 +1261,16 @@ export const ALL_PAGES: Page[] = [
       {
         id: "result",
         paragraphs: ["ತಪ್ಪಾಗಿ ಓದಿದ ಅಕ್ಷರಗಳ ಪ್ರಮಾಣ, ಕಡಿಮೆ ಇದ್ದಷ್ಟೂ ಒಳ್ಳೆಯದು, ಮಾದರಿಯ 0.2 ಆವೃತ್ತಿಗೆ, ಕನ್ನಡಕ್ಕಾಗಿ ಸಾಮಾನ್ಯ Tesseract ಗೆ ಹೋಲಿಸಿದರೆ:"],
-        items: [
-          "ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳು, ವಿಕಿಸೋರ್ಸ್‌ನ 60 ಪುಟಗಳು: 6.0%, ಸಾಮಾನ್ಯದಲ್ಲಿ 8.7%.",
-          "ಮಸುಕಾದ ಪದಗಳು, 400: 17.0%, ಸಾಮಾನ್ಯದಲ್ಲಿ 24.4%.",
-          "IISc ಯ MILE ಪುಟಗಳು, 30: 5.4%, ಸಾಮಾನ್ಯದಲ್ಲಿ 7.3%.",
-          "IISc ಯ MILE ಸಾಲುಗಳು, 600: 2.8%, ಸಾಮಾನ್ಯದಲ್ಲಿ 3.8%.",
-        ],
+        compare: {
+          head: ["ಪರೀಕ್ಷಾ ಸೆಟ್", "ಓಪನ್ ಕನ್ನಡ 0.2", "ಸಾಮಾನ್ಯ Tesseract"],
+          rows: [
+            ["ಹಳೆಯ ಮುದ್ರಿತ ಪುಸ್ತಕಗಳು, ವಿಕಿಸೋರ್ಸ್‌ನ 60 ಪುಟಗಳು", "6.0%", "8.7%"],
+            ["ಮಸುಕಾದ ಪದಗಳು, 400", "17.0%", "24.4%"],
+            ["IISc ಯ MILE ಪುಟಗಳು, 30", "5.4%", "7.3%"],
+            ["IISc ಯ MILE ಸಾಲುಗಳು, 600", "2.8%", "3.8%"],
+          ],
+          ours: 1,
+        },
       },
       {
         id: "method",
@@ -1263,7 +1292,7 @@ export const ALL_PAGES: Page[] = [
     name: "AI ಮಾನದಂಡ",
     title: "ಕನ್ನಡದ ಟೋಕನ್ ತೆರಿಗೆ: AI ಟೋಕನೈಸರ್‌ಗಳಲ್ಲಿ ಕನ್ನಡಕ್ಕೆ ತಗಲುವ ವೆಚ್ಚ",
     description:
-      "ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿರುವ ಪಠ್ಯಕ್ಕೆ ಹೋಲಿಸಿದರೆ ಅದೇ ಪಠ್ಯಕ್ಕೆ ಕನ್ನಡದಲ್ಲಿ 1.1 ರಿಂದ 8.3 ಪಟ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು. ವೃತ್ತಿಪರವಾಗಿ ಅನುವಾದಿಸಿದ 960 ಭಾಗಗಳ ಮೇಲೆ ಅಳೆದದ್ದು.",
+      "ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿರುವ ಪಠ್ಯಕ್ಕೆ ಹೋಲಿಸಿದರೆ ಅದೇ ಪಠ್ಯಕ್ಕೆ ಕನ್ನಡದಲ್ಲಿ 1.1 ರಿಂದ 8.3 ಪಟ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು, AI ಟೋಕನೈಸರ್‌ಗೆ ಅನುಗುಣವಾಗಿ.",
     h1: "ಕನ್ನಡದ ಟೋಕನ್ ತೆರಿಗೆ",
     intro:
       "ಇಂಗ್ಲಿಷ್‌ನಲ್ಲಿರುವ ಅದೇ ಪಠ್ಯಕ್ಕೆ ಹೋಲಿಸಿದರೆ ಕನ್ನಡ ಪಠ್ಯಕ್ಕೆ ಎಷ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು ಎಂಬುದೇ ಟೋಕನ್ ತೆರಿಗೆ. ಸಾರ್ವಜನಿಕ ಟೋಕನೈಸರ್‌ಗಳಲ್ಲಿ ಕನ್ನಡಕ್ಕೆ 1.1 ರಿಂದ 8.3 ಪಟ್ಟು ಟೋಕನ್‌ಗಳು ಬೇಕು.",

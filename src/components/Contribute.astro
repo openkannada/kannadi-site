@@ -1,16 +1,134 @@
 ---
+// The contribute page: the interest form first, beside what we ask of everyone, then each way to help as a card,
+// then how to sign off commits.
 import { CONTRIBUTE } from "../content/contribute.ts";
+import { INTEREST_COPY } from "../content/interest.ts";
 import type { Lang } from "../i18n/core.ts";
+import type { IconName } from "../icons/icons.ts";
 import { withBase } from "../lib/paths.ts";
+import Icon from "./Icon.astro";
+import InterestForm from "./InterestForm.astro";
 
 interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
+const C = CONTRIBUTE[lang];
+const J = INTEREST_COPY[lang];
+// Report a bad conversion, read Kannada, design type, write code; the last section is the sign-off.
+const ICONS: IconName[] = ["legacy", "book", "type", "edit"];
+const ways = C.sections.slice(0, -1);
+const signOff = C.sections.at(-1)!;
 ---
-{CONTRIBUTE[lang].sections.map((s) => (
-  <section>
-    <h2>{s.heading}</h2>
-    {s.paragraphs.map((p) => <p set:html={withBase(p)} />)}
-  </section>
-))}
+<section class="join" aria-labelledby="join-heading">
+  <div class="join-side">
+    <h2 id="join-heading">{J.heading}</h2>
+    <p set:html={withBase(J.intro)} />
+    <h3>{J.expectations.heading}</h3>
+    <ul class="expect" role="list">
+      {J.expectations.items.map((e) => <li><Icon name="check" />{e}</li>)}
+    </ul>
+  </div>
+  <div class="join-card">
+    <InterestForm lang={lang} />
+  </div>
+</section>
+
+<ul class="ways" role="list" data-cards="ways">
+  {ways.map((s, i) => (
+    <li class="way reveal" data-inview>
+      <span class="icon-tile"><Icon name={ICONS[i] ?? "people"} /></span>
+      <h2 data-align="heading">{s.heading}</h2>
+      {s.paragraphs.map((p) => <p set:html={withBase(p)} />)}
+    </li>
+  ))}
+</ul>
+
+<section class="measure">
+  <h2>{signOff.heading}</h2>
+  {signOff.paragraphs.map((p) => <p set:html={withBase(p)} />)}
+</section>
+
+<style>
+  .join {
+    display: grid;
+    gap: 1.5rem 3rem;
+    align-items: start;
+    margin-top: 2.5rem;
+  }
+  .join h2 {
+    margin-top: 0;
+  }
+  .join-card {
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+    box-shadow: var(--shadow-sheet);
+  }
+  @media (min-width: 40rem) {
+    .join-card {
+      padding: 1.75rem;
+    }
+  }
+  .expect {
+    display: grid;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .expect li {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    gap: 0.625rem;
+    line-height: 1.55;
+  }
+  .expect li:lang(kn) {
+    line-height: var(--type-kn-leading);
+  }
+  .expect :global(svg) {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.125rem;
+    color: var(--primary);
+  }
+  @media (min-width: 64rem) {
+    .join {
+      grid-template-columns: minmax(0, 20rem) minmax(0, 1fr);
+    }
+    .join-side {
+      position: sticky;
+      top: 1.5rem;
+    }
+  }
+  .ways {
+    display: grid;
+    gap: 1rem;
+    margin: 4rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 40rem) {
+    .ways {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .way {
+    display: grid;
+    align-content: start;
+    gap: 0.5rem;
+    padding: 1.25rem 1.375rem 1.375rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-2xl);
+    background: var(--card);
+  }
+  .way h2 {
+    margin: 0.5rem 0 0;
+    font-size: 1.125rem;
+  }
+  .way p {
+    margin: 0;
+    font-size: 0.9375rem;
+  }
+</style>

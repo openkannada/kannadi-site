@@ -16,16 +16,21 @@ const ABOUT_EN = {
       { illustration: "scan" as const, label: "Reading old printed books with OCR" },
     ],
   },
-  /** The people of Open Kannada, in 1 list with 1 layout: a role is a label, never a rank. */
+  /** The people of Open Kannada, in 1 list with 1 layout: a role is a label, never a rank. `photo` names a portrait in src/assets/people. */
   people: [
-    { name: "Prasad Subrahmanya", role: "Founding member", url: "https://prasad.tech", site: "prasad.tech" },
-    { name: "Neha Prasad", role: "Founding member", url: "https://neha-prasad.com/", site: "neha-prasad.com" },
+    { name: "Prasad Subrahmanya", role: "Founding member", url: "https://prasad.tech", site: "prasad.tech", photo: "prasad" as const, alt: "Portrait of Prasad Subrahmanya" },
+    { name: "Neha Prasad", role: "Founding member", url: "https://neha-prasad.com/", site: "neha-prasad.com", photo: "neha" as const, alt: "Portrait of Neha Prasad" },
   ],
   dedication: [
     'I dedicate this work to my parents, Veena and Subramanya. They were farmers, and the values and principles they lived by made my sister <a href="https://www.pramodinisubramanya.com/">Pramodini</a> and me who we are today.',
     "And to Neha, my wife, who backs every hour and every bit of money we put into this. She has been my other shoulder throughout.",
   ],
   signature: "Prasad",
+  /** The photo beside the dedication, in src/assets/family. The place is left unnamed. */
+  family: {
+    alt: "The 5 of us standing in front of a carved stone temple tower on a sunny day.",
+    caption: "Subramanya, Veena, Pramodini, me and Neha.",
+  },
   help: [
     "<b>Have an old Nudi, Baraha or Shree-Lipi file that converts wrongly?</b> Send a short sample. Every fixed case becomes a test.",
     "<b>Read Kannada well?</b> Help check converted text against the original. It turns our results into verified ones.",
@@ -53,14 +58,18 @@ const ABOUT_KN: About = {
     ],
   },
   people: [
-    { name: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ", role: "ಸ್ಥಾಪಕ ಸದಸ್ಯ", url: "https://prasad.tech", site: "prasad.tech" },
-    { name: "ನೇಹಾ ಪ್ರಸಾದ್", role: "ಸ್ಥಾಪಕ ಸದಸ್ಯೆ", url: "https://neha-prasad.com/", site: "neha-prasad.com" },
+    { name: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ", role: "ಸ್ಥಾಪಕ ಸದಸ್ಯ", url: "https://prasad.tech", site: "prasad.tech", photo: "prasad", alt: "ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ ಅವರ ಭಾವಚಿತ್ರ" },
+    { name: "ನೇಹಾ ಪ್ರಸಾದ್", role: "ಸ್ಥಾಪಕ ಸದಸ್ಯೆ", url: "https://neha-prasad.com/", site: "neha-prasad.com", photo: "neha", alt: "ನೇಹಾ ಪ್ರಸಾದ್ ಅವರ ಭಾವಚಿತ್ರ" },
   ],
   dedication: [
     'ಈ ಕೆಲಸವನ್ನು ನನ್ನ ತಂದೆ ತಾಯಿ, ವೀಣಾ ಮತ್ತು ಸುಬ್ರಮಣ್ಯ ಅವರಿಗೆ ಅರ್ಪಿಸುತ್ತೇನೆ. ಅವರು ರೈತರು. ಅವರು ಬದುಕಿದ ಮೌಲ್ಯಗಳು ಮತ್ತು ತತ್ವಗಳೇ ನನ್ನ ತಂಗಿ <a href="https://www.pramodinisubramanya.com/">ಪ್ರಮೋದಿನಿ</a> ಮತ್ತು ನನ್ನನ್ನು ಇಂದು ಇರುವಂತೆ ರೂಪಿಸಿವೆ.',
     "ಮತ್ತು ನನ್ನ ಪತ್ನಿ ನೇಹಾಗೆ. ಇದಕ್ಕೆ ನಾವು ಕೊಡುವ ಪ್ರತಿ ಗಂಟೆ, ಪ್ರತಿ ರೂಪಾಯಿಯ ಹಿಂದೆ ಅವಳಿದ್ದಾಳೆ. ಇಡೀ ದಾರಿಯಲ್ಲಿ ಅವಳು ನನ್ನ ಇನ್ನೊಂದು ಹೆಗಲಾಗಿದ್ದಾಳೆ.",
   ],
   signature: "ಪ್ರಸಾದ್",
+  family: {
+    alt: "ಕೆತ್ತನೆಯ ಕಲ್ಲಿನ ದೇವಾಲಯದ ಗೋಪುರದ ಮುಂದೆ ಬಿಸಿಲಿನಲ್ಲಿ ನಿಂತಿರುವ ನಾವು 5 ಜನ.",
+    caption: "ಸುಬ್ರಹ್ಮಣ್ಯ, ವೀಣಾ, ಪ್ರಮೋದಿನಿ, ನಾನು ಮತ್ತು ನೇಹಾ.",
+  },
   help: [
     "<b>ತಪ್ಪಾಗಿ ಪರಿವರ್ತನೆಯಾಗುವ ಹಳೆಯ ನುಡಿ, ಬರಹ ಅಥವಾ ಶ್ರೀಲಿಪಿ ಫೈಲ್ ನಿಮ್ಮ ಬಳಿ ಇದ್ದರೆ,</b> ಅದರ ಸಣ್ಣ ಭಾಗವನ್ನು ಕಳುಹಿಸಿ. ಸರಿಪಡಿಸಿದ ಪ್ರತಿ ಉದಾಹರಣೆಯೂ ಪರೀಕ್ಷೆಯಾಗಿ ಉಳಿಯುತ್ತದೆ.",
     "<b>ಕನ್ನಡ ಚೆನ್ನಾಗಿ ಓದುವವರಾದರೆ,</b> ಪರಿವರ್ತಿಸಿದ ಪಠ್ಯವನ್ನು ಮೂಲದೊಂದಿಗೆ ಹೋಲಿಸಲು ನೆರವಾಗಿ. ಅದು ನಮ್ಮ ಫಲಿತಾಂಶಗಳನ್ನು ಖಚಿತಪಡಿಸುತ್ತದೆ.",

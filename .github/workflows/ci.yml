@@ -61,6 +61,7 @@ jobs:
         run: |
           KANNADA_DRAFTS=1 npx astro build --outDir dist-drafts
           KANNADA_DRAFTS=1 node scripts/seo-smoke.ts dist-drafts
+          node scripts/layout-check.ts dist-drafts
       - name: Build and check with a site URL
         run: |
           SITE_URL=https://example.org/kannada/ npx astro build --outDir dist-site

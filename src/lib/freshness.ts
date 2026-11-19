@@ -7,9 +7,12 @@ export const HASH_FILE = "data/page-hashes.json";
 /** The recorded fingerprint of each page path. */
 export type PageHashes = Record<string, string>;
 
-/** A fingerprint of a page's text. Link and image targets are left out, so the site URL and base path do not change it. */
+/**
+ * A fingerprint of a page's text. Link and image targets are left out, and a table's separator dashes are
+ * shortened, since their length follows the widest cell; so the site URL and base path do not change it.
+ */
 export function contentHash(markdown: string): string {
-  const text = markdown.replace(/\]\([^)]*\)/g, "]()").replace(/\s+/g, " ").trim();
+  const text = markdown.replace(/\]\([^)]*\)/g, "]()").replace(/-{3,}/g, "---").replace(/\s+/g, " ").trim();
   return createHash("sha256").update(text).digest("hex").slice(0, 16);
 }
 

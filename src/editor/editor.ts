@@ -21,6 +21,27 @@ export interface TextRange {
   end: number;
 }
 
+/** What the rest of the editor uses of a text editor; DocEditor and the ProseMirror PmEditor both provide it. */
+export interface EditorSurface {
+  readonly el: HTMLElement;
+  readonly text: string;
+  /** Whether a keyboard is composing; text under a composition is never rewritten. */
+  readonly composing: boolean;
+  /** Moves focus into the text without scrolling, keeping the caret where it was. */
+  focus(): void;
+  selection(): TextRange | null;
+  select(start: number, end?: number): void;
+  offsetOf(node: Node, offset: number): number;
+  replace(start: number, end: number, text: string, inputType?: string): void;
+  setText(text: string): void;
+  /** Shows saved text, without an undo step. */
+  load(text: string): void;
+  highlight(name: string, ranges: ArrayLike<number>): void;
+  rect(start: number, end: number): DOMRect;
+  caretRect(): DOMRect | null;
+  scrollTo(start: number, end: number): void;
+}
+
 const HISTORY = 200;
 const TYPING = new Set([
   "insertText",
@@ -30,7 +51,7 @@ const TYPING = new Set([
   "compose",
 ]);
 
-export class DocEditor {
+export class DocEditor implements EditorSurface {
   readonly el: HTMLElement;
   private readonly onEdit: EditListener;
   private before: string;
@@ -294,6 +315,16 @@ export class DocEditor {
   setText(text: string): void {
     this.replace(0, this.text.length, text);
     this.select(0);
+  }
+
+  focus(): void {
+    this.el.focus({ preventScroll: true });
+  }
+
+  /** Shows saved text, without an undo step. */
+  load(text: string): void {
+    this.el.textContent = text;
+    this.sync("restore", false);
   }
 
   /** Draws the named highlight over [start, end, start, end, ...]. */

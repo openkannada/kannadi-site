@@ -1,7 +1,7 @@
 // The toolbar, the suggestions and the caret line never cover each other, at every width, light and dark. @layout
 import { expect, test } from "@playwright/test";
 
-import { docText, expectClearLayout, focusDoc, isPhone, layout, openEditor, settle } from "./editor.ts";
+import { caretOffset, docText, expectClearLayout, focusDoc, isPhone, layout, openEditor, settle } from "./editor.ts";
 
 test.describe("@layout", () => {
   test("after a word, the first line is clear of the toolbar and the suggestions", async ({ page }, info) => {
@@ -100,10 +100,15 @@ test.describe("@layout", () => {
     await settle(page);
     // A line from the middle of the text, scrolled to straddle the window's bottom edge.
     const at = await page.evaluate(() => {
-      const node = document.getElementById("doc")!.firstChild!;
+      const walker = document.createTreeWalker(document.getElementById("doc")!, NodeFilter.SHOW_TEXT);
+      const nodes: Text[] = [];
+      for (let n = walker.nextNode(); n; n = walker.nextNode()) nodes.push(n as Text);
+      // The middle line: of 1 text node with every line, or of 1 text node per line.
+      const node = nodes[Math.floor(nodes.length / 2)]!;
+      const middle = nodes.length > 1 ? 0 : Math.floor(node.length / 2);
       const range = document.createRange();
-      range.setStart(node, Math.floor(node.textContent!.length / 2));
-      range.setEnd(node, Math.floor(node.textContent!.length / 2) + 1);
+      range.setStart(node, middle);
+      range.setEnd(node, middle + 1);
       const line = range.getBoundingClientRect();
       scrollBy({ top: line.top - (innerHeight - line.height / 2), behavior: "instant" });
       const moved = range.getBoundingClientRect();
@@ -138,7 +143,7 @@ test.describe("@layout", () => {
     });
     await page.mouse.click(gap.x, gap.y);
     await expect(page.locator("#doc")).toBeFocused();
-    expect(await page.evaluate(() => getSelection()!.focusOffset)).toBe((await docText(page)).length);
+    expect(await caretOffset(page)).toBe((await docText(page)).length);
     expect(Math.abs((await page.evaluate(() => scrollY)) - before)).toBeLessThan(120);
     await expectClearLayout(page, info, "sheet-margin");
   });

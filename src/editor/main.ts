@@ -2,7 +2,7 @@
 // shortcuts and autosave. File readers and writers load on first use.
 import wordsUrl from "../../data/words.tsv?url";
 import { Composer } from "./compose.ts";
-import { DocEditor } from "./editor.ts";
+import { DocEditor, type EditListener, type EditorSurface } from "./editor.ts";
 import type { ExportFormat } from "./files.ts";
 import { doneWith, sessionStore, takeText } from "../lib/handoff.ts";
 import { registerWhenIdle, resolveModelContext } from "../lib/model-context.ts";
@@ -160,13 +160,17 @@ try {
   throw e;
 }
 
-const editor = new DocEditor(ui.doc, (edit, after, inputType) => {
+const onEdit: EditListener = (edit, after, inputType) => {
   if (inputType !== "compose") english.edited();
   issues.edited(edit, after);
   composer.handle(edit, after, inputType);
   update(after);
   view.keepCaret();
-});
+};
+// ?editor=next opens the editor on ProseMirror, which loads only then.
+const next = new URLSearchParams(location.search).get("editor") === "next";
+const editor: EditorSurface = next ? new (await import("./pm.ts")).PmEditor(ui.doc, onEdit) : new DocEditor(ui.doc, onEdit);
+ui.section.dataset.core = next ? "next" : "doc";
 
 const view = new View(editor, {
   dock: document.querySelector<HTMLElement>(".dock")!,
@@ -290,7 +294,7 @@ async function open(file: File | undefined): Promise<void> {
     issues.clear();
     editor.setText(result.text);
     issues.addUnknown(result.unknown);
-    editor.el.focus();
+    editor.focus();
     editor.select(0);
     fileName = file.name.replace(/\.[^.]*$/, "") || S.files.defaultName;
     if (result.converted) report(result, fmt(S.convert.opened, { name: file.name }));
@@ -419,7 +423,7 @@ const ACTIONS: Record<string, () => void> = {
   open: () => ui.file.click(),
   iso: () => {
     setMode("iso15919");
-    editor.el.focus();
+    editor.focus();
   },
   normalize: () => transform(kannadi.normalize, S.edit.normalize),
   modernize: () => transform(kannadi.modernize, S.edit.modernize),
@@ -427,7 +431,7 @@ const ACTIONS: Record<string, () => void> = {
     issues.clear();
     editor.setText("");
     fileName = S.files.defaultName;
-    editor.el.focus();
+    editor.focus();
     say(S.edit.newDocument);
   },
   shortcuts: () => ui.shortcuts.showModal(),
@@ -471,7 +475,7 @@ function wireVoice(): void {
   // Keep the caret in the document, where the words go.
   mic.addEventListener("pointerdown", (e) => e.preventDefault());
   mic.addEventListener("click", () => {
-    editor.el.focus();
+    editor.focus();
     voice.toggle();
   });
 }
@@ -545,7 +549,7 @@ function wire(): void {
   // A click in the sheet's margin puts the caret at the nearest place in the text, without jumping to the top.
   byId("sheet").addEventListener("click", (e) => {
     if (e.target !== e.currentTarget) return;
-    editor.el.focus({ preventScroll: true });
+    editor.focus();
     const box = editor.el.getBoundingClientRect();
     if (e.clientY >= box.bottom || !editor.text) {
       editor.select(editor.text.length);
@@ -619,7 +623,7 @@ function wire(): void {
   for (const input of document.querySelectorAll<HTMLInputElement>('input[name="mode"]')) {
     input.addEventListener("change", () => setMode(input.value as TypingMode));
     // A click on the chosen mode changes nothing, but the keys that follow still belong in the document.
-    input.addEventListener("click", () => editor.el.focus({ preventScroll: true }));
+    input.addEventListener("click", () => editor.focus());
   }
   for (const input of document.querySelectorAll<HTMLInputElement>('input[name="font"]')) {
     input.addEventListener("change", () => setFont(input.value as Settings["font"]));
@@ -696,11 +700,10 @@ function restore(): void {
   if (picked) setMode(picked.value as TypingMode);
   else if (pageMode && pageMode !== "kannada") setMode(pageMode, false);
   else setMode(MODES.includes(settings.mode) ? settings.mode : "kannada", false);
-  if (picked && document.activeElement === picked) editor.el.focus({ preventScroll: true });
+  if (picked && document.activeElement === picked) editor.focus();
   setFont(settings.font === "serif" ? "serif" : "sans", false);
   if (saved?.text) {
-    ui.doc.textContent = saved.text;
-    editor.sync("restore", false);
+    editor.load(saved.text);
     const offsets = (list: unknown) => (Array.isArray(list) ? list.filter((o): o is number => Number.isInteger(o) && o < saved.text.length) : []);
     issues.addUnknown(offsets(saved.unknown));
     issues.keep(offsets(saved.kept));

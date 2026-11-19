@@ -1,7 +1,7 @@
 // Typing in every mode, with real key events, insertText and keyboard compositions.
 import { expect, test } from "@playwright/test";
 
-import { caretAt, chooseMode, docText, focusDoc, isPhone, KANNADA_WORD, type Mode, openEditor, savedText } from "./editor.ts";
+import { caretAt, chooseMode, docText, editorPath, focusDoc, isPhone, KANNADA_WORD, type Mode, NEXT, openEditor, savedText } from "./editor.ts";
 
 const LATIN_MODES: Exclude<Mode, "kannada">[] = ["english", "baraha", "iso15919"];
 const KANNADA_LINE = /^[ಀ-೿‌ ]+$/u;
@@ -33,6 +33,7 @@ test.describe("the first letter", () => {
   });
 
   test("english: the first letter after a cleared line with a placeholder <br> converts", async ({ page }) => {
+    test.skip(NEXT, "ProseMirror draws empty lines itself; the <br> is its own.");
     await openEditor(page, { mode: "english" });
     await focusDoc(page);
     await page.evaluate(() => {
@@ -101,7 +102,7 @@ test.describe("input methods", () => {
       await new Promise((r) => setTimeout(r, 2000));
       await route.continue();
     });
-    await page.goto("/editor/");
+    await page.goto(editorPath("/editor/"));
     const label = page.locator('label[for="mode-english"]');
     await (isPhone(page) ? label.tap() : label.click());
     await page.waitForFunction(() => document.documentElement.classList.contains("ready"));
@@ -281,17 +282,23 @@ test.describe("editing", () => {
     test(`${mode}: Enter at the end, then typing, starts a new line`, async ({ page }) => {
       await openEditor(page, { mode });
       await focusDoc(page);
+      // On a phone a moment passes between keys. ProseMirror waits that long for what an Android or iOS key did, and
+      // splits the line itself after 200ms when an emulated iPhone does nothing for Enter.
+      const press = async (key: string) => {
+        await page.keyboard.press(key);
+        if (isPhone(page)) await page.waitForTimeout(250);
+      };
       const [first, second] = mode === "kannada" ? ["ಅಬ", "ಕ"] : ["ab", "ka"];
       if (mode === "kannada") await page.keyboard.insertText(first!);
       else await page.keyboard.type(first!);
       const line = await docText(page);
-      await page.keyboard.press("Enter");
-      await page.keyboard.press("Enter");
+      await press("Enter");
+      await press("Enter");
       if (mode === "kannada") await page.keyboard.insertText(second!);
       else await page.keyboard.type(second!);
       expect(await docText(page)).toBe(`${line}\n\nಕ`);
       // Backspace in a word being typed takes back 1 Latin letter, so the Latin modes need 1 press per letter.
-      for (let i = 0; i < (mode === "kannada" ? 2 : 3); i++) await page.keyboard.press("Backspace");
+      for (let i = 0; i < (mode === "kannada" ? 2 : 3); i++) await press("Backspace");
       if (mode === "kannada") await page.keyboard.insertText(second!);
       else await page.keyboard.type(second!);
       expect(await docText(page)).toBe(`${line}\nಕ`);

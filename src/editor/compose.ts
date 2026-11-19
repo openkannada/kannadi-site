@@ -2,7 +2,7 @@
 // typed is kept as Latin in `latin`, and each new letter re-renders the whole
 // word, since a later letter can change an earlier one (k is ಕ್, ka is ಕ).
 
-import type { DocEditor } from "./editor.ts";
+import type { EditorSurface } from "./editor.ts";
 import type { Edit, TypingMode } from "./text.ts";
 
 type LatinMode = Exclude<TypingMode, "kannada">;
@@ -32,8 +32,8 @@ export interface ComposerEvents {
 // space after it as 1 insertion.
 const WORD_AND_BREAK = /^(.+?)([\s.,;:!?]+)$/u;
 
-/** The editor surface the composer needs; DocEditor provides it. */
-export type ComposerEditor = Pick<DocEditor, "replace" | "selection" | "select" | "composing" | "text">;
+/** The editor surface the composer needs; EditorSurface provides it. */
+export type ComposerEditor = Pick<EditorSurface, "replace" | "selection" | "select" | "composing" | "text">;
 
 const KANNADA = /[\u0C80-\u0CFF]/u;
 const VIRAMA = "\u0CCD";

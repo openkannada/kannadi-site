@@ -2,7 +2,7 @@
 // through edits, and malformed syllables and likely typos, found again after each edit.
 // Each problem is highlighted inline and listed; selecting one offers fixes.
 import { ICONS } from "../icons/icons.ts";
-import type { DocEditor } from "./editor.ts";
+import type { EditorSurface } from "./editor.ts";
 import type { Fix, Scheme, Typo } from "./kannadi.ts";
 import { fmt, nodes, num, S } from "./strings.ts";
 import { type Anchor, codePoints, type Edit, shiftAnchors, shiftRanges } from "./text.ts";
@@ -40,11 +40,11 @@ export class Issues {
   kept: Anchor[] = [];
   open: Problem | null = null;
   private timer: ReturnType<typeof setTimeout> | 0 = 0;
-  private readonly editor: DocEditor;
+  private readonly editor: EditorSurface;
   private readonly kannadi: IssuesKannadi;
   private readonly ui: IssuesUi;
 
-  constructor(editor: DocEditor, kannadi: IssuesKannadi, ui: IssuesUi) {
+  constructor(editor: EditorSurface, kannadi: IssuesKannadi, ui: IssuesUi) {
     this.editor = editor;
     this.kannadi = kannadi;
     this.ui = ui;
@@ -225,7 +225,7 @@ export class Issues {
     this.close(false);
     this.editor.replace(start, end, replacement);
     this.check();
-    this.editor.el.focus();
+    this.editor.focus();
   }
 
   popover(item: Problem, focus: boolean): void {
@@ -364,7 +364,7 @@ export class Issues {
     this.open = null;
     this.ui.popover.hidden = true;
     if (returnFocus) {
-      this.editor.el.focus();
+      this.editor.focus();
       this.editor.select(item.end);
     }
   }

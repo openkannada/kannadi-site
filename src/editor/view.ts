@@ -1,7 +1,7 @@
 // Keeps the text clear of the toolbar. On desktop the toolbar sticks to the top of the window, and on phones it
 // docks at the bottom; while text runs under it, a band in the sheet's color hides that text. The caret line stays
 // in the clear part of the window, between the band and the suggestions, as the caret moves.
-import type { DocEditor } from "./editor.ts";
+import type { EditorSurface } from "./editor.ts";
 
 export interface ViewParts {
   dock: HTMLElement;
@@ -15,14 +15,14 @@ const MARGIN = 12;
 const PHONE = "(max-width: 47.99rem)";
 
 export class View {
-  private readonly editor: DocEditor;
+  private readonly editor: EditorSurface;
   private readonly parts: ViewParts;
   private frame = 0;
   /** A pointer is down, as in a drag selection: scrolling now would move the page under it. */
   private pressed = false;
   private waiting = false;
 
-  constructor(editor: DocEditor, parts: ViewParts) {
+  constructor(editor: EditorSurface, parts: ViewParts) {
     this.editor = editor;
     this.parts = parts;
     const band = () => this.band();

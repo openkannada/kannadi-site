@@ -74,6 +74,35 @@ export function sourcesOf(task: Task): Source[] {
     });
 }
 
+/** A source's check date as it is, or a commit hash cut to its first 7 characters. */
+export function shortRef(ref: string): string {
+  return /^[0-9a-f]{40}$/.test(ref) ? ref.slice(0, 7) : ref;
+}
+
+/** The results as published beside the page: the fields the page shows, and nothing from the working notes. */
+export function publicResults(r: Results = SCORECARD) {
+  const { edition, quarter, generated_at, scale, bands, index } = r;
+  const tasks = [...r.tasks]
+    .sort((a, b) => a.order - b.order)
+    .map((t) => ({
+      order: t.order,
+      id: t.id,
+      title: t.title,
+      question: t.question,
+      score: t.score,
+      band: t.band,
+      basis: t.basis,
+      kannada: { text: t.kannada.text },
+      english: { text: t.english.text },
+      line: t.line,
+      method: t.method,
+      notes: t.notes ?? [],
+      ...(t.with_open_kannada ? { with_open_kannada: t.with_open_kannada } : {}),
+      sources: sourcesOf(t).map((s) => ({ ...s, ref: shortRef(s.ref) })),
+    }));
+  return { scorecard: "Kannada readiness scorecard", edition, quarter, generated_at, scale, bands, index, tasks };
+}
+
 /** The 3 lowest-scoring tasks, lowest first, for What we build next. */
 export function lowest(tasks: Task[] = TASKS, n = 3): Task[] {
   return [...tasks].sort((a, b) => a.score - b.score || a.order - b.order).slice(0, n);
@@ -130,7 +159,6 @@ export const SCORECARD_COPY = {
   },
   open: "Details",
   details: { question: "Question", method: "How it is scored", notes: "Notes", withOk: "With Open Kannada's work", sources: "Sources" },
-  barLabel: "Score {score} of 100, {band}",
   scale: "Score scale",
   next: { heading: "What we build next", intro: "The 3 lowest scores, and what we are doing about them." },
   measure: {

@@ -5,7 +5,7 @@ import Icon from "../components/Icon.astro";
 import PageHero from "../components/PageHero.astro";
 import type { ScorecardPage } from "../content/pages.ts";
 import { pagePath } from "../content/site.ts";
-import { NEXT, SCORECARD, SCORECARD_COPY as C, TASKS, bandOf, lowest, monthOf, sourcesOf } from "../content/scorecard.ts";
+import { NEXT, SCORECARD, SCORECARD_COPY as C, TASKS, bandOf, lowest, monthOf, shortRef, sourcesOf } from "../content/scorecard.ts";
 import { fmt } from "../i18n/core.ts";
 import { href, withBase } from "../lib/paths.ts";
 import Base from "./Base.astro";
@@ -56,8 +56,8 @@ const rich = (s: string) => kn(esc(s));
                   <span class="task-line" set:html={rich(t.line)} />
                 </span>
                 <span class="task-score">
-                  <span class="sr-only"> {C.head.score} </span><span class="score-number">{t.score}</span><span class="sr-only">. </span>
-                  <svg class="bar" viewBox="0 0 100 8" preserveAspectRatio="none" role="img" aria-label={fmt(C.barLabel, { score: String(t.score), band: t.band.toLowerCase() })}>
+                  <span class="sr-only"> {C.head.score} </span><span class="score-number">{t.score}</span><span class="sr-only">, {t.band.toLowerCase()}. </span>
+                  <svg class="bar" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true" focusable="false">
                     <rect class="bar-track" width="100" height="8" rx="4" />
                     {t.score > 0 && <rect class={`bar-fill band-${b.step}`} width={Math.max(t.score, 2)} height="8" rx="4" />}
                   </svg>
@@ -78,7 +78,7 @@ const rich = (s: string) => kn(esc(s));
                     <dt>{C.details.sources}</dt>
                     <dd>
                       <ul class="sources">
-                        {sourcesOf(t).map((s) => <li>{s.url ? <a href={s.url}>{s.label}</a> : s.label} <span class="source-ref">{s.ref}</span></li>)}
+                        {sourcesOf(t).map((s) => <li>{s.url ? <a href={s.url}>{s.label}</a> : s.label} <span class="source-ref">{shortRef(s.ref)}</span></li>)}
                       </ul>
                     </dd>
                   </div>
@@ -89,7 +89,7 @@ const rich = (s: string) => kn(esc(s));
         })}
       </div>
       <p class="basis-legend" set:html={C.basis.legend} />
-      <div class="scale" aria-labelledby="scale-heading">
+      <section class="scale" aria-labelledby="scale-heading">
         <h3 id="scale-heading" class="scale-heading">{C.scale}</h3>
         <ul class="scale-list" role="list">
           {SCORECARD.bands.map((b, i) => {
@@ -97,7 +97,7 @@ const rich = (s: string) => kn(esc(s));
             return <li><span class={`swatch band-${i + 1}`}></span><b>{b.label}</b> {b.low} to {high}</li>;
           })}
         </ul>
-      </div>
+      </section>
     </section>
 
     <section class="next" aria-labelledby="next-heading">
@@ -285,6 +285,7 @@ const rich = (s: string) => kn(esc(s));
   }
   .task-body dl {
     display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.75rem;
     margin: 0;
     padding: 1rem 1.25rem;
@@ -313,6 +314,7 @@ const rich = (s: string) => kn(esc(s));
     font-size: 0.875rem;
   }
   .source-ref {
+    overflow-wrap: anywhere;
     color: var(--muted-foreground);
   }
   /* From 768px the rows line up as a table: task, score, Kannada, English, and the chevron. */

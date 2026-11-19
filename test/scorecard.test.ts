@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import { ALL_PAGES, PAGES, isDraft, published } from "../src/content/pages.ts";
-import { NEXT, SCORECARD, TASKS, bandOf, lowest, sourcesOf } from "../src/content/scorecard.ts";
+import { NEXT, SCORECARD, TASKS, bandOf, lowest, publicResults, shortRef, sourcesOf } from "../src/content/scorecard.ts";
 import { unreviewed } from "../src/lib/deploy.ts";
 
 test("a score falls in the band whose range holds it", () => {
@@ -41,4 +41,14 @@ test("the scorecard is held off the site until it is approved, and a build that 
   assert.ok(!PAGES.some((p) => p.slug === "scorecard"), "left out of the site's build");
   assert.ok(published(ALL_PAGES, true).some((p) => p.slug === "scorecard"), "kept in the drafts build CI checks");
   assert.deepEqual(unreviewed([{ slug: "scorecard", held: true }]), ["/scorecard/"]);
+});
+
+test("the published JSON keeps what the page shows and drops the working notes and repository paths", () => {
+  const out = publicResults();
+  assert.deepEqual(Object.keys(out), ["scorecard", "edition", "quarter", "generated_at", "scale", "bands", "index", "tasks"]);
+  const text = JSON.stringify(out);
+  assert.doesNotMatch(text, /"inputs"|"details"|"value"/);
+  for (const t of out.tasks) for (const s of t.sources) assert.ok(s.url === "" || s.url.startsWith("https://"), `${t.id}: ${s.url}`);
+  assert.equal(shortRef("fceb56b893e9e9ab56a66517ae342c25d2854c8c"), "fceb56b");
+  assert.equal(shortRef("2026-11-19"), "2026-11-19");
 });

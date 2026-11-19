@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { PAGES } from "../src/content/pages.ts";
 import { ICONS } from "../src/icons/icons.ts";
 import { illustrationFor } from "../src/lib/illustrations.ts";
-import { MAX_CLS, WIDTHS, frameDrift, isClipped, layoutProblems } from "../src/lib/layout.ts";
+import { MAX_CLS, WIDTHS, frameDrift, isClipped, layoutProblems, misaligned } from "../src/lib/layout.ts";
 import { watchInView } from "../src/lib/inview.ts";
 import { iconsPage } from "../scripts/icons.ts";
 
@@ -124,4 +124,13 @@ test("illustrations start once each, in view, and show at once where they cannot
   } finally {
     globalThis.IntersectionObserver = saved;
   }
+});
+
+test("cards side by side line up part by part, and a wide card or a lone card is left alone", () => {
+  const card = (top, width, parts) => ({ top, width, parts });
+  assert.deepEqual(misaligned([card(0, 300, { value: 20, label: 60 }), card(0, 300, { value: 20, label: 60 }), card(0.5, 300, { value: 21, label: 60 })]), []);
+  assert.deepEqual(misaligned([card(0, 300, { value: 20 }), card(0, 300, { value: 44 })]), ["value sits 24px apart across 2 cards"]);
+  assert.deepEqual(misaligned([card(0, 300, { value: 20 }), card(200, 300, { value: 300 })]), [], "cards on different rows");
+  assert.deepEqual(misaligned([card(0, 300, { name: 20 }), card(0, 620, { name: 90 })]), [], "a card twice as wide has its own layout");
+  assert.deepEqual(misaligned([card(0, 300, { name: 20, extra: 80 }), card(0, 300, { name: 20 })]), [], "a part only 1 card has");
 });

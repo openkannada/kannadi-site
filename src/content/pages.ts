@@ -674,18 +674,18 @@ export const ALL_PAGES: Page[] = [
       {
         id: "result",
         stats: [
-          { value: "3,712", label: "English word pages" },
+          { value: "3,798", label: "English word pages" },
           { value: "13,887", label: "distinct Kannada words on those pages" },
-          { value: "45.1%", label: "of Kannada words in running text find a page, with inflected forms" },
+          { value: "47.8%", label: "of Kannada words in running text find a page, with inflected forms" },
         ],
         paragraphs: [
-          "In held-out Kannada Wikipedia text, 20.0% of running words find a page by the exact word, and 45.1% by the exact word or the word it is a form of. Counted once each, 1.6% of distinct words find a page by the exact word, and 21.1% with forms.",
+          "With inflected forms, 47.8% of the Kannada words in running text find a page. By the exact word alone, 21.7% do.",
         ],
       },
       {
         id: "method",
         paragraphs: [
-          'The text is the 2.2 million held-out words of Kannada Wikipedia that the <a href="/spell-check/">spell checker</a> is measured on. Search matches each page\'s main Kannada word and the next 4, 10,654 Kannada words in all.',
+          'The text is the 2.2 million held-out words of Kannada Wikipedia that the <a href="/spell-check/">spell checker</a> is measured on. Counted once each, 1.6% of distinct words find a page by the exact word, and 21.6% with forms. Search matches each page\'s main Kannada word and the next 4, 10,827 Kannada words in all.',
           "The main Kannada word of 100 pages was checked in 2 independent reviews.",
         ],
       },
@@ -693,7 +693,7 @@ export const ALL_PAGES: Page[] = [
         id: "limits",
         items: [
           'About 1 page in 4 leads with a Kannada word whose modern meaning differs, such as <span lang="kn">ವರ್ತನೆ</span> for <i>profession</i>. In the 2 reviews, the main word was judged fine on 27 and 28 pages, and wrong on 25 and 24.',
-          "The 400 most frequent English words, such as <i>house</i> and <i>water</i>, have no page yet. They are left out until their Kannada meanings can be ranked well.",
+          "86 of the 400 most frequent English words have a page, such as <i>house</i> and <i>water</i>: the words where Alar and Ziegler's 1876 dictionary give the same main Kannada word. The rest, such as <i>home</i>, have none yet.",
         ],
       },
       {
@@ -714,6 +714,7 @@ export const ALL_PAGES: Page[] = [
           'ISO 15919 and Baraha spellings: <a href="https://github.com/openkannada/kannadi">kannadi</a>, under MIT OR Apache-2.0.',
           "The order of meanings: word counts from Kannada Wikipedia. Only the counts are used; Wikipedia's text is CC BY-SA 4.0.",
           'The choice of English words: ranks from <a href="https://github.com/hermitdave/FrequencyWords">FrequencyWords</a> by Hermit Dave, under CC BY-SA 4.0. Only the ranks are used.',
+          "Confirming the main word on everyday pages: Ziegler's English-Kannada school dictionary of 1876, public domain, read with OCR and not proofread. Its index is CC BY 4.0. Nothing on a page comes from it.",
         ],
       },
       { id: "downloads", paragraphs: [SOON] },
@@ -1158,18 +1159,18 @@ export const ALL_PAGES: Page[] = [
       {
         id: "result",
         stats: [
-          { value: "3,712", label: "ಇಂಗ್ಲಿಷ್ ಪದ ಪುಟಗಳು" },
+          { value: "3,798", label: "ಇಂಗ್ಲಿಷ್ ಪದ ಪುಟಗಳು" },
           { value: "13,887", label: "ಆ ಪುಟಗಳಲ್ಲಿರುವ ಬೇರೆ ಬೇರೆ ಕನ್ನಡ ಪದಗಳು" },
-          { value: "45.1%", label: "ಪಠ್ಯದ ಕನ್ನಡ ಪದಗಳಿಗೆ, ರೂಪಾಂತರಗಳೂ ಸೇರಿ, ಪುಟ ಸಿಗುತ್ತದೆ" },
+          { value: "47.8%", label: "ಪಠ್ಯದ ಕನ್ನಡ ಪದಗಳಿಗೆ, ರೂಪಾಂತರಗಳೂ ಸೇರಿ, ಪುಟ ಸಿಗುತ್ತದೆ" },
         ],
         paragraphs: [
-          "ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಟ್ಟ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯ ಪಠ್ಯದಲ್ಲಿ, ಪದವನ್ನು ಇದ್ದಂತೆಯೇ ಹುಡುಕಿದರೆ 20.0% ಪದಗಳಿಗೆ ಪುಟ ಸಿಗುತ್ತದೆ. ಪದ ಯಾವುದರ ರೂಪಾಂತರವೋ ಆ ಮೂಲ ಪದದಿಂದಲೂ ಹುಡುಕಿದರೆ 45.1% ಪದಗಳಿಗೆ ಸಿಗುತ್ತದೆ. ಪ್ರತಿ ಪದವನ್ನು ಒಮ್ಮೆ ಮಾತ್ರ ಎಣಿಸಿದರೆ, ಇವು 1.6% ಮತ್ತು 21.1%.",
+          "ರೂಪಾಂತರಗಳೂ ಸೇರಿ ಹುಡುಕಿದರೆ, ಪಠ್ಯದ 47.8% ಕನ್ನಡ ಪದಗಳಿಗೆ ಪುಟ ಸಿಗುತ್ತದೆ. ಪದವನ್ನು ಇದ್ದಂತೆಯೇ ಹುಡುಕಿದರೆ 21.7% ಪದಗಳಿಗೆ ಸಿಗುತ್ತದೆ.",
         ],
       },
       {
         id: "method",
         paragraphs: [
-          'ಅಳತೆಗೆ ಬಳಸಿದ ಪಠ್ಯ, <a href="/kn/spell-check/">ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ</a>ವನ್ನು ಅಳೆಯಲು ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಟ್ಟ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದ ಅದೇ 22 ಲಕ್ಷ ಪದಗಳು. ಹುಡುಕಾಟವು ಪ್ರತಿ ಪುಟದ ಮುಖ್ಯ ಕನ್ನಡ ಪದ ಮತ್ತು ಅದರ ನಂತರದ 4 ಪದಗಳೊಂದಿಗೆ ಹೋಲಿಸುತ್ತದೆ, ಒಟ್ಟು 10,654 ಕನ್ನಡ ಪದಗಳು.',
+          'ಅಳತೆಗೆ ಬಳಸಿದ ಪಠ್ಯ, <a href="/kn/spell-check/">ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ</a>ವನ್ನು ಅಳೆಯಲು ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಟ್ಟ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದ ಅದೇ 22 ಲಕ್ಷ ಪದಗಳು. ಪ್ರತಿ ಪದವನ್ನು ಒಮ್ಮೆ ಮಾತ್ರ ಎಣಿಸಿದರೆ, ಇದ್ದಂತೆಯೇ ಹುಡುಕಿದಾಗ 1.6% ಮತ್ತು ರೂಪಾಂತರಗಳೂ ಸೇರಿ 21.6% ಪದಗಳಿಗೆ ಪುಟ ಸಿಗುತ್ತದೆ. ಹುಡುಕಾಟವು ಪ್ರತಿ ಪುಟದ ಮುಖ್ಯ ಕನ್ನಡ ಪದ ಮತ್ತು ಅದರ ನಂತರದ 4 ಪದಗಳೊಂದಿಗೆ ಹೋಲಿಸುತ್ತದೆ, ಒಟ್ಟು 10,827 ಕನ್ನಡ ಪದಗಳು.',
           "100 ಪುಟಗಳ ಮುಖ್ಯ ಕನ್ನಡ ಪದವನ್ನು 2 ಸ್ವತಂತ್ರ ಪರಿಶೀಲನೆಗಳಲ್ಲಿ ಪರಿಶೀಲಿಸಲಾಗಿದೆ.",
         ],
       },
@@ -1177,7 +1178,7 @@ export const ALL_PAGES: Page[] = [
         id: "limits",
         items: [
           'ಸುಮಾರು 4 ಪುಟಗಳಲ್ಲಿ 1 ಪುಟ, ಇಂದಿನ ಅರ್ಥ ಬೇರೆಯಾಗಿರುವ ಕನ್ನಡ ಪದದಿಂದ ಆರಂಭವಾಗುತ್ತದೆ, ಉದಾಹರಣೆಗೆ <i lang="en">profession</i> ಗೆ ವರ್ತನೆ. 2 ಪರಿಶೀಲನೆಗಳಲ್ಲಿ ಮುಖ್ಯ ಪದ 27 ಮತ್ತು 28 ಪುಟಗಳಲ್ಲಿ ಸರಿ ಎಂದು, 25 ಮತ್ತು 24 ಪುಟಗಳಲ್ಲಿ ತಪ್ಪು ಎಂದು ತೀರ್ಮಾನವಾಯಿತು.',
-          '<i lang="en">house</i>, <i lang="en">water</i> ನಂತಹ ಅತಿ ಹೆಚ್ಚು ಬಳಕೆಯ 400 ಇಂಗ್ಲಿಷ್ ಪದಗಳಿಗೆ ಇನ್ನೂ ಪುಟವಿಲ್ಲ. ಅವುಗಳ ಕನ್ನಡ ಅರ್ಥಗಳನ್ನು ಸರಿಯಾಗಿ ಕ್ರಮಗೊಳಿಸುವವರೆಗೆ ಅವನ್ನು ಬಿಡಲಾಗಿದೆ.',
+          '<i lang="en">house</i>, <i lang="en">water</i> ಸೇರಿದಂತೆ, ಅತಿ ಹೆಚ್ಚು ಬಳಕೆಯ 400 ಇಂಗ್ಲಿಷ್ ಪದಗಳಲ್ಲಿ 86 ಪದಗಳಿಗೆ ಪುಟವಿದೆ. ಅಲರ್ ಮತ್ತು 1876ರ ಜೀಗ್ಲರ್ ನಿಘಂಟು ಒಂದೇ ಮುಖ್ಯ ಕನ್ನಡ ಪದವನ್ನು ಕೊಡುವ ಪದಗಳು ಇವು. <i lang="en">home</i> ನಂತಹ ಉಳಿದ ಪದಗಳಿಗೆ ಇನ್ನೂ ಪುಟವಿಲ್ಲ.',
         ],
       },
       {
@@ -1198,6 +1199,7 @@ export const ALL_PAGES: Page[] = [
           'ISO 15919 ಮತ್ತು ಬರಹ ರೂಪಗಳು: <a href="https://github.com/openkannada/kannadi">ಕನ್ನಡಿ</a>, MIT OR Apache-2.0 ಅಡಿಯಲ್ಲಿ.',
           "ಅರ್ಥಗಳ ಕ್ರಮ: ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದ ಪದ ಎಣಿಕೆಗಳು. ಎಣಿಕೆಗಳನ್ನು ಮಾತ್ರ ಬಳಸಲಾಗಿದೆ; ವಿಕಿಪೀಡಿಯದ ಪಠ್ಯ CC BY-SA 4.0.",
           'ಇಂಗ್ಲಿಷ್ ಪದಗಳ ಆಯ್ಕೆ: Hermit Dave ಅವರ <a href="https://github.com/hermitdave/FrequencyWords">FrequencyWords</a> ನ ಕ್ರಮಾಂಕಗಳು, CC BY-SA 4.0 ಅಡಿಯಲ್ಲಿ. ಕ್ರಮಾಂಕಗಳನ್ನು ಮಾತ್ರ ಬಳಸಲಾಗಿದೆ.',
+          "ದಿನನಿತ್ಯದ ಪದಗಳ ಪುಟಗಳಲ್ಲಿ ಮುಖ್ಯ ಪದವನ್ನು ಖಚಿತಪಡಿಸಲು: 1876ರ ಜೀಗ್ಲರ್ ಅವರ ಇಂಗ್ಲಿಷ್-ಕನ್ನಡ ಶಾಲಾ ನಿಘಂಟು, ಸಾರ್ವಜನಿಕ ಸ್ವತ್ತು, OCR ಮೂಲಕ ಓದಿದ್ದು, ತಿದ್ದಿಲ್ಲ. ಅದರ ಸೂಚಿ CC BY 4.0. ಪುಟಗಳಲ್ಲಿರುವ ಯಾವುದೂ ಅದರಿಂದ ಬಂದಿಲ್ಲ.",
         ],
       },
       { id: "downloads", paragraphs: [SOON_KN] },

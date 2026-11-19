@@ -21,6 +21,36 @@ export function layoutProblems(m: Measure): string[] {
   return out;
 }
 
+/** A card in a row of cards: where it sits, and the top of each part marked with `data-align`. */
+export interface Card {
+  top: number;
+  width: number;
+  parts: Record<string, number>;
+}
+
+/**
+ * The parts that do not line up across cards side by side. Cards sharing a top form a row; a card much wider than the
+ * narrowest in its row is laid out on its own terms and is left out.
+ */
+export function misaligned(cards: Card[]): string[] {
+  const rows = new Map<number, Card[]>();
+  for (const c of cards) {
+    const key = [...rows.keys()].find((t) => Math.abs(t - c.top) <= 1) ?? c.top;
+    rows.set(key, [...(rows.get(key) ?? []), c]);
+  }
+  const out: string[] = [];
+  for (const row of rows.values()) {
+    const narrowest = Math.min(...row.map((c) => c.width));
+    const alike = row.filter((c) => c.width < narrowest * 1.5);
+    if (alike.length < 2) continue;
+    for (const part of new Set(alike.flatMap((c) => Object.keys(c.parts)))) {
+      const tops = alike.map((c) => c.parts[part]).filter((t): t is number => t !== undefined);
+      if (tops.length > 1 && Math.max(...tops) - Math.min(...tops) > 1) out.push(`${part} sits ${Math.round(Math.max(...tops) - Math.min(...tops))}px apart across ${tops.length} cards`);
+    }
+  }
+  return out;
+}
+
 export interface Box {
   left: number;
   top: number;

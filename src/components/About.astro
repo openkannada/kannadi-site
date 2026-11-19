@@ -47,11 +47,11 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
 
 <section aria-labelledby="work">
   <h2 id="work">{ABOUT.work.heading}</h2>
-  <ul class="work" role="list">
+  <ul class="work" role="list" data-cards="work">
     {ABOUT.work.items.map((w) => (
       <li>
         <Illustration name={w.illustration} />
-        <span>{w.label}</span>
+        <span data-align="label">{w.label}</span>
       </li>
     ))}
   </ul>
@@ -59,7 +59,7 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
 
 <section aria-labelledby="people">
   <h2 id="people">{T.people}</h2>
-  <ul class="people" role="list">
+  <ul class="people" role="list" data-cards="people">
     {ABOUT.people.map((p) => (
       <li>
         <picture data-md-skip>
@@ -67,7 +67,7 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
           <img src={PHOTOS[p.photo].webp[0]!.src} srcset={srcset(PHOTOS[p.photo].webp)} alt={p.alt} width="80" height="80" loading="lazy" decoding="async" />
         </picture>
         <div>
-          <b>{p.name}</b><span class="sr-only">, </span>
+          <b data-align="name">{p.name}</b><span class="sr-only">, </span>
           <span class="text-muted-foreground">{p.role}</span><span class="sr-only">, </span>
           <a href={p.url}>{p.site}</a>
         </div>
@@ -128,6 +128,7 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     background: var(--card);
+    align-content: start;
     font-weight: 600;
     line-height: 1.35;
   }

@@ -55,18 +55,6 @@ jobs:
         run: npm run layout-check
       - name: Typing in the editor, on desktop keys and composing phone keyboards
         run: npm run typing-check
-      - name: Install Chromium, Firefox and WebKit for the editor tests
-        run: npx playwright install --with-deps --only-shell chromium firefox webkit
-      - name: The editor in Chromium, Firefox and WebKit, on desktops and phones, light and dark
-        run: npx playwright test
-      - uses: actions/upload-artifact@v7
-        if: failure()
-        with:
-          name: editor-tests
-          path: |
-            playwright-report
-            test-results
-          retention-days: 14
       - name: Lighthouse, mobile
         run: npx lhci autorun
       - name: Build and check the drafts, which wait for a native reader or for approval

@@ -8,12 +8,12 @@ interface Props {
 }
 const { problems } = Astro.props;
 ---
-<ul class="problems" role="list">
+<ul class="problems" role="list" data-cards="problems">
   {problems.map((p) => (
     <li class="problem reveal" data-inview>
-      <p class="problem-title"><Icon name={p.icon} filled />{p.title}</p>
-      <p class="problem-value">{p.value}</p>
-      <p class="problem-text">{p.text}</p>
+      <p class="problem-title" data-align="title"><Icon name={p.icon} filled />{p.title}</p>
+      <p class="problem-value" data-align="value">{p.value}</p>
+      <p class="problem-text" data-align="text">{p.text}</p>
     </li>
   ))}
 </ul>

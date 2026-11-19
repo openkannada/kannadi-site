@@ -31,11 +31,11 @@ const illo = illustrationFor(page);
       <section aria-labelledby={`${s.id}-heading`}>
         <h2 id={`${s.id}-heading`}>{T[s.id]}</h2>
         {s.stats && (
-          <dl class="stats">
+          <dl class="stats" data-cards="stats">
             {s.stats.map((x, i) => (
               <div class:list={["stat", i === 0 && "stat-lead"]}>
-                <dt>{x.label}</dt>
-                <dd>{x.value}</dd>
+                <dt data-align="label">{x.label}</dt>
+                <dd data-align="value">{x.value}</dd>
               </div>
             ))}
           </dl>

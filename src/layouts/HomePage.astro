@@ -55,18 +55,18 @@ const main = items.filter((t) => t.slug !== "ai-benchmark");
 
   <section class="home-tools wrap-page" aria-labelledby="tools">
     <h2 id="tools" class="home-h2">{C.tools.heading}</h2>
-    <ul class="tool-grid" role="list">
+    <ul class="tool-grid" role="list" data-cards="tools">
       {main.map((t) => {
         const target = to(t.slug);
         return (
           <li class="tool-card">
             <Illustration name={t.art} class="tool-art" />
-            <h3 class="tool-name">
+            <h3 class="tool-name" data-align="name">
               <ToolMark slug={t.slug} />
               <a class="tool-link" href={url(target)} lang={otherLang(target)}>{t.name}</a>
             </h3>
-            <p class="tool-line">{t.text}</p>
-            <div class="tool-foot">
+            <p class="tool-line" data-align="line">{t.text}</p>
+            <div class="tool-foot" data-align="foot">
               {t.also ? (
                 <ul class="tool-also" role="list" aria-label={C.tools.also}>
                   {t.also.map((s) => {

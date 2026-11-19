@@ -11,7 +11,7 @@ interface Props {
 }
 const { items, icons } = Astro.props;
 ---
-<ul class="helps" role="list">
+<ul class="helps" role="list" data-cards="help">
   {items.map((h, i) => (
     <li class="help reveal" data-inview>
       <span class="icon-tile"><Icon name={icons[i] ?? "people"} /></span>

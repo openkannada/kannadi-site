@@ -441,7 +441,7 @@ test("the copy says where our fixes go, with no 'where they belong' or 'upstream
   assert.doesNotMatch(read("src/integrations/agent-files.ts"), /Fonts[^.]*coming soon/, "llms.txt says the fonts are released");
 });
 
-test("each founding member has a portrait in AVIF and WebP with alt text, all rights reserved", () => {
+test("each founding member has a portrait, and the dedication our family photo, in AVIF and WebP with alt text, all rights reserved", () => {
   const files = readdirSync(new URL("../src/assets/people/", import.meta.url)).sort();
   assert.deepEqual(files, ["neha-160.avif", "neha-160.webp", "neha-240.avif", "neha-240.webp", "prasad-160.avif", "prasad-160.webp", "prasad-240.avif", "prasad-240.webp"]);
   for (const lang of ["en", "kn"]) {
@@ -456,6 +456,16 @@ test("each founding member has a portrait in AVIF and WebP with alt text, all ri
   assert.ok(at >= 0 && /SPDX-License-Identifier = "LicenseRef-AllRightsReserved"/.test(blocks[at]), "the photos are all rights reserved");
   for (const later of blocks.slice(at + 1)) assert.doesNotMatch(later, /"\*\*"|src\/assets\/\*\*|src\/\*\*/, "no later annotation covers the photos, since the last match wins");
   assert.match(about, /<picture data-md-skip>/, "the markdown mirror leaves the photos out");
+  const family = readdirSync(new URL("../src/assets/family/", import.meta.url)).sort();
+  assert.deepEqual(family, [480, 720, 960, 1200].flatMap((w) => [`family-2023-${w}.avif`, `family-2023-${w}.webp`]).sort());
+  assert.deepEqual(ABOUT.en.family.caption, "Subramanya, Veena, Pramodini, me and Neha.");
+  assert.deepEqual(ABOUT.kn.family.caption, "ಸುಬ್ರಹ್ಮಣ್ಯ, ವೀಣಾ, ಪ್ರಮೋದಿನಿ, ನಾನು ಮತ್ತು ನೇಹಾ.");
+  for (const lang of ["en", "kn"]) assert.ok(ABOUT[lang].family.alt.length > 20, `${lang}: the family photo has alt text`);
+  assert.equal((about.match(/<picture data-md-skip>/g) ?? []).length, 2, "both pictures stay out of the mirror");
+  assert.match(about, /srcset=\{widths\(FAMILY\.avif\)\} sizes=\{FAMILY_SIZES\}/);
+  const fam = blocks.findIndex((b) => b.includes('path = "src/assets/family/**"'));
+  assert.ok(fam >= 0 && /SPDX-License-Identifier = "LicenseRef-AllRightsReserved"/.test(blocks[fam]), "the family photo is all rights reserved");
+  for (const later of blocks.slice(fam + 1)) assert.doesNotMatch(later, /"\*\*"|src\/assets\/\*\*|src\/\*\*/, "no later annotation covers the family photo");
   assert.match(read("src/i18n/site.en.ts"), /Text and the images we make: CC BY 4\.0\./);
   assert.match(read("LICENSES/LicenseRef-AllRightsReserved.txt"), /^All rights reserved\./);
 });

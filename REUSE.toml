@@ -65,3 +65,10 @@ path = "src/assets/people/**"
 precedence = "override"
 SPDX-FileCopyrightText = "2026 Prasad Subrahmanya and Neha Prasad"
 SPDX-License-Identifier = "LicenseRef-AllRightsReserved"
+
+# Our family photo beside the dedication, also not covered by the licenses above.
+[[annotations]]
+path = "src/assets/family/**"
+precedence = "override"
+SPDX-FileCopyrightText = "2023 Prasad Subrahmanya"
+SPDX-License-Identifier = "LicenseRef-AllRightsReserved"

@@ -342,8 +342,9 @@ test("the code is MIT OR Apache-2.0 from The Open Kannada Authors, and every pag
   assert.match(read("LICENSE-APACHE"), /Apache License\s+Version 2\.0/);
   assert.match(read("REUSE.toml"), /path = "data\/words\.tsv"[\s\S]*?SPDX-License-Identifier = "CC-BY-SA-4\.0"/);
   const footer = read("src/components/SiteFooter.astro");
-  assert.match(read("src/i18n/site.en.ts"), /belong to the project\. \{supporter\} supports it and holds none of them\./);
-  assert.match(footer, /fmt\(T\.owns,[^\n]*brand/);
+  assert.match(footer, /fmt\(T\.licenses,[^\n]*brand/, "the footer's licenses line links the brand page");
+  assert.match(read("src/content/brand.ts"), /belong to the project and its contributors\. DataRavel Inc\. \(dba Luminik\) supports the project and holds none of them\./);
+  assert.doesNotMatch(footer + read("src/i18n/site.en.ts") + read("src/i18n/site.kn.ts"), /prasad\.tech/, "the credit line asks for a link to openkannada.org");
   assert.ok(PAGES.some((p) => p.slug === "brand"));
   assert.ok(!ALL_PAGES.some((p) => p.slug.includes("names-and-logos")), "the old path only redirects");
 });

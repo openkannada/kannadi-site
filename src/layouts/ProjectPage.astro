@@ -30,11 +30,11 @@ const illo = illustrationFor(page);
       <section aria-labelledby={`${s.id}-heading`}>
         <h2 id={`${s.id}-heading`}>{T[s.id]}</h2>
         {s.stats && (
-          <dl class="stats">
+          <dl class="stats" data-cards="stats">
             {s.stats.map((x, i) => (
               <div class:list={["stat", i === 0 && "stat-lead"]}>
-                <dt>{x.label}</dt>
-                <dd>{x.value}</dd>
+                <dt data-align="label">{x.label}</dt>
+                <dd data-align="value">{x.value}</dd>
               </div>
             ))}
           </dl>
@@ -69,16 +69,20 @@ const illo = illustrationFor(page);
     gap: 0.75rem;
     margin: 0 0 1rem;
   }
+  /* Each card spans 2 shared rows, so every number sits on 1 line and every label starts on the next. */
   .stat {
-    display: flex;
-    flex-direction: column-reverse;
-    gap: 0.25rem;
+    display: grid;
+    grid-row: span 2;
+    grid-template-rows: subgrid;
+    row-gap: 0.25rem;
+    align-items: start;
     padding: 1rem 1.25rem;
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
     background: var(--card);
   }
   .stat dd {
+    grid-row: 1;
     margin: 0;
     font-size: 2.25rem;
     line-height: 1.1;
@@ -90,6 +94,7 @@ const illo = illustrationFor(page);
     color: var(--primary);
   }
   .stat dt {
+    grid-row: 2;
     color: var(--muted-foreground);
     font-size: 0.9375rem;
   }

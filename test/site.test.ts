@@ -34,7 +34,7 @@ test("the editor moved to /editor/ as it was, and the home page is Open Kannada'
   assert.equal(HOME.h1, "Kannada should be as easy to use on a computer as English.");
   assert.equal(EDITOR.title, "Kannada editor and converter: Nudi to Unicode, typing and more");
   assert.equal(EDITOR.h1, "Kannada editor and converter");
-  assert.equal(EDITOR.faq.length, 7);
+  assert.equal(EDITOR.faq.length, 8);
   assert.equal(EDITOR.twin, "kn");
   assert.equal(HOME.twin, undefined, "the English home has no twin until the Kannada home is read");
   assert.equal(HOMES.kn.slug, "kn", "the language switch on / goes to the Kannada home");
@@ -391,4 +391,16 @@ test("Open Graph cards exist only for published pages, so no draft Kannada is se
   const cards = readdirSync(new URL("../public/og", import.meta.url), { recursive: true }).filter((f) => String(f).endsWith(".png")).map((f) => String(f).replace(/\\/g, "/"));
   const wanted = new Set(PAGES.map((p) => `${p.slug || "home"}.png`));
   for (const card of cards) assert.ok(wanted.has(card), `public/og/${card} belongs to no published page`);
+});
+
+test("the editor and the Nudi converter say how to convert a folder with the kannadi tool", () => {
+  for (const slug of ["editor", "nudi-to-unicode"]) {
+    const page = ALL_PAGES.find((p) => p.slug === slug);
+    const answer = plainText(page.faq.find((f) => f.q === "Can I convert many files at once?")?.a ?? "");
+    assert.ok(answer.includes("kannadi to-unicode old-orders/ --out converted/"), `${slug} lacks the folder command`);
+    assert.ok(answer.includes("https://github.com/openkannada/kannadi/releases/latest/download/kannadi-cli-installer.sh | sh"), `${slug} lacks the macOS and Linux installer`);
+    assert.ok(answer.includes("kannadi-cli-installer.ps1 | iex"), `${slug} lacks the Windows installer`);
+    assert.ok(answer.includes("brew install openkannada/tap/kannadi"), `${slug} lacks Homebrew`);
+    assert.ok(answer.includes("--layout akruti"), `${slug} does not say Akruti text files need --layout akruti`);
+  }
 });

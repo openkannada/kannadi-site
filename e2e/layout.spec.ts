@@ -68,6 +68,23 @@ test.describe("@layout", () => {
     expect(await page.evaluate(() => scrollY)).toBeLessThan(end - 400);
   });
 
+  test("on phones, the visual viewport moving while reading does not pull the page back to the caret", async ({ page }) => {
+    test.skip(!isPhone(page), "Phones only.");
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.insertText(Array.from({ length: 60 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
+    await page.waitForTimeout(500);
+    const end = await page.evaluate(() => scrollY);
+    // With the keyboard open, iOS pans the visual viewport as the page scrolls; emulators do not, so it is sent here.
+    await page.evaluate(() => {
+      scrollBy(0, -600);
+      visualViewport?.dispatchEvent(new Event("scroll"));
+      visualViewport?.dispatchEvent(new Event("resize"));
+    });
+    await page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done))));
+    expect(await page.evaluate(() => scrollY)).toBeLessThan(end - 400);
+  });
+
   test("clicking a line half under the toolbar brings it into view", async ({ page }, info) => {
     test.skip(isPhone(page), "On phones the toolbar is at the bottom.");
     await openEditor(page);

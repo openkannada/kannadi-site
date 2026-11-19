@@ -212,8 +212,6 @@ export class DocEditor {
   splice(start: number, end: number, text: string): void {
     const node = this.node();
     node.replaceData(start, end - start, text);
-    // The caret goes in after the tail: Safari moves a caret at the very end back before a final "\n".
-    this.keepTail(this.text);
     if (document.activeElement === this.el) this.select(start + text.length);
   }
 

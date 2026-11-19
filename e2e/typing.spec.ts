@@ -1,7 +1,7 @@
 // Typing in every mode, with real key events, insertText and keyboard compositions.
 import { expect, test } from "@playwright/test";
 
-import { caretAt, chooseMode, docText, focusDoc, isPhone, KANNADA_WORD, type Mode, openEditor } from "./editor.ts";
+import { caretAt, chooseMode, docText, focusDoc, isPhone, KANNADA_WORD, type Mode, openEditor, savedText } from "./editor.ts";
 
 const LATIN_MODES: Exclude<Mode, "kannada">[] = ["english", "baraha", "iso15919"];
 const KANNADA_LINE = /^[ಀ-೿‌ ]+$/u;
@@ -28,6 +28,8 @@ test.describe("the first letter", () => {
     expect(await docText(page)).toBe("");
     await page.keyboard.type("ka");
     expect(await docText(page)).toBe("ಕ");
+    // The saved text is what the editor holds; a stray line break from the cleared element would show here.
+    await expect.poll(() => savedText(page)).toBe("ಕ");
   });
 
   test("english: the first letter after a cleared line with a placeholder <br> converts", async ({ page }) => {
@@ -40,6 +42,7 @@ test.describe("the first letter", () => {
     });
     await page.keyboard.type("ka");
     expect(await docText(page)).toBe("ಕ");
+    await expect.poll(() => savedText(page)).toBe("ಕ");
   });
 
   test("english: words after spaces convert, and spaces stay plain spaces", async ({ page }) => {
@@ -50,9 +53,7 @@ test.describe("the first letter", () => {
     const text = await docText(page);
     expect(text.replace(/ /g, " ")).toBe("ಕ ಕ ಕ ಕ");
     // The saved text has ordinary spaces, whatever the browser shows.
-    await page.waitForTimeout(700);
-    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem("kannadi.editor.v1") ?? "{}").text as string);
-    expect(saved).toBe("ಕ ಕ ಕ ಕ");
+    await expect.poll(() => savedText(page)).toBe("ಕ ಕ ಕ ಕ");
   });
 });
 

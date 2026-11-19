@@ -51,6 +51,9 @@ export async function focusDoc(page: Page): Promise<void> {
 /** The document's text, without the extra final line break that gives an empty last line its place. */
 export const docText = (page: Page) => page.evaluate(() => (document.getElementById("doc")?.textContent ?? "").replace(/\n$/, ""));
 
+/** The text as saved on this device, half a second after the last edit; exact, unlike the element's text. */
+export const savedText = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem("kannadi.editor.v1") ?? "{}") as { text?: string }).text ?? null);
+
 /** Puts the caret at a text offset. */
 export const caretAt = (page: Page, at: number) =>
   page.evaluate((at) => {

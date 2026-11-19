@@ -22,11 +22,18 @@ export async function chooseMode(page: Page, mode: Mode): Promise<void> {
   if (await label.isVisible()) {
     await (isPhone(page) ? label.tap() : label.click());
   } else {
-    await page.locator('[popovertarget="tools-menu"]').click();
+    await openMenu(page, "tools-menu");
     await page.locator('[data-run="iso"]').click();
   }
   await expect(page.locator(`#mode-${mode}`)).toBeChecked();
   if (mode === "english") await wordsReady(page);
+}
+
+/** Opens a toolbar menu and waits until it has risen into place; a click while it moves can land outside and close it. */
+export async function openMenu(page: Page, id: "save-menu" | "tools-menu"): Promise<void> {
+  await page.locator(`[popovertarget="${id}"]`).click();
+  await expect(page.locator(`#${id}`)).toBeVisible();
+  await page.evaluate((id) => Promise.all(document.getElementById(id)!.getAnimations({ subtree: true }).map((a) => a.finished)), id);
 }
 
 /** Waits for the English-letters word list to load and index. */

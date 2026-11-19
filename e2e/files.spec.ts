@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { expect, type Page, test } from "@playwright/test";
 
 import { writeZip } from "../src/editor/zip.ts";
-import { docText, focusDoc, isPhone, openEditor } from "./editor.ts";
+import { docText, focusDoc, isPhone, openEditor, openMenu } from "./editor.ts";
 
 const NUDI = "PÀ£ÀßqÀ"; // ಕನ್ನಡ in Nudi and Baraha (BRH) fonts.
 
@@ -58,10 +58,20 @@ async function openFile(page: Page, name: string, body: Buffer | string, mimeTyp
 
 /** Saves through the Save menu and returns the file's name and bytes. */
 async function save(page: Page, format: string): Promise<{ name: string; body: Buffer }> {
-  await page.locator('[popovertarget="save-menu"]').click();
+  await openMenu(page, "save-menu");
   const [download] = await Promise.all([page.waitForEvent("download"), page.locator(`[data-export="${format}"]`).click()]);
   const path = await download.path();
   return { name: download.suggestedFilename(), body: await readFile(path) };
+}
+
+/**
+ * Empties the document with New document, so a file that fails to open leaves it empty. Reloading instead would
+ * bring the text back, since the page saves it as it unloads.
+ */
+async function newDocument(page: Page): Promise<void> {
+  await openMenu(page, "tools-menu");
+  await page.locator('[data-run="new"]').click();
+  await expect.poll(() => docText(page)).toBe("");
 }
 
 const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
@@ -224,8 +234,7 @@ test.describe("save and reopen", () => {
       }, TEXT);
       const file = await save(page, format);
       expect(file.name).toBe(`kannada.${format}`);
-      await page.evaluate(() => localStorage.clear());
-      await openEditor(page);
+      await newDocument(page);
       await openFile(page, file.name, file.body);
       await expect.poll(() => docText(page)).toBe(TEXT);
     });
@@ -235,8 +244,7 @@ test.describe("save and reopen", () => {
     await page.keyboard.insertText("ಕನ್ನಡ ನಾಡು");
     const file = await save(page, "html");
     const edited = file.body.toString("utf8").replace("<body>", "<body>\n<!-- edited in another program -->");
-    await page.evaluate(() => localStorage.clear());
-    await openEditor(page);
+    await newDocument(page);
     await openFile(page, "edited.html", edited, "text/html");
     await expect.poll(() => docText(page)).toBe("ಕನ್ನಡ ನಾಡು");
   });
@@ -246,8 +254,7 @@ test.describe("save and reopen", () => {
     const file = await save(page, "nudi");
     expect(file.name).toBe("kannada-nudi.txt");
     expect([...file.body]).not.toContain(0x3f);
-    await page.evaluate(() => localStorage.clear());
-    await openEditor(page);
+    await newDocument(page);
     await openFile(page, "back.txt", file.body, "text/plain");
     await expect.poll(() => docText(page)).toBe("ಕನ್ನಡ ನಾಡು");
   });
@@ -272,7 +279,7 @@ test.describe("on this device", () => {
 
   test("New document clears the text", async ({ page }) => {
     await page.keyboard.insertText("ಕನ್ನಡ");
-    await page.locator('[popovertarget="tools-menu"]').click();
+    await openMenu(page, "tools-menu");
     await page.locator('[data-run="new"]').click();
     expect(await docText(page)).toBe("");
     await page.reload();

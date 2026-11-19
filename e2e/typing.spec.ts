@@ -299,12 +299,14 @@ test.describe("editing", () => {
 
   test("every Latin mode types a whole line of Kannada", async ({ page }) => {
     const lines: Record<string, string> = { english: "namaskara kannada", baraha: "namaskaara kannaDa", iso15919: "namaskāra kannaḍa" };
+    await openEditor(page);
     for (const mode of LATIN_MODES) {
-      await openEditor(page, { mode });
+      await chooseMode(page, mode);
       await focusDoc(page);
+      await page.keyboard.press("ControlOrMeta+a");
+      await page.keyboard.press("Backspace");
       await page.keyboard.type(lines[mode]!);
-      expect((await docText(page)).replace(/ /g, " "), mode).toMatch(KANNADA_LINE);
-      await page.evaluate(() => localStorage.clear());
+      expect((await docText(page)).replace(/\u00a0/g, " "), mode).toMatch(KANNADA_LINE);
     }
   });
 });

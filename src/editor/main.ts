@@ -528,7 +528,8 @@ function receive(): void {
 
 function wire(): void {
   wireVoice();
-  ui.doc.addEventListener("beforeinput", (e) => composer.beforeInput(e));
+  // ProseMirror takes the composer's Backspace itself, before its own handling.
+  if (!pm) ui.doc.addEventListener("beforeinput", (e) => composer.beforeInput(e));
   ui.doc.addEventListener("paste", (e) => {
     e.preventDefault();
     void paste(e.clipboardData?.getData("text/html") ?? "", e.clipboardData?.getData("text/plain") ?? "");

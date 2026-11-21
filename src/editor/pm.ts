@@ -27,36 +27,74 @@ function docOf(text: string): PmNode {
   return schema.node("doc", null, text.split("\n").map((line) => schema.node("paragraph", null, line ? schema.text(line) : undefined)));
 }
 
+interface Index {
+  text: string;
+  /** For each paragraph, the text offset and the document position where its text starts. */
+  offsets: number[];
+  positions: number[];
+}
+
+// Built once per document, since every edit makes a new one; the text is read several times per keystroke.
+const indexes = new WeakMap<PmNode, Index>();
+
+function indexOf(doc: PmNode): Index {
+  let index = indexes.get(doc);
+  if (index) return index;
+  const offsets: number[] = [];
+  const positions: number[] = [];
+  const lines: string[] = [];
+  let at = 0;
+  doc.forEach((p, pos) => {
+    offsets.push(at);
+    positions.push(pos + 1);
+    lines.push(p.textContent);
+    at += p.content.size + 1;
+  });
+  index = { text: lines.join("\n"), offsets, positions };
+  indexes.set(doc, index);
+  return index;
+}
+
 /** The text of a document, its paragraphs joined by "\n". */
 function textOf(doc: PmNode): string {
-  return doc.textBetween(0, doc.content.size, "\n");
+  return indexOf(doc).text;
+}
+
+/** The last index in a sorted list whose value is at most `value`. */
+function floor(list: number[], value: number): number {
+  let lo = 0;
+  let hi = list.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi + 1) >> 1;
+    if (list[mid]! <= value) lo = mid;
+    else hi = mid - 1;
+  }
+  return lo;
 }
 
 /** Document position of text offset `at`. */
 function posOf(doc: PmNode, at: number): number {
-  let pos = 0;
-  let left = Math.max(0, at);
-  for (let i = 0; i < doc.childCount; i++) {
-    const p = doc.child(i);
-    if (left <= p.content.size || i === doc.childCount - 1) return pos + 1 + Math.min(left, p.content.size);
-    left -= p.content.size + 1;
-    pos += p.nodeSize;
-  }
-  return 1;
+  const { offsets, positions } = indexOf(doc);
+  const i = floor(offsets, Math.max(0, at));
+  return positions[i]! + Math.min(Math.max(0, at) - offsets[i]!, doc.child(i).content.size);
 }
 
 /** Text offset of document position `pos`. */
 function offsetOfPos(doc: PmNode, pos: number): number {
-  let at = 0;
-  let start = 0;
-  for (let i = 0; i < doc.childCount; i++) {
-    const p = doc.child(i);
-    const end = start + p.nodeSize;
-    if (pos < end || i === doc.childCount - 1) return at + Math.max(0, Math.min(pos - start - 1, p.content.size));
-    at += p.content.size + 1;
-    start = end;
-  }
-  return at;
+  const { offsets, positions } = indexOf(doc);
+  const i = floor(positions, pos);
+  return offsets[i]! + Math.max(0, Math.min(pos - positions[i]!, doc.child(i).content.size));
+}
+
+/** The base keymap, its deletions reported as the browser reports its own. */
+function withInputTypes(keys: Record<string, Command>): Record<string, Command> {
+  return Object.fromEntries(
+    Object.entries(keys).map(([key, command]) => {
+      const back = /Backspace|Ctrl-h/.test(key);
+      const forward = /Delete|Ctrl-d|Alt-d/.test(key);
+      return [key, back ? as("deleteContentBackward", command) : forward ? as("deleteContentForward", command) : command];
+    }),
+  );
 }
 
 /** Runs `command` with an inputType on its transaction, so the edit is reported like the browser's own. */
@@ -88,14 +126,14 @@ export class PmEditor implements EditorSurface {
       schema,
       plugins: [
         history({ newGroupDelay: GROUP_MS }),
-        keymap({ "Mod-z": undo, "Mod-y": redo, "Shift-Mod-z": redo }),
+        keymap({ "Mod-z": as("historyUndo", undo), "Mod-y": as("historyRedo", redo), "Shift-Mod-z": as("historyRedo", redo) }),
         keymap({
           Enter: as("insertLineBreak", splitBlock),
           "Shift-Enter": as("insertLineBreak", splitBlock),
           // The word being typed takes back a Latin letter first; ProseMirror would otherwise run its own Backspace too.
           Backspace: (state, dispatch, view) => this.backspace() || as("deleteContentBackward", chainCommands(joinBackward))(state, dispatch, view),
         }),
-        keymap(baseKeymap),
+        keymap(withInputTypes(baseKeymap)),
       ],
     });
     this.view = new EditorView(
@@ -108,10 +146,19 @@ export class PmEditor implements EditorSurface {
         attributes: { spellcheck: "false" },
       },
     );
+    // A key the keymap handles has no beforeinput; an earlier one must not lend it its input type.
+    el.addEventListener("keydown", () => (this.pending = ""), true);
     el.addEventListener(
       "beforeinput",
       (e) => {
         this.pending = e.inputType;
+        // The word being typed takes back a Latin letter. ProseMirror, on Android, would run a Backspace of its own
+        // after a Backspace it did not see change the text, so it does not see this one at all.
+        if (e.inputType === "deleteContentBackward" && e.cancelable && this.backspace()) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          return;
+        }
         if (!e.data?.includes("\n")) return;
         // Firefox commits text with line breaks as a composition it will not cancel, and puts spaces for the breaks.
         if (!e.cancelable) {
@@ -159,13 +206,14 @@ export class PmEditor implements EditorSurface {
     if (after === this.before) return;
     const sel = this.selection();
     const edit = diff(this.before, after, sel && sel.start === sel.end ? sel.start : -1);
-    this.before = after;
     const lines = this.lines;
     this.lines = "";
+    // The lines go in place of the spaces, and that change is reported with the insertion, as 1 edit.
     if (lines && after.slice(edit.start, edit.newEnd) === lines.replace(/\n/g, " ")) {
       this.replace(edit.start, edit.newEnd, lines, inputType);
       return;
     }
+    this.before = after;
     this.onEdit(edit, after, inputType);
   }
 

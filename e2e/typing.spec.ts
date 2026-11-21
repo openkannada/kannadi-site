@@ -274,6 +274,34 @@ test.describe("editing", () => {
     expect(steps).toEqual(["ಕನ್ನಡ್", "ಕನ್ನ", "ಕನ್ನ್", "ಕನ್", "ಕ", "ಕ್", ""]);
   });
 
+  test("baraha: a phone keyboard's Backspace in a word takes back 1 letter, once", async ({ page }) => {
+    await openEditor(page, { mode: "baraha" });
+    await focusDoc(page);
+    await page.keyboard.type("kanna");
+    expect(await docText(page)).toBe("ಕನ್ನ");
+    // Gboard sends Backspace as an input event with no key to go with it.
+    await page.evaluate(() =>
+      document.getElementById("doc")!.dispatchEvent(new InputEvent("beforeinput", { inputType: "deleteContentBackward", cancelable: true, bubbles: true })),
+    );
+    await page.waitForTimeout(300);
+    expect(await docText(page)).toBe("ಕನ್ನ್");
+  });
+
+  test("undo brings back Latin text as Latin, even in English letters mode", async ({ page }) => {
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.type("hello");
+    // Edits within 1.5s of each other undo together.
+    await page.waitForTimeout(1600);
+    await page.keyboard.press("Alt+Digit2");
+    await expect(page.locator("#mode-english")).toBeChecked();
+    await page.keyboard.press("ControlOrMeta+a");
+    await page.keyboard.press("Backspace");
+    expect(await docText(page)).toBe("");
+    await page.keyboard.press("ControlOrMeta+z");
+    await expect.poll(() => docText(page)).toBe("hello");
+  });
+
   test("baraha: Backspace after a finished word deletes Kannada signs, never leaving Latin", async ({ page }) => {
     await openEditor(page, { mode: "baraha" });
     await focusDoc(page);

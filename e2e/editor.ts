@@ -85,8 +85,29 @@ export const docText = (page: Page) =>
     return text.endsWith("\n\n") ? text.slice(0, -1) : text;
   });
 
-/** The text as saved on this device, half a second after the last edit; exact, unlike the element's text. */
-export const savedText = (page: Page) => page.evaluate(() => (JSON.parse(localStorage.getItem("kannadi.editor.v1") ?? "{}") as { text?: string }).text ?? null);
+/**
+ * The text as saved on this device, half a second after the last edit; exact, unlike the element's text. Today's
+ * editor keeps it in localStorage, the ProseMirror editor in IndexedDB.
+ */
+export const savedText = (page: Page) =>
+  page.evaluate(async (next) => {
+    if (!next) return (JSON.parse(localStorage.getItem("kannadi.editor.v1") ?? "{}") as { text?: string }).text ?? null;
+    const id = JSON.parse(localStorage.getItem("kannadi.current.v1") ?? "null") as string | null;
+    if (!id) return null;
+    const db = await new Promise<IDBDatabase>((done, fail) => {
+      const open = indexedDB.open("kannadi");
+      open.onsuccess = () => done(open.result);
+      open.onerror = () => fail(open.error);
+    });
+    if (!db.objectStoreNames.contains("documents")) return null;
+    const row = await new Promise<{ text?: string } | undefined>((done) => {
+      const get = db.transaction("documents").objectStore("documents").get(id);
+      get.onsuccess = () => done(get.result as { text?: string } | undefined);
+      get.onerror = () => done(undefined);
+    });
+    db.close();
+    return row?.text ?? null;
+  }, NEXT);
 
 /** Waits until the page has stopped scrolling, as it has long before anyone reads or scrolls on. */
 export async function settle(page: Page): Promise<number> {

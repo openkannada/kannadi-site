@@ -46,6 +46,8 @@ export const EDITOR_EN = {
     modernize: "Modernize",
     modernizeNote: "ೞ ಱ to ಳ ರ",
     newDocument: "New document",
+    recent: "Recent documents",
+    untitled: "Untitled",
     typeface: "Typeface",
     sans: "Sans",
     serif: "Serif",
@@ -144,6 +146,7 @@ export const EDITOR_EN = {
       nothing: "Modernized Old Kannada letters: nothing to change.",
     },
     newDocument: "New document. Undo with Ctrl+Z to get the last one back.",
+    newDocumentKept: "New document. The last one is in Recent documents, under More tools.",
   },
   paste: {
     asIs: "Paste as is",

@@ -37,7 +37,7 @@ test("blank text is not handed over, and a store that throws, is missing or hold
 
 test("the editor removes the text only after pasting it, and the home page never puts it in the URL", () => {
   const main = readFileSync(new URL("../src/editor/main.ts", import.meta.url), "utf8");
-  assert.match(main, /paste\(handed\.html, handed\.text\)[\s\S]*?\.finally\(\(\) => \{\s*save\(\);\s*doneWith\(store\);/);
+  assert.match(main, /paste\(handed\.html, handed\.text\)[\s\S]*?\.finally\(\(\) => save\(\)\)\s*\.finally\(\(\) => doneWith\(store\)\)/);
   const home = readFileSync(new URL("../src/layouts/HomePage.astro", import.meta.url), "utf8");
   assert.match(home, /if \(handOver\(sessionStore\(\), field\.value, htmlFor\(field\.value, pasted\)\)\)/, "it leaves the page only when the text was kept");
   assert.doesNotMatch(home, /searchParams|[?&]text=|location\.hash/);

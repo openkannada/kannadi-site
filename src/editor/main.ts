@@ -7,6 +7,7 @@ import type { ExportFormat } from "./files.ts";
 import { doneWith, sessionStore, takeText } from "../lib/handoff.ts";
 import { registerWhenIdle, resolveModelContext } from "../lib/model-context.ts";
 import { Issues } from "./issues.ts";
+import { IdbStore, LocalStore, type DocumentStore } from "./store.ts";
 import * as kannadi from "./kannadi.ts";
 import { EnglishTyping } from "./english.ts";
 import { SuggestStrip } from "./strip.ts";
@@ -26,7 +27,6 @@ const SAMPLE = [
   "vÀgÀ¨ÉÃw ¤ÃqÀÄªÀÅzÀÄ.",
 ].join("\n");
 
-const STORE = "kannadi.editor.v1";
 const PICKS = "kannadi.picks.v1";
 const MODES: TypingMode[] = ["kannada", "english", "baraha", "iso15919"];
 
@@ -58,24 +58,6 @@ const byId = <T extends HTMLElement = HTMLElement>(id: string) => {
   const el = document.getElementById(id);
   if (!el) throw new Error(`#${id} is missing`);
   return el as T;
-};
-
-const store = {
-  read(): Saved | null {
-    try {
-      return JSON.parse(localStorage.getItem(STORE) ?? "null") as Saved | null;
-    } catch {
-      return null;
-    }
-  },
-  write(value: Saved): boolean {
-    try {
-      localStorage.setItem(STORE, JSON.stringify(value));
-      return true;
-    } catch {
-      return false;
-    }
-  },
 };
 
 const ui = {
@@ -170,6 +152,8 @@ const onEdit: EditListener = (edit, after, inputType) => {
 // ?editor=next opens the editor on ProseMirror, which loads only then.
 const next = new URLSearchParams(location.search).get("editor") === "next";
 const pm = next ? new (await import("./pm.ts")).PmEditor(ui.doc, onEdit) : null;
+// The ProseMirror editor keeps its documents in IndexedDB, so long ones fit, with the last few as recent documents.
+const docs: DocumentStore = next ? new IdbStore() : new LocalStore();
 const editor: EditorSurface = pm ?? new DocEditor(ui.doc, onEdit);
 ui.section.dataset.core = next ? "next" : "doc";
 
@@ -193,7 +177,7 @@ const issues = new Issues(editor, kannadi, {
     if (i.total === 0) byId("problems-panel").hidePopover?.();
     // Keeping a spelling changes no text, so save here too.
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(save, 500);
+    saveTimer = setTimeout(() => void save(), 500);
   },
 });
 
@@ -264,20 +248,24 @@ function update(text: string): void {
     showCount(ui.aksharas, kannadi.countAksharas(current), S.counts.aksharas);
   }, Math.min(600, 80 + text.length / 10000));
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(save, 500);
+  saveTimer = setTimeout(() => void save(), 500);
 }
 
-function save(): void {
-  const unknown = issues.unknown.map((u) => u.offset);
-  const kept = issues.kept.map((k) => k.offset);
-  const ok = store.write({ text: editor.text, unknown, kept, settings, fileName });
-  if (!editor.text) ui.saved.textContent = "";
-  else ui.saved.textContent = ok ? S.files.savedHere : S.files.tooLarge;
+/** What is saved for the current document. */
+function current(): Saved {
+  return { text: editor.text, unknown: issues.unknown.map((u) => u.offset), kept: issues.kept.map((k) => k.offset), settings, fileName };
+}
+
+function save(): Promise<void> {
+  const value = current();
+  return docs.write(value).then((ok) => {
+    ui.saved.textContent = !value.text ? "" : ok ? S.files.savedHere : S.files.tooLarge;
+  });
 }
 
 function saveSettings(): void {
   clearTimeout(saveTimer);
-  save();
+  void save();
 }
 
 /** Inserts text at the selection and returns where it starts. */
@@ -429,13 +417,7 @@ const ACTIONS: Record<string, () => void> = {
   },
   normalize: () => transform(kannadi.normalize, S.edit.normalize),
   modernize: () => transform(kannadi.modernize, S.edit.modernize),
-  new: () => {
-    issues.clear();
-    editor.setText("");
-    fileName = S.files.defaultName;
-    editor.focus();
-    say(S.edit.newDocument);
-  },
+  new: () => void newDocument(),
   shortcuts: () => ui.shortcuts.showModal(),
   copy: () => {
     issues.flush();
@@ -520,10 +502,8 @@ function receive(): void {
   // The document is saved before the handed text is removed, so a reload in between loses nothing.
   void paste(handed.html, handed.text)
     .catch(() => insert({ text: handed.text, unknown: [] }))
-    .finally(() => {
-      save();
-      doneWith(store);
-    });
+    .finally(() => save())
+    .finally(() => doneWith(store));
 }
 
 function wire(): void {
@@ -667,7 +647,14 @@ function wire(): void {
       nextProblem(e.shiftKey ? -1 : 1);
     }
   });
-  addEventListener("pagehide", save);
+  // A write that has to wait may not finish as the page closes, so the store also keeps the text at once.
+  const leaving = () => {
+    docs.flush(current());
+    void save();
+  };
+  addEventListener("pagehide", leaving);
+  document.addEventListener("visibilitychange", () => document.visibilityState === "hidden" && leaving());
+  byId("tools-menu").addEventListener("toggle", (e) => (e as ToggleEvent).newState === "open" && void showRecent());
 
   // iOS keeps fixed elements behind the on-screen keyboard; --kb lifts them above it.
   const vv = window.visualViewport;
@@ -694,8 +681,78 @@ function wire(): void {
   }
 }
 
-function restore(): void {
-  const saved = store.read();
+/** Shows a saved document: its text, its marks and its file name. */
+function show(saved: Saved | null): void {
+  issues.clear();
+  if (saved?.text) {
+    editor.load(saved.text);
+    const offsets = (list: unknown) => (Array.isArray(list) ? list.filter((o): o is number => Number.isInteger(o) && o < saved.text.length) : []);
+    issues.addUnknown(offsets(saved.unknown));
+    issues.keep(offsets(saved.kept));
+    fileName = saved.fileName ?? S.files.defaultName;
+    if (looksLegacy(saved.text)) say(S.editor.welcomeBack);
+  } else {
+    editor.load("");
+    fileName = S.files.defaultName;
+  }
+  issues.check();
+}
+
+/** A new document. Where documents are kept, the last one stays among the recent ones; elsewhere Undo brings it back. */
+async function newDocument(): Promise<void> {
+  const keeps = (await docs.recent()) !== null && editor.text !== "";
+  if (keeps) {
+    clearTimeout(saveTimer);
+    await save();
+    await docs.create();
+    show(null);
+    void save();
+  } else {
+    issues.clear();
+    editor.setText("");
+    fileName = S.files.defaultName;
+  }
+  editor.focus();
+  say(keeps ? S.edit.newDocumentKept : S.edit.newDocument);
+}
+
+/** Lists the recent documents in the tools menu, where documents are kept. */
+async function showRecent(): Promise<void> {
+  const recent = await docs.recent();
+  const box = byId("recent");
+  box.hidden = !recent?.length;
+  if (!recent?.length) return;
+  const when = new Intl.DateTimeFormat(document.documentElement.lang || "en", { dateStyle: "medium", timeStyle: "short" });
+  byId("recent-list").replaceChildren(
+    ...recent.map((r) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "menu-item";
+      const name = document.createElement("span");
+      name.lang = "kn";
+      name.textContent = r.title || S.menu.untitled;
+      const date = document.createElement("small");
+      date.textContent = when.format(r.updated);
+      b.append(name, date);
+      b.addEventListener("click", () => void openRecent(r.id));
+      return b;
+    }),
+  );
+}
+
+async function openRecent(id: string): Promise<void> {
+  byId("tools-menu").hidePopover();
+  clearTimeout(saveTimer);
+  await save();
+  const saved = (await docs.open(id)) as Saved | null;
+  if (!saved) return;
+  show(saved);
+  editor.focus();
+  editor.select(0);
+}
+
+async function restore(): Promise<void> {
+  const saved = (await docs.read()) as Saved | null;
   if (saved?.settings) settings = { ...settings, ...saved.settings };
   ui.autoConvert.checked = settings.autoConvert;
   ui.zero.checked = settings.zero;
@@ -708,21 +765,15 @@ function restore(): void {
   else setMode(MODES.includes(settings.mode) ? settings.mode : "kannada", false);
   if (picked && document.activeElement === picked) editor.focus();
   setFont(settings.font === "serif" ? "serif" : "sans", false);
-  if (saved?.text) {
-    editor.load(saved.text);
-    const offsets = (list: unknown) => (Array.isArray(list) ? list.filter((o): o is number => Number.isInteger(o) && o < saved.text.length) : []);
-    issues.addUnknown(offsets(saved.unknown));
-    issues.keep(offsets(saved.kept));
-    fileName = saved.fileName ?? S.files.defaultName;
-    if (looksLegacy(saved.text)) say(S.editor.welcomeBack);
-  } else {
+  if (saved?.text) show(saved);
+  else {
     update("");
+    issues.check();
   }
-  issues.check();
 }
 
 wire();
-restore();
+await restore();
 receive();
 document.documentElement.classList.add("ready");
 const modelContext = resolveModelContext(document, navigator);

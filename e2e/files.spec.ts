@@ -284,7 +284,7 @@ test.describe("on this device", () => {
     await page.keyboard.insertText("ಕನ್ನಡ");
     await openMenu(page, "tools-menu");
     await page.locator('[data-run="new"]').click();
-    expect(await docText(page)).toBe("");
+    await expect.poll(() => docText(page)).toBe("");
     await page.reload();
     await page.waitForFunction(() => document.documentElement.classList.contains("ready"));
     expect(await docText(page)).toBe("");

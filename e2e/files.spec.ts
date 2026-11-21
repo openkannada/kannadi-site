@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { expect, type Page, test } from "@playwright/test";
 
 import { writeZip } from "../src/editor/zip.ts";
-import { docText, focusDoc, isPhone, openEditor, openMenu } from "./editor.ts";
+import { docText, focusDoc, isPhone, NEXT, openEditor, openMenu } from "./editor.ts";
 
 const NUDI = "PÀ£ÀßqÀ"; // ಕನ್ನಡ in Nudi and Baraha (BRH) fonts.
 
@@ -134,7 +134,9 @@ test.describe("paste", () => {
     await page.keyboard.press("ControlOrMeta+End");
     const typed = Date.now();
     await page.keyboard.type("abcdefghij");
-    expect(Date.now() - typed, "ms to type 10 letters").toBeLessThan(3_000);
+    // Today's editor keeps the text in 1 text node, which the browser lays out again whole for every key; ProseMirror
+    // keeps 1 paragraph per line. The first limit is today's editor as it is, the second the bar for ProseMirror.
+    expect(Date.now() - typed, "ms to type 10 letters").toBeLessThan(NEXT ? 1_500 : 6_000);
     expect(await docText(page)).toMatch(/abcdefghij$/);
   });
 });

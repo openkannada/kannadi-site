@@ -267,6 +267,8 @@ test.describe("editing", () => {
     const steps: string[] = [];
     for (let i = 0; i < 7; i++) {
       await page.keyboard.press("Backspace");
+      // On phones a moment passes between keys; ProseMirror waits that long to read what an Android or iOS key did.
+      if (isPhone(page)) await page.waitForTimeout(250);
       steps.push(await docText(page));
     }
     expect(steps).toEqual(["ಕನ್ನಡ್", "ಕನ್ನ", "ಕನ್ನ್", "ಕನ್", "ಕ", "ಕ್", ""]);

@@ -78,6 +78,9 @@ export class PmEditor implements EditorSurface {
   /** Text with line breaks that the browser is inserting with spaces in their place. */
   private lines = "";
 
+  /** Handles Backspace before ProseMirror does, as the composer does for the word being typed; true when it did. */
+  backspace: () => boolean = () => false;
+
   constructor(el: HTMLElement, onEdit: EditListener) {
     this.el = el;
     this.onEdit = onEdit;
@@ -89,7 +92,8 @@ export class PmEditor implements EditorSurface {
         keymap({
           Enter: as("insertLineBreak", splitBlock),
           "Shift-Enter": as("insertLineBreak", splitBlock),
-          Backspace: as("deleteContentBackward", chainCommands(joinBackward)),
+          // The word being typed takes back a Latin letter first; ProseMirror would otherwise run its own Backspace too.
+          Backspace: (state, dispatch, view) => this.backspace() || as("deleteContentBackward", chainCommands(joinBackward))(state, dispatch, view),
         }),
         keymap(baseKeymap),
       ],
@@ -258,8 +262,10 @@ export class PmEditor implements EditorSurface {
 
   /** Screen box of the caret's line, or null when the caret is outside the editor. */
   caretRect(): DOMRect | null {
-    if (!this.selection()) return null;
-    const c = this.view.coordsAtPos(this.view.state.selection.head);
+    const dom = document.getSelection();
+    if (!dom?.rangeCount || !dom.focusNode || !this.el.contains(dom.focusNode)) return null;
+    // The browser's caret is what shows; ProseMirror's own selection can trail it just after a click.
+    const c = this.view.coordsAtPos(this.view.posAtDOM(dom.focusNode, dom.focusOffset));
     return new DOMRect(c.left, c.top, 0, c.bottom - c.top);
   }
 

@@ -187,12 +187,18 @@ export class Composer {
 
   /** Backspace inside the word removes the last Latin letter, not a Kannada sign. */
   beforeInput(e: InputEvent): void {
-    if (!this.word || e.inputType !== "deleteContentBackward" || !e.cancelable) return;
+    if (e.inputType !== "deleteContentBackward" || !e.cancelable) return;
+    if (this.backspace()) e.preventDefault();
+  }
+
+  /** Takes back the last Latin letter when the caret is at the end of the word; returns true when it did. */
+  backspace(): boolean {
+    if (!this.word) return false;
     const sel = this.editor.selection();
-    if (!sel || sel.start !== sel.end || sel.end !== this.end()) return;
-    e.preventDefault();
+    if (!sel || sel.start !== sel.end || sel.end !== this.end()) return false;
     this.word.latin = Array.from(this.word.latin).slice(0, -1).join("");
     this.render(this.end());
+    return true;
   }
 
   /** Escape keeps the word as typed, in Latin letters. */

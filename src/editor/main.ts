@@ -169,7 +169,8 @@ const onEdit: EditListener = (edit, after, inputType) => {
 };
 // ?editor=next opens the editor on ProseMirror, which loads only then.
 const next = new URLSearchParams(location.search).get("editor") === "next";
-const editor: EditorSurface = next ? new (await import("./pm.ts")).PmEditor(ui.doc, onEdit) : new DocEditor(ui.doc, onEdit);
+const pm = next ? new (await import("./pm.ts")).PmEditor(ui.doc, onEdit) : null;
+const editor: EditorSurface = pm ?? new DocEditor(ui.doc, onEdit);
 ui.section.dataset.core = next ? "next" : "doc";
 
 const view = new View(editor, {
@@ -245,6 +246,7 @@ const composer = new Composer(
   },
 );
 english.attach(composer);
+if (pm) pm.backspace = () => composer.backspace();
 
 /** Shows a count in its sentence, "1 word" or "2 words", keeping the number's own element. */
 function showCount(el: HTMLElement, n: number, forms: Plural): void {

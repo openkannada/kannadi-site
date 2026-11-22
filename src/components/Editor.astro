@@ -78,6 +78,10 @@ const counts = [
     <button type="button" class="menu-item" data-run="normalize">{t.menu.normalize} <small>{t.menu.normalizeNote}</small></button>
     <button type="button" class="menu-item" data-run="modernize">{t.menu.modernize} <small lang="kn">{t.menu.modernizeNote}</small></button>
     <button type="button" class="menu-item" data-run="new">{t.menu.newDocument}</button>
+    <div id="recent" class="recent" role="group" aria-labelledby="recent-heading" hidden>
+      <p id="recent-heading" class="menu-label">{t.menu.recent}</p>
+      <div id="recent-list"></div>
+    </div>
     <div class="menu-sep" role="separator"></div>
     <fieldset class="menu-row">
       <legend class="menu-label">{t.menu.typeface}</legend>

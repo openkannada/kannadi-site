@@ -44,6 +44,8 @@ export const EDITOR_KN: EditorStrings = {
     modernize: "ಆಧುನಿಕಗೊಳಿಸು",
     modernizeNote: "ೞ ಱ ಅನ್ನು ಳ ರ ಆಗಿ",
     newDocument: "ಹೊಸ ದಾಖಲೆ",
+    recent: "ಇತ್ತೀಚಿನ ದಾಖಲೆಗಳು",
+    untitled: "ಹೆಸರಿಲ್ಲದ ದಾಖಲೆ",
     typeface: "ಅಕ್ಷರಶೈಲಿ",
     sans: "ಸಾನ್ಸ್",
     serif: "ಸೆರಿಫ್",
@@ -136,6 +138,7 @@ export const EDITOR_KN: EditorStrings = {
       nothing: "ಆಧುನಿಕಗೊಳಿಸು: ಬದಲಿಸಲು ಏನೂ ಇಲ್ಲ.",
     },
     newDocument: "ಹೊಸ ದಾಖಲೆ. ಹಿಂದಿನದು ಬೇಕಾದರೆ Ctrl+Z ಒತ್ತಿ.",
+    newDocumentKept: "ಹೊಸ ದಾಖಲೆ. ಹಿಂದಿನದು ಇನ್ನಷ್ಟು ಉಪಕರಣಗಳಲ್ಲಿ, ಇತ್ತೀಚಿನ ದಾಖಲೆಗಳ ಪಟ್ಟಿಯಲ್ಲಿದೆ.",
   },
   paste: {
     asIs: "ಇದ್ದಂತೆಯೇ ಅಂಟಿಸು",

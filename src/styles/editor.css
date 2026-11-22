@@ -524,3 +524,11 @@ body.dragging .drop-hint {
 .doc.ProseMirror .ProseMirror-trailingBreak {
   display: inline;
 }
+
+/* Recent documents in the tools menu, with ?editor=next. */
+.recent .menu-item {
+  @apply justify-between;
+}
+.recent .menu-item span {
+  @apply truncate text-base;
+}

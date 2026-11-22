@@ -521,13 +521,19 @@ body.dragging .drop-hint {
   }
   .welcome {
     inset-inline: 1rem;
+    top: 3.25rem;
   }
   .sheet-foot {
+    inset-inline: 1rem;
     top: 1rem;
     bottom: auto;
   }
-  .welcome {
-    top: 3.25rem;
+  /* The drop outline and hint follow the sheet's shape, inside the screen's edges. */
+  .drop-hint {
+    border-radius: inherit;
+  }
+  body.dragging .sheet {
+    outline-offset: -4px;
   }
   .editor:has(.fix:not([hidden])) .toast {
     display: none;

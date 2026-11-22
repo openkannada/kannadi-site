@@ -37,6 +37,8 @@ async function expectFilled(page: Page, label: string): Promise<void> {
   // A tap anywhere above the toolbar lands in the text.
   expect(doc.y + doc.height, `${label}: the writing area's foot ${at}`).toBeGreaterThanOrEqual(toolbar.y);
   expect(doc.width, `${label}: the writing area's width ${at}`).toBeGreaterThanOrEqual(width - 48);
+  const counts = (await page.locator(".sheet-foot").boundingBox())!;
+  expect(Math.abs(counts.x - doc.x), `${label}: the counts line up with the text ${at}`).toBeLessThanOrEqual(1);
 }
 
 test.describe("@layout on phones", () => {
@@ -105,5 +107,71 @@ test.describe("@layout on phones", () => {
     for (const by of [100, 200, KEYBOARD]) await openKeyboard(page, by);
     await settle(page);
     await expectInSight(page, info, "tapped-low");
+  });
+
+  test("a focus that does not come from a tap, as when coming back to the page, leaves the page where it is", async ({ page }) => {
+    await openEditor(page);
+    await settle(page);
+    const before = await page.evaluate(() => scrollY);
+    await page.locator("#doc").evaluate((doc) => (doc as HTMLElement).focus({ preventScroll: true }));
+    await expect(page.locator("#doc")).toBeFocused();
+    expect(await settle(page)).toBe(before);
+  });
+
+  test("on Android, where the keyboard makes the page itself shorter, a tap low in a long document keeps the caret line in sight", async ({ page, browserName }, info) => {
+    test.skip(browserName !== "chromium", "Android's Chrome resizes the page for its keyboard.");
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.insertText(Array.from({ length: 40 }, (_, i) => `ಸಾಲು ${i + 1} ಕನ್ನಡ ನಾಡು`).join("\n"));
+    await page.evaluate(() => {
+      const doc = document.getElementById("doc")!.getBoundingClientRect();
+      scrollBy(0, doc.top + doc.height / 2 - innerHeight / 2);
+    });
+    await settle(page);
+    const toolbar = (await page.locator(".toolbar").boundingBox())!;
+    const doc = (await page.locator("#doc").boundingBox())!;
+    await page.waitForTimeout(700);
+    await page.touchscreen.tap(doc.x + 30, toolbar.y - 40);
+    const { width, height } = page.viewportSize()!;
+    for (const by of [100, 200, KEYBOARD]) await page.setViewportSize({ width, height: height - by });
+    await settle(page);
+    await expectInSight(page, info, "android-keyboard");
+  });
+
+  test("with the page pinch-zoomed and the keyboard open, typing never scrolls the page back and forth", async ({ page }) => {
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.insertText(Array.from({ length: 30 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
+    await openKeyboard(page, KEYBOARD);
+    await settle(page);
+    // Zoomed in 2 times, and panned down the page, as a person can with 2 fingers.
+    await page.evaluate(() => {
+      const vv = visualViewport!;
+      for (const [key, value] of [["scale", 2], ["offsetTop", 320], ["height", (innerHeight - 300) / 2]] as const) {
+        Object.defineProperty(vv, key, { configurable: true, get: () => value });
+      }
+      (window as unknown as { moves: number[] }).moves = [];
+      let last = scrollY;
+      addEventListener("scroll", () => {
+        (window as unknown as { moves: number[] }).moves.push(Math.sign(scrollY - last));
+        last = scrollY;
+      });
+    });
+    await page.keyboard.insertText("ಕ");
+    await page.keyboard.insertText("ನ");
+    await settle(page);
+    const moves = await page.evaluate(() => (window as unknown as { moves: number[] }).moves.filter((m) => m !== 0));
+    expect(new Set(moves).size, `scrolls: ${moves.join(" ")}`).toBeLessThanOrEqual(1);
+  });
+
+  test("a file dragged over the sheet shows the drop outline inside the screen, in the sheet's shape", async ({ page }) => {
+    await openEditor(page);
+    await page.evaluate(() => document.body.classList.add("dragging"));
+    const { offset, hint, sheet } = await page.evaluate(() => {
+      const sheet = getComputedStyle(document.getElementById("sheet")!);
+      return { offset: parseFloat(sheet.outlineOffset), hint: getComputedStyle(document.querySelector(".drop-hint")!).borderTopLeftRadius, sheet: sheet.borderTopLeftRadius };
+    });
+    expect(offset).toBeLessThanOrEqual(0);
+    expect(hint).toBe(sheet);
   });
 });

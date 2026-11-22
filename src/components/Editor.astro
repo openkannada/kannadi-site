@@ -80,6 +80,7 @@ const counts = [
     <button type="button" class="menu-item sm:hidden" data-run="iso">{t.menu.typeIso}</button>
     <button type="button" class="menu-item" data-run="normalize">{t.menu.normalize} <small>{t.menu.normalizeNote}</small></button>
     <button type="button" class="menu-item" data-run="modernize">{t.menu.modernize} <small lang="kn">{t.menu.modernizeNote}</small></button>
+    <button type="button" class="menu-item next-only" data-run="find">{t.find.menu} <small data-shortcut>Ctrl F</small></button>
     <button type="button" class="menu-item" data-run="new">{t.menu.newDocument}</button>
     <div id="recent" class="recent" role="group" aria-labelledby="recent-heading" hidden>
       <p id="recent-heading" class="menu-label">{t.menu.recent}</p>
@@ -118,6 +119,22 @@ const counts = [
       <input id="link-href" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://" />
       <button type="submit" class="btn">{t.format.linkApply}</button>
       <p class="menu-note">{t.format.linkHelp}</p>
+    </form>
+  </div>
+
+  <div id="find-bar" popover="manual" class="menu find-bar" role="search" aria-label={t.find.label}>
+    <form id="find-form" class="find-form">
+      <label for="find-text" class="sr-only">{t.find.find}</label>
+      <input id="find-text" type="search" lang="kn" autocomplete="off" spellcheck="false" enterkeyhint="search" placeholder={t.find.find} />
+      <output id="find-count" for="find-text" class="find-count" aria-live="polite"></output>
+      <button type="button" class="btn btn-icon" id="find-prev" aria-label={t.find.previous} title={t.find.previous}><Icon name="chevron" class="flip" /></button>
+      <button type="button" class="btn btn-icon" id="find-next" aria-label={t.find.next} title={t.find.next}><Icon name="chevron" /></button>
+      <button type="button" class="btn btn-icon" id="find-close" aria-label={t.find.close} title={t.find.close}><Icon name="close" /></button>
+      <label for="find-replace" class="sr-only">{t.find.replaceWith}</label>
+      <input id="find-replace" lang="kn" autocomplete="off" spellcheck="false" placeholder={t.find.replaceWith} />
+      <button type="button" class="btn" id="replace-one">{t.find.replace}</button>
+      <button type="button" class="btn" id="replace-all">{t.find.replaceAll}</button>
+      <label class="menu-check find-option"><input type="checkbox" id="find-aksharas" /> {t.find.aksharas}</label>
     </form>
   </div>
 
@@ -185,6 +202,7 @@ const counts = [
         <dt class="next-only"><kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>0</kbd></dt><dd class="next-only">{t.shortcuts.text}</dd>
         <dt class="next-only"><kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>8</kbd> <kbd>7</kbd></dt><dd class="next-only">{t.shortcuts.lists}</dd>
         <dt class="next-only"><kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>9</kbd></dt><dd class="next-only">{t.shortcuts.quoteKey}</dd>
+        <dt class="next-only"><kbd>Ctrl</kbd> <kbd>F</kbd></dt><dd class="next-only">{t.shortcuts.find}</dd>
       </dl>
       <p class="text-sm text-muted-foreground">{parts(t.shortcuts.mac).map((p) => ("slot" in p ? <kbd>{MAC_KEYS[p.slot]}</kbd> : p.text))}</p>
     </form>

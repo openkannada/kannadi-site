@@ -6,9 +6,11 @@ import { closeHistory, history, redo, undo } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
 import { Fragment, type Node as PmNode, Slice } from "prosemirror-model";
 import { type Command, EditorState, TextSelection, type Transaction } from "prosemirror-state";
+import { findNext, findPrev, getMatchHighlights, replaceAll, replaceNext, SearchQuery, search, setSearchState } from "prosemirror-search";
 import { EditorView } from "prosemirror-view";
 
 import type { EditListener, EditorSurface, TextRange } from "./editor.ts";
+import { findQuery, type FindOptions } from "./find.ts";
 import type { RichLine } from "./docx.ts";
 import { docFromLines, safeJson, FORMAT_KEYS, FORMATS, type Format, fromHtml, isActive, linesOf, LIST_KEYS, schema, setLink, shortcuts, toHtml } from "./rich.ts";
 import { offsetOfPos, posOf, textOf } from "./textindex.ts";
@@ -16,6 +18,8 @@ import { diff, type LineBlock, type Span } from "./text.ts";
 
 /** Typing within this long after the last keystroke undoes as 1 step, as in DocEditor. */
 const GROUP_MS = 1500;
+/** A query that finds nothing, for when the find bar is shut. */
+const EMPTY_QUERY = new SearchQuery({ search: "" });
 
 /** The document for `text`, 1 paragraph per line. */
 function docOf(text: string): PmNode {
@@ -63,6 +67,7 @@ export class PmEditor implements EditorSurface {
       schema,
       plugins: [
         history({ newGroupDelay: GROUP_MS }),
+        search(),
         keymap({ "Mod-z": as("historyUndo", undo), "Mod-y": as("historyRedo", redo), "Shift-Mod-z": as("historyRedo", redo) }),
         shortcuts(),
         keymap(FORMAT_KEYS),
@@ -277,6 +282,35 @@ export class PmEditor implements EditorSurface {
   link(href: string): boolean {
     this.focus();
     return setLink(href)(this.view.state, (tr) => this.view.dispatch(closeHistory(tr).setMeta("inputType", "format")));
+  }
+
+  /** Finds `text`, in every spelling Unicode treats as the same, and draws its matches; empty text stops finding. */
+  find(text: string, replace: string, options: FindOptions): void {
+    this.view.dispatch(setSearchState(this.view.state.tr, text ? findQuery(text, replace, options) : EMPTY_QUERY));
+  }
+
+  /** How many matches there are, and which one is selected, counting from 1, or 0. */
+  matches(): { count: number; current: number } {
+    const { from, to } = this.view.state.selection;
+    const found = getMatchHighlights(this.view.state).find();
+    return { count: found.length, current: found.findIndex((d) => d.from === from && d.to === to) + 1 };
+  }
+
+  /** Selects the next match, or the one before, and scrolls to it; false when there is none. */
+  findStep(backward = false): boolean {
+    return (backward ? findPrev : findNext)(this.view.state, (tr) => this.view.dispatch(tr));
+  }
+
+  /** Replaces the selected match, or the next one, and selects the one after it, as 1 undo step. */
+  replaceMatch(): boolean {
+    // With no match selected, the command would only select the next one.
+    if (!this.matches().current) this.findStep();
+    return replaceNext(this.view.state, (tr) => this.view.dispatch(closeHistory(tr).setMeta("inputType", "insertReplacementText")));
+  }
+
+  /** Replaces every match, as 1 undo step. */
+  replaceMatches(): boolean {
+    return replaceAll(this.view.state, (tr) => this.view.dispatch(closeHistory(tr).setMeta("inputType", "insertReplacementText")));
   }
 
   /** The selection's link, if it has 1. */

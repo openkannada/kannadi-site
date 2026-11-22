@@ -606,3 +606,45 @@ body.dragging .drop-hint {
 .doc.ProseMirror a {
   @apply text-primary underline;
 }
+
+/* Find and replace, with ?editor=next: a bar under the toolbar, above the dock on phones, open while the text is edited. */
+#find-bar {
+  position-anchor: --toolbar;
+  position-area: bottom;
+  position-try-fallbacks: flip-block;
+  margin-top: 0.625rem;
+  width: min(32rem, calc(100vw - 1rem));
+}
+@media (max-width: 47.99rem) {
+  #find-bar {
+    position-area: none;
+    inset: auto 0.5rem calc(var(--dock-bottom) + 4.25rem) 0.5rem;
+    width: auto;
+    margin: 0;
+  }
+}
+.find-form {
+  @apply grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-1 p-2;
+}
+.find-form input:not([type="checkbox"]) {
+  @apply h-9 min-w-0 rounded-md border border-input bg-card px-3 text-[length:var(--type-ui)];
+}
+#find-replace {
+  @apply col-span-3;
+}
+.find-option {
+  @apply col-span-5;
+}
+.find-count {
+  @apply px-1 text-xs whitespace-nowrap text-muted-foreground tabular-nums;
+}
+.icon.flip {
+  transform: rotate(180deg);
+}
+.doc .ProseMirror-search-match {
+  background: oklch(from var(--primary) l c h / 0.16);
+}
+.doc .ProseMirror-active-search-match {
+  background: oklch(from var(--primary) l c h / 0.36);
+  outline: 1px solid var(--primary);
+}

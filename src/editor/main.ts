@@ -528,7 +528,10 @@ function receive(): void {
 
 function wire(): void {
   wireVoice();
-  if (pm) wireFormats(pm);
+  if (pm) {
+    wireFormats(pm);
+    wireFind(pm);
+  }
   // ProseMirror takes the composer's Backspace itself, before its own handling.
   if (!pm) ui.doc.addEventListener("beforeinput", (e) => composer.beforeInput(e));
   ui.doc.addEventListener("paste", (e) => {
@@ -737,6 +740,88 @@ async function newDocument(): Promise<void> {
   }
   editor.focus();
   say(keeps ? S.edit.newDocumentKept : S.edit.newDocument);
+}
+
+/** Find and replace, on the ProseMirror editor: a bar that stays open while the text is edited. */
+function wireFind(editor: NonNullable<typeof pm>): void {
+  const bar = byId("find-bar");
+  const text = byId<HTMLInputElement>("find-text");
+  const replace = byId<HTMLInputElement>("find-replace");
+  const aksharas = byId<HTMLInputElement>("find-aksharas");
+  const shown = byId("find-count");
+  const counted = () => {
+    const { count: n, current } = editor.matches();
+    shown.textContent = !text.value ? "" : !n ? S.find.none : current ? fmt(S.find.at, { current: num(current), count: num(n) }) : count(n, S.find.count);
+  };
+  const query = () => {
+    editor.find(text.value, replace.value, { aksharas: aksharas.checked, caseSensitive: false });
+    counted();
+  };
+  const step = (backward: boolean) => {
+    query();
+    editor.findStep(backward);
+    counted();
+  };
+  const open = () => {
+    const sel = editor.selection();
+    const picked = sel && sel.start !== sel.end ? editor.text.slice(sel.start, sel.end) : "";
+    if (picked && !picked.includes("\n")) text.value = picked;
+    if (!bar.matches(":popover-open")) bar.showPopover();
+    query();
+    text.focus();
+    text.select();
+  };
+  const close = () => {
+    editor.find("", "", { aksharas: false, caseSensitive: false });
+    bar.hidePopover();
+    editor.focus();
+  };
+  ACTIONS["find"] = open;
+  text.addEventListener("input", query);
+  replace.addEventListener("input", query);
+  aksharas.addEventListener("change", query);
+  text.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    step(e.shiftKey);
+  });
+  replace.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    byId("replace-one").click();
+  });
+  byId("find-form").addEventListener("submit", (e) => e.preventDefault());
+  byId("find-prev").addEventListener("click", () => step(true));
+  byId("find-next").addEventListener("click", () => step(false));
+  byId("find-close").addEventListener("click", close);
+  byId("replace-one").addEventListener("click", () => {
+    query();
+    editor.replaceMatch();
+    counted();
+  });
+  byId("replace-all").addEventListener("click", () => {
+    query();
+    const { count: n } = editor.matches();
+    if (n && editor.replaceMatches()) say(count(n, S.find.replaced));
+    counted();
+  });
+  bar.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    e.preventDefault();
+    close();
+  });
+  // The page's Ctrl+F would search the whole page, not the document.
+  document.addEventListener(
+    "keydown",
+    (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.altKey || e.key.toLowerCase() !== "f") return;
+      e.preventDefault();
+      open();
+    },
+    true,
+  );
+  // Matches change as the text does.
+  ui.doc.addEventListener("input", () => bar.matches(":popover-open") && requestAnimationFrame(counted));
 }
 
 /** The format menu, on the ProseMirror editor: formats with their pressed state, and links. */

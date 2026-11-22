@@ -7,6 +7,15 @@ export interface Step {
   args: string[];
   /** Runs only once the site is launched, so CI runs it too, around its own publish step. */
   launch?: "before" | "after";
+  /** Runs without SITE_URL, as CI runs it; the unit tests check SITE_URL handling themselves. */
+  noSiteUrl?: true;
+}
+
+/** The environment a step runs in. */
+export function stepEnv(step: Step, env: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
+  if (!step.noSiteUrl) return env;
+  const { SITE_URL: _, ...rest } = env;
+  return rest;
 }
 
 /** What the deploy needs to know about the git checkout. */
@@ -72,7 +81,7 @@ export function deploySteps(url: URL, launched: boolean): Step[] {
   return [
     { label: "Build the WebAssembly package", command: "npm", args: ["run", "wasm"] },
     { label: "Check the types", command: "npm", args: ["run", "check"] },
-    { label: "Run the unit tests", command: "npm", args: ["test"] },
+    { label: "Run the unit tests", command: "npm", args: ["test"], noSiteUrl: true },
     { label: "Build the site", command: "npm", args: ["run", "build"] },
     { label: "Check the built pages", command: "node", args: ["scripts/seo-smoke.ts", "dist", url.href] },
     { label: "Check the writing", command: "npm", args: ["run", "voice-lint"] },

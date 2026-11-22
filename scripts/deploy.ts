@@ -4,7 +4,7 @@
 import { spawnSync } from "node:child_process";
 
 import { LIVE } from "../src/content/site.ts";
-import { checkoutProblem, deployEnv, deploySteps, productionUrl } from "../src/lib/deploy.ts";
+import { checkoutProblem, deployEnv, deploySteps, productionUrl, stepEnv } from "../src/lib/deploy.ts";
 
 function stop(message: string): never {
   console.error(message);
@@ -44,7 +44,7 @@ const env = deployEnv(process.env, url);
 env.CLOUDFLARE_API_TOKEN ||= keychainToken();
 for (const step of deploySteps(url, LIVE.launched)) {
   console.log(`\n${step.label}`);
-  const run = spawnSync(step.command, step.args, { stdio: "inherit", env });
+  const run = spawnSync(step.command, step.args, { stdio: "inherit", env: stepEnv(step, env) });
   if (run.status !== 0) stop(`Stopped: ${step.label} failed.`);
 }
 console.log(`\nPublished and checked live at ${url.href}.`);

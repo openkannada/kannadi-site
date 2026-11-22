@@ -11,6 +11,8 @@ export interface EdgeOptions {
   /** The canonical host, such as "openkannada.org". */
   host: string;
   launched: boolean;
+  /** A branch Preview from Workers Builds: served on its own host, and never indexed. */
+  preview?: boolean;
 }
 
 /** Hosts where the Worker answers as itself, for wrangler dev. */
@@ -47,7 +49,7 @@ function withHeaders(response: Response, set: Record<string, string>, append: Re
 
 export async function handle(request: Request, assets: Assets, options: EdgeOptions): Promise<Response> {
   const url = new URL(request.url);
-  const target = canonicalRedirect(url, options.host);
+  const target = options.preview ? null : canonicalRedirect(url, options.host);
   if (target) return new Response(null, { status: 301, headers: { location: target } });
   const moved = movedTo(url);
   if (moved) return noindex(new Response(null, { status: 301, headers: { location: moved } }), options);
@@ -61,7 +63,7 @@ export async function handle(request: Request, assets: Assets, options: EdgeOpti
 }
 
 function noindex(response: Response, options: EdgeOptions): Response {
-  return options.launched ? response : withHeaders(response, { "x-robots-tag": "noindex" });
+  return options.launched && !options.preview ? response : withHeaders(response, { "x-robots-tag": "noindex" });
 }
 
 async function respond(request: Request, url: URL, assets: Assets): Promise<Response> {

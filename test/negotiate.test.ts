@@ -54,6 +54,18 @@ test("every other host and plain http go to https://openkannada.org with the pat
   assert.equal(canonicalRedirect(new URL("http://localhost:8787/a/"), "openkannada.org"), null, "wrangler dev answers as itself");
 });
 
+test("a branch Preview answers on its own host and is never indexed", async () => {
+  const preview = { host: "openkannada.org", launched: true, preview: true };
+  const page = await get("https://workers-builds-openkannada.prasad-personal.workers.dev/a/", {}, preview);
+  assert.equal(page.status, 200);
+  assert.equal(await page.text(), "<h1>A</h1>");
+  assert.equal(page.headers.get("x-robots-tag"), "noindex");
+  const moved = await get("https://workers-builds-openkannada.prasad-personal.workers.dev/names-and-logos/", {}, preview);
+  assert.equal(moved.headers.get("location"), "/brand/");
+  const production = await get("https://workers-builds-openkannada.prasad-personal.workers.dev/a/");
+  assert.equal(production.status, 301, "production never answers on another host");
+});
+
 test("before launch every response says noindex, and after launch none does", async () => {
   const before = await get("https://openkannada.org/a/", {}, { host: "openkannada.org", launched: false });
   assert.equal(before.headers.get("x-robots-tag"), "noindex");

@@ -6,18 +6,40 @@ openkannada.org runs on Cloudflare Workers with static assets, in my personal Cl
 |---|---|
 | The Worker, its account, its static files and its 404 page | `wrangler.jsonc` |
 | The 4 domains, as custom domains: openkannada.org, www.openkannada.org, openkannada.com, www.openkannada.com | `wrangler.jsonc`, `routes` |
-| No `*.workers.dev` address and no preview URLs | `wrangler.jsonc`, `workers_dev` and `preview_urls` |
+| No `*.workers.dev` address for production | `wrangler.jsonc`, `workers_dev` |
+| Branch Previews on workers.dev, served as themselves and noindex | `wrangler.jsonc`, `preview_urls` and `previews`; `PREVIEW` in `src/lib/edge.ts` |
 | A 301 from every other host, and from http, to https://openkannada.org, with the path and query kept | `worker/index.ts`, `src/lib/edge.ts` |
 | Markdown on request (`Accept: text/markdown`) | `src/lib/edge.ts` |
 | `X-Robots-Tag: noindex` on every response until launch | `LIVE.launched` in `src/content/site.ts` |
 | Security, cache and content-type headers | `public/_headers` |
-| Deploys | `.github/workflows/ci.yml`, job `deploy`, on every push to `main` that passes the checks |
+| Deploys | Cloudflare Workers Builds, on every push to `main`: `scripts/cf-build.sh`, then `node scripts/deploy.ts publish` |
+
+## Deploys
+
+Workers Builds, Cloudflare's CI for Workers, is connected to this repository through the Cloudflare Workers and Pages GitHub app, which can see this repository only. Its settings are in the dashboard under the Worker's **Settings > Build**:
+
+| Setting | Value |
+|---|---|
+| Production branch | `main` |
+| Build command | `scripts/cf-build.sh` |
+| Deploy command | `node scripts/deploy.ts publish` |
+| Preview builds | On, for every other branch |
+| Preview command | `npx wrangler preview` |
+| Build cache | On (npm's cache) |
+
+The build image has Node.js but no Rust, so `scripts/cf-build.sh` installs the stable toolchain with rustup and the wasm-bindgen release that kannadi's `Cargo.lock` names, checked against its published SHA-256. It then runs the build phase of `scripts/deploy.ts`: the WebAssembly package from kannadi at `kannadi.rev`, the type check, the unit tests, the build for https://openkannada.org, the page check, the writing check and, after launch, the placeholder check. A failing step fails the build, and nothing is published.
+
+On `main` the deploy command then runs the publish phase, below under "Build files across a deploy", and the live check; after launch it also sends the changed pages to IndexNow. It refuses any other branch. On other branches the Preview command publishes a branch Preview at `<branch>-openkannada.prasad-personal.workers.dev`, and Workers Builds posts its address on the pull request. A Preview runs with `PREVIEW=1`, so the Worker serves it on its own host instead of redirecting to openkannada.org, and marks every response noindex.
+
+GitHub Actions still runs every check on pull requests and on `main`, including the browser tests, layout, typing and Lighthouse. Merge only on green CI: Workers Builds does not wait for it.
+
+On the free plan Workers Builds allows 3,000 build minutes a month, 1 build at a time and 20 minutes a build.
 
 ## Secrets
 
-- GitHub repository secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`, for the deploy job.
-- On my Mac, the same token in the keychain: service `openkannada.cloudflare.api`, account `prasadus92`. `npm run deploy` reads it there and never prints it.
-- The token holds Workers Scripts, Pages and Account Settings on the account, and Workers Routes, DNS and Zone Read on the 2 zones.
+- Workers Builds deploys with an API token it created for this account, kept in Cloudflare. GitHub holds no Cloudflare token.
+- On my Mac, a token in the keychain: service `openkannada.cloudflare.api`, account `prasadus92`. `npm run deploy` reads it there and never prints it.
+- That token holds Workers Scripts, Pages and Account Settings on the account, and Workers Routes, DNS and Zone Read on the 2 zones.
 
 ## In the dashboard only
 
@@ -26,14 +48,6 @@ These are not in code and change rarely:
 - The zones themselves, on Cloudflare nameservers.
 - Zone settings: AI Crawl Control and the managed robots.txt, which stays off so the site's own `robots.txt` is served.
 - Email routing, when the project gets its own address.
-
-## Before the first deploy
-
-The merge that adds the deploy job also deploys, so these have to be in place first:
-- The 2 repository secrets.
-- No DNS record, redirect rule or Pages custom domain on any of the 4 hostnames. Wrangler attaches each as a Worker custom domain and creates its DNS record and certificate; an existing record makes that fail.
-
-The certificates can take a few minutes, so the live check retries for up to 5 minutes before it fails.
 
 ## Requests
 

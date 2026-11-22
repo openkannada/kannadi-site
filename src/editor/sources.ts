@@ -54,9 +54,9 @@ export function wordList(kannadi: Omit<SuggestKannadi, "strict"> & { translitera
 /** The typing engine from kannadi, with the bytes of its model; the word list's picks carry over the first time. */
 export function typingEngine(keep: Keep, model: () => Promise<ArrayBuffer>): LoadSource {
   return async () => {
-    const [wasm, bytes] = await Promise.all([import("./typing/kannadi_typing_wasm.js"), model()]);
+    // The engine compiles here, ahead of the first word, as the word list fetches ahead.
+    const [wasm, bytes] = await Promise.all([import("./typing/kannadi_typing_wasm.js").then(async (w) => (await w.default(), w)), model()]);
     return async () => {
-      await wasm.default();
       const engine = new wasm.TypingEngine(new Uint8Array(bytes));
       const kept = keep.read(ENGINE_PICKS);
       if (!(kept && engine.importUser(kept))) {

@@ -45,3 +45,5 @@ wasm-bindgen --target web --out-dir "$out" \
   "${CARGO_TARGET_DIR:-$src/target}/wasm32-unknown-unknown/wasm/kannadi_wasm.wasm"
 echo "Built $out at kannadi $(printf '%.7s' "$rev") ($(wc -c < "$out/kannadi_wasm_bg.wasm" | tr -d ' ') bytes of wasm)"
 "$src/crates/kannadi-typing-wasm/build.sh" "$typing"
+# Cloudflare does not compress binary files, so the model ships gzipped and the editor unpacks it.
+gzip -9 -n -c "$typing/kn.typing" > "$typing/kn.typing.gz"

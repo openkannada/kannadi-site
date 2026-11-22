@@ -102,6 +102,8 @@ export class EnglishTyping {
     })()
       .catch(() => {
         this.failedAt = Date.now();
+        // What was fetched may be what failed, as a page in place of the file, so the next try fetches again.
+        this.fetched = null;
       })
       .finally(() => {
         this.loading = null;

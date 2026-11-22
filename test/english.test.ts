@@ -226,3 +226,27 @@ test("a word under a keyboard's composition is not respelled when the word list 
   await new Promise((r) => setTimeout(r, 0));
   assert.equal(doc.text, typed);
 });
+
+test("a source that fetched but would not build is fetched again on the next try", async () => {
+  let fetches = 0;
+  const english = new EnglishTyping({
+    transliterate: (l) => transliterate(l, "baraha", "kannada"),
+    loadSource: async () => {
+      fetches++;
+      return async () => {
+        throw new Error("a page, not the file");
+      };
+    },
+    strip: { show() {}, select() {}, hide() {} },
+    text: () => "",
+    replace() {},
+    caret: () => null,
+    select() {},
+    announce() {},
+  });
+  english.prefetch();
+  await english.prepare(0);
+  assert.equal(english.ready, false);
+  await english.prepare(Date.now() + 31_000);
+  assert.equal(fetches, 2);
+});

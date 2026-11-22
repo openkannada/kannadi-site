@@ -34,7 +34,7 @@ const pct = (n: number, of: number) => `${((100 * n) / of).toFixed(2)}%`;
 const kannadi = process.env.KANNADI_DIR ?? new URL("../.kannadi", import.meta.url).pathname;
 const dakshina = `${kannadi}/crates/kannadi-typing/eval/dakshina-kn-test.tsv`;
 
-test("on the Dakshina Kannada test words, the typing engine finds the word more often than the word list", { skip: !existsSync(dakshina) && `no ${dakshina}` }, (t) => {
+test("on the Dakshina Kannada test words, the typing engine finds the word more often than the word list", { skip: !existsSync(dakshina) && !process.env["CI"] && `no ${dakshina}` }, (t) => {
   // Scored as IndicXlit scores it: each distinct romanization once, right when it gives any word listed for it.
   const wanted = new Map<string, Set<string>>();
   for (const line of readFileSync(dakshina, "utf8").split("\n")) {
@@ -62,4 +62,8 @@ test("what each source shows for the start of a word, beside what its letters sp
     const differ = starts.filter((s) => suggest[name](s)[0] !== strictSpelling(baraha, s)).map((s) => `${s} ${suggest[name](s)[0]}`);
     t.diagnostic(`${name}: ${starts.length - differ.length} of ${starts.length} as spelled${differ.length ? `; others: ${differ.join(", ")}` : ""}`);
   }
+});
+
+test("the typing engine shows what the letters spell at the start of a word", { todo: "kannadi's word starts change, after a kannadi.rev bump" }, () => {
+  for (const [typed, want] of [["ka", "ಕ"], ["ga", "ಗ"], ["ba", "ಬ"], ["a", "ಅ"]]) assert.equal(suggest.engine(typed)[0], want, typed);
 });

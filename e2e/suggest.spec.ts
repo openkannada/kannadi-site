@@ -9,15 +9,19 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("the suggestions match the word being typed, and the shown word is the first", async ({ page }) => {
-  test.fail(ENGINE, "The typing engine offers ತಿಲ only for tila.");
   await page.keyboard.type("til");
   const list = await suggestions(page);
   expect(list[0]).toBe(await docText(page));
   expect(await currentSuggestion(page)).toBe(list[0]);
-  // Short common words that start the same way, and the word with its final a, come before long forms.
+  // Short common words that start the same way come before long forms.
   expect(list).toContain("ತಿಳಿ");
-  expect(list).toContain("ತಿಲ");
   expect(list).not.toContain("ತಿಳಿದುಬರುತ್ತದೆ");
+});
+
+test("the word typed without its final a is offered with it", async ({ page }) => {
+  test.fail(ENGINE, "The typing engine offers ತಿಲ only for tila.");
+  await page.keyboard.type("til");
+  expect(await suggestions(page)).toContain("ತಿಲ");
 });
 
 test("each suggestion sounds like the letters typed", async ({ page }) => {
@@ -89,7 +93,7 @@ test("the word list is all that loads; the typing engine's model waits for ?typi
   await focusDoc(page);
   await page.keyboard.type("namaskara");
   expect(await docText(page)).toBe("ನಮಸ್ಕಾರ");
-  expect(asked.filter((url) => /\.typing$|kannadi_typing/.test(url))).toEqual([]);
+  expect(asked.filter((url) => /\/kn\.typing\b|kannadi_typing/.test(url))).toEqual([]);
   expect(asked.some((url) => /words\.[\w-]+\.tsv$/.test(url))).toBe(true);
 });
 
@@ -97,6 +101,8 @@ test.describe("with the typing engine", () => {
   test.skip(!ENGINE, "With ?typing=next only.");
 
   test("words picked from the word list carry over, and a word picked now is kept after a reload", async ({ page }) => {
+    const models: string[] = [];
+    page.on("request", (r) => /\/kn\.typing\b/.test(r.url()) && models.push(r.url()));
     await page.evaluate(() => {
       localStorage.removeItem("kannadi.typing.v1");
       localStorage.setItem("kannadi.picks.v1", JSON.stringify([["til", "ತಿಳಿ"]]));
@@ -119,5 +125,8 @@ test.describe("with the typing engine", () => {
     await reload();
     await page.keyboard.type("mane");
     expect(await docText(page)).toMatch(new RegExp(`${list[1]}$`));
+    // The model comes gzipped, since Cloudflare does not compress binary files.
+    expect(models.length).toBeGreaterThan(0);
+    expect(models.every((url) => url.endsWith(".gz"))).toBe(true);
   });
 });

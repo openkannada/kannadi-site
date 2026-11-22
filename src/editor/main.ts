@@ -12,7 +12,7 @@ import * as kannadi from "./kannadi.ts";
 import wordsUrl from "../../data/words.tsv?url";
 import { EnglishTyping } from "./english.ts";
 import { fetched, type Keep, typingEngine, wordList } from "./sources.ts";
-import modelUrl from "./typing/kn.typing?url";
+import modelUrl from "./typing/kn.typing.gz?url";
 import { SuggestStrip } from "./strip.ts";
 import { View } from "./view.ts";
 import type { Plural } from "../i18n/core.ts";
@@ -209,7 +209,7 @@ const transliterate = (latin: string) => kannadi.transliterate(latin, "baraha", 
 const english = new EnglishTyping({
   transliterate,
   loadSource: engineTyping
-    ? typingEngine(keep, async () => (await fetched(modelUrl, "typing model")).arrayBuffer())
+    ? typingEngine(keep, async () => new Response((await fetched(modelUrl, "typing model")).body!.pipeThrough(new DecompressionStream("gzip"))).arrayBuffer())
     : wordList({ phoneticKey: kannadi.phoneticKey, latinKey: kannadi.latinKey, transliterate }, keep, async () => (await fetched(wordsUrl, "word list")).text()),
   strip: new SuggestStrip(byId("suggest"), { rect: (start, end) => editor.rect(start, end), avoid: () => view.avoid() }, (i) => english.pick(i)),
   text: () => editor.text,

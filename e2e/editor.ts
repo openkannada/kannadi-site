@@ -54,14 +54,14 @@ export async function wordsReady(page: Page): Promise<void> {
  */
 export const openKeyboard = (page: Page, height: number, pan = 0) =>
   page.evaluate(
-    ([height, pan]) => {
+    ({ height, pan }) => {
       const vv = visualViewport!;
       const visible = innerHeight - height;
       Object.defineProperty(vv, "height", { configurable: true, get: () => visible });
       Object.defineProperty(vv, "offsetTop", { configurable: true, get: () => pan });
       vv.dispatchEvent(new Event("resize"));
     },
-    [height, pan],
+    { height, pan },
   );
 
 /** The part of the window a person can see: above the keyboard, and below where iOS has panned to. */

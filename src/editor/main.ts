@@ -752,7 +752,8 @@ function wireFormats(editor: NonNullable<typeof pm>): void {
   const pressed = () => {
     for (const b of buttons) b.setAttribute("aria-pressed", String(editor.active(b.dataset.format as Format)));
   };
-  menu.addEventListener("toggle", (e) => {
+  // Before it shows, since toggle comes later and would wipe an address typed in the meantime.
+  menu.addEventListener("beforetoggle", (e) => {
     if ((e as ToggleEvent).newState !== "open") return;
     pressed();
     href.value = editor.linkAt();

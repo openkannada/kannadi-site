@@ -130,13 +130,14 @@ test.describe("@layout", () => {
     await openEditor(page);
     await focusDoc(page);
     await page.keyboard.insertText(Array.from({ length: 60 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
-    // The caret starts elsewhere, so only the click can bring it to the end.
+    // The caret starts elsewhere, so only the click can bring it to the end. Moving it focuses the text in Firefox,
+    // and the page scrolls to it, so that settles before the blur and before the click is aimed.
     await caretAt(page, 0);
+    await settle(page);
     await page.locator("#doc").evaluate((doc) => (doc as HTMLElement).blur());
     const sheet = (await page.locator("#sheet").boundingBox())!;
     await page.evaluate((bottom) => scrollTo(0, scrollY + bottom - innerHeight + 20), sheet.y + sheet.height);
-    await page.waitForTimeout(300);
-    const before = await page.evaluate(() => scrollY);
+    const before = await settle(page);
     // Between the last line and the counts at the foot of the sheet.
     const gap = await page.evaluate(() => {
       const doc = document.getElementById("doc")!.getBoundingClientRect();
@@ -173,8 +174,9 @@ test.describe("@layout", () => {
     expect(await page.evaluate(() => getSelection()!.toString().length)).toBeGreaterThan(4);
   });
 
-  test("a press that never ends, as under a context menu, stops holding the page once keys are typed", async ({ page }, info) => {
+  test("a press that never ends, as under a context menu, stops holding the page once keys are typed", async ({ page, browserName }, info) => {
     test.skip(isPhone(page), "A mouse button.");
+    test.skip(browserName === "firefox", "Firefox drags the selection under a button held as the page scrolls; Chromium and WebKit cover a press that never ends.");
     test.skip(NEXT, "ProseMirror holds the browser's selection while a mouse button is down, so typing then is not a case.");
     await openEditor(page);
     await focusDoc(page);

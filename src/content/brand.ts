@@ -30,7 +30,7 @@ const BRAND_EN = {
     },
   ],
   owner:
-    "The licenses and names of Open Kannada belong to the project and its contributors. DataRavel Inc. (dba Luminik) supports the project and holds none of them.",
+    "Contributors keep the copyright to their work and license it under the project's licenses. The Open Kannada and kannadi names and logos are covered by <a href=\"https://github.com/openkannada/.github/blob/main/TRADEMARKS.md\">TRADEMARKS.md</a>.",
   removal:
     'To ask for something to be removed or credited, write to <a href="mailto:support@luminik.io">support@luminik.io</a>, the address we use until the project has its own.',
 };
@@ -66,7 +66,7 @@ const BRAND_KN: Brand = {
     },
   ],
   owner:
-    "ಓಪನ್ ಕನ್ನಡದ ಲೈಸೆನ್ಸ್‌ಗಳು ಮತ್ತು ಹೆಸರುಗಳು ಈ ಯೋಜನೆ ಮತ್ತು ಅದರ ಕೊಡುಗೆದಾರರಿಗೆ ಸೇರಿದ್ದು. DataRavel Inc. (dba Luminik) ಯೋಜನೆಗೆ ನೆರವು ನೀಡುತ್ತದೆ, ಆದರೆ ಇವುಗಳಲ್ಲಿ ಯಾವುದನ್ನೂ ಹೊಂದಿಲ್ಲ.",
+    "ಕೊಡುಗೆದಾರರು ತಮ್ಮ ಕೆಲಸದ ಹಕ್ಕುಸ್ವಾಮ್ಯವನ್ನು ಉಳಿಸಿಕೊಳ್ಳುತ್ತಾರೆ ಮತ್ತು ಅದನ್ನು ಯೋಜನೆಯ ಲೈಸೆನ್ಸ್‌ಗಳ ಅಡಿಯಲ್ಲಿ ನೀಡುತ್ತಾರೆ. ಓಪನ್ ಕನ್ನಡ ಮತ್ತು kannadi ಹೆಸರುಗಳು ಹಾಗೂ ಲೋಗೋಗಳಿಗೆ <a href=\"https://github.com/openkannada/.github/blob/main/TRADEMARKS.md\">TRADEMARKS.md</a> ಅನ್ವಯಿಸುತ್ತದೆ.",
   removal:
     'ಏನನ್ನಾದರೂ ತೆಗೆಯಲು ಅಥವಾ ಉಲ್ಲೇಖಿಸಲು ಕೇಳಬೇಕಾದರೆ <a href="mailto:support@luminik.io">support@luminik.io</a> ಗೆ ಬರೆಯಿರಿ. ಯೋಜನೆಗೆ ಸ್ವಂತ ವಿಳಾಸ ಬರುವವರೆಗೆ ನಾವು ಇದನ್ನೇ ಬಳಸುತ್ತೇವೆ.',
 };

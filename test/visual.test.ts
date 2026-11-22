@@ -149,4 +149,5 @@ test("on a phone the writing area starts high, the toolbar is in reach, and the 
   assert.match(bad[1]!, /toolbar sits at 700 to 750px/);
   assert.match(bad[2]!, /paste box ends at 700px/);
   assert.deepEqual(phoneProblems({ height: h }), [], "a page with neither has nothing to check");
+  assert.deepEqual(phoneProblems({ height: h, expects: { sheet: true, paste: true } }), ["has no editor sheet to measure", "has no paste box to measure"], "a renamed element fails rather than passing unmeasured");
 });

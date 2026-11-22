@@ -140,7 +140,8 @@ try {
           ...(paste ? { pasteBottom: paste.bottom } : {}),
         };
       });
-      for (const p of phoneProblems(m)) problems.push(`${path} phone ${width}x${height}: ${p}`);
+      const expects = { sheet: path === "/editor/" || path === "/kn/", paste: path === "/" };
+      for (const p of phoneProblems({ ...m, expects })) problems.push(`${path} phone ${width}x${height}: ${p}`);
     }
   }
   await phone.close();

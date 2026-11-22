@@ -40,11 +40,15 @@ export interface PhoneMeasure {
   toolbar?: { top: number; bottom: number };
   /** The bottom of the home page's paste box input. */
   pasteBottom?: number;
+  /** What the page must show, so a renamed element fails rather than passing unmeasured. */
+  expects?: { sheet?: boolean; paste?: boolean };
 }
 
 /** What is wrong with the first screen on a phone: the writing area too low, the toolbar out of reach, or the paste box below the fold. */
 export function phoneProblems(m: PhoneMeasure): string[] {
   const out: string[] = [];
+  if (m.expects?.sheet && m.sheetTop === undefined) out.push("has no editor sheet to measure");
+  if (m.expects?.paste && m.pasteBottom === undefined) out.push("has no paste box to measure");
   if (m.sheetTop !== undefined && m.sheetTop > m.height * SHEET_TOP_MAX) out.push(`the writing area starts at ${Math.round(m.sheetTop)}px, below ${Math.round(m.height * SHEET_TOP_MAX)}px`);
   if (m.toolbar && (m.toolbar.top < 0 || m.toolbar.bottom > m.height)) out.push(`the toolbar sits at ${Math.round(m.toolbar.top)} to ${Math.round(m.toolbar.bottom)}px, off the first screen`);
   if (m.pasteBottom !== undefined && m.pasteBottom > m.height) out.push(`the paste box ends at ${Math.round(m.pasteBottom)}px, below the first screen`);

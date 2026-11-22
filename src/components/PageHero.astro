@@ -30,7 +30,12 @@ const moreId = `intro-more-${page.slug.replace(/\W/g, "-") || "home"}`;
       {compact && <input type="checkbox" id={moreId} class="intro-toggle sr-only" data-md-skip />}
       <div class="intro-row">
         <p class="page-intro" set:html={withBase(page.intro)} />
-        {compact && <label for={moreId} class="intro-more" aria-hidden="true" data-md-skip>{SITE_STRINGS[page.lang ?? "en"].nav.more}</label>}
+        {compact && (
+          <label for={moreId} class="intro-more" data-md-skip>
+            <span class="intro-more-open">{SITE_STRINGS[page.lang ?? "en"].nav.more}</span>
+            <span class="intro-more-close">{SITE_STRINGS[page.lang ?? "en"].nav.less}</span>
+          </label>
+        )}
       </div>
       {tagline && <p class="page-tagline">{tagline}</p>}
       {Astro.slots.has("lead") && <div class="hero-lead"><slot name="lead" /></div>}
@@ -90,7 +95,9 @@ const moreId = `intro-more-${page.slug.replace(/\W/g, "-") || "home"}`;
     gap: 0.625rem;
     margin-top: 1.25rem;
   }
-  .intro-more {
+  /* The toggle exists only on phones, where the intro is clamped; elsewhere it is out of the tab order too. */
+  .intro-more,
+  .intro-toggle {
     display: none;
   }
   /*
@@ -142,12 +149,28 @@ const moreId = `intro-more-${page.slug.replace(/\W/g, "-") || "home"}`;
       outline-offset: 2px;
       border-radius: 4px;
     }
+    .page-hero-tool .intro-toggle {
+      display: block;
+    }
+    .page-hero-tool .intro-more:lang(kn) {
+      text-underline-offset: 0.5em;
+    }
+    .intro-more-close {
+      display: none;
+    }
+    .intro-toggle:checked ~ .intro-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
     .intro-toggle:checked ~ .intro-row .page-intro {
       display: block;
       overflow: visible;
     }
-    .intro-toggle:checked ~ .intro-row .intro-more {
+    .intro-toggle:checked ~ .intro-row .intro-more-open {
       display: none;
+    }
+    .intro-toggle:checked ~ .intro-row .intro-more-close {
+      display: inline;
     }
     .page-hero-tool .page-tagline {
       margin-top: 0.25rem;

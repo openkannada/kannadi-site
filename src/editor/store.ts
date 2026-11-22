@@ -45,9 +45,11 @@ const SETTINGS_KEY = "kannadi.settings.v1";
 const CURRENT_KEY = "kannadi.current.v1";
 /** The current document, written at once as the page closes, until IndexedDB has it. */
 const PENDING_KEY = "kannadi.pending.v1";
+/** Set once the document from localStorage has moved over, so it never moves again. */
+const MIGRATED_KEY = "kannadi.migrated.v1";
 const DB = "kannadi";
 const DOCS = "documents";
-/** How many recent documents are kept; older ones are deleted. */
+/** How many recent documents are kept besides the current one; older ones are deleted. */
 export const KEEP = 10;
 
 const local = {
@@ -99,28 +101,42 @@ function request<T>(r: IDBRequest<T>): Promise<T> {
   });
 }
 
-/** Each document in IndexedDB, the last KEEP of them kept; the settings in localStorage. */
+/**
+ * Each document in IndexedDB, the current one and the last KEEP others kept; the settings in localStorage. Where
+ * IndexedDB is missing or will not open, as with blocked storage, it keeps 1 document in localStorage instead.
+ */
 export class IdbStore implements DocumentStore {
-  private db: Promise<IDBDatabase>;
+  private db: Promise<IDBDatabase | null>;
   private id: string;
 
   constructor(name = DB) {
     this.id = local.get<string>(CURRENT_KEY) ?? crypto.randomUUID();
-    this.db = new Promise((resolve, reject) => {
-      const open = indexedDB.open(name, 1);
-      open.onupgradeneeded = () => open.result.createObjectStore(DOCS, { keyPath: "id" }).createIndex("updated", "updated");
-      open.onsuccess = () => resolve(open.result);
-      open.onerror = () => reject(open.error);
+    this.db = new Promise((resolve) => {
+      try {
+        const open = indexedDB.open(name, 1);
+        open.onupgradeneeded = () => open.result.createObjectStore(DOCS, { keyPath: "id" }).createIndex("updated", "updated");
+        open.onsuccess = () => resolve(open.result);
+        open.onerror = () => resolve(null);
+        open.onblocked = () => resolve(null);
+      } catch {
+        resolve(null);
+      }
     });
   }
 
-  private async docs(mode: IDBTransactionMode): Promise<IDBObjectStore> {
-    return (await this.db).transaction(DOCS, mode).objectStore(DOCS);
+  private async docs(mode: IDBTransactionMode): Promise<IDBObjectStore | null> {
+    const db = await this.db;
+    return db ? db.transaction(DOCS, mode).objectStore(DOCS) : null;
   }
 
   async read(): Promise<Saved | null> {
     const settings = local.get<Partial<Settings>>(SETTINGS_KEY) ?? undefined;
-    const row = (await request((await this.docs("readonly")).get(this.id))) as Row | undefined;
+    const store = await this.docs("readonly");
+    if (!store) {
+      const kept = local.get<{ id: string; value: Saved }>(PENDING_KEY)?.value ?? local.get<Saved>(LOCAL_KEY);
+      return kept ? { ...kept, ...(settings ? { settings } : {}) } : settings ? { text: "", settings } : null;
+    }
+    const row = (await request(store.get(this.id))) as Row | undefined;
     // Text written as the page closed is newer than IndexedDB's copy.
     const pending = local.get<{ id: string; at: number; value: Saved }>(PENDING_KEY);
     if (pending?.id === this.id && (!row || pending.at > row.updated)) {
@@ -128,8 +144,9 @@ export class IdbStore implements DocumentStore {
       return { ...pending.value, ...(settings ? { settings } : {}) };
     }
     if (row) return { ...row, ...(settings ? { settings } : {}) };
-    // The first time, the document today's editor kept moves over.
-    const old = local.get<Saved>(LOCAL_KEY);
+    // The first time, the document today's editor kept moves over, and only then.
+    const old = local.get(MIGRATED_KEY) ? null : local.get<Saved>(LOCAL_KEY);
+    local.set(MIGRATED_KEY, true);
     if (!old) return settings ? { text: "", settings } : null;
     await this.write(old);
     return { ...old, settings: { ...old.settings, ...settings } };
@@ -139,23 +156,27 @@ export class IdbStore implements DocumentStore {
     const { settings, ...doc } = value;
     if (settings) local.set(SETTINGS_KEY, settings);
     local.set(CURRENT_KEY, this.id);
-    const row: Row = { ...doc, id: this.id, title: title(doc.text), updated: Date.now() };
+    const started = Date.now();
+    const row: Row = { ...doc, id: this.id, title: title(doc.text), updated: started };
     try {
       const store = await this.docs("readwrite");
+      if (!store) return local.set(LOCAL_KEY, value);
       await request(store.put(row));
       await this.prune(store);
-      if (local.get<{ id: string; at: number }>(PENDING_KEY)?.id === this.id) localStorage.removeItem(PENDING_KEY);
+      // Text written as the page closed after this save began is newer, and stays until its own save.
+      const pending = local.get<{ id: string; at: number }>(PENDING_KEY);
+      if (pending?.id === this.id && pending.at <= started) localStorage.removeItem(PENDING_KEY);
       return true;
     } catch {
       return false;
     }
   }
 
-  /** Deletes documents beyond the newest KEEP, and empty ones other than the current one. */
+  /** Deletes documents beyond the current one and the newest KEEP others, and empty ones other than the current one. */
   private async prune(store: IDBObjectStore): Promise<void> {
     const rows = (await request(store.index("updated").getAll())) as Row[];
     rows.reverse();
-    const keep = new Set(rows.filter((r) => r.text || r.id === this.id).slice(0, KEEP).map((r) => r.id));
+    const keep = new Set(rows.filter((r) => r.text || r.id === this.id).slice(0, KEEP + 1).map((r) => r.id));
     for (const r of rows) if (!keep.has(r.id)) store.delete(r.id);
   }
 
@@ -166,8 +187,10 @@ export class IdbStore implements DocumentStore {
     local.set(PENDING_KEY, { id: this.id, at: Date.now(), value: doc });
   }
 
-  async recent(): Promise<Recent[]> {
-    const rows = (await request((await this.docs("readonly")).index("updated").getAll())) as Row[];
+  async recent(): Promise<Recent[] | null> {
+    const store = await this.docs("readonly");
+    if (!store) return null;
+    const rows = (await request(store.index("updated").getAll())) as Row[];
     return rows
       .filter((r) => r.text && r.id !== this.id)
       .reverse()
@@ -180,7 +203,9 @@ export class IdbStore implements DocumentStore {
   }
 
   async open(id: string): Promise<Saved | null> {
-    const row = (await request((await this.docs("readonly")).get(id))) as Row | undefined;
+    const store = await this.docs("readonly");
+    if (!store) return null;
+    const row = (await request(store.get(id))) as Row | undefined;
     if (!row) return null;
     this.id = id;
     local.set(CURRENT_KEY, id);

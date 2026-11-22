@@ -256,7 +256,11 @@ function current(): Saved {
   return { text: editor.text, unknown: issues.unknown.map((u) => u.offset), kept: issues.kept.map((k) => k.offset), settings, fileName };
 }
 
+/** Whether the saved document is showing; until then there is nothing of the person's to save. */
+let restored = false;
+
 function save(): Promise<void> {
+  if (!restored) return Promise.resolve();
   const value = current();
   return docs.write(value).then((ok) => {
     ui.saved.textContent = !value.text ? "" : ok ? S.files.savedHere : S.files.tooLarge;
@@ -650,6 +654,7 @@ function wire(): void {
   });
   // A write that has to wait may not finish as the page closes, so the store also keeps the text at once.
   const leaving = () => {
+    if (!restored) return;
     docs.flush(current());
     void save();
   };
@@ -730,7 +735,7 @@ async function showRecent(): Promise<void> {
       b.type = "button";
       b.className = "menu-item";
       const name = document.createElement("span");
-      name.lang = "kn";
+      if (/[\u0C80-\u0CFF]/.test(r.title)) name.lang = "kn";
       name.textContent = r.title || S.menu.untitled;
       const date = document.createElement("small");
       date.textContent = when.format(r.updated);
@@ -771,6 +776,7 @@ async function restore(): Promise<void> {
     update("");
     issues.check();
   }
+  restored = true;
 }
 
 wire();

@@ -94,12 +94,18 @@ export const savedText = (page: Page) =>
     if (!next) return (JSON.parse(localStorage.getItem("kannadi.editor.v1") ?? "{}") as { text?: string }).text ?? null;
     const id = JSON.parse(localStorage.getItem("kannadi.current.v1") ?? "null") as string | null;
     if (!id) return null;
-    const db = await new Promise<IDBDatabase>((done, fail) => {
+    // Reading must never make the database: an upgrade here would leave it without the editor's store.
+    const db = await new Promise<IDBDatabase | null>((done) => {
       const open = indexedDB.open("kannadi");
+      open.onupgradeneeded = () => open.transaction?.abort();
       open.onsuccess = () => done(open.result);
-      open.onerror = () => fail(open.error);
+      open.onerror = () => done(null);
     });
-    if (!db.objectStoreNames.contains("documents")) return null;
+    if (!db) return null;
+    if (!db.objectStoreNames.contains("documents")) {
+      db.close();
+      return null;
+    }
     const row = await new Promise<{ text?: string } | undefined>((done) => {
       const get = db.transaction("documents").objectStore("documents").get(id);
       get.onsuccess = () => done(get.result as { text?: string } | undefined);

@@ -11,6 +11,7 @@ export const SITE_EN = {
     org: "Open Kannada",
     allPages: "All pages",
     more: "More",
+    less: "Less",
   },
   theme: {
     auto: "Theme: same as system",

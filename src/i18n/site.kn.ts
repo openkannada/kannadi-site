@@ -11,6 +11,7 @@ export const SITE_KN: SiteStrings = {
     org: "ಓಪನ್ ಕನ್ನಡ",
     allPages: "ಎಲ್ಲ ಪುಟಗಳು",
     more: "ಇನ್ನಷ್ಟು",
+    less: "ಕಡಿಮೆ",
   },
   theme: {
     auto: "ಥೀಮ್: ಸಿಸ್ಟಮ್‌ನಂತೆಯೇ",

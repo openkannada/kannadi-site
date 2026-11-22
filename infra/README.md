@@ -48,6 +48,7 @@ These are not in code and change rarely:
 - The zones themselves, on Cloudflare nameservers.
 - Zone settings: AI Crawl Control and the managed robots.txt, which stays off so the site's own `robots.txt` is served.
 - Email routing, when the project gets its own address.
+- The Workers Builds connection and its settings, listed under "Deploys" above.
 
 ## Requests
 

@@ -66,7 +66,7 @@ const BRAND_KN: Brand = {
     },
   ],
   owner:
-    "ಕೊಡುಗೆದಾರರು ತಮ್ಮ ಕೆಲಸದ ಹಕ್ಕುಸ್ವಾಮ್ಯವನ್ನು ಉಳಿಸಿಕೊಳ್ಳುತ್ತಾರೆ ಮತ್ತು ಅದನ್ನು ಯೋಜನೆಯ ಲೈಸೆನ್ಸ್‌ಗಳ ಅಡಿಯಲ್ಲಿ ನೀಡುತ್ತಾರೆ. ಓಪನ್ ಕನ್ನಡ ಮತ್ತು kannadi ಹೆಸರುಗಳು ಹಾಗೂ ಲೋಗೋಗಳಿಗೆ <a href=\"https://github.com/openkannada/.github/blob/main/TRADEMARKS.md\">TRADEMARKS.md</a> ಅನ್ವಯಿಸುತ್ತದೆ.",
+    "ಕೊಡುಗೆದಾರರು ತಮ್ಮ ಕೆಲಸದ ಕೃತಿಸ್ವಾಮ್ಯವನ್ನು ಉಳಿಸಿಕೊಳ್ಳುತ್ತಾರೆ ಮತ್ತು ಆ ಕೆಲಸವನ್ನು ಯೋಜನೆಯ ಲೈಸೆನ್ಸ್‌ಗಳ ಅಡಿಯಲ್ಲಿ ನೀಡುತ್ತಾರೆ. ಓಪನ್ ಕನ್ನಡ ಮತ್ತು ಕನ್ನಡಿ ಹೆಸರುಗಳು ಹಾಗೂ ಲೋಗೊಗಳಿಗೆ <a href=\"https://github.com/openkannada/.github/blob/main/TRADEMARKS.md\">TRADEMARKS.md</a> ಅನ್ವಯಿಸುತ್ತದೆ.",
   removal:
     'ಏನನ್ನಾದರೂ ತೆಗೆಯಲು ಅಥವಾ ಉಲ್ಲೇಖಿಸಲು ಕೇಳಬೇಕಾದರೆ <a href="mailto:support@luminik.io">support@luminik.io</a> ಗೆ ಬರೆಯಿರಿ. ಯೋಜನೆಗೆ ಸ್ವಂತ ವಿಳಾಸ ಬರುವವರೆಗೆ ನಾವು ಇದನ್ನೇ ಬಳಸುತ್ತೇವೆ.',
 };

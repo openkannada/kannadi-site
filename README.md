@@ -38,7 +38,7 @@ Set `SITE_URL` (for example `https://example.org/` or `https://example.org/kanna
 
 The site runs on Cloudflare Workers with static assets at https://openkannada.org. `infra/README.md` describes the hosting, which `wrangler.jsonc` declares in full.
 
-- **From CI:** every push to `main` that passes the checks is built for https://openkannada.org, published with Wrangler, then checked live (`scripts/live-check.ts`).
+- **From Cloudflare Workers Builds:** every push to `main` is built and checked for https://openkannada.org (`scripts/cf-build.sh`), published with Wrangler, then checked live (`scripts/live-check.ts`). Every other branch gets a noindex Preview on workers.dev, linked from its pull request.
 - **By hand,** from a clean `main` that matches `origin/main`: `npm run deploy`. It runs the same steps. The API token comes from `CLOUDFLARE_API_TOKEN`, or else from the macOS keychain item `openkannada.cloudflare.api`.
 - **Since launch,** on 22 November 2026 (`LIVE.launched` in `src/content/site.ts`):
   - pages are indexable, and only the form endpoint, build files and markdown mirrors send `X-Robots-Tag: noindex`;

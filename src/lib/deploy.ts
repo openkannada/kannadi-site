@@ -1,12 +1,16 @@
 import { siteUrl } from "../content/site.ts";
 
+/** The build checks the site and needs no Cloudflare token; the publish puts it live. */
+export type Phase = "build" | "publish";
+
 /** A command the deploy runs, in order; the deploy stops at the first that fails. */
 export interface Step {
   label: string;
   command: string;
   args: string[];
-  /** Runs only once the site is launched, so CI runs it too, around its own publish step. */
-  launch?: "before" | "after";
+  phase: Phase;
+  /** Runs only once the site is launched. */
+  launched?: true;
   /** Runs without SITE_URL, as CI runs it; the unit tests check SITE_URL handling themselves. */
   noSiteUrl?: true;
 }
@@ -39,6 +43,13 @@ export function productionUrl(value: string | undefined): URL {
   // The Worker serves dist/ at the domain root; a base path would leave every link pointing at a missing folder.
   if (url.pathname !== "/") throw new Error(`SITE_URL must be the domain root, with no path: ${url.href}`);
   return url;
+}
+
+/** Why this Workers Build must not publish production, or null when it can. */
+export function workersBuildProblem(env: NodeJS.ProcessEnv): string | null {
+  if (env.WORKERS_CI_BRANCH !== "main") return `Workers Builds publishes only main, not ${env.WORKERS_CI_BRANCH || "an unknown branch"}.`;
+  if (!env.CLOUDFLARE_API_TOKEN) return "Workers Builds gave the deploy no CLOUDFLARE_API_TOKEN.";
+  return null;
 }
 
 /** Why this checkout must not be deployed, or null when it can be. */
@@ -77,27 +88,22 @@ export function unreviewed(pages: { slug: string; needsReview?: true; held?: tru
  * placeholder check and IndexNow belong to the launched site; before launch the site is noindex and they wait.
  */
 export function deploySteps(url: URL, launched: boolean): Step[] {
-  const launch = (step: Step) => (launched ? [step] : []);
-  return [
-    { label: "Build the WebAssembly package", command: "npm", args: ["run", "wasm"] },
-    { label: "Check the types", command: "npm", args: ["run", "check"] },
-    { label: "Run the unit tests", command: "npm", args: ["test"], noSiteUrl: true },
-    { label: "Build the site", command: "npm", args: ["run", "build"] },
-    { label: "Check the built pages", command: "node", args: ["scripts/seo-smoke.ts", "dist", url.href] },
-    { label: "Check the writing", command: "npm", args: ["run", "voice-lint"] },
-    ...launch({ label: "Check that no placeholder is left", command: "node", args: ["scripts/placeholders.ts", "dist"], launch: "before" }),
-    ...launch({ label: "Save the live sitemap for IndexNow", command: "node", args: ["scripts/indexnow.ts", "snapshot", url.href], launch: "before" }),
-    { label: "Keep the live build files that pages still open may ask for", command: "node", args: ["scripts/keep-assets.ts", url.href, "dist"] },
-    { label: "Stage the new build with the live HTML", command: "node", args: ["scripts/stage.ts", "stage", url.href, "dist", ".deploy/stage"] },
-    { label: "Publish the staged build, so the new build files go out before any page names them", command: "npx", args: ["--no", "--", "wrangler", "deploy", "--assets", ".deploy/stage"] },
-    { label: "Wait until every new build file is served", command: "node", args: ["scripts/stage.ts", "wait", url.href, "dist"] },
-    { label: "Publish to Cloudflare Workers", command: "npx", args: ["--no", "--", "wrangler", "deploy"] },
-    { label: "Check the live site", command: "node", args: ["scripts/live-check.ts", url.href] },
-    ...launch({ label: "Send the changed pages to IndexNow", command: "node", args: ["scripts/indexnow.ts", "submit", url.href], launch: "after" }),
+  const steps: Step[] = [
+    { phase: "build", label: "Build the WebAssembly package", command: "npm", args: ["run", "wasm"] },
+    { phase: "build", label: "Check the types", command: "npm", args: ["run", "check"] },
+    { phase: "build", label: "Run the unit tests", command: "npm", args: ["test"], noSiteUrl: true },
+    { phase: "build", label: "Build the site", command: "npm", args: ["run", "build"] },
+    { phase: "build", label: "Check the built pages", command: "node", args: ["scripts/seo-smoke.ts", "dist", url.href] },
+    { phase: "build", label: "Check the writing", command: "npm", args: ["run", "voice-lint"] },
+    { phase: "build", label: "Check that no placeholder is left", command: "node", args: ["scripts/placeholders.ts", "dist"], launched: true },
+    { phase: "publish", label: "Save the live sitemap for IndexNow", command: "node", args: ["scripts/indexnow.ts", "snapshot", url.href], launched: true },
+    { phase: "publish", label: "Keep the live build files that pages still open may ask for", command: "node", args: ["scripts/keep-assets.ts", url.href, "dist"] },
+    { phase: "publish", label: "Stage the new build with the live HTML", command: "node", args: ["scripts/stage.ts", "stage", url.href, "dist", ".deploy/stage"] },
+    { phase: "publish", label: "Publish the staged build, so the new build files go out before any page names them", command: "npx", args: ["--no", "--", "wrangler", "deploy", "--assets", ".deploy/stage"] },
+    { phase: "publish", label: "Wait until every new build file is served", command: "node", args: ["scripts/stage.ts", "wait", url.href, "dist"] },
+    { phase: "publish", label: "Publish to Cloudflare Workers", command: "npx", args: ["--no", "--", "wrangler", "deploy"] },
+    { phase: "publish", label: "Check the live site", command: "node", args: ["scripts/live-check.ts", url.href] },
+    { phase: "publish", label: "Send the changed pages to IndexNow", command: "node", args: ["scripts/indexnow.ts", "submit", url.href], launched: true },
   ];
-}
-
-/** The launch-only steps on 1 side of the publish, for CI, which builds and publishes with its own steps. */
-export function launchSteps(url: URL, launched: boolean, side: "before" | "after"): Step[] {
-  return deploySteps(url, launched).filter((s) => s.launch === side);
+  return steps.filter((s) => launched || !s.launched);
 }

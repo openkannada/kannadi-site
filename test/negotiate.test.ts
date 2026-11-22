@@ -20,7 +20,7 @@ test("markdown is served only to clients that ask for it over HTML", () => {
 const assets = {
   fetch: async (input) => {
     const path = new URL(input instanceof Request ? input.url : String(input)).pathname;
-    if (path === "/a/index.md") return new Response("# A", { headers: { "content-type": "application/octet-stream" } });
+    if (path === "/a/index.md") return new Response("# A", { headers: { "content-type": "application/octet-stream", "x-robots-tag": "noindex" } });
     if (path === "/a/" || path === "/b/") return new Response("<h1>A</h1>", { headers: { "content-type": "text/html" } });
     if (path === "/a") return new Response(null, { status: 307, headers: { location: "/a/" } });
     return new Response("", { status: 404 });
@@ -34,6 +34,7 @@ test("the Worker answers markdown requests with the mirror and marks pages as va
   assert.equal(md.headers.get("content-type"), "text/markdown; charset=utf-8");
   assert.equal(md.headers.get("vary"), "Accept");
   assert.equal(await md.text(), "# A");
+  assert.equal(md.headers.get("x-robots-tag"), null, "the page served as markdown is still the page, not its noindex mirror file");
   const page = await get("https://openkannada.org/a/");
   assert.equal(await page.text(), "<h1>A</h1>");
   assert.equal(page.headers.get("vary"), "Accept");
@@ -69,13 +70,15 @@ test("a page's missing trailing slash is a permanent redirect", async () => {
   assert.equal(res.headers.get("location"), "/a/");
 });
 
-test("the site is not launched yet, and the Worker serves it that way", async () => {
+test("the site is launched: pages are indexable, and only the form endpoint says noindex", async () => {
   const { LIVE: live } = await import("../src/content/site.ts");
-  assert.equal(live.launched, false, "launching is 1 line: set LIVE.launched in a pull request");
+  assert.equal(live.launched, true, "launched on 22 November 2026");
   assert.equal(live.origin, `https://${live.host}`);
   const { default: worker } = await import("../worker/index.ts");
   const res = await worker.fetch(new Request("https://openkannada.org/a/"), { ASSETS: assets });
-  assert.equal(res.headers.get("x-robots-tag"), "noindex");
+  assert.equal(res.headers.get("x-robots-tag"), null);
+  const api = await worker.fetch(new Request("https://openkannada.org/api/interest", { method: "POST", body: "{}" }), { ASSETS: assets });
+  assert.equal(api.headers.get("x-robots-tag"), "noindex", "the form endpoint stays out of search");
   const moved = await worker.fetch(new Request("https://www.openkannada.org/a/?q=1"), { ASSETS: assets });
   assert.equal(moved.headers.get("location"), "https://openkannada.org/a/?q=1");
 });

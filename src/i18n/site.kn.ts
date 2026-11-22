@@ -94,7 +94,6 @@ export const SITE_KN: SiteStrings = {
     descriptions: "ಪರಿಚಯಗಳು",
     inWords: "ಸುಮಾರು {n} ಪದಗಳಲ್ಲಿ",
     people: "ಸ್ಥಾಪಕ ಸದಸ್ಯರು",
-    photo: "PRASAD: {name} ಅವರ ಫೋಟೊ, ಪ್ರಸಾದ್ ಅವರಿಂದ.",
     screenshots: "ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳು",
     download: "ಡೌನ್‌ಲೋಡ್",
     facts: "ಮಾಹಿತಿ",

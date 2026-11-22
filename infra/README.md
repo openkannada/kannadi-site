@@ -9,7 +9,7 @@ openkannada.org runs on Cloudflare Workers with static assets, in my personal Cl
 | No `*.workers.dev` address and no preview URLs | `wrangler.jsonc`, `workers_dev` and `preview_urls` |
 | A 301 from every other host, and from http, to https://openkannada.org, with the path and query kept | `worker/index.ts`, `src/lib/edge.ts` |
 | Markdown on request (`Accept: text/markdown`) | `src/lib/edge.ts` |
-| `X-Robots-Tag: noindex` on every response until launch | `LIVE.launched` in `src/content/site.ts` |
+| Indexable pages since launch; `X-Robots-Tag: noindex` before it | `LIVE.launched` in `src/content/site.ts` |
 | Security, cache and content-type headers | `public/_headers` |
 | Deploys | `.github/workflows/ci.yml`, job `deploy`, on every push to `main` that passes the checks |
 
@@ -37,7 +37,7 @@ The certificates can take a few minutes, so the live check retries for up to 5 m
 
 ## Requests
 
-Pages and other files run the Worker first, so it can redirect and set noindex. Hashed scripts, styles and fonts under `/_astro/` and `/fonts/` go straight to the asset server, which does not count as a Worker request; `_headers` marks them noindex. The Workers free plan allows 100,000 Worker requests a day.
+Pages and other files run the Worker first, so it can redirect and answer markdown requests. Hashed scripts, styles and fonts under `/_astro/` go straight to the asset server, which does not count as a Worker request; `_headers` marks them noindex, as it does the markdown mirrors at their own `index.md` addresses and `/fonts/OFL.txt`. The Workers free plan allows 100,000 Worker requests a day.
 
 ## Build files across a deploy
 
@@ -57,7 +57,7 @@ The word list is served as `text/plain`, so the edge compresses it.
 
 ## Launch
 
-The site is live but asks search engines not to index it. To launch, set `LIVE.launched` to `true` in `src/content/site.ts` in a pull request. Once merged, the next deploy drops the noindex header, runs the placeholder check before it publishes, and sends the pages to IndexNow after the live check, when `INDEXNOW.enabled` is on.
+The site launched on 22 November 2026: `LIVE.launched` is `true`, so pages carry no noindex header and every deploy runs the placeholder check before it publishes. IndexNow sends the changed pages after the live check once `INDEXNOW.enabled` is on in `src/content/site.ts`; its key file is served at https://openkannada.org/3601f9fcb12d8a620b36768a880d87ae.txt.
 
 Never run `wrangler login` or `wrangler logout` on my Mac: the login there belongs to another account.
 

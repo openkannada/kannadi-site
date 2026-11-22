@@ -40,12 +40,10 @@ The site runs on Cloudflare Workers with static assets at https://openkannada.or
 
 - **From CI:** every push to `main` that passes the checks is built for https://openkannada.org, published with Wrangler, then checked live (`scripts/live-check.ts`).
 - **By hand,** from a clean `main` that matches `origin/main`: `npm run deploy`. It runs the same steps. The API token comes from `CLOUDFLARE_API_TOKEN`, or else from the macOS keychain item `openkannada.cloudflare.api`.
-- **Before launch:**
-  - every response carries `X-Robots-Tag: noindex`;
-  - the placeholder check waits;
-  - IndexNow stays quiet.
-
-  Launching is `LIVE.launched` in `src/content/site.ts`.
+- **Since launch,** on 22 November 2026 (`LIVE.launched` in `src/content/site.ts`):
+  - pages are indexable, and only the form endpoint, build files and markdown mirrors send `X-Robots-Tag: noindex`;
+  - the placeholder check runs before each publish;
+  - IndexNow runs after the live check once `INDEXNOW.enabled` is on.
 
 The deploy refuses a missing, plain http, placeholder, `pages.dev`, `workers.dev` or sub-path `SITE_URL`, local changes, any branch other than `main`, and a `main` that differs from `origin/main`. It ignores `KANNADI_DIR`, so the WebAssembly package comes from kannadi at `kannadi.rev`.
 
@@ -76,7 +74,7 @@ CI runs all of them on every pull request.
 | `src/components/`, `src/layouts/` | Astro components |
 | `src/lib/` | JSON-LD, agent files, content negotiation, the home page's handoff to the editor |
 | `src/integrations/agent-files.ts` | Writes the markdown mirrors and llms files after the build |
-| `worker/index.ts`, `src/lib/edge.ts` | The Worker: the canonical-host redirect, markdown on `Accept: text/markdown`, noindex until launch |
+| `worker/index.ts`, `src/lib/edge.ts` | The Worker: the canonical-host redirect, markdown on `Accept: text/markdown`, and the interest form's endpoint |
 | `public/_headers` | Security and cache headers |
 | `wrangler.jsonc`, `scripts/deploy.ts`, `infra/` | The Cloudflare Worker, the deploy command, and the hosting notes |
 | `scripts/` | wasm build, Open Graph cards, SEO smoke, voice lint |

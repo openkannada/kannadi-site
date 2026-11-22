@@ -1,6 +1,6 @@
 // What the Worker in front of the static files does to each request: send every other host to the 1 canonical
 // address, send moved pages to their new paths, answer requests that prefer markdown with the page's mirror,
-// and keep the site out of search results until launch.
+// and, before launch, keep the site out of search results.
 import { markdownPathFor, prefersMarkdown } from "./negotiate.ts";
 
 export interface Assets {
@@ -72,7 +72,9 @@ async function respond(request: Request, url: URL, assets: Assets): Promise<Resp
   if (readable && mdPath && prefersMarkdown(request.headers.get("accept"))) {
     const md = await assets.fetch(new URL(mdPath, url));
     if (md.ok) {
+      // The mirror file is noindex as a copy, but served at the page's own address it is that page.
       const response = withHeaders(md, { "content-type": "text/markdown; charset=utf-8", vary: "Accept" });
+      response.headers.delete("x-robots-tag");
       return request.method === "HEAD" ? new Response(null, { status: 200, headers: response.headers }) : response;
     }
   }

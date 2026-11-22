@@ -9,6 +9,12 @@ export const SITE = {
   license: ["https://opensource.org/license/mit", "https://www.apache.org/licenses/LICENSE-2.0"],
 } as const;
 
+/** Who holds what: contributors keep their copyright; the names and logos are covered by TRADEMARKS.md. Trusted HTML. */
+export const RIGHTS = {
+  en: "Contributors keep the copyright to their work and license it under the project's licenses. The Open Kannada and kannadi names and logos are covered by <a href=\"https://github.com/openkannada/kannadi/blob/main/TRADEMARKS.md\">TRADEMARKS.md</a>.",
+  kn: "ಕೊಡುಗೆದಾರರು ತಮ್ಮ ಕೆಲಸದ ಕೃತಿಸ್ವಾಮ್ಯವನ್ನು ತಾವೇ ಉಳಿಸಿಕೊಳ್ಳುತ್ತಾರೆ ಮತ್ತು ಅದನ್ನು ಯೋಜನೆಯ ಲೈಸೆನ್ಸ್‌ಗಳ ಅಡಿಯಲ್ಲಿ ನೀಡುತ್ತಾರೆ. Open Kannada ಮತ್ತು kannadi ಹೆಸರುಗಳು ಹಾಗೂ ಲೋಗೊಗಳು <a href=\"https://github.com/openkannada/kannadi/blob/main/TRADEMARKS.md\">TRADEMARKS.md</a> ಗೆ ಒಳಪಟ್ಟಿವೆ.",
+} as const;
+
 /** The organization behind the site; kannadi is its first project. */
 export const ORG = {
   name: "Open Kannada",
@@ -35,13 +41,13 @@ export const INDEXNOW = {
 } as const;
 
 /**
- * Where the site lives, and whether it is launched. Until launch, every response is sent with X-Robots-Tag: noindex
- * and IndexNow stays quiet; launching is this 1 flag, set to true in a pull request.
+ * Where the site lives, and whether it is launched. Before launch every response was sent with X-Robots-Tag: noindex
+ * and IndexNow stayed quiet; launched on 22 November 2026.
  */
 export const LIVE = {
   origin: "https://openkannada.org",
   host: "openkannada.org",
-  launched: false,
+  launched: true,
 } as const;
 
 export const AUTHOR = {

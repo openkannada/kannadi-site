@@ -27,6 +27,16 @@ test("only a clean main at origin/main is deployed", () => {
   assert.match(checkoutProblem({ ...ok, head: "def" }) ?? "", /differs from origin\/main/);
 });
 
+test("the deploy runs the unit tests without SITE_URL, as CI does, and builds with it", () => {
+  const env = deployEnv({ PATH: "/bin" }, new URL(URL_ROOT));
+  const steps = deploySteps(new URL(URL_ROOT), false);
+  const tests = steps.find((s) => s.args.join(" ") === "test")!;
+  const build = steps.find((s) => s.args.join(" ") === "run build")!;
+  assert.equal(stepEnv(tests, env).SITE_URL, undefined);
+  assert.equal(stepEnv(tests, env).PATH, "/bin");
+  assert.equal(stepEnv(build, env).SITE_URL, URL_ROOT);
+});
+
 test("the deploy builds the library from kannadi.rev, never from a local checkout", () => {
   const env = deployEnv({ KANNADI_DIR: "/somewhere", PATH: "/bin" }, new URL(URL_ROOT));
   assert.equal(env.KANNADI_DIR, undefined);
@@ -72,16 +82,6 @@ test("the build phase checks everything before the publish phase touches Cloudfl
   const publish = steps.filter((s) => s.phase === "publish").map(line);
   assert.equal(publish[0], `node scripts/indexnow.ts snapshot ${URL_ROOT}`);
   assert.equal(publish.at(-1), `node scripts/indexnow.ts submit ${URL_ROOT}`);
-});
-
-test("the deploy runs the unit tests without SITE_URL, as CI does, and builds with it", () => {
-  const env = deployEnv({ PATH: "/bin" }, new URL(URL_ROOT));
-  const steps = deploySteps(new URL(URL_ROOT), false);
-  const tests = steps.find((s) => s.args.join(" ") === "test")!;
-  const build = steps.find((s) => s.args.join(" ") === "run build")!;
-  assert.equal(stepEnv(tests, env).SITE_URL, undefined);
-  assert.equal(stepEnv(tests, env).PATH, "/bin");
-  assert.equal(stepEnv(build, env).SITE_URL, URL_ROOT);
 });
 
 test("Workers Builds publishes only main, with the token it provides", () => {

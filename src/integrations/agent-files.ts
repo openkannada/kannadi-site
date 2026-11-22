@@ -7,7 +7,9 @@ import { fileURLToPath } from "node:url";
 
 import type { AstroIntegration } from "astro";
 
-import { ORG, SITE } from "../content/site.ts";
+import { PAGES } from "../content/pages.ts";
+import { ORG, SITE, pagePath } from "../content/site.ts";
+import { alternates } from "../lib/seo.ts";
 import { contentHash, HASH_FILE, lastmodOf, type PageHashes } from "../lib/freshness.ts";
 import {
   type BuiltPage,
@@ -61,7 +63,7 @@ export function agentFiles(): AstroIntegration {
         const info = {
           name: ORG.name,
           summary:
-            "Free, open-source tools so that Kannada works properly on computers. The first is kannadi, a Kannada editor in the browser at /editor/: it converts text typed in the Nudi, Baraha and Akruti fonts to Unicode, types Kannada from English letters, marks what could not be converted, and saves Word, web, text and Nudi files. It runs on the visitor's device with the open-source kannadi library compiled to WebAssembly. The fonts Neha Sans, Neha Serif and Gari are released at /fonts/. Spell check, a dictionary and OCR are coming soon, and /ai-benchmark/ shows what Kannada costs in AI tokenizers.",
+            "Free, open-source tools so that Kannada works properly on computers. The first is kannadi, a Kannada editor in the browser at /editor/: it converts text typed in the Nudi, Baraha and Akruti fonts to Unicode, types Kannada from English letters, marks what could not be converted, and saves Word, web, text and Nudi files. It runs on the visitor's device with the open-source kannadi library compiled to WebAssembly. The fonts Neha Sans, Neha Serif and Gari are released at /fonts/. Spell check (/spell-check/), an English to Kannada dictionary (/dictionary/) and OCR for old print (/ocr/) each have a page with their measured results, and /ai-benchmark/ shows what Kannada costs in AI tokenizers.",
           details: [
             `Source of the library: ${SITE.repository} (Rust, MIT OR Apache-2.0).`,
             "Every page is also served as markdown at the same path plus index.md, and on requests that accept text/markdown.",
@@ -86,7 +88,12 @@ export function agentFiles(): AstroIntegration {
             const hash = contentHash(p.markdown);
             return hashes[p.path] === hash ? lastmodOf(hash, git) : undefined;
           };
-          await writeFile(join(dist, "sitemap.xml"), sitemap(pages.map((p) => ({ loc: url(p.path), lastmod: lastmod(p) }))));
+          const base = site;
+          const languages = (p: BuiltPage) => {
+            const page = PAGES.find((q) => pagePath(q.slug) === p.path);
+            return page ? alternates(page, PAGES, base) : [];
+          };
+          await writeFile(join(dist, "sitemap.xml"), sitemap(pages.map((p) => ({ loc: url(p.path), lastmod: lastmod(p), alternates: languages(p) }))));
         }
         logger.info(`${pages.length} markdown mirrors, llms.txt and llms-full.txt${site ? ", sitemap.xml" : ""}`);
       },

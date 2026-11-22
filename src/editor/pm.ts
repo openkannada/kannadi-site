@@ -10,7 +10,7 @@ import { EditorView } from "prosemirror-view";
 
 import type { EditListener, EditorSurface, TextRange } from "./editor.ts";
 import type { RichLine } from "./docx.ts";
-import { docFromLines, FORMAT_KEYS, FORMATS, type Format, fromHtml, isActive, linesOf, LIST_KEYS, schema, setLink, shortcuts, toHtml } from "./rich.ts";
+import { docFromLines, safeJson, FORMAT_KEYS, FORMATS, type Format, fromHtml, isActive, linesOf, LIST_KEYS, schema, setLink, shortcuts, toHtml } from "./rich.ts";
 import { offsetOfPos, posOf, textOf } from "./textindex.ts";
 import { diff, type LineBlock, type Span } from "./text.ts";
 
@@ -200,10 +200,14 @@ export class PmEditor implements EditorSurface {
   /** Replaces start..end with `text` as 1 undoable step, and reports the edit. */
   replace(start: number, end: number, text: string, inputType = "insertReplacementText"): void {
     if (!this.view.hasFocus()) this.focus();
-    const doc = this.view.state.doc;
+    const { doc, storedMarks } = this.view.state;
+    const [from, to] = [posOf(doc, start), posOf(doc, end)];
+    const $from = doc.resolve(from);
+    // The new text takes the formats of what it replaces, or of the place it goes, so words typed and fixed keep them.
+    const marks = from < to ? ($from.marksAcross(doc.resolve(to)) ?? $from.marks()) : (storedMarks ?? $from.marks());
     const lines = text.split("\n");
-    const content = Fragment.from(lines.map((line) => schema.node("paragraph", null, line ? schema.text(line) : undefined)));
-    const tr = this.view.state.tr.replace(posOf(doc, start), posOf(doc, end), new Slice(content, 1, 1));
+    const content = Fragment.from(lines.map((line) => schema.node("paragraph", null, line ? schema.text(line, marks) : undefined)));
+    const tr = this.view.state.tr.replace(from, to, new Slice(content, 1, 1));
     tr.setSelection(TextSelection.create(tr.doc, posOf(tr.doc, start + text.length)));
     this.view.dispatch(tr.setMeta("inputType", inputType).scrollIntoView());
   }
@@ -290,7 +294,7 @@ export class PmEditor implements EditorSurface {
   loadJSON(json: unknown): boolean {
     let doc: PmNode;
     try {
-      doc = schema.nodeFromJSON(json);
+      doc = schema.nodeFromJSON(safeJson(json));
       doc.check();
     } catch {
       return false;

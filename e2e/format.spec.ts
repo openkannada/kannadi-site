@@ -47,6 +47,73 @@ test.describe("on the ProseMirror editor", () => {
     expect(await html(page)).toBe("<p>ಕನ್ನಡ <strong>ನಾಡು</strong><em> ನುಡಿ</em></p>");
   });
 
+  test("words typed in English letters with bold on come out bold, and a fix inside bold stays bold", async ({ page }) => {
+    test.skip(isPhone(page), "Phones format from the menu; the menu test covers them.");
+    await openEditor(page, { mode: "english" });
+    await focusDoc(page);
+    await page.keyboard.press("ControlOrMeta+b");
+    await page.keyboard.type("namaskara ");
+    await expect.poll(() => html(page)).toBe("<p><strong>ನಮಸ್ಕಾರ </strong></p>");
+    // A broken syllable in bold text, fixed from its card.
+    await page.keyboard.press("Alt+Digit1");
+    await page.keyboard.insertText("ಕ್ಾ");
+    await expect(page.locator("#problem-count")).toHaveText("1");
+    await page.keyboard.press("F8");
+    await page.keyboard.press("Enter");
+    await expect(page.locator("#problems")).toBeHidden();
+    expect(await html(page)).toMatch(/^<p><strong>ನಮಸ್ಕಾರ [^<]+<\/strong><\/p>$/u);
+  });
+
+  test("pasted lines broken with <br> and preformatted text keep their lines and spaces", async ({ page }) => {
+    await openEditor(page);
+    await focusDoc(page);
+    await paste(page, { html: "<p>ಒಂದು<br>ಎರಡು</p>ಮೂರು<br>ನಾಲ್ಕು<pre>ಐದು\n  ಆರು</pre>", plain: "ಒಂದು\nಎರಡು\nಮೂರು\nನಾಲ್ಕು\nಐದು\n  ಆರು" });
+    await expect.poll(() => docText(page)).toBe("ಒಂದು\nಎರಡು\nಮೂರು\nನಾಲ್ಕು\nಐದು\n  ಆರು");
+  });
+
+  test("a kept document's link to a script is dropped when it opens", async ({ page }) => {
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.insertText("ಕೊಂಡಿ");
+    await page.waitForTimeout(800);
+    // Leave the editor, whose own save on leaving would write over the change, then change the kept copy as another
+    // program or an old version might, and open it again.
+    await page.goto("/");
+    await page.evaluate(async () => {
+      localStorage.removeItem("kannadi.pending.v1");
+      const id = JSON.parse(localStorage.getItem("kannadi.current.v1")!) as string;
+      const db = await new Promise<IDBDatabase>((done) => {
+        const open = indexedDB.open("kannadi");
+        open.onsuccess = () => done(open.result);
+      });
+      const store = db.transaction("documents", "readwrite").objectStore("documents");
+      const row = await new Promise<Record<string, unknown>>((done) => {
+        const get = store.get(id);
+        get.onsuccess = () => done(get.result as Record<string, unknown>);
+      });
+      const link = { type: "link", attrs: { href: "javascript:alert(1)" } };
+      row["doc"] = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "ಕೊಂಡಿ", marks: [link] }] }] };
+      await new Promise((done) => {
+        const put = db.transaction("documents", "readwrite").objectStore("documents").put(row);
+        put.onsuccess = done;
+      });
+      db.close();
+    });
+    await openEditor(page);
+    await expect.poll(() => html(page)).toBe("<p>ಕೊಂಡಿ</p>");
+  });
+
+  test("HTML files in UTF-16, as Word saves a web page, and in Windows-1252 open as written", async ({ page }) => {
+    await openEditor(page);
+    const html16 = Buffer.concat([Buffer.from([0xff, 0xfe]), Buffer.from("<html><body><h2>ಶೀರ್ಷಿಕೆ</h2><p>ಪಠ್ಯ</p></body></html>", "utf16le")]);
+    await page.locator("#file").setInputFiles({ name: "page.htm", mimeType: "text/html", buffer: html16 });
+    await expect.poll(() => html(page)).toBe("<h2>ಶೀರ್ಷಿಕೆ</h2><p>ಪಠ್ಯ</p>");
+    // An older page in Windows-1252, with nothing to convert.
+    const latin = Buffer.from([...Buffer.from("<html><body><p>Caf"), 0xe9, ...Buffer.from(" Bengaluru</p></body></html>")]);
+    await page.locator("#file").setInputFiles({ name: "old.html", mimeType: "text/html", buffer: latin });
+    await expect.poll(() => html(page)).toBe("<p>Café Bengaluru</p>");
+  });
+
   test("the menu makes headings, lists and quotes, shows what applies, and Text takes them back", async ({ page }) => {
     await openEditor(page);
     await focusDoc(page);

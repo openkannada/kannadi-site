@@ -295,7 +295,7 @@ async function open(file: File | undefined): Promise<void> {
     issues.clear();
     // An HTML page with nothing to convert keeps its headings, lists and formats on the ProseMirror editor.
     if (pm && rich) pm.loadLines(rich.text, rich.lines, rich.spans);
-    else if (pm && !result.converted && /\.html?$/i.test(file.name)) pm.setHtml(await file.text());
+    else if (pm && !result.converted && /\.html?$/i.test(file.name)) pm.setHtml(await f.readText(file, kannadi.decodeWindows1252));
     else editor.setText(result.text);
     issues.addUnknown(result.unknown);
     editor.focus();

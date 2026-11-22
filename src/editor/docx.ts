@@ -223,7 +223,12 @@ export async function readDocxRich(bytes: Uint8Array): Promise<{ segments: Segme
         inParagraphProps = !t.close && !t.empty;
         if (!inParagraphProps && numId && numId !== "0") {
           const format = numbering.get(numId)?.[level] ?? "bullet";
-          line.list = { ordered: format !== "bullet" && format !== "none", level };
+          line.list = { ordered: format !== "bullet" && format !== "none", level: Math.min(level, 2) };
+        } else if (!inParagraphProps && !line.list) {
+          // Lists Word numbers through a paragraph style, such as List Bullet 2 or List Number.
+          const name = (paragraphStyle && styles.get(paragraphStyle)?.name) || "";
+          const m = name.match(/^list (bullet|number)(?: (\d))?$/);
+          if (m) line.list = { ordered: m[1] === "number", level: Math.min(Number(m[2] ?? 1) - 1, 2) };
         }
         if (t.close || t.empty) numId = null;
         if (!t.close) level = 0;
@@ -235,7 +240,7 @@ export async function readDocxRich(bytes: Uint8Array): Promise<{ segments: Segme
         }
         break;
       case "w:ilvl":
-        if (inParagraphProps) level = Math.min(Number(t.attrs["w:val"] ?? 0), 2);
+        if (inParagraphProps) level = Number(t.attrs["w:val"] ?? 0);
         break;
       case "w:numId":
         if (inParagraphProps) numId = t.attrs["w:val"] ?? null;
@@ -328,23 +333,29 @@ const RICH_STYLES = STYLES.replace(
       return `<w:style w:type="paragraph" w:styleId="Heading${n}"><w:name w:val="heading ${n}"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="${n - 1}"/></w:pPr><w:rPr><w:b/><w:bCs/><w:sz w:val="${size}"/><w:szCs w:val="${size}"/></w:rPr></w:style>`;
     })
     .join("") +
-    `<w:style w:type="paragraph" w:styleId="Quote"><w:name w:val="Quote"/><w:basedOn w:val="Normal"/><w:pPr><w:ind w:left="720"/><w:pBdr><w:left w:val="single" w:sz="12" w:space="12" w:color="BFBFBF"/></w:pBdr></w:pPr></w:style>` +
+    // Word's schema orders paragraph properties, and refuses a file where pBdr comes after ind.
+    `<w:style w:type="paragraph" w:styleId="Quote"><w:name w:val="Quote"/><w:basedOn w:val="Normal"/><w:pPr><w:pBdr><w:left w:val="single" w:sz="12" w:space="12" w:color="BFBFBF"/></w:pBdr><w:ind w:left="720"/></w:pPr></w:style>` +
     `<w:style w:type="character" w:styleId="Hyperlink"><w:name w:val="Hyperlink"/><w:rPr><w:color w:val="3F3FBF"/><w:u w:val="single"/></w:rPr></w:style></w:styles>`,
 );
 
-// 1 bullet and 1 numbered list definition, 3 levels each; each numbered list is its own instance, so it starts at 1.
-const ABSTRACT = (id: number, bullet: boolean) =>
+const NUMBERED = ["decimal", "lowerLetter", "lowerRoman"];
+const BULLETS = ["•", "◦", "▪"];
+
+/** 1 list definition: 3 levels, each a bullet or a number as the list's own lines have them. */
+const ABSTRACT = (id: number, bullets: boolean[]) =>
   `<w:abstractNum w:abstractNumId="${id}"><w:multiLevelType w:val="hybridMultilevel"/>${[0, 1, 2]
     .map(
       (l) =>
-        `<w:lvl w:ilvl="${l}"><w:start w:val="1"/><w:numFmt w:val="${bullet ? "bullet" : ["decimal", "lowerLetter", "lowerRoman"][l]}"/><w:lvlText w:val="${bullet ? ["•", "◦", "▪"][l] : `%${l + 1}.`}"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="${720 * (l + 1)}" w:hanging="360"/></w:pPr></w:lvl>`,
+        `<w:lvl w:ilvl="${l}"><w:start w:val="1"/><w:numFmt w:val="${bullets[l] ? "bullet" : NUMBERED[l]}"/><w:lvlText w:val="${bullets[l] ? BULLETS[l] : `%${l + 1}.`}"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="${720 * (l + 1)}" w:hanging="360"/></w:pPr></w:lvl>`,
     )
     .join("")}</w:abstractNum>`;
 
-function numberingXml(lists: boolean[]): string {
-  const nums = lists.map((bullet, i) => `<w:num w:numId="${i + 1}"><w:abstractNumId w:val="${bullet ? 0 : 1}"/></w:num>`).join("");
+/** Each list is its own definition and instance, so a numbered list starts at 1 and counts on past a nested list. */
+function numberingXml(lists: boolean[][]): string {
+  const defs = lists.map((bullets, i) => ABSTRACT(i, bullets)).join("");
+  const nums = lists.map((_, i) => `<w:num w:numId="${i + 1}"><w:abstractNumId w:val="${i}"/></w:num>`).join("");
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">${ABSTRACT(0, true)}${ABSTRACT(1, false)}${nums}</w:numbering>`;
+<w:numbering xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">${defs}${nums}</w:numbering>`;
 }
 
 const RICH_CONTENT_TYPES = CONTENT_TYPES.replace(
@@ -369,15 +380,24 @@ function runXml(text: string, format: RunFormat | undefined): string {
 /** A DOCX file of formatted lines: headings, quotes, bulleted and numbered lists, bold, italic, underline and links. */
 export function writeRichDocx(lines: RichLine[]): Promise<Uint8Array> {
   const links: string[] = [];
-  const lists: boolean[] = [];
-  let list: { ordered: boolean; num: number } | null = null;
+  /** For each list, whether each level is bulleted, from the first line at that level. */
+  const lists: boolean[][] = [];
+  let list: { kinds: (boolean | undefined)[]; num: number } | null = null;
   const body = lines
     .map(({ block, runs }) => {
-      // Consecutive list lines of 1 kind are 1 list; a new numbered list starts its count again.
+      // Consecutive list lines are 1 list, until a line at the top level is of the other kind.
       if (!block.list) list = null;
-      else if (!list || list.ordered !== block.list.ordered) {
-        lists.push(!block.list.ordered);
-        list = { ordered: block.list.ordered, num: lists.length };
+      else {
+        const bullet = !block.list.ordered;
+        const kind = list?.kinds[block.list.level];
+        if (!list || (block.list.level === 0 && kind !== undefined && kind !== bullet)) {
+          lists.push([true, true, true]);
+          list = { kinds: [], num: lists.length };
+        }
+        if (list.kinds[block.list.level] === undefined) {
+          list.kinds[block.list.level] = bullet;
+          lists[list.num - 1]![block.list.level] = bullet;
+        }
       }
       const style = { h1: "Heading1", h2: "Heading2", h3: "Heading3", quote: "Quote", p: "" }[block.block];
       const numPr = block.list && list ? `<w:numPr><w:ilvl w:val="${block.list.level}"/><w:numId w:val="${list.num}"/></w:numPr>` : "";

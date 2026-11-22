@@ -27,7 +27,8 @@ const BOLD = /bold|[6-9]00/i;
 const base = new Schema({
   nodes: {
     doc: { content: "block+" },
-    paragraph: { group: "block", content: "inline*", toDOM: () => ["p", 0], parseDOM: [{ tag: "p" }] },
+    // Preformatted text reads as paragraphs that keep their spaces.
+    paragraph: { group: "block", content: "inline*", toDOM: () => ["p", 0], parseDOM: [{ tag: "p" }, { tag: "pre", preserveWhitespace: true }] },
     heading: {
       group: "block",
       content: "inline*",
@@ -162,13 +163,56 @@ export function toHtml(doc: PmNode): string {
   return box.innerHTML;
 }
 
+const BLOCKS = "p, h1, h2, h3, h4, h5, h6, li, blockquote, pre, div, td, th, dd, dt";
+
+/** Each <br> ends a line: its block splits there, as the editor holds 1 line per textblock. */
+function splitAtBreaks(body: HTMLElement): void {
+  // Lines at the top level go in a block of their own first.
+  const top = body.ownerDocument.createElement("div");
+  top.append(...body.childNodes);
+  body.append(top);
+  for (let br = body.querySelector("br"); br; br = body.querySelector("br")) {
+    const block = br.parentElement!.closest(BLOCKS) ?? top;
+    const rest = body.ownerDocument.createRange();
+    rest.setStartAfter(br);
+    rest.setEnd(block, block.childNodes.length);
+    const next = block.cloneNode(false) as Element;
+    next.append(rest.extractContents());
+    br.remove();
+    block.after(next);
+  }
+}
+
 /** A document from HTML, keeping what the schema can hold. HTML this editor saved keeps every space and tab. */
 export function fromHtml(html: string): PmNode {
   const ours = /<meta name="generator" content="kannadi">/.test(html);
   const body = parseHtml(html).body;
   // The renamed <style>, which the parser moves into the body, and anything else that is not text to read.
   for (const el of body.querySelectorAll(`textarea[${STYLE}], script, noscript, template, title`)) el.remove();
+  // Preformatted text keeps its lines and spaces.
+  for (const pre of body.querySelectorAll("pre")) {
+    const walker = body.ownerDocument.createTreeWalker(pre, NodeFilter.SHOW_TEXT);
+    const texts: Text[] = [];
+    for (let n = walker.nextNode(); n; n = walker.nextNode()) texts.push(n as Text);
+    for (const t of texts) {
+      const parts = t.data.replace(/\r\n?/g, "\n").split("\n");
+      if (parts.length > 1) t.replaceWith(...parts.flatMap((p, i) => (i ? [body.ownerDocument.createElement("br"), p] : [p])));
+    }
+  }
+  splitAtBreaks(body);
   return DOMParser.fromSchema(schema).parse(body, { preserveWhitespace: ours });
+}
+
+/** ProseMirror JSON with every link that is not to the web or to an email address taken out, as kept documents are. */
+export function safeJson(json: unknown): unknown {
+  if (Array.isArray(json)) return json.map(safeJson);
+  if (!json || typeof json !== "object") return json;
+  const node = { ...(json as Record<string, unknown>) };
+  if (Array.isArray(node["marks"])) {
+    node["marks"] = (node["marks"] as { type?: string; attrs?: { href?: string } }[]).filter((m) => m.type !== "link" || safeHref(m.attrs?.href));
+  }
+  if (Array.isArray(node["content"])) node["content"] = (node["content"] as unknown[]).map(safeJson);
+  return node;
 }
 
 interface Json {

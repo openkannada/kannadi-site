@@ -61,3 +61,47 @@ test("a text box's bold paragraph mark leaves the run around the box as it was",
   assert.match(joined.text, /before[\s\S]*box[\s\S]*after/);
   assert.deepEqual(joined.spans, []);
 });
+
+test("Word's order of paragraph properties: a quote's border comes before its indent", async () => {
+  const { readZip } = await import("../src/editor/zip.ts");
+  const files = await readZip(await writeRichDocx(LINES));
+  const styles = new TextDecoder().decode(files.get("word/styles.xml"));
+  const quote = styles.slice(styles.indexOf('w:styleId="Quote"'));
+  assert.ok(quote.indexOf("<w:pBdr>") < quote.indexOf("<w:ind "), quote.slice(0, 200));
+});
+
+test("a numbered list counts on past a nested bulleted list, as 1 list in Word", async () => {
+  const { readZip } = await import("../src/editor/zip.ts");
+  const lines: RichLine[] = [
+    { block: { block: "p", list: { ordered: true, level: 0 } }, runs: [{ text: "A" }] },
+    { block: { block: "p", list: { ordered: false, level: 1 } }, runs: [{ text: "sub" }] },
+    { block: { block: "p", list: { ordered: true, level: 0 } }, runs: [{ text: "B" }] },
+  ];
+  const files = await readZip(await writeRichDocx(lines));
+  const doc = new TextDecoder().decode(files.get("word/document.xml"));
+  const ids = [...doc.matchAll(/<w:numId w:val="(\d+)"\/>/g)].map((m) => m[1]);
+  assert.deepEqual(ids, ["1", "1", "1"]);
+  const numbering = new TextDecoder().decode(files.get("word/numbering.xml"));
+  assert.match(numbering, /<w:lvl w:ilvl="0"><w:start w:val="1"\/><w:numFmt w:val="decimal"\/>/);
+  assert.match(numbering, /<w:lvl w:ilvl="1"><w:start w:val="1"\/><w:numFmt w:val="bullet"\/>/);
+  const { lines: read } = await readDocxRich(await writeRichDocx(lines));
+  assert.deepEqual(read, lines.map((l) => l.block));
+});
+
+test("lists Word numbers through paragraph styles, and a deep level keeps its own kind", async () => {
+  const styles = `<w:styles ${W}><w:style w:type="paragraph" w:styleId="LB2"><w:name w:val="List Bullet 2"/></w:style><w:style w:type="paragraph" w:styleId="LN"><w:name w:val="List Number"/></w:style></w:styles>`;
+  const numbering = `<w:numbering ${W}><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="2"><w:numFmt w:val="bullet"/></w:lvl><w:lvl w:ilvl="3"><w:numFmt w:val="decimal"/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num></w:numbering>`;
+  const p = (pPr: string, text: string) => `<w:p><w:pPr>${pPr}</w:pPr><w:r><w:t>${text}</w:t></w:r></w:p>`;
+  const body = p('<w:pStyle w:val="LB2"/>', "a") + p('<w:pStyle w:val="LN"/>', "b") + p('<w:numPr><w:ilvl w:val="3"/><w:numId w:val="1"/></w:numPr>', "c");
+  const bytes = await writeZip([
+    ["word/document.xml", `<w:document ${W}><w:body>${body}</w:body></w:document>`],
+    ["word/styles.xml", styles],
+    ["word/numbering.xml", numbering],
+  ]);
+  const { lines } = await readDocxRich(bytes);
+  assert.deepEqual(lines, [
+    { block: "p", list: { ordered: false, level: 1 } },
+    { block: "p", list: { ordered: true, level: 0 } },
+    { block: "p", list: { ordered: true, level: 2 } },
+  ]);
+});

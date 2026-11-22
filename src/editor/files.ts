@@ -176,6 +176,11 @@ export async function openRich(file: File, { convert, bestLayout }: Omit<Convert
   return joinRich(resolveAuto(segments, bestLayout), lines, convert);
 }
 
+/** A file's text, decoded as openFile decodes it: UTF-16 with a byte order mark, UTF-8, or else Windows-1252. */
+export async function readText(file: File, decodeWindows1252: (bytes: Uint8Array) => string): Promise<string> {
+  return unixLines(decodeBytes(new Uint8Array(await file.arrayBuffer()), decodeWindows1252));
+}
+
 /** Pasted clipboard data as editor text, converting its legacy font text. */
 export function pasted(html: string, rawPlain: string, { convert, bestLayout }: Omit<Converter, "decodeWindows1252">): Joined {
   const join = (segments: Segment[]) => joinSegments(resolveAuto(segments, bestLayout), convert);

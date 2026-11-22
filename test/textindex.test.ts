@@ -61,3 +61,13 @@ test("in headings, lists and quotes, every line is in the text, and every offset
     assert.equal(offsetOfPos(doc, pos), at, `offset ${at} comes back`);
   }
 });
+
+test("a document of rules only places every offset at 0, and a kept link that is not on the web is dropped", async () => {
+  const { schema: rich, safeJson } = await import("../src/editor/rich.ts");
+  const doc = rich.node("doc", null, [rich.node("horizontal_rule")]);
+  assert.equal(textOf(doc), "");
+  assert.equal(posOf(doc, 0), 0);
+  assert.equal(offsetOfPos(doc, 1), 0);
+  const kept = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "x", marks: [{ type: "link", attrs: { href: "javascript:alert(1)" } }, { type: "strong" }] }] }] };
+  assert.deepEqual(rich.nodeFromJSON(safeJson(kept)).firstChild!.firstChild!.marks.map((m) => m.type.name), ["strong"]);
+});

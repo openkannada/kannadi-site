@@ -56,6 +56,8 @@ function floor(list: number[], value: number): number {
 /** Document position of text offset `at`. */
 export function posOf(doc: PmNode, at: number): number {
   const { offsets, positions, sizes } = indexOf(doc);
+  // A document of rules only has no text to place an offset in.
+  if (!offsets.length) return 0;
   const i = floor(offsets, Math.max(0, at));
   return positions[i]! + Math.min(Math.max(0, at) - offsets[i]!, sizes[i]!);
 }
@@ -63,6 +65,7 @@ export function posOf(doc: PmNode, at: number): number {
 /** Text offset of document position `pos`. */
 export function offsetOfPos(doc: PmNode, pos: number): number {
   const { offsets, positions, sizes } = indexOf(doc);
+  if (!offsets.length) return 0;
   // A position just before a paragraph's opening belongs to that paragraph's start, not the previous one's end.
   const i = floor(positions, pos + 1);
   return offsets[i]! + Math.max(0, Math.min(pos - positions[i]!, sizes[i]!));

@@ -81,6 +81,19 @@ CI runs all of them on every pull request.
 | `wrangler.jsonc`, `scripts/deploy.ts`, `infra/` | The Cloudflare Worker, the deploy command, and the hosting notes |
 | `scripts/` | wasm build, Open Graph cards, SEO smoke, voice lint |
 
+## Related
+
+| Page | Built from |
+|---|---|
+| `/editor/`, the converter pages, `/kannada-typing/` | [kannadi](https://github.com/openkannada/kannadi), compiled to WebAssembly |
+| `/fonts/` | [Neha Sans and Neha Serif](https://github.com/openkannada/noto-kannada-fork) and [Gari](https://github.com/openkannada/gari-font) |
+| `/spell-check/` | [kannada-spell](https://github.com/openkannada/kannada-spell) |
+| `/dictionary/` | [kannada-dictionary](https://github.com/openkannada/kannada-dictionary) |
+| `/ocr/` | [kannada-ocr](https://github.com/openkannada/kannada-ocr) |
+| `/ai-benchmark/` | [kannada-llm-bench](https://github.com/openkannada/kannada-llm-bench) |
+
+A number on a project page should match that repository's README; change both together.
+
 ## License
 
 - Code: MIT OR Apache-2.0, at your choice (`LICENSE-MIT`, `LICENSE-APACHE`).

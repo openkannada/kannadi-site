@@ -69,13 +69,15 @@ test("a page's missing trailing slash is a permanent redirect", async () => {
   assert.equal(res.headers.get("location"), "/a/");
 });
 
-test("the site is not launched yet, and the Worker serves it that way", async () => {
+test("the site is launched: pages are indexable, and only the form endpoint says noindex", async () => {
   const { LIVE: live } = await import("../src/content/site.ts");
-  assert.equal(live.launched, false, "launching is 1 line: set LIVE.launched in a pull request");
+  assert.equal(live.launched, true, "launched on 22 November 2026");
   assert.equal(live.origin, `https://${live.host}`);
   const { default: worker } = await import("../worker/index.ts");
   const res = await worker.fetch(new Request("https://openkannada.org/a/"), { ASSETS: assets });
-  assert.equal(res.headers.get("x-robots-tag"), "noindex");
+  assert.equal(res.headers.get("x-robots-tag"), null);
+  const api = await worker.fetch(new Request("https://openkannada.org/api/interest", { method: "POST", body: "{}" }), { ASSETS: assets });
+  assert.equal(api.headers.get("x-robots-tag"), "noindex", "the form endpoint stays out of search");
   const moved = await worker.fetch(new Request("https://www.openkannada.org/a/?q=1"), { ASSETS: assets });
   assert.equal(moved.headers.get("location"), "https://openkannada.org/a/?q=1");
 });

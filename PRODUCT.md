@@ -40,7 +40,7 @@ The pages that rank today are old, ad-funded wrappers around Google's transliter
 - Typing with Kannada keys, Baraha letters or ISO 15919.
 - Normalize, Modernize, akshara, word and character counts, autosave in the browser, keyboard shortcuts.
 - No tracking, cookies or third-party requests. A strict Content-Security-Policy.
-- Hosted at https://openkannada.org on Cloudflare Workers, deployed from CI, and kept out of search results until launch.
+- Hosted at https://openkannada.org on Cloudflare Workers, deployed from CI, and open to search engines and AI crawlers since 22 November 2026.
 
 ## Brand Commitments
 

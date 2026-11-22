@@ -7,7 +7,7 @@ Read `PRODUCT.md` for who the site is for, and `DESIGN.md` for the visual system
 - Commit with my identity, signed and signed off for the DCO: `git -c user.name="Prasad Subrahmanya" -c user.email=prasadus92@gmail.com commit -S -s`. No AI attribution in commits, PR bodies or review replies. Other contributors sign off with `git commit -s` (see CONTRIBUTING.md).
 - Branch from `origin/main` and open a pull request. Never push `main` or force-push.
 - Every push to `main` deploys to https://openkannada.org from CI (see `infra/README.md`), so a merge is a release. Only maintainers deploy production by hand; contributors never run `npm run deploy`, `wrangler deploy`, `wrangler login` or `wrangler logout`. `SITE_URL` stays unset in CI except for the smoke build at `example.org` and the deploy job.
-- The site stays noindex until launch: `LIVE.launched` in `src/content/site.ts` changes only in a maintainer's pull request.
+- The site launched on 22 November 2026, and `LIVE.launched` in `src/content/site.ts` stays `true`. A page kept off the site is marked `held` or `needsReview` in `src/content/pages.ts`.
 - Pin every dependency to an exact version, checked on the registry.
 - Copy is in `src/content/pages.ts`. Plain American English, digits for numbers, no em dashes, no hype, no disclaimers. `npm run voice-lint` checks the built text.
 - Every new page needs an entry in `PAGES`; `npm run seo-smoke` fails on a built page without one.

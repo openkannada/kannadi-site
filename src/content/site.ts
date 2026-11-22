@@ -41,7 +41,7 @@ export const INDEXNOW = {
 export const LIVE = {
   origin: "https://openkannada.org",
   host: "openkannada.org",
-  launched: false,
+  launched: true,
 } as const;
 
 export const AUTHOR = {

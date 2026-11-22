@@ -1,7 +1,7 @@
 #!/bin/sh
 # Workers Builds' build command, on every branch: installs Rust and wasm-bindgen, which the build image lacks,
-# then builds and checks the site for https://openkannada.org. The deploy command then runs
-# `node scripts/deploy.ts publish` on main; other branches run `npx wrangler preview`.
+# fetches the full history for the sitemap's dates, then builds and checks the site for https://openkannada.org.
+# The deploy command then runs `node scripts/deploy.ts publish` on main; other branches run `npx wrangler preview`.
 set -eu
 
 root=$(cd "$(dirname "$0")/.." && pwd)
@@ -33,10 +33,10 @@ if [ "$found" != "$want" ]; then
   tmp=$(mktemp -d)
   echo "Installing wasm-bindgen $want"
   curl -sSfL -o "$tmp/$name.tar.gz" "$base/$name.tar.gz"
-  curl -sSfL -o "$tmp/$name.tar.gz.sha256sum" "$base/$name.tar.gz.sha256sum"
-  expected=$(awk '{ print $1 }' "$tmp/$name.tar.gz.sha256sum")
+  expected=$(awk -v v="$want" '$1 == v { print $2 }' "$root/scripts/wasm-bindgen.sha256")
+  [ -n "$expected" ] || { echo "No checksum for wasm-bindgen $want in scripts/wasm-bindgen.sha256; add it from the release's .sha256sum file." >&2; exit 1; }
   actual=$(sha256sum "$tmp/$name.tar.gz" | awk '{ print $1 }')
-  [ -n "$expected" ] && [ "$expected" = "$actual" ] || { echo "$name.tar.gz does not match its checksum." >&2; exit 1; }
+  [ "$expected" = "$actual" ] || { echo "$name.tar.gz does not match scripts/wasm-bindgen.sha256." >&2; exit 1; }
   tar -xzf "$tmp/$name.tar.gz" -C "$tmp"
   install -m 755 "$tmp/$name/wasm-bindgen" "$bin/wasm-bindgen"
   rm -rf "$tmp"
@@ -44,4 +44,7 @@ fi
 wasm-bindgen --version
 
 cd "$root"
+if [ "$(git rev-parse --is-shallow-repository)" = true ]; then
+  git fetch --quiet --unshallow origin || git fetch --quiet --unshallow https://github.com/openkannada/kannadi-site.git
+fi
 exec node scripts/deploy.ts build

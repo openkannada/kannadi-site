@@ -75,7 +75,7 @@ const T = SITE_STRINGS[lang].press;
         <Portrait photo={PEOPLE[i]!.photo} alt={PEOPLE[i]!.alt} class="photo" />
         <h3 data-align="name">{b.name}</h3>
         <p class="text-muted-foreground" data-align="role">{b.role}</p>
-        <p data-align="text" set:html={b.text ?? ""} />
+        <p data-align="text" set:html={b.text} />
         <p data-align="link"><a href={b.source}>{new URL(b.source).host}</a></p>
       </article>
     ))}

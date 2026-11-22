@@ -27,6 +27,7 @@ class StandInEditor {
     this.marks[name] = Array.from(ranges);
   }
   select() {}
+  focus() {}
   scrollTo() {}
   rect() {
     return { left: 0, top: 0, bottom: 0 };

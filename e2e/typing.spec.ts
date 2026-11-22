@@ -1,7 +1,7 @@
 // Typing in every mode, with real key events, insertText and keyboard compositions.
 import { expect, test } from "@playwright/test";
 
-import { caretAt, chooseMode, docText, focusDoc, isPhone, KANNADA_WORD, type Mode, openEditor, savedText } from "./editor.ts";
+import { caretAt, chooseMode, docText, editorPath, focusDoc, isPhone, KANNADA_WORD, type Mode, NEXT, openEditor, savedText } from "./editor.ts";
 
 const LATIN_MODES: Exclude<Mode, "kannada">[] = ["english", "baraha", "iso15919"];
 const KANNADA_LINE = /^[ಀ-೿‌ ]+$/u;
@@ -33,6 +33,7 @@ test.describe("the first letter", () => {
   });
 
   test("english: the first letter after a cleared line with a placeholder <br> converts", async ({ page }) => {
+    test.skip(NEXT, "ProseMirror draws empty lines itself; the <br> is its own.");
     await openEditor(page, { mode: "english" });
     await focusDoc(page);
     await page.evaluate(() => {
@@ -101,7 +102,7 @@ test.describe("input methods", () => {
       await new Promise((r) => setTimeout(r, 2000));
       await route.continue();
     });
-    await page.goto("/editor/");
+    await page.goto(editorPath("/editor/"));
     const label = page.locator('label[for="mode-english"]');
     await (isPhone(page) ? label.tap() : label.click());
     await page.waitForFunction(() => document.documentElement.classList.contains("ready"));
@@ -165,6 +166,25 @@ test.describe("input methods", () => {
     });
     await expect.poll(() => docText(page)).toMatch(KANNADA_WORD);
   });
+});
+
+test("english: 2 words composed back to back, the second starting at once, both convert", async ({ page }) => {
+  await openEditor(page, { mode: "english" });
+  await focusDoc(page);
+  // A fast phone keyboard can start the next word in the same moment the last one ends.
+  // Between events the page reads what changed, as between real key events, but no timer runs.
+  await page.evaluate(async () => {
+    const doc = document.getElementById("doc")!;
+    const settle = () => new Promise<void>((done) => queueMicrotask(done));
+    for (const word of ["hi ", "kannada "]) {
+      doc.dispatchEvent(new CompositionEvent("compositionstart", { data: "" }));
+      document.execCommand("insertText", false, word);
+      await settle();
+      doc.dispatchEvent(new CompositionEvent("compositionend", { data: word }));
+      await settle();
+    }
+  });
+  await expect.poll(() => savedText(page)).toBe("ಹಿ ಕನ್ನಡ ");
 });
 
 test.describe("text with line breaks", () => {
@@ -247,9 +267,39 @@ test.describe("editing", () => {
     const steps: string[] = [];
     for (let i = 0; i < 7; i++) {
       await page.keyboard.press("Backspace");
+      // On phones a moment passes between keys; ProseMirror waits that long to read what an Android or iOS key did.
+      if (isPhone(page)) await page.waitForTimeout(250);
       steps.push(await docText(page));
     }
     expect(steps).toEqual(["ಕನ್ನಡ್", "ಕನ್ನ", "ಕನ್ನ್", "ಕನ್", "ಕ", "ಕ್", ""]);
+  });
+
+  test("baraha: a phone keyboard's Backspace in a word takes back 1 letter, once", async ({ page }) => {
+    await openEditor(page, { mode: "baraha" });
+    await focusDoc(page);
+    await page.keyboard.type("kanna");
+    expect(await docText(page)).toBe("ಕನ್ನ");
+    // Gboard sends Backspace as an input event with no key to go with it.
+    await page.evaluate(() =>
+      document.getElementById("doc")!.dispatchEvent(new InputEvent("beforeinput", { inputType: "deleteContentBackward", cancelable: true, bubbles: true })),
+    );
+    await page.waitForTimeout(300);
+    expect(await docText(page)).toBe("ಕನ್ನ್");
+  });
+
+  test("undo brings back Latin text as Latin, even in English letters mode", async ({ page }) => {
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.type("hello");
+    // Edits within 1.5s of each other undo together.
+    await page.waitForTimeout(1600);
+    await page.keyboard.press("Alt+Digit2");
+    await expect(page.locator("#mode-english")).toBeChecked();
+    await page.keyboard.press("ControlOrMeta+a");
+    await page.keyboard.press("Backspace");
+    expect(await docText(page)).toBe("");
+    await page.keyboard.press("ControlOrMeta+z");
+    await expect.poll(() => docText(page)).toBe("hello");
   });
 
   test("baraha: Backspace after a finished word deletes Kannada signs, never leaving Latin", async ({ page }) => {
@@ -281,17 +331,23 @@ test.describe("editing", () => {
     test(`${mode}: Enter at the end, then typing, starts a new line`, async ({ page }) => {
       await openEditor(page, { mode });
       await focusDoc(page);
+      // On a phone a moment passes between keys. ProseMirror waits that long for what an Android or iOS key did, and
+      // splits the line itself after 200ms when an emulated iPhone does nothing for Enter.
+      const press = async (key: string) => {
+        await page.keyboard.press(key);
+        if (isPhone(page)) await page.waitForTimeout(250);
+      };
       const [first, second] = mode === "kannada" ? ["ಅಬ", "ಕ"] : ["ab", "ka"];
       if (mode === "kannada") await page.keyboard.insertText(first!);
       else await page.keyboard.type(first!);
       const line = await docText(page);
-      await page.keyboard.press("Enter");
-      await page.keyboard.press("Enter");
+      await press("Enter");
+      await press("Enter");
       if (mode === "kannada") await page.keyboard.insertText(second!);
       else await page.keyboard.type(second!);
       expect(await docText(page)).toBe(`${line}\n\nಕ`);
       // Backspace in a word being typed takes back 1 Latin letter, so the Latin modes need 1 press per letter.
-      for (let i = 0; i < (mode === "kannada" ? 2 : 3); i++) await page.keyboard.press("Backspace");
+      for (let i = 0; i < (mode === "kannada" ? 2 : 3); i++) await press("Backspace");
       if (mode === "kannada") await page.keyboard.insertText(second!);
       else await page.keyboard.type(second!);
       expect(await docText(page)).toBe(`${line}\nಕ`);

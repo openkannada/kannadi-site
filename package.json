@@ -24,7 +24,14 @@
     "deploy": "node scripts/deploy.ts"
   },
   "dependencies": {
-    "astro": "7.4.12"
+    "astro": "7.4.12",
+    "prosemirror-commands": "1.7.2",
+    "prosemirror-history": "1.5.1",
+    "prosemirror-keymap": "1.2.3",
+    "prosemirror-model": "1.25.13",
+    "prosemirror-state": "1.4.4",
+    "prosemirror-transform": "1.12.6",
+    "prosemirror-view": "1.42.9"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.12",

@@ -2,7 +2,7 @@
 // typed is kept as Latin in `latin`, and each new letter re-renders the whole
 // word, since a later letter can change an earlier one (k is ಕ್, ka is ಕ).
 
-import type { DocEditor } from "./editor.ts";
+import type { EditorSurface } from "./editor.ts";
 import type { Edit, TypingMode } from "./text.ts";
 
 type LatinMode = Exclude<TypingMode, "kannada">;
@@ -32,8 +32,8 @@ export interface ComposerEvents {
 // space after it as 1 insertion.
 const WORD_AND_BREAK = /^(.+?)([\s.,;:!?]+)$/u;
 
-/** The editor surface the composer needs; DocEditor provides it. */
-export type ComposerEditor = Pick<DocEditor, "replace" | "selection" | "select" | "composing" | "text">;
+/** The editor surface the composer needs; EditorSurface provides it. */
+export type ComposerEditor = Pick<EditorSurface, "replace" | "selection" | "select" | "composing" | "text">;
 
 const KANNADA = /[\u0C80-\u0CFF]/u;
 const VIRAMA = "\u0CCD";
@@ -187,12 +187,18 @@ export class Composer {
 
   /** Backspace inside the word removes the last Latin letter, not a Kannada sign. */
   beforeInput(e: InputEvent): void {
-    if (!this.word || e.inputType !== "deleteContentBackward" || !e.cancelable) return;
+    if (e.inputType !== "deleteContentBackward" || !e.cancelable) return;
+    if (this.backspace()) e.preventDefault();
+  }
+
+  /** Takes back the last Latin letter when the caret is at the end of the word; returns true when it did. */
+  backspace(): boolean {
+    if (!this.word) return false;
     const sel = this.editor.selection();
-    if (!sel || sel.start !== sel.end || sel.end !== this.end()) return;
-    e.preventDefault();
+    if (!sel || sel.start !== sel.end || sel.end !== this.end()) return false;
     this.word.latin = Array.from(this.word.latin).slice(0, -1).join("");
     this.render(this.end());
+    return true;
   }
 
   /** Escape keeps the word as typed, in Latin letters. */

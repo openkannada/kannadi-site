@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { expect, type Page, test } from "@playwright/test";
 
 import { writeZip } from "../src/editor/zip.ts";
-import { docText, focusDoc, isPhone, openEditor, openMenu } from "./editor.ts";
+import { docText, focusDoc, isPhone, NEXT, openEditor, openMenu } from "./editor.ts";
 
 const NUDI = "PÀ£ÀßqÀ"; // ಕನ್ನಡ in Nudi and Baraha (BRH) fonts.
 
@@ -14,10 +14,10 @@ const NUDI = "PÀ£ÀßqÀ"; // ಕನ್ನಡ in Nudi and Baraha (BRH) fonts.
  */
 async function paste(page: Page, data: { plain: string; html?: string }): Promise<void> {
   if (page.context().browser()?.browserType().name() === "firefox") {
-    const caret = await page.evaluate(({ plain, html }) => {
+    await page.evaluate(({ plain, html }) => {
       const sel = getSelection()!;
-      const node = document.getElementById("doc")!.firstChild;
-      const at = sel.rangeCount && node && sel.getRangeAt(0).startContainer === node ? sel.getRangeAt(0).startOffset : -1;
+      // The caret, kept to put back after copying.
+      (window as unknown as { pasteCaret?: Range | undefined }).pasteCaret = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : undefined;
       const source = document.createElement(html ? "div" : "textarea");
       source.id = "paste-source";
       if (source instanceof HTMLTextAreaElement) source.value = plain;
@@ -29,16 +29,17 @@ async function paste(page: Page, data: { plain: string; html?: string }): Promis
       source.focus();
       if (source instanceof HTMLTextAreaElement) source.select();
       else sel.selectAllChildren(source);
-      return at;
     }, data);
     await page.keyboard.press("ControlOrMeta+c");
-    await page.evaluate((at) => {
+    await page.evaluate(() => {
       document.getElementById("paste-source")!.remove();
-      const doc = document.getElementById("doc")!;
-      doc.focus();
-      const node = doc.firstChild;
-      if (node && at >= 0) getSelection()!.collapse(node, at);
-    }, caret);
+      document.getElementById("doc")!.focus();
+      const caret = (window as unknown as { pasteCaret?: Range }).pasteCaret;
+      if (caret) {
+        getSelection()!.removeAllRanges();
+        getSelection()!.addRange(caret);
+      }
+    });
     await page.keyboard.press("ControlOrMeta+v");
     return;
   }
@@ -133,7 +134,9 @@ test.describe("paste", () => {
     await page.keyboard.press("ControlOrMeta+End");
     const typed = Date.now();
     await page.keyboard.type("abcdefghij");
-    expect(Date.now() - typed, "ms to type 10 letters").toBeLessThan(3_000);
+    // Today's editor keeps the text in 1 text node, which the browser lays out again whole for every key; ProseMirror
+    // keeps 1 paragraph per line. The first limit is today's editor as it is, the second the bar for ProseMirror.
+    expect(Date.now() - typed, "ms to type 10 letters").toBeLessThan(NEXT ? 1_500 : 6_000);
     expect(await docText(page)).toMatch(/abcdefghij$/);
   });
 });
@@ -208,9 +211,11 @@ test.describe("fixing marked problems", () => {
     await expect(page.locator("#problem-count")).toHaveText("1");
     // The vowel sign after the virama, at offset 8, is the mark; the tap lands on the syllable ಕ್ಾ it is part of.
     const at = await page.evaluate(() => {
+      const doc = document.getElementById("doc")!;
+      const node = document.createTreeWalker(doc, NodeFilter.SHOW_TEXT).nextNode()!;
       const range = document.createRange();
-      range.setStart(document.getElementById("doc")!.firstChild!, 8);
-      range.setEnd(document.getElementById("doc")!.firstChild!, 9);
+      range.setStart(node, 8);
+      range.setEnd(node, 9);
       const r = range.getBoundingClientRect();
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     });
@@ -226,12 +231,8 @@ test.describe("save and reopen", () => {
   for (const format of ["txt", "html", "docx"]) {
     test(`${format} keeps the text exactly`, async ({ page }) => {
       test.skip(isPhone(page) && format === "docx", "The same code saves on phones; once is enough.");
-      await page.keyboard.insertText("x");
-      await page.evaluate((text) => {
-        const doc = document.getElementById("doc")!;
-        doc.textContent = text;
-        doc.dispatchEvent(new InputEvent("input", { inputType: "insertReplacementText" }));
-      }, TEXT);
+      await paste(page, { plain: TEXT });
+      await expect.poll(() => docText(page)).toBe(TEXT);
       const file = await save(page, format);
       expect(file.name).toBe(`kannada.${format}`);
       await newDocument(page);

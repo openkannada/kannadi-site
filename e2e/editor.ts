@@ -9,9 +9,15 @@ export const KANNADA_WORD = /^[ಀ-೿‌]+$/u;
 /** Whether this project is a phone: a touch screen under 48rem, where the toolbar docks at the bottom. */
 export const isPhone = (page: Page) => (page.viewportSize()?.width ?? 1280) < 768;
 
+/** EDITOR_NEXT=1 runs every test on the ProseMirror editor, which ?editor=next opens. */
+export const NEXT = process.env.EDITOR_NEXT === "1";
+
+/** A page's address, on the ProseMirror editor when EDITOR_NEXT=1. */
+export const editorPath = (path: string) => (NEXT ? `${path}${path.includes("?") ? "&" : "?"}editor=next` : path);
+
 /** Opens the editor and waits until it takes input; with a mode, chooses it and waits for its word list. */
 export async function openEditor(page: Page, options: { path?: string; mode?: Mode } = {}): Promise<void> {
-  await page.goto(options.path ?? "/editor/");
+  await page.goto(editorPath(options.path ?? "/editor/"));
   await page.waitForFunction(() => document.documentElement.classList.contains("ready"));
   if (options.mode) await chooseMode(page, options.mode);
 }
@@ -47,12 +53,7 @@ export async function focusDoc(page: Page): Promise<void> {
   const doc = page.locator("#doc");
   const position = { x: 12, y: 12 };
   await (isPhone(page) ? doc.tap({ position }) : doc.click({ position }));
-  await page.evaluate(() => {
-    const doc = document.getElementById("doc")!;
-    const node = doc.firstChild;
-    const end = (node?.textContent ?? "").replace(/\n$/, "").length;
-    getSelection()?.collapse(node ?? doc, node ? end : 0);
-  });
+  await caretAt(page, (await docText(page)).length);
 }
 
 /** The collapsed caret as a text offset, counting 1 for each line, in either editor; -1 when it is not in the text. */
@@ -71,12 +72,16 @@ export const caretOffset = (page: Page) =>
   });
 
 /**
- * The document's text, without the extra final line break that gives an empty last line its place. That break comes
- * only after a line break of the text's own, so a single final break is left in: a stray one shows.
+ * The document's text. ProseMirror holds 1 paragraph per line. The other editor holds 1 text node, plus a final line
+ * break after a line break of the text's own, to give an empty last line its place; a single final break is left
+ * in, so a stray one shows.
  */
 export const docText = (page: Page) =>
   page.evaluate(() => {
-    const text = document.getElementById("doc")?.textContent ?? "";
+    const doc = document.getElementById("doc")!;
+    const paragraphs = doc.querySelectorAll(":scope > p");
+    if (paragraphs.length) return [...paragraphs].map((p) => p.textContent ?? "").join("\n");
+    const text = doc.textContent ?? "";
     return text.endsWith("\n\n") ? text.slice(0, -1) : text;
   });
 
@@ -94,12 +99,29 @@ export async function settle(page: Page): Promise<number> {
   return last;
 }
 
-/** Puts the caret at a text offset. */
+/** Puts the caret at a text offset, counting 1 for each line, in either editor. */
 export const caretAt = (page: Page, at: number) =>
   page.evaluate((at) => {
     const doc = document.getElementById("doc")!;
-    const node = doc.firstChild ?? doc;
-    getSelection()?.collapse(node, Math.min(at, node.textContent?.length ?? 0));
+    const paragraphs = [...doc.querySelectorAll(":scope > p")];
+    if (!paragraphs.length) {
+      const node = doc.firstChild ?? doc;
+      getSelection()?.collapse(node, Math.min(at, node.textContent?.length ?? 0));
+      return;
+    }
+    let left = at;
+    for (const p of paragraphs) {
+      const length = p.textContent?.length ?? 0;
+      if (left <= length || p === paragraphs.at(-1)) {
+        const walker = document.createTreeWalker(p, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode() as Text | null; node; node = walker.nextNode() as Text | null) {
+          if (left <= node.length) return void getSelection()?.collapse(node, left);
+          left -= node.length;
+        }
+        return void getSelection()?.collapse(p, 0);
+      }
+      left -= length + 1;
+    }
   }, at);
 
 /** The suggestions on the strip, or [] when it is hidden. */
@@ -145,7 +167,15 @@ export const layout = async (page: Page): Promise<Layout> => {
     const doc = document.getElementById("doc")!;
     const sel = getSelection();
     let caret: Box | null = null;
-    if (sel?.rangeCount && doc.contains(sel.getRangeAt(0).endContainer)) {
+    const prose = doc.classList.contains("ProseMirror");
+    if (prose && sel?.rangeCount && doc.contains(sel.getRangeAt(0).endContainer)) {
+      // ProseMirror redraws text changed under it, so its caret is measured without a marker.
+      const range = sel.getRangeAt(0).cloneRange();
+      range.collapse(false);
+      const own = range.getBoundingClientRect();
+      const block = (range.endContainer.nodeType === Node.TEXT_NODE ? range.endContainer.parentElement : (range.endContainer as Element))!.closest("p");
+      caret = box(own.height ? own : block!.getBoundingClientRect());
+    } else if (sel?.rangeCount && doc.contains(sel.getRangeAt(0).endContainer)) {
       const range = sel.getRangeAt(0);
       // The letter after the caret gives its line; a marker, measured at the start of a text in Firefox above the
       // line, is only for an empty line.
@@ -158,7 +188,7 @@ export const layout = async (page: Page): Promise<Layout> => {
         if (r) caret = { top: r.top, bottom: r.bottom, left: r.left, right: r.left };
       }
     }
-    if (!caret && sel?.rangeCount && doc.contains(sel.getRangeAt(0).endContainer)) {
+    if (!caret && !prose && sel?.rangeCount && doc.contains(sel.getRangeAt(0).endContainer)) {
       const range = sel.getRangeAt(0);
       const { endContainer, endOffset } = range;
       const marker = document.createElement("span");
@@ -174,12 +204,9 @@ export const layout = async (page: Page): Promise<Layout> => {
       else sel.collapse(doc, Math.min(endOffset, doc.childNodes.length));
     }
     const lines: Box[] = [];
-    const node = doc.firstChild;
-    if (node) {
-      const all = document.createRange();
-      all.selectNodeContents(node);
-      for (const r of all.getClientRects()) if (r.width > 1 && r.bottom > 0 && r.top < innerHeight) lines.push(box(r));
-    }
+    const all = document.createRange();
+    all.selectNodeContents(doc);
+    for (const r of all.getClientRects()) if (r.width > 1 && r.height < 80 && r.bottom > 0 && r.top < innerHeight) lines.push(box(r));
     // The band is the dock's ::before, inset from the dock's own box.
     const dock = document.querySelector<HTMLElement>(".dock")!;
     const d = dock.getBoundingClientRect();

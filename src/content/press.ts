@@ -31,7 +31,7 @@ const BIOS = [
   {
     name: "Neha Prasad",
     role: "Founding member",
-    text: "Neha Prasad is a founding member of Open Kannada. She is a design engineer in Norway and Lead Designer for CPR Finder at Laerdal Medical. She also founded Niyora, an app for the emotional side of PMS, perimenopause and ADHD. Before that, she was the founding product designer at Infinity Games. She trained as a doctor in India.",
+    text: "Neha Prasad is a founding member of Open Kannada. She is a design engineer in Norway and Lead Designer for CPR Finder at Laerdal Medical. She also founded Niyora, an app for the emotional side of PMS, perimenopause and ADHD. Before that, she was the founding product designer at Infinity Games. She trained as a doctor in India, in an Indian system of medicine.",
     source: "https://neha-prasad.com/",
   },
 ];
@@ -134,7 +134,7 @@ const PRESS_KN: Press = {
     {
       name: "ನೇಹಾ ಪ್ರಸಾದ್",
       role: "ಸ್ಥಾಪಕ ಸದಸ್ಯೆ",
-      text: "ನೇಹಾ ಪ್ರಸಾದ್ ಓಪನ್ ಕನ್ನಡದ ಸ್ಥಾಪಕ ಸದಸ್ಯೆ. ಅವರು ನಾರ್ವೆಯಲ್ಲಿ ಡಿಸೈನ್ ಎಂಜಿನಿಯರ್ ಆಗಿದ್ದು, Laerdal Medical ನಲ್ಲಿ CPR Finder ನ ಲೀಡ್ ಡಿಸೈನರ್. PMS, ಪೆರಿಮೆನೋಪಾಸ್ ಮತ್ತು ADHD ಯ ಭಾವನಾತ್ಮಕ ಅಂಶಗಳಿಗಾಗಿ ರೂಪಿಸಿದ Niyora ಆ್ಯಪ್ ಅನ್ನು ಅವರು ಸ್ಥಾಪಿಸಿದ್ದಾರೆ. ಅದಕ್ಕೂ ಮೊದಲು Infinity Games ನಲ್ಲಿ ಸ್ಥಾಪಕ ಪ್ರಾಡಕ್ಟ್ ಡಿಸೈನರ್ ಆಗಿದ್ದರು. ಅವರು ಭಾರತದಲ್ಲಿ ವೈದ್ಯಕೀಯ ತರಬೇತಿ ಪಡೆದವರು.",
+      text: "ನೇಹಾ ಪ್ರಸಾದ್ ಓಪನ್ ಕನ್ನಡದ ಸ್ಥಾಪಕ ಸದಸ್ಯೆ. ಅವರು ನಾರ್ವೆಯಲ್ಲಿ ಡಿಸೈನ್ ಎಂಜಿನಿಯರ್ ಆಗಿದ್ದು, Laerdal Medical ನಲ್ಲಿ CPR Finder ನ ಲೀಡ್ ಡಿಸೈನರ್. PMS, ಪೆರಿಮೆನೋಪಾಸ್ ಮತ್ತು ADHD ಯ ಭಾವನಾತ್ಮಕ ಅಂಶಗಳಿಗಾಗಿ ರೂಪಿಸಿದ Niyora ಆ್ಯಪ್ ಅನ್ನು ಅವರು ಸ್ಥಾಪಿಸಿದ್ದಾರೆ. ಅದಕ್ಕೂ ಮೊದಲು Infinity Games ನಲ್ಲಿ ಸ್ಥಾಪಕ ಪ್ರಾಡಕ್ಟ್ ಡಿಸೈನರ್ ಆಗಿದ್ದರು. ಅವರು ಭಾರತದಲ್ಲಿ, ಭಾರತೀಯ ವೈದ್ಯಪದ್ಧತಿಯೊಂದರಲ್ಲಿ, ವೈದ್ಯರಾಗಿ ತರಬೇತಿ ಪಡೆದವರು.",
       source: "https://neha-prasad.com/",
     },
   ],

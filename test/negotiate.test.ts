@@ -20,7 +20,7 @@ test("markdown is served only to clients that ask for it over HTML", () => {
 const assets = {
   fetch: async (input) => {
     const path = new URL(input instanceof Request ? input.url : String(input)).pathname;
-    if (path === "/a/index.md") return new Response("# A", { headers: { "content-type": "application/octet-stream" } });
+    if (path === "/a/index.md") return new Response("# A", { headers: { "content-type": "application/octet-stream", "x-robots-tag": "noindex" } });
     if (path === "/a/" || path === "/b/") return new Response("<h1>A</h1>", { headers: { "content-type": "text/html" } });
     if (path === "/a") return new Response(null, { status: 307, headers: { location: "/a/" } });
     return new Response("", { status: 404 });
@@ -34,6 +34,7 @@ test("the Worker answers markdown requests with the mirror and marks pages as va
   assert.equal(md.headers.get("content-type"), "text/markdown; charset=utf-8");
   assert.equal(md.headers.get("vary"), "Accept");
   assert.equal(await md.text(), "# A");
+  assert.equal(md.headers.get("x-robots-tag"), null, "the page served as markdown is still the page, not its noindex mirror file");
   const page = await get("https://openkannada.org/a/");
   assert.equal(await page.text(), "<h1>A</h1>");
   assert.equal(page.headers.get("vary"), "Accept");

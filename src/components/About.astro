@@ -1,5 +1,6 @@
 ---
 import { ABOUT as ALL } from "../content/about.ts";
+import { RIGHTS } from "../content/site.ts";
 import type { Lang } from "../i18n/core.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
 import { PULL_OUT } from "../content/story.ts";
@@ -82,6 +83,7 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
 <section aria-labelledby="supported">
   <h2 id="supported">{T.supported}</h2>
   <p set:html={ABOUT.supporter} />
+  <p set:html={RIGHTS[lang]} />
 </section>
 
 <section aria-labelledby="help">

@@ -37,7 +37,7 @@ The certificates can take a few minutes, so the live check retries for up to 5 m
 
 ## Requests
 
-Pages and other files run the Worker first, so it can redirect and set noindex. Hashed scripts, styles and fonts under `/_astro/` and `/fonts/` go straight to the asset server, which does not count as a Worker request; `_headers` marks them noindex. The Workers free plan allows 100,000 Worker requests a day.
+Pages and other files run the Worker first, so it can redirect and answer markdown requests. Hashed scripts, styles and fonts under `/_astro/` go straight to the asset server, which does not count as a Worker request; `_headers` marks them noindex, as it does the markdown mirrors at their own `index.md` addresses and `/fonts/OFL.txt`. The Workers free plan allows 100,000 Worker requests a day.
 
 ## Build files across a deploy
 

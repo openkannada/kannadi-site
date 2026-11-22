@@ -61,11 +61,8 @@
   }
   /* From just above the toolbar down to the keyboard or the screen's edge, as wide as the sheet. */
   .dock::before {
-    inset: -0.5rem 0.75rem calc(-1 * var(--dock-bottom));
-    box-shadow:
-      inset 1px 0 var(--border),
-      inset -1px 0 var(--border),
-      0 -1px var(--border);
+    inset: -0.5rem 0 calc(-1 * var(--dock-bottom));
+    box-shadow: 0 -1px var(--border);
   }
 }
 
@@ -508,11 +505,22 @@ body.dragging .drop-hint {
   @apply whitespace-nowrap;
 }
 
-/* Phones: the dock covers the sheet's bottom edge, so the counts move to the top. */
+/* Phones: the sheet runs edge to edge, and its writing area fills the screen down to the dock, which covers the
+   sheet's bottom edge, so the counts move to the top. */
 @media (max-width: 47.99rem) {
+  .editor {
+    padding-inline: 0;
+  }
   .sheet {
-    padding-top: 3.25rem;
-    padding-bottom: 6rem;
+    padding: 3.25rem 1rem 6rem;
+    border-inline-width: 0;
+    border-radius: 1.25rem 1.25rem 0 0;
+  }
+  .doc {
+    min-height: calc(100lvh - 3.25rem);
+  }
+  .welcome {
+    inset-inline: 1rem;
   }
   .sheet-foot {
     top: 1rem;

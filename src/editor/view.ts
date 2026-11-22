@@ -13,6 +13,8 @@ export interface ViewParts {
 /** Space kept between the caret line and the band or the suggestions. */
 const MARGIN = 12;
 const PHONE = "(max-width: 47.99rem)";
+/** Where the part of the window a person can see starts: iOS pans it down the page while the keyboard is open. */
+const seenTop = () => window.visualViewport?.offsetTop ?? 0;
 
 export class View {
   private readonly editor: EditorSurface;
@@ -38,7 +40,15 @@ export class View {
     for (const type of ["pointerup", "pointercancel", "contextmenu", "dragstart", "keydown", "beforeinput", "blur"]) {
       addEventListener(type, release, { capture: true, passive: true });
     }
+    editor.el.addEventListener("focus", () => requestAnimationFrame(() => this.fill()));
     band();
+  }
+
+  /** On phones, brings the sheet's top up to the top of the screen, so the writing area fills it down to the toolbar. */
+  private fill(): void {
+    if (!this.phone || document.activeElement !== this.editor.el) return;
+    const below = this.parts.sheet.getBoundingClientRect().top - seenTop();
+    if (below > 1) scrollBy({ top: below, behavior: "instant" });
   }
 
   private get phone(): boolean {
@@ -74,7 +84,7 @@ export class View {
     if (this.phone) {
       let bottom = this.parts.toolbar.getBoundingClientRect().top;
       if (!strip.hidden) bottom = Math.min(bottom, strip.getBoundingClientRect().top);
-      return { top: MARGIN, bottom: bottom - MARGIN };
+      return { top: seenTop() + MARGIN, bottom: bottom - MARGIN };
     }
     return { top: stuck ? this.bandBottom() + MARGIN : MARGIN, bottom: innerHeight - MARGIN };
   }

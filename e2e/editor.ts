@@ -48,6 +48,25 @@ export async function wordsReady(page: Page): Promise<void> {
   await page.waitForFunction(() => document.querySelector<HTMLElement>(".editor")?.dataset.words === "ready", null, { timeout: 15_000 });
 }
 
+/**
+ * Opens an emulated on-screen keyboard `height` px tall, since emulators have none: the visual viewport shrinks as a real
+ * one makes it. iOS can also pan the visual viewport `pan` px down the page while the keyboard is open.
+ */
+export const openKeyboard = (page: Page, height: number, pan = 0) =>
+  page.evaluate(
+    ([height, pan]) => {
+      const vv = visualViewport!;
+      const visible = innerHeight - height;
+      Object.defineProperty(vv, "height", { configurable: true, get: () => visible });
+      Object.defineProperty(vv, "offsetTop", { configurable: true, get: () => pan });
+      vv.dispatchEvent(new Event("resize"));
+    },
+    [height, pan],
+  );
+
+/** The part of the window a person can see: above the keyboard, and below where iOS has panned to. */
+export const visibleArea = (page: Page) => page.evaluate(() => ({ top: visualViewport!.offsetTop, bottom: visualViewport!.offsetTop + visualViewport!.height }));
+
 /** Clicks into the document at its end, as a person starting to type would. */
 export async function focusDoc(page: Page): Promise<void> {
   // Near the top left, where typing starts; the sample button can sit at the middle of an empty document.

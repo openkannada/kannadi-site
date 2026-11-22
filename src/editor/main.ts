@@ -284,10 +284,14 @@ function insert(result: Result, what?: string): number {
 async function open(file: File | undefined): Promise<void> {
   if (!file) return;
   try {
-    const result = await (await files()).openFile(file, io);
+    const f = await files();
+    // A Word file keeps its headings, lists, quotes and formats on the ProseMirror editor.
+    const rich = pm ? await f.openRich(file, io) : null;
+    const result = rich ?? (await f.openFile(file, io));
     issues.clear();
     // An HTML page with nothing to convert keeps its headings, lists and formats on the ProseMirror editor.
-    if (pm && !result.converted && /\.html?$/i.test(file.name)) pm.setHtml(await file.text());
+    if (pm && rich) pm.loadLines(rich.text, rich.lines, rich.spans);
+    else if (pm && !result.converted && /\.html?$/i.test(file.name)) pm.setHtml(await file.text());
     else editor.setText(result.text);
     issues.addUnknown(result.unknown);
     editor.focus();
@@ -326,7 +330,8 @@ async function exportAs(format: ExportFormat | "nudi"): Promise<void> {
   }
   const name = `${fileName}.${format}`;
   try {
-    download(await (await files()).exportBlob(editor.text, format, fileName, format === "html" ? pm?.html() : undefined), name);
+    const formatted = pm ? { html: format === "html" ? pm.html() : undefined, lines: format === "docx" ? pm.richLines() : undefined } : {};
+    download(await (await files()).exportBlob(editor.text, format, fileName, formatted), name);
   } catch {
     say(fmt(S.files.saveFailed, { name }));
     return;

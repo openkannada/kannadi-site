@@ -248,13 +248,13 @@ export async function readDocxRich(bytes: Uint8Array): Promise<{ segments: Segme
         run = t.close || t.empty ? null : { style: null, legacy: null, format: {} };
         break;
       case "w:b":
-        if (run && !inParagraphProps && on(t.attrs)) run.format.bold = true;
+        if (run && on(t.attrs)) run.format.bold = true;
         break;
       case "w:i":
-        if (run && !inParagraphProps && on(t.attrs)) run.format.italic = true;
+        if (run && on(t.attrs)) run.format.italic = true;
         break;
       case "w:u":
-        if (run && !inParagraphProps && on(t.attrs)) run.format.underline = true;
+        if (run && on(t.attrs)) run.format.underline = true;
         break;
       case "w:rStyle":
         if (run) run.style = t.attrs["w:val"] ?? null;
@@ -352,9 +352,12 @@ const RICH_CONTENT_TYPES = CONTENT_TYPES.replace(
   `<Override PartName="/word/numbering.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.numbering+xml"/></Types>`,
 );
 
+const HYPERLINK = `<w:rStyle w:val="Hyperlink"/>`;
+const UNDERLINE = `<w:u w:val="single"/>`;
+
 function runXml(text: string, format: RunFormat | undefined): string {
   const props = format
-    ? `${format.href ? '<w:rStyle w:val="Hyperlink"/>' : ""}${format.bold ? "<w:b/><w:bCs/>" : ""}${format.italic ? "<w:i/><w:iCs/>" : ""}${format.underline ? '<w:u w:val="single"/>' : ""}`
+    ? [format.href && HYPERLINK, format.bold && "<w:b/><w:bCs/>", format.italic && "<w:i/><w:iCs/>", format.underline && UNDERLINE].filter(Boolean).join("")
     : "";
   const body = text
     .split("\t")

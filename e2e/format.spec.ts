@@ -155,6 +155,53 @@ test.describe("on the ProseMirror editor", () => {
     await expect.poll(() => html(page)).toBe(structure);
   });
 
+  test("a Word file saved with formats opens again with them", async ({ page }) => {
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.type("# ");
+    await page.keyboard.insertText("ವರದಿ");
+    await enter(page);
+    await page.keyboard.type("- ");
+    await page.keyboard.insertText("ಒಂದು");
+    await enter(page);
+    await page.keyboard.insertText("ಎರಡು");
+    await enter(page);
+    await enter(page);
+    await page.keyboard.type("1. ");
+    await page.keyboard.insertText("ಮೊದಲು");
+    await enter(page);
+    await enter(page);
+    await page.keyboard.type("> ");
+    await page.keyboard.insertText("ಉಲ್ಲೇಖ");
+    const structure = await html(page);
+    expect(structure).toBe("<h1>ವರದಿ</h1><ul><li><p>ಒಂದು</p></li><li><p>ಎರಡು</p></li></ul><ol><li><p>ಮೊದಲು</p></li></ol><blockquote><p>ಉಲ್ಲೇಖ</p></blockquote>");
+    await openMenu(page, "save-menu");
+    const [download] = await Promise.all([page.waitForEvent("download"), page.locator('[data-export="docx"]').click()]);
+    const body = await readFile(await download.path());
+    await openMenu(page, "tools-menu");
+    await page.locator('[data-run="new"]').click();
+    await expect.poll(() => docText(page)).toBe("");
+    await page.locator("#file").setInputFiles({ name: "saved.docx", mimeType: "application/octet-stream", buffer: body });
+    await expect.poll(() => html(page)).toBe(structure);
+  });
+
+  test("a Word file in a Nudi font opens converted, with its heading, list and bold", async ({ page }) => {
+    const { writeZip } = await import("../src/editor/zip.ts");
+    const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"';
+    const body =
+      `<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Nudi 01 e"/></w:rPr><w:t>PÀ£ÀßqÀ</w:t></w:r></w:p>` +
+      `<w:p><w:pPr><w:numPr><w:ilvl w:val="0"/><w:numId w:val="1"/></w:numPr></w:pPr><w:r><w:rPr><w:rFonts w:ascii="Nudi 01 e"/><w:b/></w:rPr><w:t>PÀ£ÀßqÀ</w:t></w:r></w:p>`;
+    const docx = await writeZip([
+      ["word/document.xml", `<w:document ${W}><w:body>${body}</w:body></w:document>`],
+      ["word/styles.xml", `<w:styles ${W}><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/></w:style></w:styles>`],
+      ["word/numbering.xml", `<w:numbering ${W}><w:abstractNum w:abstractNumId="0"><w:lvl w:ilvl="0"><w:numFmt w:val="bullet"/></w:lvl></w:abstractNum><w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num></w:numbering>`],
+    ]);
+    await openEditor(page);
+    await page.locator("#file").setInputFiles({ name: "old.docx", mimeType: "application/octet-stream", buffer: Buffer.from(docx) });
+    await expect.poll(() => html(page)).toBe("<h1>ಕನ್ನಡ</h1><ul><li><p><strong>ಕನ್ನಡ</strong></p></li></ul>");
+    await expect(page.locator("#toast-text")).toContainText("old.docx");
+  });
+
   test("the format menu works on a phone, and the Format button is in the toolbar", async ({ page }) => {
     await openEditor(page);
     await expect(page.locator("#format")).toBeVisible();

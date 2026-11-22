@@ -9,9 +9,10 @@ import { type Command, EditorState, TextSelection, type Transaction } from "pros
 import { EditorView } from "prosemirror-view";
 
 import type { EditListener, EditorSurface, TextRange } from "./editor.ts";
-import { FORMAT_KEYS, FORMATS, type Format, fromHtml, isActive, LIST_KEYS, schema, setLink, shortcuts, toHtml } from "./rich.ts";
+import type { RichLine } from "./docx.ts";
+import { docFromLines, FORMAT_KEYS, FORMATS, type Format, fromHtml, isActive, linesOf, LIST_KEYS, schema, setLink, shortcuts, toHtml } from "./rich.ts";
 import { offsetOfPos, posOf, textOf } from "./textindex.ts";
-import { diff } from "./text.ts";
+import { diff, type LineBlock, type Span } from "./text.ts";
 
 /** Typing within this long after the last keystroke undoes as 1 step, as in DocEditor. */
 const GROUP_MS = 1500;
@@ -317,6 +318,19 @@ export class PmEditor implements EditorSurface {
     const state = this.view.state;
     this.view.dispatch(state.tr.replaceWith(0, state.doc.content.size, doc.content).setMeta("inputType", "insertReplacementText"));
     this.select(0);
+  }
+
+  /** Shows text with the block of each line and formatted ranges, as a Word file reads, as 1 undoable step. */
+  loadLines(text: string, lines: LineBlock[], spans: Span[]): void {
+    const doc = docFromLines(text, lines, spans);
+    const state = this.view.state;
+    this.view.dispatch(state.tr.replaceWith(0, state.doc.content.size, doc.content).setMeta("inputType", "insertReplacementText"));
+    this.select(0);
+  }
+
+  /** The document as lines with their blocks and formatted runs, for a Word file. */
+  richLines(): RichLine[] {
+    return linesOf(this.view.state.doc);
   }
 
   /** Scrolls a range into the middle third at once, so a popover can be placed next to it. */

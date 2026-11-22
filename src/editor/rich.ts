@@ -6,7 +6,9 @@ import { DOMParser, DOMSerializer, type MarkType, type Node as PmNode, type Node
 import { addListNodes, liftListItem, sinkListItem, splitListItem, wrapInList } from "prosemirror-schema-list";
 import type { Command, EditorState, Plugin } from "prosemirror-state";
 
+import type { RichLine } from "./docx.ts";
 import { parseHtml, STYLE } from "./html.ts";
+import type { LineBlock, RunFormat, Span } from "./text.ts";
 
 /** A link goes only to the web or to an email address. */
 export function safeHref(href: string | null | undefined): string | null {
@@ -167,4 +169,123 @@ export function fromHtml(html: string): PmNode {
   // The renamed <style>, which the parser moves into the body, and anything else that is not text to read.
   for (const el of body.querySelectorAll(`textarea[${STYLE}], script, noscript, template, title`)) el.remove();
   return DOMParser.fromSchema(schema).parse(body, { preserveWhitespace: ours });
+}
+
+interface Json {
+  type: string;
+  attrs?: Record<string, unknown>;
+  content?: Json[];
+  marks?: Json[];
+  text?: string;
+}
+
+/** The marks of a run's format, as ProseMirror JSON; a link only to the web or to an email address. */
+function marksOf(format: RunFormat): Json[] {
+  const marks: Json[] = [];
+  const href = safeHref(format.href);
+  if (href) marks.push({ type: "link", attrs: { href } });
+  if (format.bold) marks.push({ type: "strong" });
+  if (format.italic) marks.push({ type: "em" });
+  if (format.underline) marks.push({ type: "underline" });
+  return marks;
+}
+
+/** A line's text, from `start` in the whole text, as text nodes carrying the formats of the spans over them. */
+function inlineOf(line: string, start: number, spans: Span[]): Json[] {
+  const cuts = new Set([0, line.length]);
+  for (const s of spans) {
+    if (s.end <= start || s.start >= start + line.length) continue;
+    cuts.add(Math.max(0, s.start - start));
+    cuts.add(Math.min(line.length, s.end - start));
+  }
+  const at = [...cuts].sort((a, b) => a - b);
+  const nodes: Json[] = [];
+  for (let i = 0; i + 1 < at.length; i++) {
+    const [a, b] = [at[i]!, at[i + 1]!];
+    if (a === b) continue;
+    const over = spans.filter((s) => s.start <= start + a && s.end >= start + b);
+    const marks = over.flatMap((s) => marksOf(s.format));
+    const unique = marks.filter((m, j) => marks.findIndex((n) => n.type === m.type) === j);
+    nodes.push({ type: "text", text: line.slice(a, b), ...(unique.length ? { marks: unique } : {}) });
+  }
+  return nodes;
+}
+
+/**
+ * A document from text with the block of each line and formatted ranges, as a Word file reads: consecutive list
+ * lines make nested lists by level, and consecutive quote lines 1 quote. The text stays exactly as given, line for
+ * line, so offsets into it, such as marks for unknown glyphs, keep their place.
+ */
+export function docFromLines(text: string, lines: LineBlock[], spans: Span[]): PmNode {
+  const out: Json[] = [];
+  let lists: Json[] = [];
+  let quote: Json | null = null;
+  let at = 0;
+  for (const [i, line] of text.split("\n").entries()) {
+    const info = lines[i] ?? { block: "p" };
+    const content = inlineOf(line, at, spans);
+    at += line.length + 1;
+    const heading = info.block === "h1" || info.block === "h2" || info.block === "h3";
+    const paragraph: Json = { type: "paragraph", content };
+    if (info.list) {
+      quote = null;
+      // A level cannot open below 1 that is not there.
+      const level = Math.min(info.list.level, lists.length);
+      const type = info.list.ordered ? "ordered_list" : "bullet_list";
+      lists.length = Math.min(lists.length, level + 1);
+      if (lists.length === level + 1 && lists[level]!.type !== type) lists.length = level;
+      if (lists.length === level) {
+        const list: Json = { type, content: [] };
+        if (level === 0) out.push(list);
+        else lists[level - 1]!.content!.at(-1)!.content!.push(list);
+        lists.push(list);
+      }
+      // A list item starts with a paragraph; a heading in a list keeps its text and formats.
+      lists[level]!.content!.push({ type: "list_item", content: [paragraph] });
+      continue;
+    }
+    lists = [];
+    if (info.block === "quote") {
+      if (!quote) out.push((quote = { type: "blockquote", content: [] }));
+      quote.content!.push(paragraph);
+      continue;
+    }
+    quote = null;
+    out.push(heading ? { type: "heading", attrs: { level: Number(info.block[1]) }, content } : paragraph);
+  }
+  return schema.nodeFromJSON({ type: "doc", content: out.length ? out : [{ type: "paragraph" }] });
+}
+
+/** The document as lines with their blocks and formatted runs, for writing a Word file. */
+export function linesOf(doc: PmNode): RichLine[] {
+  const lines: RichLine[] = [];
+  const runsOf = (block: PmNode) => {
+    const runs: RichLine["runs"] = [];
+    block.forEach((n) => {
+      const has = (name: string) => n.marks.some((m) => m.type.name === name);
+      const href = n.marks.find((m) => m.type.name === "link")?.attrs["href"] as string | undefined;
+      const format: RunFormat = { ...(has("strong") ? { bold: true } : {}), ...(has("em") ? { italic: true } : {}), ...(has("underline") ? { underline: true } : {}), ...(href ? { href } : {}) };
+      runs.push(Object.keys(format).length ? { text: n.text ?? "", format } : { text: n.text ?? "" });
+    });
+    return runs;
+  };
+  const walk = (node: PmNode, quote: boolean, list: LineBlock["list"]) => {
+    node.forEach((child) => {
+      const name = child.type.name;
+      if (child.isTextblock) {
+        const level = Math.min(child.attrs["level"] as number, 3);
+        const block = name === "heading" ? (`h${level}` as LineBlock["block"]) : quote ? "quote" : "p";
+        lines.push({ block: list ? { block, list } : { block }, runs: runsOf(child) });
+      } else if (name === "bullet_list" || name === "ordered_list") {
+        const level = list ? Math.min(list.level + 1, 2) : 0;
+        child.forEach((item) => walk(item, quote, { ordered: name === "ordered_list", level }));
+      } else if (name === "blockquote") {
+        walk(child, true, list);
+      } else if (name === "horizontal_rule") {
+        lines.push({ block: { block: "p" }, runs: [] });
+      }
+    });
+  };
+  walk(doc, false, undefined);
+  return lines;
 }

@@ -10,6 +10,7 @@ import { EditorView } from "prosemirror-view";
 
 import type { EditListener, EditorSurface, TextRange } from "./editor.ts";
 import { FORMAT_KEYS, FORMATS, type Format, fromHtml, isActive, LIST_KEYS, schema, setLink, shortcuts, toHtml } from "./rich.ts";
+import { offsetOfPos, posOf, textOf } from "./textindex.ts";
 import { diff } from "./text.ts";
 
 /** Typing within this long after the last keystroke undoes as 1 step, as in DocEditor. */
@@ -20,76 +21,13 @@ function docOf(text: string): PmNode {
   return schema.node("doc", null, text.split("\n").map((line) => schema.node("paragraph", null, line ? schema.text(line) : undefined)));
 }
 
-interface Index {
-  text: string;
-  /** For each textblock, the text offset and the document position where its text starts, and its length. */
-  offsets: number[];
-  positions: number[];
-  sizes: number[];
-}
-
-// Built once per document, since every edit makes a new one; the text is read several times per keystroke.
-const indexes = new WeakMap<PmNode, Index>();
-
-function indexOf(doc: PmNode): Index {
-  let index = indexes.get(doc);
-  if (index) return index;
-  const offsets: number[] = [];
-  const positions: number[] = [];
-  const sizes: number[] = [];
-  const lines: string[] = [];
-  let at = 0;
-  doc.descendants((n, pos) => {
-    if (!n.isTextblock) return true;
-    offsets.push(at);
-    positions.push(pos + 1);
-    sizes.push(n.content.size);
-    lines.push(n.textContent);
-    at += n.content.size + 1;
-    return false;
-  });
-  index = { text: lines.join("\n"), offsets, positions, sizes };
-  indexes.set(doc, index);
-  return index;
-}
-
-/** The text of a document, its paragraphs joined by "\n". */
-function textOf(doc: PmNode): string {
-  return indexOf(doc).text;
-}
-
-/** The last index in a sorted list whose value is at most `value`. */
-function floor(list: number[], value: number): number {
-  let lo = 0;
-  let hi = list.length - 1;
-  while (lo < hi) {
-    const mid = (lo + hi + 1) >> 1;
-    if (list[mid]! <= value) lo = mid;
-    else hi = mid - 1;
-  }
-  return lo;
-}
-
-/** Document position of text offset `at`. */
-function posOf(doc: PmNode, at: number): number {
-  const { offsets, positions, sizes } = indexOf(doc);
-  const i = floor(offsets, Math.max(0, at));
-  return positions[i]! + Math.min(Math.max(0, at) - offsets[i]!, sizes[i]!);
-}
-
-/** Text offset of document position `pos`. */
-function offsetOfPos(doc: PmNode, pos: number): number {
-  const { offsets, positions, sizes } = indexOf(doc);
-  const i = floor(positions, pos);
-  return offsets[i]! + Math.max(0, Math.min(pos - positions[i]!, sizes[i]!));
-}
-
 /** The base keymap, its deletions reported as the browser reports its own. */
 function withInputTypes(keys: Record<string, Command>): Record<string, Command> {
   return Object.fromEntries(
     Object.entries(keys).map(([key, command]) => {
-      const back = /Backspace|Ctrl-h/.test(key);
-      const forward = /Delete|Ctrl-d|Alt-d/.test(key);
+      // On macOS, Ctrl-Alt-Backspace deletes forward, as Mod-Delete does.
+      const forward = /Delete|Ctrl-d|Alt-d|Ctrl-Alt-Backspace/.test(key);
+      const back = !forward && /Backspace|Ctrl-h/.test(key);
       return [key, back ? as("deleteContentBackward", command) : forward ? as("deleteContentForward", command) : command];
     }),
   );

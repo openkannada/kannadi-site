@@ -11,6 +11,9 @@ npx playwright test
 
 `npx playwright test --project=webkit-390` runs 1 project, and `-g "til"` the tests whose names match.
 `EDITOR_URL=https://openkannada.org npx playwright test` runs them against the live site.
+`EDITOR_NEXT=1` runs them on the ProseMirror editor (`?editor=next`), and `TYPING_NEXT=1` with suggestions from the
+typing engine (`?typing=next`) in place of the word list. CI runs today's editor and ProseMirror with the word list, and
+ProseMirror with the typing engine. `npm test` compares the 2 sources of suggestions on the Dakshina test words.
 
 ## What runs where
 
@@ -33,7 +36,8 @@ under it, the suggestions and the caret line, and fail when:
 - `editor.ts`: opening the editor, choosing a mode, reading the text, and measuring the layout.
 - `typing.spec.ts`: every mode, the first letter, input methods, Backspace, Enter, punctuation, undo and redo, and
   switching mode mid-word.
-- `suggest.spec.ts`: what English-letter typing suggests, and choosing by click, tap, Tab and Space.
+- `suggest.spec.ts`: what English-letter typing suggests, choosing by click, tap, Tab and Space, and the picks the
+  typing engine keeps.
 - `files.spec.ts`: paste, open, save and reopen in every format, the 2002 sample, F8 and the fix card, and keeping
   the text across a reload.
 - `layout.spec.ts`: the layout checks, and the Kannada editor at `/kn/`.

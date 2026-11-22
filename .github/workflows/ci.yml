@@ -77,14 +77,18 @@ jobs:
           include-hidden-files: true
           retention-days: 14
 
-  # The editor in Chromium, Firefox and WebKit, on desktops and phones, light and dark: on today's core, and on the
-  # ProseMirror core that ?editor=next opens.
+  # The editor in Chromium, Firefox and WebKit, on desktops and phones, light and dark: on today's core, on the
+  # ProseMirror core that ?editor=next opens, and with the typing engine that ?typing=next turns on.
   editor:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         core: [doc, next]
+        typing: [list]
+        include:
+          - core: next
+            typing: engine
     steps:
       - uses: actions/checkout@v7
       - id: kannadi
@@ -113,14 +117,15 @@ jobs:
       - run: KANNADI_DIR=.kannadi scripts/build-wasm.sh
       - run: npm run build
       - run: npx playwright install --with-deps --only-shell chromium firefox webkit
-      - name: The editor on the ${{ matrix.core }} core
+      - name: The editor on the ${{ matrix.core }} core, with suggestions from the ${{ matrix.typing }}
         run: npx playwright test
         env:
           EDITOR_NEXT: ${{ matrix.core == 'next' && '1' || '' }}
+          TYPING_NEXT: ${{ matrix.typing == 'engine' && '1' || '' }}
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: editor-tests-${{ matrix.core }}
+          name: editor-tests-${{ matrix.core }}-${{ matrix.typing }}
           path: |
             playwright-report
             test-results

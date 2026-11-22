@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { EnglishTyping } from "../src/editor/english.ts";
+import { PICKS, wordList } from "../src/editor/sources.ts";
 import { initSync, latinKey, phoneticKey, transliterate } from "../src/editor/wasm/kannadi_wasm.js";
 
 initSync({ module: readFileSync(new URL("../src/editor/wasm/kannadi_wasm_bg.wasm", import.meta.url)) });
@@ -13,16 +14,18 @@ const WORDS = "# test\nಮಧು\t9\nಮಾಡು\t8\nಮದ್ದು\t7\nನಮ
 /** A document with 1 word being typed at its end, and the pieces the class talks to. */
 function harness({ load = async () => WORDS, stored = [] } = {}) {
   const doc = { text: "", word: null };
-  const picks = { saved: stored, read: () => picks.saved, write: (p) => (picks.saved = p) };
-  const strip = { shown: null, show: (w, c, i) => (strip.shown = { c, i }), select: (i) => (strip.shown.i = i), hide: () => (strip.shown = null) };
-  const english = new EnglishTyping({
-    kannadi: {
-      phoneticKey: (w) => phoneticKey(w, "medium"),
-      latinKey: (l) => latinKey(l, "medium"),
-      transliterate: (l) => transliterate(l, "baraha", "kannada"),
+  const kept = new Map([[PICKS, JSON.stringify(stored)]]);
+  const keep = { read: (key) => kept.get(key) ?? null, write: (key, value) => kept.set(key, value) };
+  const picks = {
+    get saved() {
+      return JSON.parse(kept.get(PICKS));
     },
-    loadWords: load,
-    picks,
+  };
+  const strip = { shown: null, show: (w, c, i) => (strip.shown = { c, i }), select: (i) => (strip.shown.i = i), hide: () => (strip.shown = null) };
+  const baraha = (l) => transliterate(l, "baraha", "kannada");
+  const english = new EnglishTyping({
+    transliterate: baraha,
+    loadSource: wordList({ phoneticKey: (w) => phoneticKey(w, "medium"), latinKey: (l) => latinKey(l, "medium"), transliterate: baraha }, keep, load),
     strip,
     text: () => doc.text,
     replace: (s, e, t) => {

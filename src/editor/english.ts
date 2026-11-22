@@ -1,17 +1,30 @@
-// Typing Kannada in plain English letters: the word list, the suggestions for the
-// word being typed, and the strip that shows them. After a word is done its
+// Typing Kannada in plain English letters: the suggestions for the word being
+// typed, from the word list or the typing engine, and the strip that shows them. After a word is done its
 // alternatives stay on the strip until the next edit, so a phone keyboard that
 // commits the word with its space still leaves a chance to swap it.
 import type { ComposingWord } from "./compose.ts";
 import type { SuggestStrip } from "./strip.ts";
 import { count, fmt, S } from "./strings.ts";
-import { parseWords, Suggester, type SuggestKannadi } from "./suggest.ts";
+
+/** Where suggestions come from: the word list or the typing engine. */
+export interface WordSource {
+  /** Kannada words for `latin`, best first; the first is the one shown while it is typed. */
+  suggest(latin: string): string[];
+  /** Remembers that `word` was chosen for `latin`, so it comes first next time. */
+  remember(latin: string, word: string): void;
+}
+
+/** Fetches what a word source needs, without building it; the builder it gives makes the source. */
+export type LoadSource = () => Promise<() => Promise<WordSource>>;
+
+/** The literal Baraha spelling, where capitals carry no meaning; English x and q have no Baraha letter, so they read as ks and k. */
+export const strictSpelling = (transliterate: (latin: string) => string, latin: string) =>
+  transliterate(latin.toLowerCase().replace(/x/g, "ks").replace(/q/g, "k"));
 
 export interface EnglishDeps {
-  kannadi: Omit<SuggestKannadi, "strict"> & { transliterate: (latin: string) => string };
-  /** The text of data/words.tsv. */
-  loadWords: () => Promise<string>;
-  picks: { read: () => unknown; write: (picks: [string, string][]) => void };
+  /** Baraha letters to Kannada, for the literal spelling shown until suggestions are ready. */
+  transliterate: (latin: string) => string;
+  loadSource: LoadSource;
   strip: SuggestStrip;
   text: () => string;
   /** Replaces a finished word in the document. */
@@ -20,7 +33,7 @@ export interface EnglishDeps {
   caret: () => number | null;
   select: (at: number) => void;
   announce: (message: string) => void;
-  /** The word list is loaded and suggestions are ready. */
+  /** Suggestions are ready. */
   onReady?: () => void;
 }
 
@@ -41,21 +54,16 @@ interface Shown {
   chosen: number;
 }
 
-/** After a failed load, wait this long before fetching the word list again. */
+/** After a failed load, wait this long before fetching again. */
 const RETRY_MS = 30_000;
-
-function validPicks(value: unknown): [string, string][] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((p): p is [string, string] => Array.isArray(p) && p.length === 2 && p.every((s) => typeof s === "string"));
-}
 
 export class EnglishTyping {
   private readonly deps: EnglishDeps;
   private composer: EnglishComposer | null = null;
-  private suggester: Suggester | null = null;
+  private suggester: WordSource | null = null;
   private loading: Promise<void> | null = null;
-  /** The word list's text, fetched ahead of use; building the suggester waits for the first use. */
-  private fetched: Promise<string> | null = null;
+  /** What the source needs, fetched ahead of use; building it waits for the first use. */
+  private fetched: Promise<() => Promise<WordSource>> | null = null;
   private failedAt = -Infinity;
   /** Suggestions for the word being typed. */
   private choices: string[] = [];
@@ -76,20 +84,19 @@ export class EnglishTyping {
     return this.suggester !== null;
   }
 
-  /** Fetches the word list without building anything, so a page that opens in English letters stays responsive. */
+  /** Fetches what suggestions need without building anything, so a page that opens in English letters stays responsive. */
   prefetch(): void {
     if (this.suggester || this.fetched) return;
-    this.fetched = this.deps.loadWords();
+    this.fetched = this.deps.loadSource();
     this.fetched.catch(() => (this.fetched = null));
   }
 
-  /** Starts loading the word list, unless it is loaded, loading, or failed a moment ago. */
+  /** Starts loading the suggestions, unless they are loaded, loading, or failed a moment ago. */
   prepare(now = Date.now()): Promise<void> | null {
     if (this.suggester || this.loading || now - this.failedAt < RETRY_MS) return this.loading;
     this.loading = (async () => {
-      const words = parseWords(await (this.fetched ?? this.deps.loadWords()));
-      const k = { ...this.deps.kannadi, strict: (latin: string) => this.strict(latin) };
-      this.suggester = await Suggester.create(k, words, validPicks(this.deps.picks.read()));
+      const build = await (this.fetched ?? this.deps.loadSource());
+      this.suggester = await build();
       this.respellCurrent();
       this.deps.onReady?.();
     })()
@@ -102,7 +109,7 @@ export class EnglishTyping {
     return this.loading;
   }
 
-  /** A word typed while the list loaded was spelled letter by letter; it gets its best spelling now. */
+  /** A word typed while suggestions loaded was spelled letter by letter; it gets its best spelling now. */
   private respellCurrent(): void {
     const word = this.composer?.current;
     if (!word || !this.suggester || this.composer?.mode !== "english" || this.composer.composing) return;
@@ -111,16 +118,16 @@ export class EnglishTyping {
     this.typing(this.composer?.current ?? null);
   }
 
-  /** The literal spelling, where capitals carry no meaning; English x and q have no Baraha letter, so they read as ks and k. */
   private strict(latin: string): string {
-    return this.deps.kannadi.transliterate(latin.toLowerCase().replace(/x/g, "ks").replace(/q/g, "k"));
+    return strictSpelling(this.deps.transliterate, latin);
   }
 
   /** The Kannada shown for `latin` while it is typed: the best suggestion. */
   spell(latin: string): string {
     void this.prepare();
     const strict = this.strict(latin);
-    this.choices = this.suggester?.suggest(latin) ?? [strict];
+    const choices = this.suggester?.suggest(latin) ?? [];
+    this.choices = choices.length ? choices : [strict];
     this.chosen = 0;
     return this.choices[0] ?? strict;
   }
@@ -208,9 +215,7 @@ export class EnglishTyping {
   }
 
   private remember(latin: string, word: string): void {
-    if (!this.suggester) return;
-    this.suggester.remember(latin, word);
-    this.deps.picks.write(this.suggester.remembered());
+    this.suggester?.remember(latin, word);
   }
 
   private announceLater(message: string): void {

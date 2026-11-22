@@ -12,8 +12,14 @@ export const isPhone = (page: Page) => (page.viewportSize()?.width ?? 1280) < 76
 /** EDITOR_NEXT=1 runs every test on the ProseMirror editor, which ?editor=next opens. */
 export const NEXT = process.env.EDITOR_NEXT === "1";
 
-/** A page's address, on the ProseMirror editor when EDITOR_NEXT=1. */
-export const editorPath = (path: string) => (NEXT ? `${path}${path.includes("?") ? "&" : "?"}editor=next` : path);
+/** TYPING_NEXT=1 runs every test with suggestions from the typing engine, which ?typing=next turns on. */
+export const ENGINE = process.env.TYPING_NEXT === "1";
+
+/** A page's address, on the ProseMirror editor when EDITOR_NEXT=1, and with the typing engine when TYPING_NEXT=1. */
+export const editorPath = (path: string) => {
+  const flags = [...(NEXT ? ["editor=next"] : []), ...(ENGINE ? ["typing=next"] : [])];
+  return flags.length ? `${path}${path.includes("?") ? "&" : "?"}${flags.join("&")}` : path;
+};
 
 /** Opens the editor and waits until it takes input; with a mode, chooses it and waits for its word list. */
 export async function openEditor(page: Page, options: { path?: string; mode?: Mode } = {}): Promise<void> {

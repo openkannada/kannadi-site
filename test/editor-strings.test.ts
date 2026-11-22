@@ -66,6 +66,8 @@ const NOT_FOR_PEOPLE: Record<string, (literal: string) => boolean> = {
   "issues.ts": (l) => /^`(issue issue|pop-sample pop-sample)-\$\{item\.kind\}`$/.test(l),
   // A selector, a missing element, a failed word list fetch that retries silently, and a console warning.
   "main.ts": (l) => ['".pop-actions button"', "`#${id} is missing`", "`word list: HTTP ${res.status}`", '"WebMCP: the tools did not load"'].includes(l),
+  // A heading's tag name, a link's rel and a schema content expression.
+  "rich.ts": (l) => ['`h${n.attrs["level"] as number}`', '"noopener noreferrer"', '"paragraph block*"'].includes(l),
   // WebMCP tool descriptions and input errors are read by AI agents, in English, whatever the page's language.
   "tools.ts": () => true,
 };

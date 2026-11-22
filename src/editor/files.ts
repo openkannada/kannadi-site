@@ -1,6 +1,7 @@
 // Opening TXT, HTML and DOCX files as editor text, and saving the editor text
 // as TXT, HTML or DOCX.
 import { readDocx, writeDocx } from "./docx.ts";
+import { parseHtml, STYLE } from "./html.ts";
 import {
   type Converted,
   decodeBytes,
@@ -36,18 +37,6 @@ const BLOCK = new Set([
 ]);
 const SKIP = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE", "HEAD", "TITLE", "TEXTAREA"]);
 const FONT_FAMILY = /font-family\s*:\s*([^;}]+)/i;
-// The page's Content-Security-Policy also applies to documents it parses, and
-// would log every style attribute and element. Renamed, they stay readable:
-// attributes as data-source-style, style elements as raw-text textareas.
-const STYLE = "data-source-style";
-
-function parseHtml(html: string): Document {
-  const renamed = html
-    .replace(/(<[a-z][^<>]*?\s)style(\s*=)/gi, `$1${STYLE}$2`)
-    .replace(/<style\b[^>]*>/gi, `<textarea ${STYLE}>`)
-    .replace(/<\/style\s*>/gi, "</textarea>");
-  return new DOMParser().parseFromString(renamed, "text/html");
-}
 
 /**
  * The font that style rules in the page give class names and tag names: the
@@ -224,7 +213,8 @@ ${body}
 export type ExportFormat = "docx" | "html" | "txt";
 
 /** The editor text as a Blob in the given format. */
-export async function exportBlob(text: string, format: ExportFormat, title: string): Promise<Blob> {
+/** The editor text as a Blob in the given format; `html` is the body of an HTML file, with its formats, when given. */
+export async function exportBlob(text: string, format: ExportFormat, title: string, html?: string): Promise<Blob> {
   if (format === "docx") {
     return new Blob([(await writeDocx(text)) as Uint8Array<ArrayBuffer>], {
       type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -232,7 +222,7 @@ export async function exportBlob(text: string, format: ExportFormat, title: stri
   }
   if (format === "html") {
     // 1 paragraph per line, with spaces kept, so the file reads as typed and reopens the same.
-    const body = text
+    const body = html ?? text
       .split("\n")
       .map((line) => `<p>${escapeMarkup(line)}</p>`)
       .join("\n");

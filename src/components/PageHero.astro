@@ -3,6 +3,7 @@
 // intro, any actions, and the page's illustration beside them.
 import type { Page } from "../content/pages.ts";
 import type { IllustrationProps } from "../lib/illustrations.ts";
+import { SITE_STRINGS } from "../i18n/site.ts";
 import { withBase } from "../lib/paths.ts";
 import Illustration from "./Illustration.astro";
 import PageTop from "./PageTop.astro";
@@ -18,13 +19,24 @@ interface Props {
   tagline?: string | undefined;
 }
 const { page, illo = null, art = "reference", width = "column", tagline } = Astro.props;
+const compact = art === "tool";
+const moreId = `intro-more-${page.slug.replace(/\W/g, "-") || "home"}`;
 ---
-<div class:list={["page-hero", `wrap-${width}`]}>
+<div class:list={["page-hero", `wrap-${width}`, compact && "page-hero-tool"]}>
   <PageTop page={page} />
   <div class:list={["hero", art === "reference" && "hero-reference"]}>
     <div class="hero-text">
       <h1 class="page-title">{page.h1}</h1>
-      <p class="page-intro" set:html={withBase(page.intro)} />
+      {compact && <input type="checkbox" id={moreId} class="intro-toggle sr-only" data-md-skip />}
+      <div class="intro-row">
+        <p class="page-intro" set:html={withBase(page.intro)} />
+        {compact && (
+          <label for={moreId} class="intro-more" data-md-skip>
+            <span class="intro-more-open">{SITE_STRINGS[page.lang ?? "en"].nav.more}</span>
+            <span class="intro-more-close">{SITE_STRINGS[page.lang ?? "en"].nav.less}</span>
+          </label>
+        )}
+      </div>
       {tagline && <p class="page-tagline">{tagline}</p>}
       {Astro.slots.has("lead") && <div class="hero-lead"><slot name="lead" /></div>}
       {Astro.slots.has("default") && <div class="hero-actions" data-md-skip><slot /></div>}
@@ -82,6 +94,88 @@ const { page, illo = null, art = "reference", width = "column", tagline } = Astr
     flex-wrap: wrap;
     gap: 0.625rem;
     margin-top: 1.25rem;
+  }
+  /* The toggle exists only on phones, where the intro is clamped; elsewhere it is out of the tab order too. */
+  .intro-more,
+  .intro-toggle {
+    display: none;
+  }
+  /*
+   * On phones a tool page's heading and intro take 1 short line each, so the sheet starts high on the first
+   * screen. The intro opens with More: a checkbox, so it works without script and nothing shifts after load.
+   */
+  @media (max-width: 47.99rem) {
+    .page-hero-tool {
+      padding-top: 0.5rem;
+    }
+    .page-hero-tool :global(.page-top) {
+      margin-bottom: 0.375rem;
+    }
+    .page-hero-tool .page-title {
+      font-size: 1.5rem;
+      line-height: 1.25;
+    }
+    .page-hero-tool .page-title:lang(kn) {
+      line-height: 1.6;
+    }
+    .page-hero-tool .intro-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+    .page-hero-tool .page-intro {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 0;
+      font-size: 0.9375rem;
+    }
+    .page-hero-tool .intro-more {
+      display: inline;
+      flex: none;
+      color: var(--primary);
+      font-size: 0.9375rem;
+      font-weight: 500;
+      text-decoration: underline;
+      text-decoration-color: oklch(from var(--primary) l c h / 0.4);
+      text-underline-offset: 0.2em;
+      cursor: pointer;
+    }
+    .intro-toggle:focus-visible ~ .intro-row .intro-more {
+      outline: 2px solid var(--ring);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+    .page-hero-tool .intro-toggle {
+      display: block;
+    }
+    .page-hero-tool .intro-more:lang(kn) {
+      text-underline-offset: 0.5em;
+    }
+    .intro-more-close {
+      display: none;
+    }
+    .intro-toggle:checked ~ .intro-row {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .intro-toggle:checked ~ .intro-row .page-intro {
+      display: block;
+      overflow: visible;
+    }
+    .intro-toggle:checked ~ .intro-row .intro-more-open {
+      display: none;
+    }
+    .intro-toggle:checked ~ .intro-row .intro-more-close {
+      display: inline;
+    }
+    .page-hero-tool .page-tagline {
+      margin-top: 0.25rem;
+      font-size: 0.9375rem;
+    }
   }
   .hero-lead {
     margin-top: 1.25rem;

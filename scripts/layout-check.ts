@@ -1,19 +1,22 @@
 // Loads every built page at 6 widths, light and dark, and fails on horizontal scroll (with and without
 // every answer open), layout shift,
 // Kannada text cut by an ancestor that hides overflow, or an illustration whose animation does not end
-// on its rest frame. With --shots DIR it also saves a screenshot of each:
-// node scripts/layout-check.ts [dist] [--shots DIR]
+// on its rest frame. Then, on 3 phone screens, it fails when the editor's writing area starts low, its toolbar is
+// out of reach, or the home page's paste box is below the first screen. With --shots DIR it also saves a screenshot of each:
+// node scripts/layout-check.ts [dist] [--shots DIR] [--phones]
 import { mkdirSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 
 import puppeteer from "puppeteer-core";
 
-import { WIDTHS, frameDrift, isClipped, layoutProblems, misaligned, type Card, type Measure } from "../src/lib/layout.ts";
+import { PHONES, WIDTHS, frameDrift, isClipped, layoutProblems, misaligned, phoneProblems, type Card, type Measure, type PhoneMeasure } from "../src/lib/layout.ts";
 import { chrome, serve } from "./browser.ts";
 
 const args = process.argv.slice(2);
 const dist = args.find((a) => !a.startsWith("--") && args[args.indexOf(a) - 1] !== "--shots") ?? "dist";
 const shots = args.includes("--shots") ? args[args.indexOf("--shots") + 1] : undefined;
+// --phones runs only the first-screen checks on phones, which take seconds rather than minutes.
+const phonesOnly = args.includes("--phones");
 if (shots) mkdirSync(shots, { recursive: true });
 const CHROME = chrome();
 const { server, port } = serve(dist);
@@ -26,7 +29,7 @@ const pages = readdirSync(dist, { recursive: true, withFileTypes: true })
 const browser = await puppeteer.launch({ executablePath: CHROME, headless: true, args: ["--no-sandbox"] });
 const problems: string[] = [];
 try {
-  for (const path of pages) {
+  for (const path of phonesOnly ? [] : pages) {
     for (const scheme of ["light", "dark"] as const) {
       const page = await browser.newPage();
       // Screenshots show each illustration's final frame, as reduced motion does.
@@ -118,6 +121,30 @@ try {
       await page.close();
     }
   }
+  // On a phone's first screen the editor's writing area starts high with its toolbar in reach, and the home page shows the paste box.
+  const phone = await browser.newPage();
+  for (const path of pages) {
+    for (const [width, height] of PHONES) {
+      await phone.setViewport({ width, height, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
+      await phone.goto(`http://127.0.0.1:${port}${path}`, { waitUntil: "networkidle0" });
+      await phone.evaluate(() => document.fonts.ready);
+      const m: PhoneMeasure = await phone.evaluate(() => {
+        const box = (sel: string) => document.querySelector(sel)?.getBoundingClientRect();
+        const sheet = box(".editor .sheet");
+        const toolbar = box(".editor .toolbar");
+        const paste = box("#handoff-text");
+        return {
+          height: window.innerHeight,
+          ...(sheet ? { sheetTop: sheet.top } : {}),
+          ...(toolbar ? { toolbar: { top: toolbar.top, bottom: toolbar.bottom } } : {}),
+          ...(paste ? { pasteBottom: paste.bottom } : {}),
+        };
+      });
+      const expects = { sheet: path === "/editor/" || path === "/kn/", paste: path === "/" };
+      for (const p of phoneProblems({ ...m, expects })) problems.push(`${path} phone ${width}x${height}: ${p}`);
+    }
+  }
+  await phone.close();
 } finally {
   await browser.close();
   server.close();
@@ -126,4 +153,4 @@ if (problems.length) {
   console.error(problems.join("\n"));
   process.exit(1);
 }
-console.log(`Layout: ${pages.length} pages at ${WIDTHS.length} widths in light and dark, with no horizontal scroll, layout shift, clipped Kannada or cards out of line, and every illustration ending on its rest frame.`);
+console.log(`Layout: ${pages.length} pages at ${WIDTHS.length} widths in light and dark, with no horizontal scroll, layout shift, clipped Kannada or cards out of line, and every illustration ending on its rest frame; on ${PHONES.length} phone screens the editor and the paste box show on the first screen.`);

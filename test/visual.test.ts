@@ -6,7 +6,7 @@ import { test } from "node:test";
 import { PAGES } from "../src/content/pages.ts";
 import { ICONS } from "../src/icons/icons.ts";
 import { illustrationFor } from "../src/lib/illustrations.ts";
-import { MAX_CLS, WIDTHS, frameDrift, isClipped, layoutProblems, misaligned } from "../src/lib/layout.ts";
+import { MAX_CLS, PHONES, SHEET_TOP_MAX, WIDTHS, frameDrift, isClipped, layoutProblems, misaligned, phoneProblems } from "../src/lib/layout.ts";
 import { watchInView } from "../src/lib/inview.ts";
 import { iconsPage } from "../scripts/icons.ts";
 
@@ -136,4 +136,17 @@ test("cards side by side line up part by part, and a wider card or a lone card i
   assert.deepEqual(misaligned([card(0, 300, { name: 60 }), card(20, 300, { name: 100 })]), ["card tops sit 20px apart across 2 cards", "card bottoms sit 20px apart across 2 cards", "name sits 40px apart across 2 cards"], "centered cards still form 1 row");
   assert.deepEqual(misaligned([card(0, 180, {}), card(0, 300, { name: 80 }), card(0, 300, { name: 20 })]), ["name sits 60px apart across 2 cards"], "a narrow card does not hide the others");
   assert.deepEqual(misaligned([card(0, 300, {}), card(0, 300, {}, 80)]), ["card bottoms sit 20px apart across 2 cards"], "equal heights");
+});
+
+test("on a phone the writing area starts high, the toolbar is in reach, and the paste box shows on the first screen", () => {
+  assert.deepEqual(PHONES.map(([w]) => w), [360, 390, 430]);
+  const h = 664;
+  assert.deepEqual(phoneProblems({ height: h, sheetTop: 190, toolbar: { top: 600, bottom: 650 } }), []);
+  assert.deepEqual(phoneProblems({ height: h, pasteBottom: 600 }), []);
+  const bad = phoneProblems({ height: h, sheetTop: h * SHEET_TOP_MAX + 10, toolbar: { top: 700, bottom: 750 }, pasteBottom: 700 });
+  assert.equal(bad.length, 3);
+  assert.match(bad[0]!, /writing area starts at 276px/);
+  assert.match(bad[1]!, /toolbar sits at 700 to 750px/);
+  assert.match(bad[2]!, /paste box ends at 700px/);
+  assert.deepEqual(phoneProblems({ height: h }), [], "a page with neither has nothing to check");
 });

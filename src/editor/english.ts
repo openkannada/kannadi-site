@@ -84,7 +84,7 @@ export class EnglishTyping {
     return this.suggester !== null;
   }
 
-  /** Fetches what suggestions need without building anything, so a page that opens in English letters stays responsive. */
+  /** Fetches what suggestions need, and only prepares them, so a page that opens in English letters stays responsive. */
   prefetch(): void {
     if (this.suggester || this.fetched) return;
     this.fetched = this.deps.loadSource();

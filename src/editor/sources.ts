@@ -9,6 +9,13 @@ export interface Keep {
   write(key: string, value: string): void;
 }
 
+/** The bytes of a gzipped file, unpacked here unless something on the way already did. */
+export async function gunzipped(res: Response): Promise<ArrayBuffer> {
+  const bytes = new Uint8Array(await res.arrayBuffer());
+  if (bytes[0] !== 0x1f || bytes[1] !== 0x8b) return bytes.buffer;
+  return new Response(new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"))).arrayBuffer();
+}
+
 /** The word list's picks: [latin, word] pairs, oldest first. */
 export const PICKS = "kannadi.picks.v1";
 /** The typing engine's picks, in its own text form. */

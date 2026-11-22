@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { EnglishTyping } from "../src/editor/english.ts";
-import { PICKS, wordList } from "../src/editor/sources.ts";
+import { gunzipped, PICKS, wordList } from "../src/editor/sources.ts";
 import { initSync, latinKey, phoneticKey, transliterate } from "../src/editor/wasm/kannadi_wasm.js";
 
 initSync({ module: readFileSync(new URL("../src/editor/wasm/kannadi_wasm_bg.wasm", import.meta.url)) });
@@ -249,4 +249,11 @@ test("a source that fetched but would not build is fetched again on the next try
   assert.equal(english.ready, false);
   await english.prepare(Date.now() + 31_000);
   assert.equal(fetches, 2);
+});
+
+test("a gzipped file is unpacked, and one already unpacked on the way is taken as it is", async () => {
+  const bytes = new TextEncoder().encode("ಕನ್ನಡ model bytes");
+  const packed = await new Response(new Blob([bytes]).stream().pipeThrough(new CompressionStream("gzip"))).arrayBuffer();
+  assert.deepEqual(new Uint8Array(await gunzipped(new Response(packed))), bytes);
+  assert.deepEqual(new Uint8Array(await gunzipped(new Response(bytes))), bytes);
 });

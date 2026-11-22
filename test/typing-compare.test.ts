@@ -64,6 +64,6 @@ test("what each source shows for the start of a word, beside what its letters sp
   }
 });
 
-test("the typing engine shows what the letters spell at the start of a word", { todo: "kannadi's word starts change, after a kannadi.rev bump" }, () => {
+test("the typing engine shows what the letters spell at the start of a word", () => {
   for (const [typed, want] of [["ka", "ಕ"], ["ga", "ಗ"], ["ba", "ಬ"], ["a", "ಅ"]]) assert.equal(suggest.engine(typed)[0], want, typed);
 });

@@ -118,6 +118,19 @@ test.describe("@layout on phones", () => {
     expect(await settle(page)).toBe(before);
   });
 
+  test("a finger that pans the page over the sheet, then a focus from elsewhere, leaves the page where it is", async ({ page }) => {
+    await openEditor(page);
+    await settle(page);
+    const before = await page.evaluate(() => scrollY);
+    // A pan starts as a press on the sheet, and the browser cancels it once the page scrolls.
+    await page.locator("#sheet").evaluate((sheet) => {
+      sheet.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, pointerType: "touch" }));
+      sheet.dispatchEvent(new PointerEvent("pointercancel", { bubbles: true, pointerType: "touch" }));
+      document.getElementById("doc")!.focus({ preventScroll: true });
+    });
+    expect(await settle(page)).toBe(before);
+  });
+
   test("on Android, where the keyboard makes the page itself shorter, a tap low in a long document keeps the caret line in sight", async ({ page, browserName }, info) => {
     test.skip(browserName !== "chromium", "Android's Chrome resizes the page for its keyboard.");
     await openEditor(page);

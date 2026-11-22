@@ -50,6 +50,8 @@ export class View {
       addEventListener(type, release, { capture: true, passive: true });
     }
     parts.sheet.addEventListener("pointerdown", () => (this.tappedAt = performance.now()), { passive: true });
+    // A finger that pans the page was never a tap.
+    parts.sheet.addEventListener("pointercancel", () => (this.tappedAt = -Infinity), { passive: true });
     editor.el.addEventListener("focus", () => requestAnimationFrame(() => this.fill()));
     band();
   }

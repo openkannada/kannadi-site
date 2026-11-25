@@ -204,7 +204,9 @@ export class PmEditor implements EditorSurface {
     const [from, to] = [posOf(doc, start), posOf(doc, end)];
     const $from = doc.resolve(from);
     // The new text takes the formats of what it replaces, or of the place it goes, so words typed and fixed keep them.
-    const marks = from < to ? ($from.marksAcross(doc.resolve(to)) ?? $from.marks()) : (storedMarks ?? $from.marks());
+    // The formats of the first letter replaced, links too, as a word processor keeps them.
+    const first = doc.nodeAt(from);
+    const marks = from < to ? (first?.isText ? first.marks : $from.marks()) : (storedMarks ?? $from.marks());
     const lines = text.split("\n");
     const content = Fragment.from(lines.map((line) => schema.node("paragraph", null, line ? schema.text(line, marks) : undefined)));
     const tr = this.view.state.tr.replace(from, to, new Slice(content, 1, 1));

@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { checkoutProblem, deployEnv, deploySteps, launchSteps, placeholders, productionUrl, unreviewed } from "../src/lib/deploy.ts";
+import { checkoutProblem, deployEnv, deploySteps, placeholders, productionUrl, stepEnv, unreviewed, workersBuildProblem } from "../src/lib/deploy.ts";
 
 const URL_ROOT = "https://kannada.example.com.au/";
 
@@ -25,6 +25,16 @@ test("only a clean main at origin/main is deployed", () => {
   assert.match(checkoutProblem({ ...ok, clean: false }) ?? "", /changes/);
   assert.match(checkoutProblem({ ...ok, branch: "feature" }) ?? "", /main branch/);
   assert.match(checkoutProblem({ ...ok, head: "def" }) ?? "", /differs from origin\/main/);
+});
+
+test("the deploy runs the unit tests without SITE_URL, as CI does, and builds with it", () => {
+  const env = deployEnv({ PATH: "/bin" }, new URL(URL_ROOT));
+  const steps = deploySteps(new URL(URL_ROOT), false);
+  const tests = steps.find((s) => s.args.join(" ") === "test")!;
+  const build = steps.find((s) => s.args.join(" ") === "run build")!;
+  assert.equal(stepEnv(tests, env).SITE_URL, undefined);
+  assert.equal(stepEnv(tests, env).PATH, "/bin");
+  assert.equal(stepEnv(build, env).SITE_URL, URL_ROOT);
 });
 
 test("the deploy builds the library from kannadi.rev, never from a local checkout", () => {
@@ -61,12 +71,24 @@ test("before launch the deploy publishes and checks the noindex site, with no pl
   assert.ok(!lines.some((l) => l.includes("placeholders.ts") || l.includes("indexnow.ts")));
 });
 
-test("CI runs the launch-only steps on the right side of its publish, and none before launch", () => {
-  const url = new URL(URL_ROOT);
+test("the build phase checks everything before the publish phase touches Cloudflare", () => {
+  const steps = deploySteps(new URL(URL_ROOT), true);
+  const phases = steps.map((s) => s.phase);
+  assert.equal(phases.lastIndexOf("build") + 1, phases.indexOf("publish"), "every build step comes before every publish step");
   const line = (s: { command: string; args: string[] }) => [s.command, ...s.args].join(" ");
-  assert.deepEqual(launchSteps(url, true, "before").map(line), ["node scripts/placeholders.ts dist", `node scripts/indexnow.ts snapshot ${URL_ROOT}`]);
-  assert.deepEqual(launchSteps(url, true, "after").map(line), [`node scripts/indexnow.ts submit ${URL_ROOT}`]);
-  assert.deepEqual([...launchSteps(url, false, "before"), ...launchSteps(url, false, "after")], []);
+  const build = steps.filter((s) => s.phase === "build").map(line);
+  assert.ok(!build.some((l) => l.includes("wrangler") || l.includes("indexnow") || l.includes("keep-assets") || l.includes("stage.ts")), "the build publishes nothing");
+  assert.ok(build.includes("node scripts/placeholders.ts dist"), "the placeholder check gates the build after launch");
+  const publish = steps.filter((s) => s.phase === "publish").map(line);
+  assert.equal(publish[0], `node scripts/indexnow.ts snapshot ${URL_ROOT}`);
+  assert.equal(publish.at(-1), `node scripts/indexnow.ts submit ${URL_ROOT}`);
+});
+
+test("Workers Builds publishes only main, with the token it provides", () => {
+  assert.equal(workersBuildProblem({ WORKERS_CI_BRANCH: "main", CLOUDFLARE_API_TOKEN: "t" }), null);
+  assert.match(workersBuildProblem({ WORKERS_CI_BRANCH: "feature", CLOUDFLARE_API_TOKEN: "t" }) ?? "", /only main, not feature/);
+  assert.match(workersBuildProblem({ CLOUDFLARE_API_TOKEN: "t" }) ?? "", /unknown branch/);
+  assert.match(workersBuildProblem({ WORKERS_CI_BRANCH: "main" }) ?? "", /CLOUDFLARE_API_TOKEN/);
 });
 
 test("placeholders for words still to be written are found in built HTML and markdown", () => {

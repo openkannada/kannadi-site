@@ -1,19 +1,13 @@
 ---
 import { ABOUT as ALL } from "../content/about.ts";
+import { RIGHTS } from "../content/site.ts";
 import type { Lang } from "../i18n/core.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
 import { PULL_OUT } from "../content/story.ts";
 import HelpCards from "./HelpCards.astro";
+import Portrait from "./Portrait.astro";
 import Illustration from "./Illustration.astro";
 import { withBase } from "../lib/paths.ts";
-import prasad160avif from "../assets/people/prasad-160.avif";
-import prasad240avif from "../assets/people/prasad-240.avif";
-import prasad160webp from "../assets/people/prasad-160.webp";
-import prasad240webp from "../assets/people/prasad-240.webp";
-import neha160avif from "../assets/people/neha-160.avif";
-import neha240avif from "../assets/people/neha-240.avif";
-import neha160webp from "../assets/people/neha-160.webp";
-import neha240webp from "../assets/people/neha-240.webp";
 import family480avif from "../assets/family/family-2023-480.avif";
 import family720avif from "../assets/family/family-2023-720.avif";
 import family960avif from "../assets/family/family-2023-960.avif";
@@ -29,12 +23,6 @@ interface Props {
 const { lang } = Astro.props;
 const ABOUT = ALL[lang];
 const T = SITE_STRINGS[lang].about;
-// Shown at 80 CSS pixels: 160 for 2x screens, 240 for 3x.
-const PHOTOS = {
-  prasad: { avif: [prasad160avif, prasad240avif], webp: [prasad160webp, prasad240webp] },
-  neha: { avif: [neha160avif, neha240avif], webp: [neha160webp, neha240webp] },
-};
-const srcset = ([x2, x3]: { src: string }[]) => `${x2!.src} 2x, ${x3!.src} 3x`;
 const widths = (files: { src: string; width: number }[]) => files.map((f) => `${f.src} ${f.width}w`).join(", ");
 const FAMILY = { avif: [family480avif, family720avif, family960avif, family1200avif], webp: [family480webp, family720webp, family960webp, family1200webp] };
 // Beside the text from 48rem at 18rem wide; below that, the column width up to 24rem.
@@ -64,10 +52,7 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
   <ul class="people" role="list" data-cards="people">
     {ABOUT.people.map((p) => (
       <li>
-        <picture data-md-skip>
-          <source type="image/avif" srcset={srcset(PHOTOS[p.photo].avif)} />
-          <img src={PHOTOS[p.photo].webp[0]!.src} srcset={srcset(PHOTOS[p.photo].webp)} alt={p.alt} width="80" height="80" loading="lazy" decoding="async" />
-        </picture>
+        <Portrait photo={p.photo} alt={p.alt} />
         <div>
           <b data-align="name">{p.name}</b><span class="sr-only">, </span>
           <span class="text-muted-foreground">{p.role}</span><span class="sr-only">, </span>
@@ -98,6 +83,7 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
 <section aria-labelledby="supported">
   <h2 id="supported">{T.supported}</h2>
   <p set:html={ABOUT.supporter} />
+  <p set:html={RIGHTS[lang]} />
 </section>
 
 <section aria-labelledby="help">
@@ -169,10 +155,10 @@ const FAMILY_SIZES = "(min-width: 48rem) 18rem, min(24rem, calc(100vw - 2rem))";
     gap: 0.125rem;
     min-width: 0;
   }
-  .people picture {
+  .people :global(picture) {
     flex: none;
   }
-  .people img {
+  .people :global(img) {
     display: block;
     width: 5rem;
     height: 5rem;

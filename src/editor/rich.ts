@@ -176,6 +176,12 @@ function splitAtBreaks(body: HTMLElement): void {
     const rest = body.ownerDocument.createRange();
     rest.setStartAfter(br);
     rest.setEnd(block, block.childNodes.length);
+    // A break with nothing after it in its block ends that line, as a browser shows it, and starts no new one.
+    const after = rest.cloneContents();
+    if (!after.querySelector("br") && !(block.closest("pre") ? after.textContent : after.textContent?.trim())) {
+      br.remove();
+      continue;
+    }
     const next = block.cloneNode(false) as Element;
     next.append(rest.extractContents());
     br.remove();

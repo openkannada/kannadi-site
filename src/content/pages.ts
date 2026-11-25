@@ -208,7 +208,7 @@ export const ALL_PAGES: Page[] = [
       "Free, open-source tools so that Kannada works properly on computers: an editor that converts Nudi and Baraha text, fonts, spell check, a dictionary and OCR.",
     h1: TAGLINE.en,
     intro:
-      "Open Kannada makes free, open-source tools so that Kannada works properly on computers. The editor, its converters and the fonts are ready to use today, and the spell checker, dictionary and OCR are on the way.",
+      "Open Kannada makes free, open-source tools so that Kannada works properly on computers.",
     faq: [],
     og: { from: "Kannada", to: "ಕನ್ನಡ" },
     keywords: "",
@@ -1055,7 +1055,7 @@ export const ALL_PAGES: Page[] = [
       "ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಕನ್ನಡ ಸರಿಯಾಗಿ ಕೆಲಸ ಮಾಡಲು ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳು: ನುಡಿ ಮತ್ತು ಬರಹ ಪಠ್ಯವನ್ನು ಪರಿವರ್ತಿಸುವ ಸಂಪಾದಕ, ಫಾಂಟ್‌ಗಳು, ಕಾಗುಣಿತ ಪರೀಕ್ಷೆ, ನಿಘಂಟು ಮತ್ತು OCR.",
     h1: TAGLINE.kn,
     intro:
-      "ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಕನ್ನಡ ಸರಿಯಾಗಿ ಕೆಲಸ ಮಾಡಲೆಂದು ಓಪನ್ ಕನ್ನಡ ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳನ್ನು ಮಾಡುತ್ತದೆ. ಸಂಪಾದಕ, ಅದರ ಪರಿವರ್ತಕಗಳು ಮತ್ತು ಫಾಂಟ್‌ಗಳು ಇಂದೇ ಬಳಕೆಗೆ ಸಿದ್ಧ. ಕಾಗುಣಿತ ಪರೀಕ್ಷಕ, ನಿಘಂಟು ಮತ್ತು OCR ಸಿದ್ಧವಾಗುತ್ತಿವೆ.",
+      "ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಕನ್ನಡ ಸರಿಯಾಗಿ ಕೆಲಸ ಮಾಡಲೆಂದು ಓಪನ್ ಕನ್ನಡ ಉಚಿತ, ಮುಕ್ತ ಮೂಲದ ಸಾಧನಗಳನ್ನು ಮಾಡುತ್ತದೆ.",
     faq: [],
     og: { from: "Kannada", to: "ಕನ್ನಡ" },
     keywords: "",

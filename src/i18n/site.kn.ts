@@ -11,6 +11,7 @@ export const SITE_KN: SiteStrings = {
     org: "ಓಪನ್ ಕನ್ನಡ",
     allPages: "ಎಲ್ಲ ಪುಟಗಳು",
     more: "ಇನ್ನಷ್ಟು",
+    less: "ಕಡಿಮೆ",
   },
   theme: {
     auto: "ಥೀಮ್: ಸಿಸ್ಟಮ್‌ನಂತೆಯೇ",
@@ -93,7 +94,6 @@ export const SITE_KN: SiteStrings = {
     descriptions: "ಪರಿಚಯಗಳು",
     inWords: "ಸುಮಾರು {n} ಪದಗಳಲ್ಲಿ",
     people: "ಸ್ಥಾಪಕ ಸದಸ್ಯರು",
-    photo: "PRASAD: {name} ಅವರ ಫೋಟೊ, ಪ್ರಸಾದ್ ಅವರಿಂದ.",
     screenshots: "ಸ್ಕ್ರೀನ್‌ಶಾಟ್‌ಗಳು",
     download: "ಡೌನ್‌ಲೋಡ್",
     facts: "ಮಾಹಿತಿ",

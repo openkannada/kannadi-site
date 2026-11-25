@@ -11,6 +11,7 @@ export const SITE_EN = {
     org: "Open Kannada",
     allPages: "All pages",
     more: "More",
+    less: "Less",
   },
   theme: {
     auto: "Theme: same as system",
@@ -97,7 +98,6 @@ export const SITE_EN = {
     descriptions: "Descriptions",
     inWords: "In {n} words",
     people: "Founding members",
-    photo: "PRASAD: photo of {name}, from Prasad.",
     screenshots: "Screenshots",
     download: "Download",
     facts: "Facts",

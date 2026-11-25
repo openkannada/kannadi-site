@@ -71,6 +71,33 @@ test.describe("on the ProseMirror editor", () => {
     await expect.poll(() => docText(page)).toBe("ಒಂದು\nಎರಡು\nಮೂರು\nನಾಲ್ಕು\nಐದು\n  ಆರು");
   });
 
+  test("a break at the end of a pasted line, or of preformatted text, adds no blank line", async ({ page }) => {
+    await openEditor(page);
+    await focusDoc(page);
+    // How many editors write a line, a blank line and a line.
+    await paste(page, { html: "<p>ಒಂದು<br></p><p><br></p><p>ಎರಡು<br><br></p><pre>ಮೂರು\n</pre>", plain: "ಒಂದು\n\nಎರಡು\n\nಮೂರು" });
+    await expect.poll(() => docText(page)).toBe("ಒಂದು\n\nಎರಡು\n\nಮೂರು");
+  });
+
+  test("a fix of a word that is a whole link keeps the link", async ({ page }) => {
+    test.skip(isPhone(page), "F8 is a desktop key; the fix card is the same on phones.");
+    await openEditor(page);
+    await focusDoc(page);
+    await page.keyboard.insertText("ಕ್ಾ");
+    await page.keyboard.press("ControlOrMeta+a");
+    await openMenu(page, "format-menu");
+    await page.locator("#link-href").fill("https://openkannada.org/");
+    await page.locator("#format-link [type=submit]").click();
+    expect(await html(page)).toMatch(/^<p><a href="https:\/\/openkannada.org\/"[^>]*>ಕ್ಾ<\/a><\/p>$/u);
+    await expect(page.locator("#problem-count")).toHaveText("1");
+    // The stray sign at the end of the link, replaced with a letter, so new text goes where the link ends.
+    await page.keyboard.press("F8");
+    await page.locator("#pop-input").fill("ಕ");
+    await page.getByRole("button", { name: "Replace", exact: true }).click();
+    await expect(page.locator("#problems")).toBeHidden();
+    expect(await html(page)).toMatch(/^<p><a href="https:\/\/openkannada.org\/"[^>]*>ಕ್ಕ<\/a><\/p>$/u);
+  });
+
   test("a kept document's link to a script is dropped when it opens", async ({ page }) => {
     await openEditor(page);
     await focusDoc(page);

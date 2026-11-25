@@ -105,3 +105,22 @@ test("lists Word numbers through paragraph styles, and a deep level keeps its ow
     { block: "p", list: { ordered: true, level: 2 } },
   ]);
 });
+
+test("under 1 numbered list, a bulleted sub-list and a later numbered one each keep their kind, and the list counts on", async () => {
+  const { readZip } = await import("../src/editor/zip.ts");
+  const lines: RichLine[] = [
+    { block: { block: "p", list: { ordered: true, level: 0 } }, runs: [{ text: "A" }] },
+    { block: { block: "p", list: { ordered: false, level: 1 } }, runs: [{ text: "dot" }] },
+    { block: { block: "p", list: { ordered: true, level: 0 } }, runs: [{ text: "B" }] },
+    { block: { block: "p", list: { ordered: true, level: 1 } }, runs: [{ text: "one" }] },
+    { block: { block: "p", list: { ordered: true, level: 1 } }, runs: [{ text: "two" }] },
+    { block: { block: "p", list: { ordered: true, level: 0 } }, runs: [{ text: "C" }] },
+  ];
+  const { lines: read } = await readDocxRich(await writeRichDocx(lines));
+  assert.deepEqual(read, lines.map((l) => l.block));
+  const doc = new TextDecoder().decode((await readZip(await writeRichDocx(lines))).get("word/document.xml"));
+  const ids = [...doc.matchAll(/<w:numId w:val="(\d+)"\/>/g)].map((m) => m[1]);
+  // A, B and C share 1 list, so Word numbers them 1, 2 and 3.
+  assert.equal(new Set([ids[0], ids[2], ids[5]]).size, 1);
+  assert.equal(ids[3], ids[4]);
+});

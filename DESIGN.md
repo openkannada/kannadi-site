@@ -188,6 +188,7 @@ A pane (`@utility glass` on the site):
 - Every inner page opens with `PageHero.astro`: the trail and Ask AI across the full column, so Ask AI lines up with the sheet's right edge; then the heading, the answer-first intro, any actions, and the illustration.
 - Home: the heading, intro and a link to the editor beside the paste card; the 6 tools at once; the AI benchmark band; Why as 1 lead line, 4 problem cards and How we work in 3 parts; How to help as 3 cards.
 - Below 768px the counts move from the sheet's foot to its top, because the dock covers the bottom edge.
+- Phones (360x640, 390x664 and 430x740, the height left once the browser's bars show): on a tool page the heading is 1 line at 1.5rem and the intro is clamped to 1 line with More, so the editor's sheet starts in the top 40% of the first screen; on the home page the paste box's input ends on the first screen. `npm run layout-check` measures both, and `--phones` runs only those checks.
 
 ## Constraints
 

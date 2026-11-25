@@ -251,6 +251,27 @@ const main = items.filter((t) => t.slug !== "ai-benchmark");
     align-items: center;
     gap: 0.75rem 1.25rem;
   }
+  /* On phones the paste box's input shows on the first screen, under the heading, the lead and the link. */
+  @media (max-width: 39.99rem) {
+    .home-hero {
+      gap: 1.25rem;
+      padding-top: 1rem;
+    }
+    .home-intro {
+      margin-top: 0.75rem;
+      font-size: 1.0625rem;
+    }
+    .home-cta {
+      margin-top: 1rem;
+    }
+    .paste-card {
+      gap: 0.625rem;
+      padding: 1rem;
+    }
+    .paste-card textarea {
+      min-height: 5.5rem;
+    }
+  }
   @media (min-width: 40rem) {
     .home-hero {
       padding-top: 3.5rem;

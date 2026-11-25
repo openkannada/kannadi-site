@@ -5,12 +5,16 @@ import { fmt, type Lang } from "../i18n/core.ts";
 import { SITE_STRINGS } from "../i18n/site.ts";
 import { href } from "../lib/paths.ts";
 
+import { ABOUT } from "../content/about.ts";
 import Icon from "./Icon.astro";
+import Portrait from "./Portrait.astro";
 interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
-const { bios: BIOS, colors: COLORS, contact: CONTACT, descriptions: DESCRIPTIONS, facts: FACTS, logos: LOGOS, photos: PHOTOS, screenshots: SCREENSHOTS } = PRESS[lang];
+const { bios: BIOS, colors: COLORS, contact: CONTACT, descriptions: DESCRIPTIONS, facts: FACTS, logos: LOGOS, screenshots: SCREENSHOTS } = PRESS[lang];
+// The portraits on the About page, in the same order as the bios.
+const PEOPLE = ABOUT[lang].people;
 const STORY = STORIES[lang];
 const TAGLINE = TAGLINES[lang];
 const T = SITE_STRINGS[lang].press;
@@ -68,7 +72,7 @@ const T = SITE_STRINGS[lang].press;
   <div class="bios" data-cards="bios">
     {BIOS.map((b, i) => (
       <article class="bio">
-        <div class="photo"><mark class="todo">{fmt(T.photo, { name: PHOTOS[i] ?? "" })}</mark></div>
+        <Portrait photo={PEOPLE[i]!.photo} alt={PEOPLE[i]!.alt} class="photo" />
         <h3 data-align="name">{b.name}</h3>
         <p class="text-muted-foreground" data-align="role">{b.role}</p>
         <p data-align="text" set:html={b.text} />
@@ -160,14 +164,18 @@ const T = SITE_STRINGS[lang].press;
     gap: 0.75rem;
   }
   .colors svg { flex: none; outline: 1px solid var(--border); border-radius: 10px; }
-  .bio .photo {
-    display: grid;
-    place-items: center;
-    aspect-ratio: 4 / 3;
-    padding: 1rem;
-    border: 1px dashed var(--border);
-    border-radius: var(--radius-xl);
-    text-align: center;
+  .bio :global(.photo) {
+    display: block;
+    margin-bottom: 0.75rem;
+  }
+  .bio :global(.photo img) {
+    display: block;
+    width: 5rem;
+    height: 5rem;
+    border-radius: 50%;
+    background: var(--muted);
+    object-fit: cover;
+    box-shadow: 0 0 0 1px var(--border);
   }
   /* Bios side by side share 5 rows, so names, roles, text and links line up. */
   @media (min-width: 40rem) {

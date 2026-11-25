@@ -382,25 +382,40 @@ export function writeRichDocx(lines: RichLine[]): Promise<Uint8Array> {
   const links: string[] = [];
   /** For each list, whether each level is bulleted, from the first line at that level. */
   const lists: boolean[][] = [];
-  let list: { kinds: (boolean | undefined)[]; num: number } | null = null;
+  /** A sub-list of the other kind than the first at its level is numbered on its own, by level; see below. */
+  let list: { kinds: (boolean | undefined)[]; num: number; own: ({ num: number; bullet: boolean } | undefined)[] } | null = null;
   const body = lines
     .map(({ block, runs }) => {
+      let num = 0;
       // Consecutive list lines are 1 list, until a line at the top level is of the other kind.
       if (!block.list) list = null;
       else {
+        const { level } = block.list;
         const bullet = !block.list.ordered;
-        const kind = list?.kinds[block.list.level];
-        if (!list || (block.list.level === 0 && kind !== undefined && kind !== bullet)) {
+        const kind = list?.kinds[level];
+        if (!list || (level === 0 && kind !== undefined && kind !== bullet)) {
           lists.push([true, true, true]);
-          list = { kinds: [], num: lists.length };
+          list = { kinds: [], num: lists.length, own: [] };
         }
-        if (list.kinds[block.list.level] === undefined) {
-          list.kinds[block.list.level] = bullet;
-          lists[list.num - 1]![block.list.level] = bullet;
+        if (list.kinds[level] === undefined) {
+          list.kinds[level] = bullet;
+          lists[list.num - 1]![level] = bullet;
+        }
+        num = list.num;
+        if (level === 0) list.own = [];
+        else if (list.kinds[level] !== bullet) {
+          // Its own list, used by this level only, so the items above it keep counting in theirs.
+          if (list.own[level]?.bullet !== bullet) {
+            const kinds = [true, true, true];
+            kinds[level] = bullet;
+            lists.push(kinds);
+            list.own[level] = { num: lists.length, bullet };
+          }
+          num = list.own[level]!.num;
         }
       }
       const style = { h1: "Heading1", h2: "Heading2", h3: "Heading3", quote: "Quote", p: "" }[block.block];
-      const numPr = block.list && list ? `<w:numPr><w:ilvl w:val="${block.list.level}"/><w:numId w:val="${list.num}"/></w:numPr>` : "";
+      const numPr = block.list && num ? `<w:numPr><w:ilvl w:val="${block.list.level}"/><w:numId w:val="${num}"/></w:numPr>` : "";
       const pPr = style || numPr ? `<w:pPr>${style ? `<w:pStyle w:val="${style}"/>` : ""}${numPr}</w:pPr>` : "";
       const content = runs
         .map(({ text, format }) => {

@@ -1,0 +1,27 @@
+---
+// A founding member's portrait from src/assets/people, in AVIF and WebP at 2x and 3x of its shown size.
+import neha160avif from "../assets/people/neha-160.avif";
+import neha160webp from "../assets/people/neha-160.webp";
+import neha240avif from "../assets/people/neha-240.avif";
+import neha240webp from "../assets/people/neha-240.webp";
+import prasad160avif from "../assets/people/prasad-160.avif";
+import prasad160webp from "../assets/people/prasad-160.webp";
+import prasad240avif from "../assets/people/prasad-240.avif";
+import prasad240webp from "../assets/people/prasad-240.webp";
+
+interface Props {
+  photo: "prasad" | "neha";
+  alt: string;
+  class?: string;
+}
+const { photo, alt, class: className } = Astro.props;
+const PHOTOS = {
+  prasad: { avif: [prasad160avif, prasad240avif], webp: [prasad160webp, prasad240webp] },
+  neha: { avif: [neha160avif, neha240avif], webp: [neha160webp, neha240webp] },
+};
+const srcset = ([x2, x3]: { src: string }[]) => `${x2!.src} 2x, ${x3!.src} 3x`;
+---
+<picture class={className} data-md-skip>
+  <source type="image/avif" srcset={srcset(PHOTOS[photo].avif)} />
+  <img src={PHOTOS[photo].webp[0]!.src} srcset={srcset(PHOTOS[photo].webp)} alt={alt} width="80" height="80" loading="lazy" decoding="async" />
+</picture>

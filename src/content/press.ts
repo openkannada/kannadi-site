@@ -1,5 +1,5 @@
 // Copy for the press kit. Strings are trusted HTML.
-// "PRASAD:" marks words and photos still to come; once launched, the deploy fails while any remain.
+// "PRASAD:" marks words still to come; once launched, the deploy fails while any remain.
 // The Kannada waits for a native reader.
 import type { Lang } from "../i18n/core.ts";
 
@@ -31,7 +31,7 @@ const BIOS = [
   {
     name: "Neha Prasad",
     role: "Founding member",
-    text: '<mark class="todo">PRASAD: Neha\'s bio, about 60 words.</mark>',
+    text: "Neha Prasad is a founding member of Open Kannada. She is a design engineer in Norway and Lead Designer for CPR Finder at Laerdal Medical. She also founded Niyora, an app for the emotional side of PMS, perimenopause and ADHD. Before that, she was the founding product designer at Infinity Games. She trained as a doctor in India, in an Indian system of medicine.",
     source: "https://neha-prasad.com/",
   },
 ];
@@ -104,11 +104,9 @@ const SCREENSHOTS = [
   { file: "editor-phone-dark.png", width: 1170, height: 1980, alt: "The same 4 lines in the editor on a phone in dark mode, with the toolbar at the bottom." },
 ];
 
-const PHOTOS = ["Prasad Subrahmanya", "Neha Prasad"];
-
 const CONTACT = 'Press, partnerships and government offices: <a href="mailto:founders@luminik.io">founders@luminik.io</a>. Open Kannada is supported by <a href="https://www.luminik.io">DataRavel Inc. (dba Luminik)</a>.';
 
-const PRESS_EN = { descriptions: DESCRIPTIONS, bios: BIOS, facts: FACTS, logos: LOGOS, colors: COLORS, screenshots: SCREENSHOTS, photos: PHOTOS, contact: CONTACT };
+const PRESS_EN = { descriptions: DESCRIPTIONS, bios: BIOS, facts: FACTS, logos: LOGOS, colors: COLORS, screenshots: SCREENSHOTS, contact: CONTACT };
 type Press = typeof PRESS_EN;
 
 const PRESS_KN: Press = {
@@ -136,7 +134,7 @@ const PRESS_KN: Press = {
     {
       name: "ನೇಹಾ ಪ್ರಸಾದ್",
       role: "ಸ್ಥಾಪಕ ಸದಸ್ಯೆ",
-      text: '<mark class="todo">PRASAD: ನೇಹಾ ಅವರ ಪರಿಚಯ, ಸುಮಾರು 60 ಪದಗಳು.</mark>',
+      text: "ನೇಹಾ ಪ್ರಸಾದ್ ಓಪನ್ ಕನ್ನಡದ ಸ್ಥಾಪಕ ಸದಸ್ಯೆ. ಅವರು ನಾರ್ವೆಯಲ್ಲಿ ಡಿಸೈನ್ ಎಂಜಿನಿಯರ್ ಆಗಿದ್ದು, Laerdal Medical ನಲ್ಲಿ CPR Finder ನ ಲೀಡ್ ಡಿಸೈನರ್. PMS, ಪೆರಿಮೆನೋಪಾಸ್ ಮತ್ತು ADHD ಯ ಭಾವನಾತ್ಮಕ ಅಂಶಗಳಿಗಾಗಿ ರೂಪಿಸಿದ Niyora ಆ್ಯಪ್ ಅನ್ನು ಅವರು ಸ್ಥಾಪಿಸಿದ್ದಾರೆ. ಅದಕ್ಕೂ ಮೊದಲು Infinity Games ನಲ್ಲಿ ಸ್ಥಾಪಕ ಪ್ರಾಡಕ್ಟ್ ಡಿಸೈನರ್ ಆಗಿದ್ದರು. ಅವರು ಭಾರತದಲ್ಲಿ, ಭಾರತೀಯ ವೈದ್ಯಪದ್ಧತಿಯೊಂದರಲ್ಲಿ, ವೈದ್ಯರಾಗಿ ತರಬೇತಿ ಪಡೆದವರು.",
       source: "https://neha-prasad.com/",
     },
   ],
@@ -166,7 +164,6 @@ const PRESS_KN: Press = {
     { ...SCREENSHOTS[0]!, alt: "ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ತಿಳಿ ಮೋಡ್‌ನಲ್ಲಿರುವ ಸಂಪಾದಕ: 2002ರಲ್ಲಿ ಬರಹ ಫಾಂಟ್‌ನಲ್ಲಿ ಟೈಪ್ ಮಾಡಿದ 4 ಸಾಲುಗಳನ್ನು ಅಂಟಿಸಿದ ನಂತರ. ಪಠ್ಯ ಈಗ ಯೂನಿಕೋಡ್ ಕನ್ನಡದಲ್ಲಿದೆ, 1 ಅಪರಿಚಿತ ಗ್ಲಿಫ್ ಮತ್ತು 1 ತಪ್ಪು ರಚನೆಯ ಅಕ್ಷರವನ್ನು ಗುರುತಿಸಲಾಗಿದೆ." },
     { ...SCREENSHOTS[1]!, alt: "ಅದೇ 4 ಸಾಲುಗಳು, ಫೋನ್‌ನಲ್ಲಿ ಗಾಢ ಮೋಡ್‌ನಲ್ಲಿ, ಕೆಳಭಾಗದಲ್ಲಿ ಟೂಲ್‌ಬಾರ್‌ನೊಂದಿಗೆ." },
   ],
-  photos: ["ಪ್ರಸಾದ್ ಸುಬ್ರಹ್ಮಣ್ಯ", "ನೇಹಾ ಪ್ರಸಾದ್"],
   contact: 'ಪತ್ರಿಕೆಗಳು, ಸಹಭಾಗಿತ್ವ ಮತ್ತು ಸರ್ಕಾರಿ ಕಚೇರಿಗಳಿಗೆ: <a href="mailto:founders@luminik.io">founders@luminik.io</a>. ಓಪನ್ ಕನ್ನಡಕ್ಕೆ <a href="https://www.luminik.io">DataRavel Inc. (dba Luminik)</a> ನೆರವು ನೀಡುತ್ತದೆ.',
 };
 

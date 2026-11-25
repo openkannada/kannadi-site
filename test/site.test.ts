@@ -215,6 +215,9 @@ test("robots.txt allows every crawler and names the sitemap once there is one", 
   assert.ok(robots("https://example.org/sitemap.xml").endsWith("\nSitemap: https://example.org/sitemap.xml\n"));
   assert.ok(sitemap([{ loc: "https://example.org/?a&b" }]).includes("<url><loc>https://example.org/?a&amp;b</loc></url>"));
   assert.ok(sitemap([{ loc: "https://example.org/", lastmod: "2026-11-17" }]).includes("<loc>https://example.org/</loc><lastmod>2026-11-17</lastmod>"));
+  const withLanguages = sitemap([{ loc: "https://example.org/about/", alternates: [{ hreflang: "en", href: "https://example.org/about/" }, { hreflang: "kn", href: "https://example.org/kn/about/" }] }]);
+  assert.match(withLanguages, /xmlns:xhtml="http:\/\/www\.w3\.org\/1999\/xhtml"/);
+  assert.ok(withLanguages.includes('<xhtml:link rel="alternate" hreflang="kn" href="https://example.org/kn/about/"/>'), "each page lists its language versions");
 });
 
 test("no copy says the editor converts Unicode back to Akruti: it saves Nudi only", () => {
@@ -453,20 +456,22 @@ test("each founding member has a portrait, and the dedication our family photo, 
     for (const p of ABOUT[lang].people) assert.ok(p.alt.includes(p.name), `${lang}: the alt text of ${p.name} names them`);
   }
   const about = read("src/components/About.astro");
-  assert.match(about, /<source type="image\/avif"/);
-  assert.match(about, /alt=\{p\.alt\}/);
+  const portrait = read("src/components/Portrait.astro");
+  assert.match(portrait, /<source type="image\/avif"/);
+  assert.match(about, /<Portrait photo=\{p\.photo\} alt=\{p\.alt\} \/>/);
+  assert.match(read("src/components/Press.astro"), /<Portrait photo=\{PEOPLE\[i\]!\.photo\} alt=\{PEOPLE\[i\]!\.alt\}/, "the press kit shows the same portraits");
   const blocks = read("REUSE.toml").split("[[annotations]]").slice(1);
   const at = blocks.findIndex((b) => b.includes('path = "src/assets/people/**"'));
   assert.ok(at >= 0 && /SPDX-License-Identifier = "LicenseRef-AllRightsReserved"/.test(blocks[at]), "the photos are all rights reserved");
   for (const later of blocks.slice(at + 1)) assert.doesNotMatch(later, /"\*\*"|src\/assets\/\*\*|src\/\*\*/, "no later annotation covers the photos, since the last match wins");
-  assert.match(about, /<picture data-md-skip>/, "the markdown mirror leaves the photos out");
+  assert.match(portrait, /<picture class=\{className\} data-md-skip>/, "the markdown mirror leaves the photos out");
   const family = readdirSync(new URL("../src/assets/family/", import.meta.url)).sort();
   assert.deepEqual(family, [480, 720, 960, 1200].flatMap((w) => [`family-2023-${w}.avif`, `family-2023-${w}.webp`]).sort());
   assert.equal(ABOUT.en.family.caption, "Subramanya, Veena, Pramodini, me and Neha.");
   assert.equal(ABOUT.kn.family.caption, "ಸುಬ್ರಹ್ಮಣ್ಯ, ವೀಣಾ, ಪ್ರಮೋದಿನಿ, ನಾನು ಮತ್ತು ನೇಹಾ.");
   for (const lang of ["en", "kn"]) assert.match(ABOUT[lang].family.alt, /5/, `${lang}: the family photo has alt text that says who is in it`);
   assert.match(about, /srcset=\{widths\(FAMILY\.webp\)\} sizes=\{FAMILY_SIZES\} alt=\{ABOUT\.family\.alt\} width=\{[^}]+\} height=\{[^}]+\} loading="lazy"/, "the family photo is lazy, sized and has alt text");
-  assert.equal((about.match(/<picture data-md-skip>/g) ?? []).length, 2, "both pictures stay out of the mirror");
+  assert.equal((about.match(/<picture data-md-skip>/g) ?? []).length, 1, "the family photo stays out of the mirror, as Portrait's pictures do");
   assert.match(about, /srcset=\{widths\(FAMILY\.avif\)\} sizes=\{FAMILY_SIZES\}/);
   const fam = blocks.findIndex((b) => b.includes('path = "src/assets/family/**"'));
   assert.ok(fam >= 0 && /SPDX-License-Identifier = "LicenseRef-AllRightsReserved"/.test(blocks[fam]), "the family photo is all rights reserved");

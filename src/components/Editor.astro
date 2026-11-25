@@ -57,6 +57,9 @@ const counts = [
       <button type="button" class="btn btn-icon mic" id="voice" aria-pressed="false" aria-label={t.toolbar.voice} title={t.toolbar.voice} hidden>
         <Icon name="mic" />
       </button>
+      <button type="button" class="btn btn-icon" id="format" popovertarget="format-menu" aria-label={t.toolbar.format} title={t.toolbar.formatTitle} hidden>
+        <Icon name="format" />
+      </button>
       <button type="button" class="btn btn-icon" popovertarget="tools-menu" aria-label={t.toolbar.more} title={t.toolbar.more}>
         <Icon name="tools" />
       </button>
@@ -78,6 +81,10 @@ const counts = [
     <button type="button" class="menu-item" data-run="normalize">{t.menu.normalize} <small>{t.menu.normalizeNote}</small></button>
     <button type="button" class="menu-item" data-run="modernize">{t.menu.modernize} <small lang="kn">{t.menu.modernizeNote}</small></button>
     <button type="button" class="menu-item" data-run="new">{t.menu.newDocument}</button>
+    <div id="recent" class="recent" role="group" aria-labelledby="recent-heading" hidden>
+      <p id="recent-heading" class="menu-label">{t.menu.recent}</p>
+      <div id="recent-list"></div>
+    </div>
     <div class="menu-sep" role="separator"></div>
     <fieldset class="menu-row">
       <legend class="menu-label">{t.menu.typeface}</legend>
@@ -93,6 +100,25 @@ const counts = [
     <label class="menu-check"><input type="checkbox" id="digits" /> {t.menu.digits}</label>
     <div class="menu-sep hidden md:block" role="separator"></div>
     <button type="button" class="menu-item hidden md:flex" data-run="shortcuts">{t.menu.shortcuts} <small data-shortcut>Ctrl /</small></button>
+  </div>
+
+  <div id="format-menu" popover class="menu format-menu" role="group" aria-label={t.toolbar.format}>
+    <div class="format-marks">
+      <button type="button" class="format-mark" data-format="bold" aria-pressed="false" aria-label={t.format.bold} title={`${t.format.bold} (Ctrl B)`}><b>B</b></button>
+      <button type="button" class="format-mark" data-format="italic" aria-pressed="false" aria-label={t.format.italic} title={`${t.format.italic} (Ctrl I)`}><i>I</i></button>
+      <button type="button" class="format-mark" data-format="underline" aria-pressed="false" aria-label={t.format.underline} title={`${t.format.underline} (Ctrl U)`}><u>U</u></button>
+    </div>
+    <div class="menu-sep" role="separator"></div>
+    {([["paragraph", "Ctrl Alt 0"], ["h1", "Ctrl Alt 1"], ["h2", "Ctrl Alt 2"], ["h3", "Ctrl Alt 3"], ["bullet", "Ctrl Shift 8"], ["ordered", "Ctrl Shift 7"], ["quote", "Ctrl Shift 9"]] as const).map(([f, keys]) => (
+      <button type="button" class="menu-item" data-format={f} aria-pressed="false">{t.format[f]} <small data-shortcut>{keys}</small></button>
+    ))}
+    <div class="menu-sep" role="separator"></div>
+    <form id="format-link" class="format-link">
+      <label for="link-href" class="menu-label">{t.format.link}</label>
+      <input id="link-href" type="url" inputmode="url" autocomplete="off" spellcheck="false" placeholder="https://" />
+      <button type="submit" class="btn">{t.format.linkApply}</button>
+      <p class="menu-note">{t.format.linkHelp}</p>
+    </form>
   </div>
 
   <div id="save-menu" popover class="menu save-menu" role="group" aria-label={t.save.label}>
@@ -154,6 +180,11 @@ const counts = [
         <dt><kbd>Tab</kbd></dt><dd>{t.shortcuts.nextWord}</dd>
         <dt><kbd>Esc</kbd></dt><dd>{t.shortcuts.keepWord}</dd>
         <dt><kbd>Ctrl</kbd> <kbd>/</kbd></dt><dd>{t.shortcuts.list}</dd>
+        <dt class="next-only"><kbd>Ctrl</kbd> <kbd>B</kbd> <kbd>I</kbd> <kbd>U</kbd></dt><dd class="next-only">{t.shortcuts.marks}</dd>
+        <dt class="next-only"><kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></dt><dd class="next-only">{t.shortcuts.headings}</dd>
+        <dt class="next-only"><kbd>Ctrl</kbd> <kbd>Alt</kbd> <kbd>0</kbd></dt><dd class="next-only">{t.shortcuts.text}</dd>
+        <dt class="next-only"><kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>8</kbd> <kbd>7</kbd></dt><dd class="next-only">{t.shortcuts.lists}</dd>
+        <dt class="next-only"><kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>9</kbd></dt><dd class="next-only">{t.shortcuts.quoteKey}</dd>
       </dl>
       <p class="text-sm text-muted-foreground">{parts(t.shortcuts.mac).map((p) => ("slot" in p ? <kbd>{MAC_KEYS[p.slot]}</kbd> : p.text))}</p>
     </form>

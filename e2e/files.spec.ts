@@ -4,53 +4,9 @@ import { readFile } from "node:fs/promises";
 import { expect, type Page, test } from "@playwright/test";
 
 import { writeZip } from "../src/editor/zip.ts";
-import { docText, focusDoc, isPhone, NEXT, openEditor, openMenu } from "./editor.ts";
+import { docText, focusDoc, isPhone, NEXT, openEditor, openMenu, paste } from "./editor.ts";
 
 const NUDI = "PÀ£ÀßqÀ"; // ಕನ್ನಡ in Nudi and Baraha (BRH) fonts.
-
-/**
- * Pastes clipboard data into the document. Firefox drops data put on a synthetic paste event, so there the text is
- * copied for real from a scratch element, through its own clipboard; elsewhere the paste event carries it.
- */
-async function paste(page: Page, data: { plain: string; html?: string }): Promise<void> {
-  if (page.context().browser()?.browserType().name() === "firefox") {
-    await page.evaluate(({ plain, html }) => {
-      const sel = getSelection()!;
-      // The caret, kept to put back after copying.
-      (window as unknown as { pasteCaret?: Range | undefined }).pasteCaret = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : undefined;
-      const source = document.createElement(html ? "div" : "textarea");
-      source.id = "paste-source";
-      if (source instanceof HTMLTextAreaElement) source.value = plain;
-      else {
-        source.contentEditable = "true";
-        source.innerHTML = html!;
-      }
-      document.body.append(source);
-      source.focus();
-      if (source instanceof HTMLTextAreaElement) source.select();
-      else sel.selectAllChildren(source);
-    }, data);
-    await page.keyboard.press("ControlOrMeta+c");
-    await page.evaluate(() => {
-      document.getElementById("paste-source")!.remove();
-      document.getElementById("doc")!.focus();
-      const caret = (window as unknown as { pasteCaret?: Range }).pasteCaret;
-      if (caret) {
-        getSelection()!.removeAllRanges();
-        getSelection()!.addRange(caret);
-      }
-    });
-    await page.keyboard.press("ControlOrMeta+v");
-    return;
-  }
-  await page.evaluate(({ plain, html }) => {
-    const transfer = new DataTransfer();
-    transfer.setData("text/plain", plain);
-    if (html) transfer.setData("text/html", html);
-    const doc = document.getElementById("doc")!;
-    doc.dispatchEvent(new ClipboardEvent("paste", { clipboardData: transfer, bubbles: true, cancelable: true }));
-  }, data);
-}
 
 /** Opens a file through the Open button's file input. */
 async function openFile(page: Page, name: string, body: Buffer | string, mimeType = "application/octet-stream"): Promise<void> {
@@ -284,7 +240,7 @@ test.describe("on this device", () => {
     await page.keyboard.insertText("ಕನ್ನಡ");
     await openMenu(page, "tools-menu");
     await page.locator('[data-run="new"]').click();
-    expect(await docText(page)).toBe("");
+    await expect.poll(() => docText(page)).toBe("");
     await page.reload();
     await page.waitForFunction(() => document.documentElement.classList.contains("ready"));
     expect(await docText(page)).toBe("");

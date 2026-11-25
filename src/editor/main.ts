@@ -7,6 +7,8 @@ import type { ExportFormat } from "./files.ts";
 import { doneWith, sessionStore, takeText } from "../lib/handoff.ts";
 import { registerWhenIdle, resolveModelContext } from "../lib/model-context.ts";
 import { Issues } from "./issues.ts";
+import { IdbStore, LocalStore, type DocumentStore } from "./store.ts";
+import type { Format } from "./rich.ts";
 import * as kannadi from "./kannadi.ts";
 import { EnglishTyping } from "./english.ts";
 import { SuggestStrip } from "./strip.ts";
@@ -26,7 +28,6 @@ const SAMPLE = [
   "vÀgÀ¨ÉÃw ¤ÃqÀÄªÀÅzÀÄ.",
 ].join("\n");
 
-const STORE = "kannadi.editor.v1";
 const PICKS = "kannadi.picks.v1";
 const MODES: TypingMode[] = ["kannada", "english", "baraha", "iso15919"];
 
@@ -41,6 +42,8 @@ interface Settings {
 
 interface Saved {
   text: string;
+  /** The document with its formats, as ProseMirror JSON, on the ProseMirror editor. */
+  doc?: unknown;
   unknown?: number[];
   kept?: number[];
   settings?: Partial<Settings>;
@@ -58,24 +61,6 @@ const byId = <T extends HTMLElement = HTMLElement>(id: string) => {
   const el = document.getElementById(id);
   if (!el) throw new Error(`#${id} is missing`);
   return el as T;
-};
-
-const store = {
-  read(): Saved | null {
-    try {
-      return JSON.parse(localStorage.getItem(STORE) ?? "null") as Saved | null;
-    } catch {
-      return null;
-    }
-  },
-  write(value: Saved): boolean {
-    try {
-      localStorage.setItem(STORE, JSON.stringify(value));
-      return true;
-    } catch {
-      return false;
-    }
-  },
 };
 
 const ui = {
@@ -170,6 +155,8 @@ const onEdit: EditListener = (edit, after, inputType) => {
 // ?editor=next opens the editor on ProseMirror, which loads only then.
 const next = new URLSearchParams(location.search).get("editor") === "next";
 const pm = next ? new (await import("./pm.ts")).PmEditor(ui.doc, onEdit) : null;
+// The ProseMirror editor keeps its documents in IndexedDB, so long ones fit, with the last few as recent documents.
+const docs: DocumentStore = next ? new IdbStore() : new LocalStore();
 const editor: EditorSurface = pm ?? new DocEditor(ui.doc, onEdit);
 ui.section.dataset.core = next ? "next" : "doc";
 
@@ -193,7 +180,7 @@ const issues = new Issues(editor, kannadi, {
     if (i.total === 0) byId("problems-panel").hidePopover?.();
     // Keeping a spelling changes no text, so save here too.
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(save, 500);
+    saveTimer = setTimeout(() => void save(), 500);
   },
 });
 
@@ -264,20 +251,29 @@ function update(text: string): void {
     showCount(ui.aksharas, kannadi.countAksharas(current), S.counts.aksharas);
   }, Math.min(600, 80 + text.length / 10000));
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(save, 500);
+  saveTimer = setTimeout(() => void save(), 500);
 }
 
-function save(): void {
-  const unknown = issues.unknown.map((u) => u.offset);
-  const kept = issues.kept.map((k) => k.offset);
-  const ok = store.write({ text: editor.text, unknown, kept, settings, fileName });
-  if (!editor.text) ui.saved.textContent = "";
-  else ui.saved.textContent = ok ? S.files.savedHere : S.files.tooLarge;
+/** What is saved for the current document. */
+function current(): Saved {
+  const doc = pm ? { doc: pm.toJSON() } : {};
+  return { text: editor.text, ...doc, unknown: issues.unknown.map((u) => u.offset), kept: issues.kept.map((k) => k.offset), settings, fileName };
+}
+
+/** Whether the saved document is showing; until then there is nothing of the person's to save. */
+let restored = false;
+
+function save(): Promise<void> {
+  if (!restored) return Promise.resolve();
+  const value = current();
+  return docs.write(value).then((ok) => {
+    ui.saved.textContent = !value.text ? "" : ok ? S.files.savedHere : S.files.tooLarge;
+  });
 }
 
 function saveSettings(): void {
   clearTimeout(saveTimer);
-  save();
+  void save();
 }
 
 /** Inserts text at the selection and returns where it starts. */
@@ -292,9 +288,15 @@ function insert(result: Result, what?: string): number {
 async function open(file: File | undefined): Promise<void> {
   if (!file) return;
   try {
-    const result = await (await files()).openFile(file, io);
+    const f = await files();
+    // A Word file keeps its headings, lists, quotes and formats on the ProseMirror editor.
+    const rich = pm ? await f.openRich(file, io) : null;
+    const result = rich ?? (await f.openFile(file, io));
     issues.clear();
-    editor.setText(result.text);
+    // An HTML page with nothing to convert keeps its headings, lists and formats on the ProseMirror editor.
+    if (pm && rich) pm.loadLines(rich.text, rich.lines, rich.spans);
+    else if (pm && !result.converted && /\.html?$/i.test(file.name)) pm.setHtml(await f.readText(file, kannadi.decodeWindows1252));
+    else editor.setText(result.text);
     issues.addUnknown(result.unknown);
     editor.focus();
     editor.select(0);
@@ -332,7 +334,8 @@ async function exportAs(format: ExportFormat | "nudi"): Promise<void> {
   }
   const name = `${fileName}.${format}`;
   try {
-    download(await (await files()).exportBlob(editor.text, format, fileName), name);
+    const formatted = pm ? { html: format === "html" ? pm.html() : undefined, lines: format === "docx" ? pm.richLines() : undefined } : {};
+    download(await (await files()).exportBlob(editor.text, format, fileName, formatted), name);
   } catch {
     say(fmt(S.files.saveFailed, { name }));
     return;
@@ -429,13 +432,7 @@ const ACTIONS: Record<string, () => void> = {
   },
   normalize: () => transform(kannadi.normalize, S.edit.normalize),
   modernize: () => transform(kannadi.modernize, S.edit.modernize),
-  new: () => {
-    issues.clear();
-    editor.setText("");
-    fileName = S.files.defaultName;
-    editor.focus();
-    say(S.edit.newDocument);
-  },
+  new: () => void newDocument(),
   shortcuts: () => ui.shortcuts.showModal(),
   copy: () => {
     issues.flush();
@@ -490,6 +487,11 @@ function paste(html: string, plain: string): Promise<void> {
   }
   return files().then(({ pasted }) => {
     const result = pasted(html, plain, io);
+    // HTML with nothing to convert keeps its headings, lists and formats on the ProseMirror editor.
+    if (pm && html && !result.converted) {
+      pm.insertHtml(html);
+      return;
+    }
     const start = insert(result, S.convert.pasted);
     if (!result.converted) return;
     say(ui.toastText.textContent ?? "", {
@@ -520,14 +522,13 @@ function receive(): void {
   // The document is saved before the handed text is removed, so a reload in between loses nothing.
   void paste(handed.html, handed.text)
     .catch(() => insert({ text: handed.text, unknown: [] }))
-    .finally(() => {
-      save();
-      doneWith(store);
-    });
+    .finally(() => save())
+    .finally(() => doneWith(store));
 }
 
 function wire(): void {
   wireVoice();
+  if (pm) wireFormats(pm);
   // ProseMirror takes the composer's Backspace itself, before its own handling.
   if (!pm) ui.doc.addEventListener("beforeinput", (e) => composer.beforeInput(e));
   ui.doc.addEventListener("paste", (e) => {
@@ -668,7 +669,15 @@ function wire(): void {
       nextProblem(e.shiftKey ? -1 : 1);
     }
   });
-  addEventListener("pagehide", save);
+  // A write that has to wait may not finish as the page closes, so the store also keeps the text at once.
+  const leaving = () => {
+    if (!restored) return;
+    docs.flush(current());
+    void save();
+  };
+  addEventListener("pagehide", leaving);
+  document.addEventListener("visibilitychange", () => document.visibilityState === "hidden" && leaving());
+  byId("tools-menu").addEventListener("toggle", (e) => (e as ToggleEvent).newState === "open" && void showRecent());
 
   // iOS keeps fixed elements behind the on-screen keyboard; --kb lifts them above it.
   const vv = window.visualViewport;
@@ -695,8 +704,110 @@ function wire(): void {
   }
 }
 
-function restore(): void {
-  const saved = store.read();
+/** Shows a saved document: its text, its marks and its file name. */
+function show(saved: Saved | null): void {
+  issues.clear();
+  if (saved?.text) {
+    if (!(pm && saved.doc && pm.loadJSON(saved.doc))) editor.load(saved.text);
+    const offsets = (list: unknown) => (Array.isArray(list) ? list.filter((o): o is number => Number.isInteger(o) && o < saved.text.length) : []);
+    issues.addUnknown(offsets(saved.unknown));
+    issues.keep(offsets(saved.kept));
+    fileName = saved.fileName ?? S.files.defaultName;
+    if (looksLegacy(saved.text)) say(S.editor.welcomeBack);
+  } else {
+    editor.load("");
+    fileName = S.files.defaultName;
+  }
+  issues.check();
+}
+
+/** A new document. Where documents are kept, the last one stays among the recent ones; elsewhere Undo brings it back. */
+async function newDocument(): Promise<void> {
+  const keeps = (await docs.recent()) !== null && editor.text !== "";
+  if (keeps) {
+    clearTimeout(saveTimer);
+    await save();
+    await docs.create();
+    show(null);
+    void save();
+  } else {
+    issues.clear();
+    editor.setText("");
+    fileName = S.files.defaultName;
+  }
+  editor.focus();
+  say(keeps ? S.edit.newDocumentKept : S.edit.newDocument);
+}
+
+/** The format menu, on the ProseMirror editor: formats with their pressed state, and links. */
+function wireFormats(editor: NonNullable<typeof pm>): void {
+  const menu = byId("format-menu");
+  byId("format").hidden = false;
+  const buttons = [...menu.querySelectorAll<HTMLButtonElement>("[data-format]")];
+  const href = byId<HTMLInputElement>("link-href");
+  const pressed = () => {
+    for (const b of buttons) b.setAttribute("aria-pressed", String(editor.active(b.dataset.format as Format)));
+  };
+  // Before it shows, since toggle comes later and would wipe an address typed in the meantime.
+  menu.addEventListener("beforetoggle", (e) => {
+    if ((e as ToggleEvent).newState !== "open") return;
+    pressed();
+    href.value = editor.linkAt();
+  });
+  // Keep the selection in the document while a format is tapped.
+  for (const b of buttons) b.addEventListener("pointerdown", (e) => e.preventDefault());
+  for (const b of buttons) {
+    b.addEventListener("click", () => {
+      const f = b.dataset.format as Format;
+      editor.format(f);
+      // Bold, italic and underline toggle, so the menu stays; a block format is chosen, and the menu goes.
+      if (f === "bold" || f === "italic" || f === "underline") pressed();
+      else menu.hidePopover();
+    });
+  }
+  byId("format-link").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (editor.link(href.value)) menu.hidePopover();
+  });
+}
+
+/** Lists the recent documents in the tools menu, where documents are kept. */
+async function showRecent(): Promise<void> {
+  const recent = await docs.recent();
+  const box = byId("recent");
+  box.hidden = !recent?.length;
+  if (!recent?.length) return;
+  const when = new Intl.DateTimeFormat(document.documentElement.lang || "en", { dateStyle: "medium", timeStyle: "short" });
+  byId("recent-list").replaceChildren(
+    ...recent.map((r) => {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "menu-item";
+      const name = document.createElement("span");
+      if (/[\u0C80-\u0CFF]/.test(r.title)) name.lang = "kn";
+      name.textContent = r.title || S.menu.untitled;
+      const date = document.createElement("small");
+      date.textContent = when.format(r.updated);
+      b.append(name, date);
+      b.addEventListener("click", () => void openRecent(r.id));
+      return b;
+    }),
+  );
+}
+
+async function openRecent(id: string): Promise<void> {
+  byId("tools-menu").hidePopover();
+  clearTimeout(saveTimer);
+  await save();
+  const saved = (await docs.open(id)) as Saved | null;
+  if (!saved) return;
+  show(saved);
+  editor.focus();
+  editor.select(0);
+}
+
+async function restore(): Promise<void> {
+  const saved = (await docs.read()) as Saved | null;
   if (saved?.settings) settings = { ...settings, ...saved.settings };
   ui.autoConvert.checked = settings.autoConvert;
   ui.zero.checked = settings.zero;
@@ -709,21 +820,16 @@ function restore(): void {
   else setMode(MODES.includes(settings.mode) ? settings.mode : "kannada", false);
   if (picked && document.activeElement === picked) editor.focus();
   setFont(settings.font === "serif" ? "serif" : "sans", false);
-  if (saved?.text) {
-    editor.load(saved.text);
-    const offsets = (list: unknown) => (Array.isArray(list) ? list.filter((o): o is number => Number.isInteger(o) && o < saved.text.length) : []);
-    issues.addUnknown(offsets(saved.unknown));
-    issues.keep(offsets(saved.kept));
-    fileName = saved.fileName ?? S.files.defaultName;
-    if (looksLegacy(saved.text)) say(S.editor.welcomeBack);
-  } else {
+  if (saved?.text) show(saved);
+  else {
     update("");
+    issues.check();
   }
-  issues.check();
+  restored = true;
 }
 
 wire();
-restore();
+await restore();
 receive();
 document.documentElement.classList.add("ready");
 const modelContext = resolveModelContext(document, navigator);

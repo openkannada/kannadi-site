@@ -13,6 +13,16 @@ export interface ViewParts {
 /** Space kept between the caret line and the band or the suggestions. */
 const MARGIN = 12;
 const PHONE = "(max-width: 47.99rem)";
+/** A focus this soon after a tap on the sheet came from the tap. */
+const TAP_MS = 1000;
+/**
+ * Where the part of the window a person can see starts: iOS pans it down the page while the keyboard is open. Under a
+ * pinch zoom the person moves the view, and main.ts leaves the keyboard alone too.
+ */
+const seenTop = () => {
+  const vv = window.visualViewport;
+  return vv && vv.scale === 1 ? vv.offsetTop : 0;
+};
 
 export class View {
   private readonly editor: EditorSurface;
@@ -21,6 +31,7 @@ export class View {
   /** A pointer is down, as in a drag selection: scrolling now would move the page under it. */
   private pressed = false;
   private waiting = false;
+  private tappedAt = -Infinity;
 
   constructor(editor: EditorSurface, parts: ViewParts) {
     this.editor = editor;
@@ -38,7 +49,21 @@ export class View {
     for (const type of ["pointerup", "pointercancel", "contextmenu", "dragstart", "keydown", "beforeinput", "blur"]) {
       addEventListener(type, release, { capture: true, passive: true });
     }
+    parts.sheet.addEventListener("pointerdown", () => (this.tappedAt = performance.now()), { passive: true });
+    // A finger that pans the page was never a tap.
+    parts.sheet.addEventListener("pointercancel", () => (this.tappedAt = -Infinity), { passive: true });
+    editor.el.addEventListener("focus", () => requestAnimationFrame(() => this.fill()));
     band();
+  }
+
+  /**
+   * On phones, a tap into the sheet brings its top up to the top of the screen, so the writing area fills it down to
+   * the toolbar. A focus with no tap, as when the person comes back to the page, leaves the page where it is.
+   */
+  private fill(): void {
+    if (!this.phone || document.activeElement !== this.editor.el || performance.now() - this.tappedAt > TAP_MS) return;
+    const below = this.parts.sheet.getBoundingClientRect().top - seenTop();
+    if (below > 1) scrollBy({ top: below, behavior: "instant" });
   }
 
   private get phone(): boolean {
@@ -74,7 +99,7 @@ export class View {
     if (this.phone) {
       let bottom = this.parts.toolbar.getBoundingClientRect().top;
       if (!strip.hidden) bottom = Math.min(bottom, strip.getBoundingClientRect().top);
-      return { top: MARGIN, bottom: bottom - MARGIN };
+      return { top: seenTop() + MARGIN, bottom: bottom - MARGIN };
     }
     return { top: stuck ? this.bandBottom() + MARGIN : MARGIN, bottom: innerHeight - MARGIN };
   }

@@ -1,7 +1,7 @@
 // The toolbar, the suggestions and the caret line never cover each other, at every width, light and dark. @layout
 import { expect, test } from "@playwright/test";
 
-import { caretAt, caretOffset, docText, expectClearLayout, focusDoc, isPhone, layout, NEXT, openEditor, settle } from "./editor.ts";
+import { caretAt, caretOffset, docText, expectClearLayout, focusDoc, isPhone, layout, NEXT, openEditor, openKeyboard, settle } from "./editor.ts";
 
 test.describe("@layout", () => {
   test("after a word, the first line is clear of the toolbar and the suggestions", async ({ page }, info) => {
@@ -72,15 +72,8 @@ test.describe("@layout", () => {
     await focusDoc(page);
     await page.keyboard.insertText(Array.from({ length: 60 }, (_, i) => `ಸಾಲು ${i + 1}`).join("\n"));
     await settle(page);
-    // Emulators have no on-screen keyboard; the visual viewport shrinks here as a keyboard would make it, 60px at a time.
-    const shrink = (by: number) =>
-      page.evaluate((by) => {
-        const vv = visualViewport!;
-        const height = innerHeight - by;
-        Object.defineProperty(vv, "height", { configurable: true, get: () => height });
-        vv.dispatchEvent(new Event("resize"));
-      }, by);
-    for (const by of [60, 120, 180, 240, 300]) await shrink(by);
+    // The keyboard opens 60px at a time.
+    for (const by of [60, 120, 180, 240, 300]) await openKeyboard(page, by);
     await expectClearLayout(page, info, "keyboard-open");
     const end = await page.evaluate(() => scrollY);
     // With the keyboard open, iOS pans the visual viewport as the page scrolls.

@@ -479,3 +479,15 @@ test("each founding member has a portrait, and the dedication our family photo, 
   assert.match(read("src/i18n/site.en.ts"), /Text and the images we make: CC BY 4\.0\./);
   assert.match(read("LICENSES/LicenseRef-AllRightsReserved.txt"), /^All rights reserved\./);
 });
+
+test("released tools link their files and source instead of saying they are coming", () => {
+  const repos = { "spell-check": "kannada-spell", ocr: "kannada-ocr", "ai-benchmark": "kannada-llm-bench" };
+  for (const [base, repo] of Object.entries(repos)) {
+    for (const slug of [base, `kn/${base}`]) {
+      const downloads = JSON.stringify(ALL_PAGES.find((p) => p.slug === slug).sections.find((s) => s.id === "downloads"));
+      assert.doesNotMatch(downloads, /[Cc]oming soon|ಶೀಘ್ರದಲ್ಲೇ/, `${slug} still says its downloads are coming`);
+      assert.ok(downloads.includes(`github.com/openkannada/${repo}`), `${slug} does not link ${repo}`);
+    }
+  }
+  for (const lang of ["en", "kn"]) assert.equal(HOME_COPY[lang].tools.items.find((t) => t.slug === "ocr").soon, undefined, `the ${lang} home card still says OCR is coming`);
+});

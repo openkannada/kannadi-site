@@ -660,7 +660,7 @@ export const ALL_PAGES: Page[] = [
           "Every 10th article of the Kannada Wikipedia dump of 1 November 2026 is held out, 2.2 million words, and the dictionaries are built from the other articles.",
         ],
       },
-      { id: "downloads", paragraphs: [SOON] },
+      { id: "downloads", items: [`<b>Hunspell:</b> <a href="https://github.com/openkannada/kannada-spell/tree/main/dict">kn_IN.aff, kn_IN.dic and kn_IN-wikipedia.dic</a>. Load both dictionaries together, as LibreOffice and Firefox do with <code>kn_IN,kn_IN-wikipedia</code>. The source is ${repoLink("https://github.com/openkannada/kannada-spell")}.`] },
       {
         id: "license",
         items: [
@@ -788,7 +788,7 @@ export const ALL_PAGES: Page[] = [
         id: "method",
         items: ["Tesseract fine-tuned on Wikisource lines and on synthetic lines in openly licensed fonts, with the character error rate measured on held-out samples on 18 November 2026."],
       },
-      { id: "downloads", paragraphs: [SOON] },
+      { id: "downloads", items: [`<b>kan_ft_ofl3 0.2.0:</b> <a href="https://github.com/openkannada/kannada-ocr/releases/download/v0.2.0/kan_ft_ofl3.traineddata">kan_ft_ofl3.traineddata</a>, for Tesseract 5, from the <a href="https://github.com/openkannada/kannada-ocr/releases/tag/v0.2.0">0.2.0 release</a>. The source is ${repoLink("https://github.com/openkannada/kannada-ocr")}.`] },
       { id: "license", items: ["Code: MIT OR Apache-2.0.", "The model: Apache-2.0."] },
     ],
     faq: [],
@@ -852,7 +852,7 @@ export const ALL_PAGES: Page[] = [
           "Llama 3.1, Llama 4, Gemma 3 and Tiny Aya are not measured, because their tokenizers are gated.",
         ],
       },
-      { id: "downloads", paragraphs: ["The test suite is coming soon."] },
+      { id: "downloads", items: [`The token counts, the test suite with answer keys, and the scripts that rerun both: ${repoLink("https://github.com/openkannada/kannada-llm-bench")}.`] },
       { id: "license", paragraphs: ["The results: CC BY 4.0."] },
     ],
     faq: [],
@@ -1166,7 +1166,7 @@ export const ALL_PAGES: Page[] = [
           "1 ನವೆಂಬರ್ 2026ರ ಕನ್ನಡ ವಿಕಿಪೀಡಿಯ ಡಂಪ್‌ನ ಪ್ರತಿ 10ನೇ ಲೇಖನವನ್ನು ಪರೀಕ್ಷೆಗಾಗಿ ಹೊರಗಿಡಲಾಗಿದೆ, ಒಟ್ಟು 22 ಲಕ್ಷ ಪದಗಳು. ನಿಘಂಟುಗಳನ್ನು ಉಳಿದ ಲೇಖನಗಳಿಂದ ಕಟ್ಟಲಾಗಿದೆ.",
         ],
       },
-      { id: "downloads", paragraphs: [SOON_KN] },
+      { id: "downloads", items: [`<b>Hunspell:</b> <a href="https://github.com/openkannada/kannada-spell/tree/main/dict">kn_IN.aff, kn_IN.dic ಮತ್ತು kn_IN-wikipedia.dic</a>. ಎರಡೂ ನಿಘಂಟುಗಳನ್ನು ಒಟ್ಟಿಗೆ ಬಳಸಿ. ಮೂಲ ಕೋಡ್: ${repoLink("https://github.com/openkannada/kannada-spell")}.`] },
       {
         id: "license",
         items: [
@@ -1298,7 +1298,7 @@ export const ALL_PAGES: Page[] = [
         id: "method",
         items: ["ವಿಕಿಸೋರ್ಸ್ ಸಾಲುಗಳ ಮೇಲೆ ಮತ್ತು ಮುಕ್ತ ಲೈಸೆನ್ಸ್‌ನ ಫಾಂಟ್‌ಗಳಲ್ಲಿ ರಚಿಸಿದ ಸಾಲುಗಳ ಮೇಲೆ Tesseract ಅನ್ನು ಮತ್ತಷ್ಟು ತರಬೇತಿಗೊಳಿಸಲಾಗಿದೆ; ತಪ್ಪು ಅಕ್ಷರಗಳ ಪ್ರಮಾಣವನ್ನು ತರಬೇತಿಗೆ ಬಳಸದ ಮಾದರಿಗಳ ಮೇಲೆ 18 ನವೆಂಬರ್ 2026 ರಂದು ಅಳೆಯಲಾಗಿದೆ."],
       },
-      { id: "downloads", paragraphs: [SOON_KN] },
+      { id: "downloads", items: [`<b>kan_ft_ofl3 0.2.0:</b> <a href="https://github.com/openkannada/kannada-ocr/releases/download/v0.2.0/kan_ft_ofl3.traineddata">kan_ft_ofl3.traineddata</a>, Tesseract 5ಕ್ಕೆ, <a href="https://github.com/openkannada/kannada-ocr/releases/tag/v0.2.0">0.2.0 ಬಿಡುಗಡೆ</a> ಪುಟದಿಂದ. ಮೂಲ ಕೋಡ್: ${repoLink("https://github.com/openkannada/kannada-ocr")}.`] },
       { id: "license", items: ["ಕೋಡ್: MIT OR Apache-2.0.", "ಮಾದರಿ: Apache-2.0."] },
     ],
     faq: [],
@@ -1364,7 +1364,7 @@ export const ALL_PAGES: Page[] = [
           "Llama 3.1, Llama 4, Gemma 3 ಮತ್ತು Tiny Aya ಅನ್ನು ಅಳೆದಿಲ್ಲ, ಏಕೆಂದರೆ ಅವುಗಳ ಟೋಕನೈಸರ್‌ಗಳು ಅನುಮತಿ ಪಡೆದವರಿಗೆ ಮಾತ್ರ ಸಿಗುತ್ತವೆ.",
         ],
       },
-      { id: "downloads", paragraphs: ["ಪರೀಕ್ಷಾ ಸಂಗ್ರಹ ಶೀಘ್ರದಲ್ಲೇ ಬರಲಿದೆ."] },
+      { id: "downloads", items: [`ಟೋಕನ್ ಎಣಿಕೆಗಳು, ಉತ್ತರಗಳ ಸಹಿತ ಪರೀಕ್ಷಾ ಸಂಗ್ರಹ ಮತ್ತು ಅವನ್ನು ಮತ್ತೆ ನಡೆಸುವ ಸ್ಕ್ರಿಪ್ಟ್‌ಗಳು: ${repoLink("https://github.com/openkannada/kannada-llm-bench")}.`] },
       { id: "license", paragraphs: ["ಫಲಿತಾಂಶಗಳು: CC BY 4.0."] },
     ],
     faq: [],

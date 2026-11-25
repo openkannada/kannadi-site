@@ -33,10 +33,10 @@ export const ORG = {
 
 /**
  * IndexNow tells Bing and other engines which pages changed. The key is public by design and served as
- * public/<key>.txt. Switch it on once the site is live at its own domain.
+ * public/<key>.txt. On since 25 November 2026: each deploy to main sends the pages whose lastmod changed.
  */
 export const INDEXNOW = {
-  enabled: false,
+  enabled: true,
   key: "3601f9fcb12d8a620b36768a880d87ae",
 } as const;
 

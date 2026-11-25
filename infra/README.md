@@ -72,7 +72,7 @@ The word list is served as `text/plain`, so the edge compresses it.
 
 ## Launch
 
-The site launched on 22 November 2026: `LIVE.launched` is `true`, so pages carry no noindex header and every deploy runs the placeholder check before it publishes. IndexNow sends the changed pages after the live check once `INDEXNOW.enabled` is on in `src/content/site.ts`; its key file is served at https://openkannada.org/3601f9fcb12d8a620b36768a880d87ae.txt.
+The site launched on 22 November 2026: `LIVE.launched` is `true`, so pages carry no noindex header and every deploy runs the placeholder check before it publishes. Since 25 November 2026 (`INDEXNOW.enabled` in `src/content/site.ts`), IndexNow gets the changed pages after the live check; its key file is served at https://openkannada.org/3601f9fcb12d8a620b36768a880d87ae.txt.
 
 Never run `wrangler login` or `wrangler logout` on my Mac: the login there belongs to another account.
 

@@ -92,10 +92,10 @@ test("IndexNow gets only new or changed pages on the site's own host", () => {
   });
 });
 
-test("the IndexNow key file is served from the site root and stays off until the domain is live", () => {
+test("the IndexNow key file is served from the site root, and deploys to the live domain send changed pages", () => {
   assert.equal(readFileSync(new URL(`../public/${INDEXNOW.key}.txt`, import.meta.url), "utf8"), INDEXNOW.key);
   assert.match(INDEXNOW.key, /^[0-9a-f]{32}$/);
-  assert.equal(INDEXNOW.enabled, false);
+  assert.equal(INDEXNOW.enabled, true);
 });
 
 test("the live check wants status 200 and the right content type for each file", () => {

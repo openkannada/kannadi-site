@@ -98,6 +98,7 @@ test("missing, unknown or overlong fields name themselves, and the link stays op
 test("only JSON from the site itself, under 8 KB, is read", async () => {
   const env = { DB: fakeDb().db, TURNSTILE_SECRET: "s" };
   assert.equal((await handleInterest(post(GOOD, { origin: "https://evil.example" }), env, true, human)).status, 403);
+  assert.equal((await handleInterest(post(GOOD, { origin: "null" }), env, true, human)).status, 403, "an opaque origin is refused, not a crash");
   assert.equal((await handleInterest(post(GOOD, { "content-type": "text/plain" }), env, true, human)).status, 403);
   assert.equal((await handleInterest(post(GOOD, { "content-length": "9000" }), env, true, human)).status, 413);
   assert.equal((await handleInterest(post(null), env, true, human)).status, 400, "a body that is not an object is refused, not a crash");

@@ -85,6 +85,15 @@ export async function turnstileOk(token: string, secret: string, ip: string | nu
   return data.success === true && (data.hostname === host || LOCAL.test(data.hostname ?? ""));
 }
 
+/** The host of an Origin header, or "" for a missing or opaque one such as "null". */
+const hostOf = (from: string | null) => {
+  try {
+    return from ? new URL(from).hostname : "";
+  } catch {
+    return "";
+  }
+};
+
 const json = (status: number, body: Record<string, unknown>) =>
   new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-robots-tag": "noindex" } });
 
@@ -94,7 +103,7 @@ export async function handleInterest(request: Request, env: InterestEnv, open: b
   if (!open || !env.DB || !env.TURNSTILE_SECRET) return json(503, { error: "closed" });
   // Only the site's own page posts here: JSON, from the canonical origin, and small.
   const from = request.headers.get("origin");
-  const sameSite = from === `https://${origin.host}` || (from !== null && LOCAL.test(new URL(from).hostname));
+  const sameSite = from === `https://${origin.host}` || LOCAL.test(hostOf(from));
   if (!sameSite || !request.headers.get("content-type")?.startsWith("application/json")) return json(403, { error: "origin" });
   if (Number(request.headers.get("content-length") ?? MAX_BODY + 1) > MAX_BODY) return json(413, { error: "too large" });
   let input: Record<string, unknown>;

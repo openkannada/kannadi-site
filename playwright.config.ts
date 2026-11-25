@@ -33,5 +33,6 @@ export default defineConfig({
     { name: "chromium-360", use: { ...devices["Galaxy S9+"], viewport: { width: 360, height: 740 }, deviceScaleFactor: 2 } },
     { name: "webkit-390", use: { ...devices["iPhone 13"] } },
     { name: "webkit-390-dark", grep: LAYOUT, use: { ...devices["iPhone 13"], colorScheme: "dark" } },
+    { name: "webkit-430", grep: LAYOUT, use: { ...devices["iPhone 15 Plus"] } },
   ],
 });

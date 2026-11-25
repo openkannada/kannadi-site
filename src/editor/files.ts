@@ -1,10 +1,13 @@
 // Opening TXT, HTML and DOCX files as editor text, and saving the editor text
 // as TXT, HTML or DOCX.
-import { readDocx, writeDocx } from "./docx.ts";
+import { readDocx, readDocxRich, type RichLine, writeDocx, writeRichDocx } from "./docx.ts";
+import { parseHtml, STYLE } from "./html.ts";
 import {
   type Converted,
   decodeBytes,
   isZip,
+  joinRich,
+  type RichJoined,
   notText,
   unixLines,
   escapeMarkup,
@@ -36,18 +39,6 @@ const BLOCK = new Set([
 ]);
 const SKIP = new Set(["SCRIPT", "STYLE", "NOSCRIPT", "TEMPLATE", "HEAD", "TITLE", "TEXTAREA"]);
 const FONT_FAMILY = /font-family\s*:\s*([^;}]+)/i;
-// The page's Content-Security-Policy also applies to documents it parses, and
-// would log every style attribute and element. Renamed, they stay readable:
-// attributes as data-source-style, style elements as raw-text textareas.
-const STYLE = "data-source-style";
-
-function parseHtml(html: string): Document {
-  const renamed = html
-    .replace(/(<[a-z][^<>]*?\s)style(\s*=)/gi, `$1${STYLE}$2`)
-    .replace(/<style\b[^>]*>/gi, `<textarea ${STYLE}>`)
-    .replace(/<\/style\s*>/gi, "</textarea>");
-  return new DOMParser().parseFromString(renamed, "text/html");
-}
 
 /**
  * The font that style rules in the page give class names and tag names: the
@@ -173,6 +164,23 @@ export async function openFile(file: File, { convert, bestLayout, decodeWindows1
   return join([{ text, legacy: byLooks(text) }]);
 }
 
+/**
+ * A Word file as text with its lines' blocks and formatted ranges, converting its legacy font runs; null for any
+ * other file, which openFile reads.
+ */
+export async function openRich(file: File, { convert, bestLayout }: Omit<Converter, "decodeWindows1252">): Promise<RichJoined | null> {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const name = file.name.toLowerCase();
+  if (!isZip(bytes) || !(name.endsWith(".docx") || !name.includes(".") || /\.(doc|txt)$/.test(name))) return null;
+  const { segments, lines } = await readDocxRich(bytes);
+  return joinRich(resolveAuto(segments, bestLayout), lines, convert);
+}
+
+/** A file's text, decoded as openFile decodes it: UTF-16 with a byte order mark, UTF-8, or else Windows-1252. */
+export async function readText(file: File, decodeWindows1252: (bytes: Uint8Array) => string): Promise<string> {
+  return unixLines(decodeBytes(new Uint8Array(await file.arrayBuffer()), decodeWindows1252));
+}
+
 /** Pasted clipboard data as editor text, converting its legacy font text. */
 export function pasted(html: string, rawPlain: string, { convert, bestLayout }: Omit<Converter, "decodeWindows1252">): Joined {
   const join = (segments: Segment[]) => joinSegments(resolveAuto(segments, bestLayout), convert);
@@ -224,15 +232,22 @@ ${body}
 export type ExportFormat = "docx" | "html" | "txt";
 
 /** The editor text as a Blob in the given format. */
-export async function exportBlob(text: string, format: ExportFormat, title: string): Promise<Blob> {
+/** The editor text with its formats, where the editor keeps them: an HTML body, and lines for a Word file. */
+export interface Formatted {
+  html?: string | undefined;
+  lines?: RichLine[] | undefined;
+}
+
+/** The editor text as a Blob in the given format, with its formats when given. */
+export async function exportBlob(text: string, format: ExportFormat, title: string, { html, lines }: Formatted = {}): Promise<Blob> {
   if (format === "docx") {
-    return new Blob([(await writeDocx(text)) as Uint8Array<ArrayBuffer>], {
+    return new Blob([(await (lines ? writeRichDocx(lines) : writeDocx(text))) as Uint8Array<ArrayBuffer>], {
       type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     });
   }
   if (format === "html") {
     // 1 paragraph per line, with spaces kept, so the file reads as typed and reopens the same.
-    const body = text
+    const body = html ?? text
       .split("\n")
       .map((line) => `<p>${escapeMarkup(line)}</p>`)
       .join("\n");

@@ -17,6 +17,7 @@ export const ICONS = {
   save: { d: "M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5M4.5 19.5h15", use: "Save, download" },
   convert: { d: "M4 8.5h13.5L14 5M20 15.5H6.5l3.5 3.5", use: "Convert" },
   tools: { d: "M4 7h9m4 0h3M4 17h3m4 0h9M15 4.5v5M9 14.5v5", use: "More tools" },
+  format: { d: "M6.5 16 12 4l5.5 12M8.3 12h7.4M5 20h14", use: "Format: headings, lists, bold" },
   sun: {
     d: "M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4",
     fill: "M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",

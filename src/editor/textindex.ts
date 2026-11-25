@@ -1,12 +1,14 @@
-// Text offsets and ProseMirror document positions: the text is the paragraphs joined by "\n", so an offset counts 1
-// for each line break where a position counts 2 for a paragraph boundary. The index is built once per document.
+// Text offsets and ProseMirror document positions: the text is every textblock (paragraph, heading, list item line)
+// joined by "\n", so an offset counts 1 for each line break where positions count the blocks' boundaries. The index is
+// built once per document.
 import type { Node as PmNode } from "prosemirror-model";
 
 interface Index {
   text: string;
-  /** For each paragraph, the text offset and the document position where its text starts. */
+  /** For each textblock, the text offset and the document position where its text starts, and its length. */
   offsets: number[];
   positions: number[];
+  sizes: number[];
 }
 
 // Built once per document, since every edit makes a new one; the text is read several times per keystroke.
@@ -17,15 +19,19 @@ function indexOf(doc: PmNode): Index {
   if (index) return index;
   const offsets: number[] = [];
   const positions: number[] = [];
+  const sizes: number[] = [];
   const lines: string[] = [];
   let at = 0;
-  doc.forEach((p, pos) => {
+  doc.descendants((n, pos) => {
+    if (!n.isTextblock) return true;
     offsets.push(at);
     positions.push(pos + 1);
-    lines.push(p.textContent);
-    at += p.content.size + 1;
+    sizes.push(n.content.size);
+    lines.push(n.textContent);
+    at += n.content.size + 1;
+    return false;
   });
-  index = { text: lines.join("\n"), offsets, positions };
+  index = { text: lines.join("\n"), offsets, positions, sizes };
   indexes.set(doc, index);
   return index;
 }
@@ -49,16 +55,19 @@ function floor(list: number[], value: number): number {
 
 /** Document position of text offset `at`. */
 export function posOf(doc: PmNode, at: number): number {
-  const { offsets, positions } = indexOf(doc);
+  const { offsets, positions, sizes } = indexOf(doc);
+  // A document of rules only has no text to place an offset in.
+  if (!offsets.length) return 0;
   const i = floor(offsets, Math.max(0, at));
-  return positions[i]! + Math.min(Math.max(0, at) - offsets[i]!, doc.child(i).content.size);
+  return positions[i]! + Math.min(Math.max(0, at) - offsets[i]!, sizes[i]!);
 }
 
 /** Text offset of document position `pos`. */
 export function offsetOfPos(doc: PmNode, pos: number): number {
-  const { offsets, positions } = indexOf(doc);
+  const { offsets, positions, sizes } = indexOf(doc);
+  if (!offsets.length) return 0;
   // A position just before a paragraph's opening belongs to that paragraph's start, not the previous one's end.
   const i = floor(positions, pos + 1);
-  return offsets[i]! + Math.max(0, Math.min(pos - positions[i]!, doc.child(i).content.size));
+  return offsets[i]! + Math.max(0, Math.min(pos - positions[i]!, sizes[i]!));
 }
 

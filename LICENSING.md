@@ -18,6 +18,7 @@ This site is part of Open Kannada. Copyright 2026 The Open Kannada Authors: ever
 ## Third-party material
 
 - **`data/words.tsv`:** the 30,000 most common words in the article text of Kannada Wikipedia, with their counts. It is derived from the work of Kannada Wikipedia contributors, under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/). Its header gives the source dump and the changes made. The share-alike terms apply to this file alone. The site credits it in the footer of every page.
+- **The typing model, `kn.typing`:** built by `scripts/build-wasm.sh` from the kannadi checkout in `kannadi.rev` and served gzipped with the editor for `?typing=next`; it is not in this repository. It is adapted from Aksharantar (AI4Bharat), the Dakshina lexicons (Google) and Kannada Wikipedia, under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/); kannadi's `crates/kannadi-typing/README.md` lists the sources. The share-alike terms apply to that file alone. The brand page credits it.
 - **Fonts:** all under the SIL Open Font License 1.1. `public/fonts/OFL.txt` has the license and each font's copyright line.
   - Neha Sans and Neha Serif 1.000, from https://github.com/openkannada/noto-kannada-fork/releases/tag/v1.000: copyright 2022 The Noto Project Authors and 2026 The Open Kannada Authors. They are based on Noto Sans Kannada and Noto Serif Kannada. The files are the release's woff2 files, unchanged.
   - Gari 1.300, from https://github.com/openkannada/gari-font/releases/tag/v1.300: copyright 2026 The Open Kannada Authors, 2011-2012 Aravinda VK and 2005-2010 the Indian Institute of Science, Bangalore, with Reserved Font Name Navilu. The file is the release's woff2 file, unchanged.
@@ -28,7 +29,7 @@ This site is part of Open Kannada. Copyright 2026 The Open Kannada Authors: ever
 
 The licenses above cover copying and changing the work. They grant no rights in the names Open Kannada, kannadi and Neha Sans or in the logos as marks; CC BY 4.0 says so itself, in section 2(b)(1). The names and logos say who made something: anyone may say their work is built with kannadi, and no product, fork or service may present itself as Open Kannada, kannadi or Neha Sans, or use the logos as its own.
 
-The licenses and names of Open Kannada belong to the project and its contributors. DataRavel Inc. (dba Luminik) supports the project and holds none of them.
+Contributors keep the copyright to their work and license it under the project's licenses. The Open Kannada and kannadi names and logos are covered by [TRADEMARKS.md](https://github.com/openkannada/.github/blob/main/TRADEMARKS.md).
 
 ## Contact
 

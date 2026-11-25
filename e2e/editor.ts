@@ -12,8 +12,14 @@ export const isPhone = (page: Page) => (page.viewportSize()?.width ?? 1280) < 76
 /** EDITOR_NEXT=1 runs every test on the ProseMirror editor, which ?editor=next opens. */
 export const NEXT = process.env.EDITOR_NEXT === "1";
 
-/** A page's address, on the ProseMirror editor when EDITOR_NEXT=1. */
-export const editorPath = (path: string) => (NEXT ? `${path}${path.includes("?") ? "&" : "?"}editor=next` : path);
+/** TYPING_NEXT=1 runs every test with suggestions from the typing engine, which ?typing=next turns on. */
+export const ENGINE = process.env.TYPING_NEXT === "1";
+
+/** A page's address, on the ProseMirror editor when EDITOR_NEXT=1, and with the typing engine when TYPING_NEXT=1. */
+export const editorPath = (path: string) => {
+  const flags = [...(NEXT ? ["editor=next"] : []), ...(ENGINE ? ["typing=next"] : [])];
+  return flags.length ? `${path}${path.includes("?") ? "&" : "?"}${flags.join("&")}` : path;
+};
 
 /** Opens the editor and waits until it takes input; with a mode, chooses it and waits for its word list. */
 export async function openEditor(page: Page, options: { path?: string; mode?: Mode } = {}): Promise<void> {
@@ -36,16 +42,36 @@ export async function chooseMode(page: Page, mode: Mode): Promise<void> {
 }
 
 /** Opens a toolbar menu and waits until it has risen into place; a click while it moves can land outside and close it. */
-export async function openMenu(page: Page, id: "save-menu" | "tools-menu"): Promise<void> {
+export async function openMenu(page: Page, id: "save-menu" | "tools-menu" | "format-menu"): Promise<void> {
   await page.locator(`[popovertarget="${id}"]`).click();
   await expect(page.locator(`#${id}`)).toBeVisible();
-  await page.evaluate((id) => Promise.all(document.getElementById(id)!.getAnimations({ subtree: true }).map((a) => a.finished)), id);
+  // An animation cut short rejects its promise; it is over all the same.
+  await page.evaluate((id) => Promise.all(document.getElementById(id)!.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))), id);
 }
 
 /** Waits for the English-letters word list to load and index. */
 export async function wordsReady(page: Page): Promise<void> {
   await page.waitForFunction(() => document.querySelector<HTMLElement>(".editor")?.dataset.words === "ready", null, { timeout: 15_000 });
 }
+
+/**
+ * Opens an emulated on-screen keyboard `height` px tall, since emulators have none: the visual viewport shrinks as a real
+ * one makes it. iOS can also pan the visual viewport `pan` px down the page while the keyboard is open.
+ */
+export const openKeyboard = (page: Page, height: number, pan = 0) =>
+  page.evaluate(
+    ({ height, pan }) => {
+      const vv = visualViewport!;
+      const visible = innerHeight - height;
+      Object.defineProperty(vv, "height", { configurable: true, get: () => visible });
+      Object.defineProperty(vv, "offsetTop", { configurable: true, get: () => pan });
+      vv.dispatchEvent(new Event("resize"));
+    },
+    { height, pan },
+  );
+
+/** The part of the window a person can see: above the keyboard, and below where iOS has panned to. */
+export const visibleArea = (page: Page) => page.evaluate(() => ({ top: visualViewport!.offsetTop, bottom: visualViewport!.offsetTop + visualViewport!.height }));
 
 /** Clicks into the document at its end, as a person starting to type would. */
 export async function focusDoc(page: Page): Promise<void> {
@@ -65,7 +91,7 @@ export const caretOffset = (page: Page) =>
     const range = document.createRange();
     range.setStart(doc, 0);
     range.setEnd(sel.focusNode!, sel.focusOffset);
-    const paragraphs = [...doc.querySelectorAll(":scope > p")];
+    const paragraphs = [...doc.querySelectorAll("p, h1, h2, h3, h4, h5, h6")];
     if (!paragraphs.length) return range.toString().length;
     const at = paragraphs.findIndex((p) => p.contains(sel.focusNode));
     return range.toString().length + Math.max(0, at);
@@ -79,7 +105,7 @@ export const caretOffset = (page: Page) =>
 export const docText = (page: Page) =>
   page.evaluate(() => {
     const doc = document.getElementById("doc")!;
-    const paragraphs = doc.querySelectorAll(":scope > p");
+    const paragraphs = doc.querySelectorAll("p, h1, h2, h3, h4, h5, h6");
     if (paragraphs.length) return [...paragraphs].map((p) => p.textContent ?? "").join("\n");
     const text = doc.textContent ?? "";
     return text.endsWith("\n\n") ? text.slice(0, -1) : text;
@@ -130,7 +156,7 @@ export async function settle(page: Page): Promise<number> {
 export const caretAt = (page: Page, at: number) =>
   page.evaluate((at) => {
     const doc = document.getElementById("doc")!;
-    const paragraphs = [...doc.querySelectorAll(":scope > p")];
+    const paragraphs = [...doc.querySelectorAll("p, h1, h2, h3, h4, h5, h6")];
     if (!paragraphs.length) {
       const node = doc.firstChild ?? doc;
       getSelection()?.collapse(node, Math.min(at, node.textContent?.length ?? 0));
@@ -282,4 +308,48 @@ export async function expectClearLayout(page: Page, info: TestInfo, label: strin
     await info.attach(`${label}.png`, { body: await page.screenshot(), contentType: "image/png" });
     expect(problems, `${label}: ${JSON.stringify(l)}`).toEqual([]);
   }
+}
+
+/**
+ * Pastes clipboard data into the document. Firefox drops data put on a synthetic paste event, so there the text is
+ * copied for real from a scratch element, through its own clipboard; elsewhere the paste event carries it.
+ */
+export async function paste(page: Page, data: { plain: string; html?: string }): Promise<void> {
+  if (page.context().browser()?.browserType().name() === "firefox") {
+    await page.evaluate(({ plain, html }) => {
+      const sel = getSelection()!;
+      // The caret, kept to put back after copying.
+      (window as unknown as { pasteCaret?: Range | undefined }).pasteCaret = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : undefined;
+      const source = document.createElement(html ? "div" : "textarea");
+      source.id = "paste-source";
+      if (source instanceof HTMLTextAreaElement) source.value = plain;
+      else {
+        source.contentEditable = "true";
+        source.innerHTML = html!;
+      }
+      document.body.append(source);
+      source.focus();
+      if (source instanceof HTMLTextAreaElement) source.select();
+      else sel.selectAllChildren(source);
+    }, data);
+    await page.keyboard.press("ControlOrMeta+c");
+    await page.evaluate(() => {
+      document.getElementById("paste-source")!.remove();
+      document.getElementById("doc")!.focus();
+      const caret = (window as unknown as { pasteCaret?: Range }).pasteCaret;
+      if (caret) {
+        getSelection()!.removeAllRanges();
+        getSelection()!.addRange(caret);
+      }
+    });
+    await page.keyboard.press("ControlOrMeta+v");
+    return;
+  }
+  await page.evaluate(({ plain, html }) => {
+    const transfer = new DataTransfer();
+    transfer.setData("text/plain", plain);
+    if (html) transfer.setData("text/html", html);
+    const doc = document.getElementById("doc")!;
+    doc.dispatchEvent(new ClipboardEvent("paste", { clipboardData: transfer, bubbles: true, cancelable: true }));
+  }, data);
 }

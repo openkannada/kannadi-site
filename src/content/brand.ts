@@ -25,12 +25,13 @@ const BRAND_EN = {
         "Code: MIT OR Apache-2.0, at your choice.",
         "Page copy, documents and the images we make: CC BY 4.0. Credit Open Kannada and link to the page you used.",
         "The word list behind the suggestions, from Kannada Wikipedia: CC BY-SA 4.0.",
+        "The typing model we are trying for English letters, adapted from Aksharantar by AI4Bharat, the Dakshina lexicons by Google and Kannada Wikipedia: CC BY-SA 4.0.",
         "Fonts: the SIL Open Font License 1.1.",
       ],
     },
   ],
   owner:
-    "The licenses and names of Open Kannada belong to the project and its contributors. DataRavel Inc. (dba Luminik) supports the project and holds none of them.",
+    "Contributors keep the copyright to their work and license it under the project's licenses. The Open Kannada and kannadi names and logos are covered by <a href=\"https://github.com/openkannada/.github/blob/main/TRADEMARKS.md\">TRADEMARKS.md</a>.",
   removal:
     'To ask for something to be removed or credited, write to <a href="mailto:support@luminik.io">support@luminik.io</a>, the address we use until the project has its own.',
 };
@@ -61,12 +62,13 @@ const BRAND_KN: Brand = {
         "ಕೋಡ್: MIT OR Apache-2.0, ನಿಮ್ಮ ಆಯ್ಕೆಯಂತೆ.",
         "ಪುಟದ ಬರಹ, ದಾಖಲೆಗಳು ಮತ್ತು ನಾವು ಮಾಡುವ ಚಿತ್ರಗಳು: CC BY 4.0. ಓಪನ್ ಕನ್ನಡವನ್ನು ಉಲ್ಲೇಖಿಸಿ, ನೀವು ಬಳಸಿದ ಪುಟಕ್ಕೆ ಲಿಂಕ್ ಕೊಡಿ.",
         "ಸಲಹೆಗಳ ಹಿಂದಿನ, ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದಿಂದ ಬಂದ ಪದಪಟ್ಟಿ: CC BY-SA 4.0.",
+        "ಇಂಗ್ಲಿಷ್ ಅಕ್ಷರಗಳಿಗಾಗಿ ನಾವು ಪ್ರಯತ್ನಿಸುತ್ತಿರುವ ಟೈಪಿಂಗ್ ಮಾದರಿ, AI4Bharat ಅವರ Aksharantar, Google ಅವರ Dakshina ಮತ್ತು ಕನ್ನಡ ವಿಕಿಪೀಡಿಯದಿಂದ ಅಳವಡಿಸಿದ್ದು: CC BY-SA 4.0.",
         "ಫಾಂಟ್‌ಗಳು: SIL Open Font License 1.1.",
       ],
     },
   ],
   owner:
-    "ಓಪನ್ ಕನ್ನಡದ ಲೈಸೆನ್ಸ್‌ಗಳು ಮತ್ತು ಹೆಸರುಗಳು ಈ ಯೋಜನೆ ಮತ್ತು ಅದರ ಕೊಡುಗೆದಾರರಿಗೆ ಸೇರಿದ್ದು. DataRavel Inc. (dba Luminik) ಯೋಜನೆಗೆ ನೆರವು ನೀಡುತ್ತದೆ, ಆದರೆ ಇವುಗಳಲ್ಲಿ ಯಾವುದನ್ನೂ ಹೊಂದಿಲ್ಲ.",
+    "ಕೊಡುಗೆದಾರರು ತಮ್ಮ ಕೆಲಸದ ಕೃತಿಸ್ವಾಮ್ಯವನ್ನು ಉಳಿಸಿಕೊಳ್ಳುತ್ತಾರೆ ಮತ್ತು ಆ ಕೆಲಸವನ್ನು ಯೋಜನೆಯ ಲೈಸೆನ್ಸ್‌ಗಳ ಅಡಿಯಲ್ಲಿ ನೀಡುತ್ತಾರೆ. ಓಪನ್ ಕನ್ನಡ ಮತ್ತು ಕನ್ನಡಿ ಹೆಸರುಗಳು ಹಾಗೂ ಲೋಗೊಗಳಿಗೆ <a href=\"https://github.com/openkannada/.github/blob/main/TRADEMARKS.md\">TRADEMARKS.md</a> ಅನ್ವಯಿಸುತ್ತದೆ.",
   removal:
     'ಏನನ್ನಾದರೂ ತೆಗೆಯಲು ಅಥವಾ ಉಲ್ಲೇಖಿಸಲು ಕೇಳಬೇಕಾದರೆ <a href="mailto:support@luminik.io">support@luminik.io</a> ಗೆ ಬರೆಯಿರಿ. ಯೋಜನೆಗೆ ಸ್ವಂತ ವಿಳಾಸ ಬರುವವರೆಗೆ ನಾವು ಇದನ್ನೇ ಬಳಸುತ್ತೇವೆ.',
 };

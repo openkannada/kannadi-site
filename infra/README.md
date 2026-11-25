@@ -78,12 +78,10 @@ Never run `wrangler login` or `wrangler logout` on my Mac: the login there belon
 
 ## The interest form
 
-The form on /contribute/ renders closed: its button says the form opens soon, the page loads no Turnstile script, and `POST /api/interest` answers 503 without reading the request. To open it, in 1 pull request:
+The form on /contribute/ is open. Submissions go to the D1 database `openkannada-interest`, bound as `DB` in `wrangler.jsonc`, after the Worker checks a Turnstile token from the widget named `openkannada.org` (managed mode, for openkannada.org and www.openkannada.org). The widget's site key is `INTEREST.turnstileSiteKey` in `src/content/interest.ts`; its secret is the Worker secret `TURNSTILE_SECRET`, which deploys keep. The endpoint takes only JSON from https://openkannada.org (or localhost), under 8 KB, with a Turnstile token solved on that host.
 
-1. Create the database: `npx wrangler d1 create openkannada-interest`, then apply `migrations/0001_interest.sql` with `npx wrangler d1 migrations apply openkannada-interest --remote`.
-2. Add the binding to `wrangler.jsonc`: `"d1_databases": [{ "binding": "DB", "database_name": "openkannada-interest", "database_id": "<id>", "migrations_dir": "migrations" }]`.
-3. Create a Turnstile widget for openkannada.org in the dashboard. Put its site key in `INTEREST.turnstileSiteKey` and its secret in the Worker: `npx wrangler secret put TURNSTILE_SECRET`.
-4. Set `INTEREST.open` to `true` in `src/content/interest.ts`. That also adds `https://challenges.cloudflare.com` to the page's script and frame sources, and updates the test that keeps the form closed.
-5. Before merging, run that build locally with `npx wrangler dev`, send 1 submission from /contribute/, and check the browser console for Content-Security-Policy errors from the Turnstile widget. The endpoint takes only JSON from https://openkannada.org (or localhost), under 8 KB, with a Turnstile token solved on that host.
+To close it, set `INTEREST.open` to `false`: the button then says the form opens soon, the page loads no Turnstile script and drops `https://challenges.cloudflare.com` from its script and frame sources, and `POST /api/interest` answers 503 without reading the request.
+
+To test a change locally, run `npx wrangler dev` and open /contribute/. Cloudflare's Turnstile test keys (site key `1x00000000000000000000AA`, secret `1x0000000000000000000000000000000AA`) let the page get a token, but their tokens report the host `example.com`, so the Worker answers 403 and stores nothing; that still shows the page's CSP and the request path. A stored row needs the real widget, which allows only the 2 production hosts.
 
 Read submissions with `npx wrangler d1 execute openkannada-interest --remote --command "SELECT * FROM interest ORDER BY created_at DESC"`. To delete someone's details, `DELETE FROM interest WHERE email = '<their email>'`.

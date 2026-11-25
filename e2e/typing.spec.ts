@@ -6,15 +6,16 @@ import { caretAt, chooseMode, docText, editorPath, focusDoc, isPhone, KANNADA_WO
 const LATIN_MODES: Exclude<Mode, "kannada">[] = ["english", "baraha", "iso15919"];
 const KANNADA_LINE = /^[ಀ-೿‌ ]+$/u;
 
+// "ma" reads as ಮ from the word list and the typing engine alike, so these follow the editor, not the ranking.
 test.describe("the first letter", () => {
   for (const mode of LATIN_MODES) {
     test(`${mode}: the first letter typed in an empty document converts`, async ({ page }) => {
       await openEditor(page, { mode });
       await focusDoc(page);
-      await page.keyboard.type("k");
+      await page.keyboard.type("m");
       expect(await docText(page)).toMatch(KANNADA_WORD);
       await page.keyboard.type("a");
-      expect(await docText(page)).toBe("ಕ");
+      expect(await docText(page)).toBe("ಮ");
     });
   }
 
@@ -26,10 +27,10 @@ test.describe("the first letter", () => {
     await page.keyboard.press("ControlOrMeta+a");
     await page.keyboard.press("Backspace");
     expect(await docText(page)).toBe("");
-    await page.keyboard.type("ka");
-    expect(await docText(page)).toBe("ಕ");
+    await page.keyboard.type("ma");
+    expect(await docText(page)).toBe("ಮ");
     // The saved text is what the editor holds; a stray line break from the cleared element would show here.
-    await expect.poll(() => savedText(page)).toBe("ಕ");
+    await expect.poll(() => savedText(page)).toBe("ಮ");
   });
 
   test("english: the first letter after a cleared line with a placeholder <br> converts", async ({ page }) => {
@@ -41,20 +42,20 @@ test.describe("the first letter", () => {
       doc.innerHTML = "<br>";
       getSelection()?.collapse(doc, 0);
     });
-    await page.keyboard.type("ka");
-    expect(await docText(page)).toBe("ಕ");
-    await expect.poll(() => savedText(page)).toBe("ಕ");
+    await page.keyboard.type("ma");
+    expect(await docText(page)).toBe("ಮ");
+    await expect.poll(() => savedText(page)).toBe("ಮ");
   });
 
   test("english: words after spaces convert, and spaces stay plain spaces", async ({ page }) => {
     await openEditor(page, { mode: "english" });
     await focusDoc(page);
-    await page.keyboard.type("ka ka ka ");
-    await page.keyboard.type("ka");
+    await page.keyboard.type("ma ma ma ");
+    await page.keyboard.type("ma");
     const text = await docText(page);
-    expect(text.replace(/ /g, " ")).toBe("ಕ ಕ ಕ ಕ");
+    expect(text.replace(/ /g, " ")).toBe("ಮ ಮ ಮ ಮ");
     // The saved text has ordinary spaces, whatever the browser shows.
-    await expect.poll(() => savedText(page)).toBe("ಕ ಕ ಕ ಕ");
+    await expect.poll(() => savedText(page)).toBe("ಮ ಮ ಮ ಮ");
   });
 });
 
@@ -337,7 +338,7 @@ test.describe("editing", () => {
         await page.keyboard.press(key);
         if (isPhone(page)) await page.waitForTimeout(250);
       };
-      const [first, second] = mode === "kannada" ? ["ಅಬ", "ಕ"] : ["ab", "ka"];
+      const [first, second] = mode === "kannada" ? ["ಅಬ", "ಮ"] : ["ab", "ma"];
       if (mode === "kannada") await page.keyboard.insertText(first!);
       else await page.keyboard.type(first!);
       const line = await docText(page);
@@ -345,12 +346,12 @@ test.describe("editing", () => {
       await press("Enter");
       if (mode === "kannada") await page.keyboard.insertText(second!);
       else await page.keyboard.type(second!);
-      expect(await docText(page)).toBe(`${line}\n\nಕ`);
+      expect(await docText(page)).toBe(`${line}\n\nಮ`);
       // Backspace in a word being typed takes back 1 Latin letter, so the Latin modes need 1 press per letter.
       for (let i = 0; i < (mode === "kannada" ? 2 : 3); i++) await press("Backspace");
       if (mode === "kannada") await page.keyboard.insertText(second!);
       else await page.keyboard.type(second!);
-      expect(await docText(page)).toBe(`${line}\nಕ`);
+      expect(await docText(page)).toBe(`${line}\nಮ`);
     });
   }
 

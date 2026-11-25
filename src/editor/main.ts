@@ -1,6 +1,5 @@
 // Wires the editor page: the document, the toolbar and its menus, files,
 // shortcuts and autosave. File readers and writers load on first use.
-import wordsUrl from "../../data/words.tsv?url";
 import { Composer } from "./compose.ts";
 import { DocEditor, type EditListener, type EditorSurface } from "./editor.ts";
 import type { ExportFormat } from "./files.ts";
@@ -10,7 +9,10 @@ import { Issues } from "./issues.ts";
 import { IdbStore, LocalStore, type DocumentStore } from "./store.ts";
 import type { Format } from "./rich.ts";
 import * as kannadi from "./kannadi.ts";
+import wordsUrl from "../../data/words.tsv?url";
 import { EnglishTyping } from "./english.ts";
+import { fetched, gunzipped, type Keep, typingEngine, wordList } from "./sources.ts";
+import modelUrl from "./typing/kn.typing.gz?url";
 import { SuggestStrip } from "./strip.ts";
 import { View } from "./view.ts";
 import type { Plural } from "../i18n/core.ts";
@@ -28,7 +30,6 @@ const SAMPLE = [
   "vÀgÀ¨ÉÃw ¤ÃqÀÄªÀÅzÀÄ.",
 ].join("\n");
 
-const PICKS = "kannadi.picks.v1";
 const MODES: TypingMode[] = ["kannada", "english", "baraha", "iso15919"];
 
 interface Settings {
@@ -184,29 +185,32 @@ const issues = new Issues(editor, kannadi, {
   },
 });
 
+/** localStorage, where a failure only loses a convenience. */
+const keep: Keep = {
+  read(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  write(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // Remembered choices are a convenience; the editor works without them.
+    }
+  },
+};
+// ?typing=next suggests from the typing engine in place of the word list.
+const engineTyping = new URLSearchParams(location.search).get("typing") === "next";
+const transliterate = (latin: string) => kannadi.transliterate(latin, "baraha", "kannada");
+
 const english = new EnglishTyping({
-  kannadi: { phoneticKey: kannadi.phoneticKey, latinKey: kannadi.latinKey, transliterate: (latin) => kannadi.transliterate(latin, "baraha", "kannada") },
-  async loadWords() {
-    const res = await fetch(wordsUrl);
-    if (!res.ok) throw new Error(`word list: HTTP ${res.status}`);
-    return res.text();
-  },
-  picks: {
-    read() {
-      try {
-        return JSON.parse(localStorage.getItem(PICKS) ?? "[]");
-      } catch {
-        return [];
-      }
-    },
-    write(picks) {
-      try {
-        localStorage.setItem(PICKS, JSON.stringify(picks));
-      } catch {
-        // Remembered choices are a convenience; the editor works without them.
-      }
-    },
-  },
+  transliterate,
+  loadSource: engineTyping
+    ? typingEngine(keep, async () => gunzipped(await fetched(modelUrl, "typing model")))
+    : wordList({ phoneticKey: kannadi.phoneticKey, latinKey: kannadi.latinKey, transliterate }, keep, async () => (await fetched(wordsUrl, "word list")).text()),
   strip: new SuggestStrip(byId("suggest"), { rect: (start, end) => editor.rect(start, end), avoid: () => view.avoid() }, (i) => english.pick(i)),
   text: () => editor.text,
   replace: (start, end, text) => editor.replace(start, end, text),

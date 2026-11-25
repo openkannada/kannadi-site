@@ -43,7 +43,7 @@ The site runs on Cloudflare Workers with static assets at https://openkannada.or
 - **Since launch,** on 22 November 2026 (`LIVE.launched` in `src/content/site.ts`):
   - pages are indexable, and only the form endpoint, build files and markdown mirrors send `X-Robots-Tag: noindex`;
   - the placeholder check runs before each publish;
-  - IndexNow runs after the live check once `INDEXNOW.enabled` is on.
+  - after the live check, IndexNow gets the pages whose lastmod changed (`INDEXNOW.enabled`).
 
 The deploy refuses a missing, plain http, placeholder, `pages.dev`, `workers.dev` or sub-path `SITE_URL`, local changes, any branch other than `main`, and a `main` that differs from `origin/main`. It ignores `KANNADI_DIR`, so the WebAssembly package comes from kannadi at `kannadi.rev`.
 

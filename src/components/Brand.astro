@@ -21,7 +21,7 @@ const BRAND = ALL[lang];
 
 <section aria-labelledby="owner">
   <h2 id="owner">{SITE_STRINGS[lang].brand.owner}</h2>
-  <p>{BRAND.owner}</p>
+  <p set:html={BRAND.owner} />
   <p set:html={BRAND.removal} />
 </section>
 

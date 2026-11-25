@@ -29,7 +29,7 @@ This site is part of Open Kannada. Copyright 2026 The Open Kannada Authors: ever
 
 The licenses above cover copying and changing the work. They grant no rights in the names Open Kannada, kannadi and Neha Sans or in the logos as marks; CC BY 4.0 says so itself, in section 2(b)(1). The names and logos say who made something: anyone may say their work is built with kannadi, and no product, fork or service may present itself as Open Kannada, kannadi or Neha Sans, or use the logos as its own.
 
-The licenses and names of Open Kannada belong to the project and its contributors. DataRavel Inc. (dba Luminik) supports the project and holds none of them.
+Contributors keep the copyright to their work and license it under the project's licenses. The Open Kannada and kannadi names and logos are covered by [TRADEMARKS.md](https://github.com/openkannada/.github/blob/main/TRADEMARKS.md).
 
 ## Contact
 

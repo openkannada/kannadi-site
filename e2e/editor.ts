@@ -36,10 +36,11 @@ export async function chooseMode(page: Page, mode: Mode): Promise<void> {
 }
 
 /** Opens a toolbar menu and waits until it has risen into place; a click while it moves can land outside and close it. */
-export async function openMenu(page: Page, id: "save-menu" | "tools-menu"): Promise<void> {
+export async function openMenu(page: Page, id: "save-menu" | "tools-menu" | "format-menu"): Promise<void> {
   await page.locator(`[popovertarget="${id}"]`).click();
   await expect(page.locator(`#${id}`)).toBeVisible();
-  await page.evaluate((id) => Promise.all(document.getElementById(id)!.getAnimations({ subtree: true }).map((a) => a.finished)), id);
+  // An animation cut short rejects its promise; it is over all the same.
+  await page.evaluate((id) => Promise.all(document.getElementById(id)!.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => {}))), id);
 }
 
 /** Waits for the English-letters word list to load and index. */
@@ -65,7 +66,7 @@ export const caretOffset = (page: Page) =>
     const range = document.createRange();
     range.setStart(doc, 0);
     range.setEnd(sel.focusNode!, sel.focusOffset);
-    const paragraphs = [...doc.querySelectorAll(":scope > p")];
+    const paragraphs = [...doc.querySelectorAll("p, h1, h2, h3, h4, h5, h6")];
     if (!paragraphs.length) return range.toString().length;
     const at = paragraphs.findIndex((p) => p.contains(sel.focusNode));
     return range.toString().length + Math.max(0, at);
@@ -79,7 +80,7 @@ export const caretOffset = (page: Page) =>
 export const docText = (page: Page) =>
   page.evaluate(() => {
     const doc = document.getElementById("doc")!;
-    const paragraphs = doc.querySelectorAll(":scope > p");
+    const paragraphs = doc.querySelectorAll("p, h1, h2, h3, h4, h5, h6");
     if (paragraphs.length) return [...paragraphs].map((p) => p.textContent ?? "").join("\n");
     const text = doc.textContent ?? "";
     return text.endsWith("\n\n") ? text.slice(0, -1) : text;
@@ -130,7 +131,7 @@ export async function settle(page: Page): Promise<number> {
 export const caretAt = (page: Page, at: number) =>
   page.evaluate((at) => {
     const doc = document.getElementById("doc")!;
-    const paragraphs = [...doc.querySelectorAll(":scope > p")];
+    const paragraphs = [...doc.querySelectorAll("p, h1, h2, h3, h4, h5, h6")];
     if (!paragraphs.length) {
       const node = doc.firstChild ?? doc;
       getSelection()?.collapse(node, Math.min(at, node.textContent?.length ?? 0));
@@ -282,4 +283,48 @@ export async function expectClearLayout(page: Page, info: TestInfo, label: strin
     await info.attach(`${label}.png`, { body: await page.screenshot(), contentType: "image/png" });
     expect(problems, `${label}: ${JSON.stringify(l)}`).toEqual([]);
   }
+}
+
+/**
+ * Pastes clipboard data into the document. Firefox drops data put on a synthetic paste event, so there the text is
+ * copied for real from a scratch element, through its own clipboard; elsewhere the paste event carries it.
+ */
+export async function paste(page: Page, data: { plain: string; html?: string }): Promise<void> {
+  if (page.context().browser()?.browserType().name() === "firefox") {
+    await page.evaluate(({ plain, html }) => {
+      const sel = getSelection()!;
+      // The caret, kept to put back after copying.
+      (window as unknown as { pasteCaret?: Range | undefined }).pasteCaret = sel.rangeCount ? sel.getRangeAt(0).cloneRange() : undefined;
+      const source = document.createElement(html ? "div" : "textarea");
+      source.id = "paste-source";
+      if (source instanceof HTMLTextAreaElement) source.value = plain;
+      else {
+        source.contentEditable = "true";
+        source.innerHTML = html!;
+      }
+      document.body.append(source);
+      source.focus();
+      if (source instanceof HTMLTextAreaElement) source.select();
+      else sel.selectAllChildren(source);
+    }, data);
+    await page.keyboard.press("ControlOrMeta+c");
+    await page.evaluate(() => {
+      document.getElementById("paste-source")!.remove();
+      document.getElementById("doc")!.focus();
+      const caret = (window as unknown as { pasteCaret?: Range }).pasteCaret;
+      if (caret) {
+        getSelection()!.removeAllRanges();
+        getSelection()!.addRange(caret);
+      }
+    });
+    await page.keyboard.press("ControlOrMeta+v");
+    return;
+  }
+  await page.evaluate(({ plain, html }) => {
+    const transfer = new DataTransfer();
+    transfer.setData("text/plain", plain);
+    if (html) transfer.setData("text/html", html);
+    const doc = document.getElementById("doc")!;
+    doc.dispatchEvent(new ClipboardEvent("paste", { clipboardData: transfer, bubbles: true, cancelable: true }));
+  }, data);
 }

@@ -59,13 +59,16 @@ test("templates split into text and slots, and slots become nodes", () => {
 
 // Literals that are not words for a person: file formats, class names and messages for developers or agents.
 const NOT_FOR_PEOPLE: Record<string, (literal: string) => boolean> = {
-  // Markup of the DOCX and HTML files the editor writes.
-  "docx.ts": (l) => l.startsWith("`<"),
+  // Markup of the DOCX files the editor writes, and Word's built-in style names.
+  "docx.ts": (l) => l.startsWith("`<") || ['"heading 1"', '"heading 2"', '"intense quote"'].includes(l),
+  // Markup of the HTML files the editor writes.
   "files.ts": (l) => l.startsWith("`<"),
   // Class names and a selector.
   "issues.ts": (l) => /^`(issue issue|pop-sample pop-sample)-\$\{item\.kind\}`$/.test(l),
   // A selector, a missing element, a failed word list fetch that retries silently, and a console warning.
   "main.ts": (l) => ['".pop-actions button"', "`#${id} is missing`", "`word list: HTTP ${res.status}`", '"WebMCP: the tools did not load"'].includes(l),
+  // A heading's tag name, a link's rel and a schema content expression.
+  "rich.ts": (l) => ['`h${n.attrs["level"] as number}`', '"noopener noreferrer"', '"paragraph block*"'].includes(l),
   // WebMCP tool descriptions and input errors are read by AI agents, in English, whatever the page's language.
   "tools.ts": () => true,
 };

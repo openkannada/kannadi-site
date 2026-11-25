@@ -231,6 +231,12 @@ body.dragging .drop-hint {
 [popovertarget="save-menu"] {
   anchor-name: --save;
 }
+[popovertarget="format-menu"] {
+  anchor-name: --format;
+}
+#format-menu {
+  position-anchor: --format;
+}
 [popovertarget="problems-panel"] {
   anchor-name: --problems;
 }
@@ -244,6 +250,7 @@ body.dragging .drop-hint {
   position-anchor: --problems;
 }
 .tool-menu,
+.format-menu,
 .save-menu,
 .problems-panel {
   position-area: bottom;
@@ -261,6 +268,7 @@ body.dragging .drop-hint {
 @media (min-width: 48rem) {
   @supports not (anchor-name: --a) {
     .tool-menu,
+    .format-menu,
     .save-menu,
     .problems-panel {
       top: 4.25rem;
@@ -272,6 +280,7 @@ body.dragging .drop-hint {
 }
 @media (max-width: 47.99rem) {
   .tool-menu,
+  .format-menu,
   .save-menu,
   .problems-panel {
     --lift-from: 10px;
@@ -531,4 +540,69 @@ body.dragging .drop-hint {
 }
 .recent .menu-item span {
   @apply truncate text-base;
+}
+
+/* The format menu, with ?editor=next: bold, italic and underline as beads, then the blocks and a link. */
+.format-menu {
+  @apply w-72;
+}
+.format-marks {
+  @apply flex gap-1 px-2 py-1;
+}
+.format-mark {
+  @apply grid size-9 cursor-pointer place-items-center rounded-full text-base text-foreground;
+}
+.format-mark:hover,
+.format-menu .menu-item:hover {
+  @apply bg-accent;
+}
+.format-mark[aria-pressed="true"],
+.format-menu .menu-item[aria-pressed="true"] {
+  @apply bg-card text-primary;
+  box-shadow: 0 1px 2px oklch(0.2 0.03 268 / 0.16);
+}
+.format-link {
+  @apply grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-1 px-3 py-2;
+}
+.format-link label,
+.format-link .menu-note {
+  @apply col-span-2 p-0;
+}
+.format-link input {
+  @apply h-9 min-w-0 rounded-md border border-input bg-card px-3 text-[length:var(--type-ui)];
+}
+.editor:not([data-core="next"]) .next-only {
+  display: none;
+}
+
+/* Structure in the ProseMirror document. */
+.doc.ProseMirror h1,
+.doc.ProseMirror h2,
+.doc.ProseMirror h3 {
+  @apply font-semibold;
+  line-height: var(--type-kn-leading);
+}
+.doc.ProseMirror h1 {
+  font-size: 1.6em;
+}
+.doc.ProseMirror h2 {
+  font-size: 1.3em;
+}
+.doc.ProseMirror h3 {
+  font-size: 1.1em;
+}
+.doc.ProseMirror ul {
+  @apply list-disc pl-[1.5em];
+}
+.doc.ProseMirror ol {
+  @apply list-decimal pl-[1.5em];
+}
+.doc.ProseMirror blockquote {
+  @apply border-l-2 border-border pl-[1em] text-muted-foreground;
+}
+.doc.ProseMirror hr {
+  @apply my-[0.75em] border-border;
+}
+.doc.ProseMirror a {
+  @apply text-primary underline;
 }

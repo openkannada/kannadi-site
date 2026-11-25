@@ -42,3 +42,32 @@ test("offsets and positions map as the plain walk does, at every place in every 
     for (let pos = 0; pos <= doc.content.size; pos++) assert.equal(offsetOfPos(doc, pos), linearOffset(doc, pos), `${JSON.stringify(text)} position ${pos}`);
   }
 });
+
+test("in headings, lists and quotes, every line is in the text, and every offset maps to a position and back", async () => {
+  const { schema: rich } = await import("../src/editor/rich.ts");
+  const p = (text: string) => rich.node("paragraph", null, text ? rich.text(text) : undefined);
+  const item = (...content: PmNode[]) => rich.node("list_item", null, content);
+  const doc = rich.node("doc", null, [
+    rich.node("heading", { level: 1 }, rich.text("ಶೀರ್ಷಿಕೆ")),
+    rich.node("bullet_list", null, [item(p("ಒಂದು")), item(p("ಎರಡು"), rich.node("ordered_list", null, [item(p("ಒಳಗೆ"))]))]),
+    rich.node("horizontal_rule"),
+    rich.node("blockquote", null, [p(""), p("ಉಲ್ಲೇಖ")]),
+  ]);
+  const text = "ಶೀರ್ಷಿಕೆ\nಒಂದು\nಎರಡು\nಒಳಗೆ\n\nಉಲ್ಲೇಖ";
+  assert.equal(textOf(doc), text);
+  for (let at = 0; at <= text.length; at++) {
+    const pos = posOf(doc, at);
+    assert.ok(doc.resolve(pos).parent.isTextblock, `offset ${at} lands in a line`);
+    assert.equal(offsetOfPos(doc, pos), at, `offset ${at} comes back`);
+  }
+});
+
+test("a document of rules only places every offset at 0, and a kept link that is not on the web is dropped", async () => {
+  const { schema: rich, safeJson } = await import("../src/editor/rich.ts");
+  const doc = rich.node("doc", null, [rich.node("horizontal_rule")]);
+  assert.equal(textOf(doc), "");
+  assert.equal(posOf(doc, 0), 0);
+  assert.equal(offsetOfPos(doc, 1), 0);
+  const kept = { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "x", marks: [{ type: "link", attrs: { href: "javascript:alert(1)" } }, { type: "strong" }] }] }] };
+  assert.deepEqual(rich.nodeFromJSON(safeJson(kept)).firstChild!.firstChild!.marks.map((m) => m.type.name), ["strong"]);
+});

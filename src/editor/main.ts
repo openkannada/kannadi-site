@@ -8,6 +8,7 @@ import { doneWith, sessionStore, takeText } from "../lib/handoff.ts";
 import { registerWhenIdle, resolveModelContext } from "../lib/model-context.ts";
 import { Issues } from "./issues.ts";
 import { IdbStore, LocalStore, type DocumentStore } from "./store.ts";
+import type { Format } from "./rich.ts";
 import * as kannadi from "./kannadi.ts";
 import { EnglishTyping } from "./english.ts";
 import { SuggestStrip } from "./strip.ts";
@@ -41,6 +42,8 @@ interface Settings {
 
 interface Saved {
   text: string;
+  /** The document with its formats, as ProseMirror JSON, on the ProseMirror editor. */
+  doc?: unknown;
   unknown?: number[];
   kept?: number[];
   settings?: Partial<Settings>;
@@ -253,7 +256,8 @@ function update(text: string): void {
 
 /** What is saved for the current document. */
 function current(): Saved {
-  return { text: editor.text, unknown: issues.unknown.map((u) => u.offset), kept: issues.kept.map((k) => k.offset), settings, fileName };
+  const doc = pm ? { doc: pm.toJSON() } : {};
+  return { text: editor.text, ...doc, unknown: issues.unknown.map((u) => u.offset), kept: issues.kept.map((k) => k.offset), settings, fileName };
 }
 
 /** Whether the saved document is showing; until then there is nothing of the person's to save. */
@@ -284,9 +288,15 @@ function insert(result: Result, what?: string): number {
 async function open(file: File | undefined): Promise<void> {
   if (!file) return;
   try {
-    const result = await (await files()).openFile(file, io);
+    const f = await files();
+    // A Word file keeps its headings, lists, quotes and formats on the ProseMirror editor.
+    const rich = pm ? await f.openRich(file, io) : null;
+    const result = rich ?? (await f.openFile(file, io));
     issues.clear();
-    editor.setText(result.text);
+    // An HTML page with nothing to convert keeps its headings, lists and formats on the ProseMirror editor.
+    if (pm && rich) pm.loadLines(rich.text, rich.lines, rich.spans);
+    else if (pm && !result.converted && /\.html?$/i.test(file.name)) pm.setHtml(await f.readText(file, kannadi.decodeWindows1252));
+    else editor.setText(result.text);
     issues.addUnknown(result.unknown);
     editor.focus();
     editor.select(0);
@@ -324,7 +334,8 @@ async function exportAs(format: ExportFormat | "nudi"): Promise<void> {
   }
   const name = `${fileName}.${format}`;
   try {
-    download(await (await files()).exportBlob(editor.text, format, fileName), name);
+    const formatted = pm ? { html: format === "html" ? pm.html() : undefined, lines: format === "docx" ? pm.richLines() : undefined } : {};
+    download(await (await files()).exportBlob(editor.text, format, fileName, formatted), name);
   } catch {
     say(fmt(S.files.saveFailed, { name }));
     return;
@@ -476,6 +487,11 @@ function paste(html: string, plain: string): Promise<void> {
   }
   return files().then(({ pasted }) => {
     const result = pasted(html, plain, io);
+    // HTML with nothing to convert keeps its headings, lists and formats on the ProseMirror editor.
+    if (pm && html && !result.converted) {
+      pm.insertHtml(html);
+      return;
+    }
     const start = insert(result, S.convert.pasted);
     if (!result.converted) return;
     say(ui.toastText.textContent ?? "", {
@@ -512,6 +528,7 @@ function receive(): void {
 
 function wire(): void {
   wireVoice();
+  if (pm) wireFormats(pm);
   // ProseMirror takes the composer's Backspace itself, before its own handling.
   if (!pm) ui.doc.addEventListener("beforeinput", (e) => composer.beforeInput(e));
   ui.doc.addEventListener("paste", (e) => {
@@ -691,7 +708,7 @@ function wire(): void {
 function show(saved: Saved | null): void {
   issues.clear();
   if (saved?.text) {
-    editor.load(saved.text);
+    if (!(pm && saved.doc && pm.loadJSON(saved.doc))) editor.load(saved.text);
     const offsets = (list: unknown) => (Array.isArray(list) ? list.filter((o): o is number => Number.isInteger(o) && o < saved.text.length) : []);
     issues.addUnknown(offsets(saved.unknown));
     issues.keep(offsets(saved.kept));
@@ -720,6 +737,38 @@ async function newDocument(): Promise<void> {
   }
   editor.focus();
   say(keeps ? S.edit.newDocumentKept : S.edit.newDocument);
+}
+
+/** The format menu, on the ProseMirror editor: formats with their pressed state, and links. */
+function wireFormats(editor: NonNullable<typeof pm>): void {
+  const menu = byId("format-menu");
+  byId("format").hidden = false;
+  const buttons = [...menu.querySelectorAll<HTMLButtonElement>("[data-format]")];
+  const href = byId<HTMLInputElement>("link-href");
+  const pressed = () => {
+    for (const b of buttons) b.setAttribute("aria-pressed", String(editor.active(b.dataset.format as Format)));
+  };
+  // Before it shows, since toggle comes later and would wipe an address typed in the meantime.
+  menu.addEventListener("beforetoggle", (e) => {
+    if ((e as ToggleEvent).newState !== "open") return;
+    pressed();
+    href.value = editor.linkAt();
+  });
+  // Keep the selection in the document while a format is tapped.
+  for (const b of buttons) b.addEventListener("pointerdown", (e) => e.preventDefault());
+  for (const b of buttons) {
+    b.addEventListener("click", () => {
+      const f = b.dataset.format as Format;
+      editor.format(f);
+      // Bold, italic and underline toggle, so the menu stays; a block format is chosen, and the menu goes.
+      if (f === "bold" || f === "italic" || f === "underline") pressed();
+      else menu.hidePopover();
+    });
+  }
+  byId("format-link").addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (editor.link(href.value)) menu.hidePopover();
+  });
 }
 
 /** Lists the recent documents in the tools menu, where documents are kept. */

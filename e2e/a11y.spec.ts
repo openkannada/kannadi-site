@@ -2,7 +2,7 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-import { docText, focusDoc, isPhone, openEditor } from "./editor.ts";
+import { docText, focusDoc, isPhone, NEXT, openEditor } from "./editor.ts";
 
 test("the editor has no accessibility violations, with and without suggestions showing", async ({ page }) => {
   await openEditor(page);
@@ -52,8 +52,9 @@ test.describe("keyboard only", () => {
       }));
       if (order.at(-1) === "doc") break;
     }
-    // The microphone shows only where the browser offers Kannada speech recognition.
-    expect(order.filter((id) => id !== "voice")).toEqual(["open", "convert", "More tools", "Save", "doc"]);
+    // The microphone shows only where the browser offers Kannada speech recognition, and Format on the ProseMirror editor.
+    expect(order.filter((id) => id !== "voice" && id !== "format")).toEqual(["open", "convert", "More tools", "Save", "doc"]);
+    expect(order.includes("format")).toBe(NEXT);
   });
 
   test("arrow keys change the mode, and typing then converts", async ({ page }) => {

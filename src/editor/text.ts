@@ -9,6 +9,35 @@ export type SegmentFont = false | Layout | "auto";
 export interface Segment {
   text: string;
   legacy: SegmentFont;
+  /** The run's format, where the reader keeps formats. */
+  format?: RunFormat;
+}
+
+/** A run's format in a Word file or a document. */
+export interface RunFormat {
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
+  href?: string;
+}
+
+/** What kind of block a line is: a paragraph, a heading, a quote, and whether it is a list item. */
+export interface LineBlock {
+  block: "p" | "h1" | "h2" | "h3" | "quote";
+  list?: { ordered: boolean; level: number };
+}
+
+/** A formatted range of the joined text. */
+export interface Span {
+  start: number;
+  end: number;
+  format: RunFormat;
+}
+
+/** Joined text with its lines' blocks and its formatted ranges. */
+export interface RichJoined extends Joined {
+  lines: LineBlock[];
+  spans: Span[];
 }
 
 /** start..oldEnd of the text before was replaced by start..newEnd of the text after. */
@@ -274,4 +303,39 @@ export function countWords(text: string): number {
 /** "U+0CCD U+0C95" for a short string. */
 export function codePoints(text: string): string {
   return Array.from(text, (c) => "U+" + c.codePointAt(0)!.toString(16).toUpperCase().padStart(4, "0")).join(" ");
+}
+
+const formatKey = (f: RunFormat | undefined) => (f ? `${f.bold ? "b" : ""}${f.italic ? "i" : ""}${f.underline ? "u" : ""}${f.href ? ` ${f.href}` : ""}` : "");
+
+/**
+ * Joins segments as joinSegments does, keeping their formats as ranges of the joined text: segments merge only when
+ * their font and format are both the same, so a format change inside a legacy run is a place to convert in 2.
+ */
+export function joinRich(segments: Segment[], lines: LineBlock[], convert: (text: string, layout: Layout | "auto") => Converted): RichJoined {
+  const merged: Segment[] = [];
+  for (const s of segments) {
+    if (!s.text) continue;
+    const last = merged[merged.length - 1];
+    if (last && last.legacy === s.legacy && formatKey(last.format) === formatKey(s.format)) last.text += s.text;
+    else merged.push({ ...s });
+  }
+  let text = "";
+  const unknown: number[] = [];
+  const spans: Span[] = [];
+  let converted = 0;
+  const layouts = new Set<Layout>();
+  for (const s of merged) {
+    const start = text.length;
+    if (s.legacy) {
+      const result = convert(s.text, s.legacy);
+      layouts.add(result.layout);
+      for (const offset of result.unknown) unknown.push(start + offset);
+      text += result.text;
+      converted += s.text.length;
+    } else {
+      text += s.text;
+    }
+    if (formatKey(s.format)) spans.push({ start, end: text.length, format: s.format! });
+  }
+  return { text, unknown, converted, layouts: [...layouts], lines, spans };
 }

@@ -28,10 +28,10 @@ test.describe("on the ProseMirror editor", () => {
     const line = "ಕನ್ನಡ ನಾಡು ನುಡಿ ".repeat(6);
     const text = Array.from({ length: 60_000 }, () => line).join("\n");
     await paste(page, text);
-    await expect.poll(() => page.evaluate(() => document.querySelectorAll("#doc > p").length), { timeout: 60_000 }).toBe(60_000);
+    await expect.poll(() => page.evaluate(() => document.querySelectorAll("#doc p").length), { timeout: 60_000 }).toBe(60_000);
     await expect(page.locator("#saved")).toHaveText("Saved on this device", { timeout: 30_000 });
     await reload(page);
-    await expect.poll(() => page.evaluate(() => document.querySelectorAll("#doc > p").length), { timeout: 60_000 }).toBe(60_000);
+    await expect.poll(() => page.evaluate(() => document.querySelectorAll("#doc p").length), { timeout: 60_000 }).toBe(60_000);
     expect((await docText(page)).length).toBe(text.length);
   });
 

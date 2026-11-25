@@ -1,24 +1,18 @@
-// The editor on ProseMirror, behind ?editor=next: plain paragraphs, with the same surface as DocEditor, so typing
-// modes, suggestions, marks and files work on it unchanged. The text is the paragraphs joined by "\n"; a text offset
-// maps to a document position by counting 1 for each "\n" where ProseMirror counts 2 for a paragraph boundary.
+// The editor on ProseMirror, behind ?editor=next, with the same surface as DocEditor, so typing modes, suggestions,
+// marks and files work on it unchanged, and formats from rich.ts. Its text is every textblock (paragraph, heading,
+// list item line) joined by "\n"; a text offset maps to a document position through an index of the textblocks.
 import { baseKeymap, chainCommands, joinBackward, splitBlock } from "prosemirror-commands";
-import { history, redo, undo } from "prosemirror-history";
+import { closeHistory, history, redo, undo } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
-import { Fragment, type Node as PmNode, Schema, Slice } from "prosemirror-model";
+import { Fragment, type Node as PmNode, Slice } from "prosemirror-model";
 import { type Command, EditorState, TextSelection, type Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 
 import type { EditListener, EditorSurface, TextRange } from "./editor.ts";
+import type { RichLine } from "./docx.ts";
+import { docFromLines, safeJson, FORMAT_KEYS, FORMATS, type Format, fromHtml, isActive, linesOf, LIST_KEYS, schema, setLink, shortcuts, toHtml } from "./rich.ts";
 import { offsetOfPos, posOf, textOf } from "./textindex.ts";
-import { diff } from "./text.ts";
-
-const schema = new Schema({
-  nodes: {
-    doc: { content: "paragraph+" },
-    paragraph: { content: "text*", toDOM: () => ["p", 0], parseDOM: [{ tag: "p" }] },
-    text: {},
-  },
-});
+import { diff, type LineBlock, type Span } from "./text.ts";
 
 /** Typing within this long after the last keystroke undoes as 1 step, as in DocEditor. */
 const GROUP_MS = 1500;
@@ -70,11 +64,14 @@ export class PmEditor implements EditorSurface {
       plugins: [
         history({ newGroupDelay: GROUP_MS }),
         keymap({ "Mod-z": as("historyUndo", undo), "Mod-y": as("historyRedo", redo), "Shift-Mod-z": as("historyRedo", redo) }),
+        shortcuts(),
+        keymap(FORMAT_KEYS),
         keymap({
-          Enter: as("insertLineBreak", splitBlock),
+          Enter: as("insertLineBreak", chainCommands(LIST_KEYS["Enter"]!, splitBlock)),
           "Shift-Enter": as("insertLineBreak", splitBlock),
           // The word being typed takes back a Latin letter first; ProseMirror would otherwise run its own Backspace too.
-          Backspace: (state, dispatch, view) => this.backspace() || as("deleteContentBackward", chainCommands(joinBackward))(state, dispatch, view),
+          Backspace: (state, dispatch, view) =>
+            this.backspace() || as("deleteContentBackward", chainCommands(LIST_KEYS["Backspace"]!, joinBackward))(state, dispatch, view),
         }),
         keymap(withInputTypes(baseKeymap)),
       ],
@@ -203,10 +200,16 @@ export class PmEditor implements EditorSurface {
   /** Replaces start..end with `text` as 1 undoable step, and reports the edit. */
   replace(start: number, end: number, text: string, inputType = "insertReplacementText"): void {
     if (!this.view.hasFocus()) this.focus();
-    const doc = this.view.state.doc;
+    const { doc, storedMarks } = this.view.state;
+    const [from, to] = [posOf(doc, start), posOf(doc, end)];
+    const $from = doc.resolve(from);
+    // The new text takes the formats of what it replaces, or of the place it goes, so words typed and fixed keep them.
+    // The formats of the first letter replaced, links too, as a word processor keeps them.
+    const first = doc.nodeAt(from);
+    const marks = from < to ? (first?.isText ? first.marks : $from.marks()) : (storedMarks ?? $from.marks());
     const lines = text.split("\n");
-    const content = Fragment.from(lines.map((line) => schema.node("paragraph", null, line ? schema.text(line) : undefined)));
-    const tr = this.view.state.tr.replace(posOf(doc, start), posOf(doc, end), new Slice(content, 1, 1));
+    const content = Fragment.from(lines.map((line) => schema.node("paragraph", null, line ? schema.text(line, marks) : undefined)));
+    const tr = this.view.state.tr.replace(from, to, new Slice(content, 1, 1));
     tr.setSelection(TextSelection.create(tr.doc, posOf(tr.doc, start + text.length)));
     this.view.dispatch(tr.setMeta("inputType", inputType).scrollIntoView());
   }
@@ -258,6 +261,82 @@ export class PmEditor implements EditorSurface {
     // The browser's caret is what shows; ProseMirror's own selection can trail it just after a click.
     const c = this.view.coordsAtPos(this.view.posAtDOM(dom.focusNode, dom.focusOffset));
     return new DOMRect(c.left, c.top, 0, c.bottom - c.top);
+  }
+
+  /** Applies a format to the selection. */
+  format(format: Format): boolean {
+    this.focus();
+    // A format is its own step to undo, apart from the typing around it.
+    return FORMATS[format](this.view.state, (tr) => this.view.dispatch(closeHistory(tr).setMeta("inputType", "format")), this.view);
+  }
+
+  /** Whether a format applies at the selection. */
+  active(format: Format): boolean {
+    return isActive(this.view.state, format);
+  }
+
+  /** Links the selection to `href`, or removes the link when it is empty. */
+  link(href: string): boolean {
+    this.focus();
+    return setLink(href)(this.view.state, (tr) => this.view.dispatch(closeHistory(tr).setMeta("inputType", "format")));
+  }
+
+  /** The selection's link, if it has 1. */
+  linkAt(): string {
+    const { $from } = this.view.state.selection;
+    return ($from.marks().find((m) => m.type === schema.marks["link"])?.attrs["href"] as string | undefined) ?? "";
+  }
+
+  /** The document as JSON, with its formats, for keeping on this device. */
+  toJSON(): unknown {
+    return this.view.state.doc.toJSON();
+  }
+
+  /** Shows a document kept as JSON, without an undo step; false when it does not fit the schema. */
+  loadJSON(json: unknown): boolean {
+    let doc: PmNode;
+    try {
+      doc = schema.nodeFromJSON(safeJson(json));
+      doc.check();
+    } catch {
+      return false;
+    }
+    this.view.dispatch(this.view.state.tr.replaceWith(0, this.view.state.doc.content.size, doc.content).setMeta("addToHistory", false).setMeta("inputType", "restore"));
+    return true;
+  }
+
+  /** The document as HTML, with its formats. */
+  html(): string {
+    return toHtml(this.view.state.doc);
+  }
+
+  /** Puts HTML in place of the selection, keeping the formats the editor can hold, as 1 undoable step. */
+  insertHtml(html: string): void {
+    if (!this.view.hasFocus()) this.focus();
+    const doc = fromHtml(html);
+    const { from, to } = this.view.state.selection;
+    this.view.dispatch(this.view.state.tr.replaceRange(from, to, Slice.maxOpen(doc.content)).setMeta("inputType", "insertFromPaste").scrollIntoView());
+  }
+
+  /** Shows an HTML document with its formats, as 1 undoable step. */
+  setHtml(html: string): void {
+    const doc = fromHtml(html);
+    const state = this.view.state;
+    this.view.dispatch(state.tr.replaceWith(0, state.doc.content.size, doc.content).setMeta("inputType", "insertReplacementText"));
+    this.select(0);
+  }
+
+  /** Shows text with the block of each line and formatted ranges, as a Word file reads, as 1 undoable step. */
+  loadLines(text: string, lines: LineBlock[], spans: Span[]): void {
+    const doc = docFromLines(text, lines, spans);
+    const state = this.view.state;
+    this.view.dispatch(state.tr.replaceWith(0, state.doc.content.size, doc.content).setMeta("inputType", "insertReplacementText"));
+    this.select(0);
+  }
+
+  /** The document as lines with their blocks and formatted runs, for a Word file. */
+  richLines(): RichLine[] {
+    return linesOf(this.view.state.doc);
   }
 
   /** Scrolls a range into the middle third at once, so a popover can be placed next to it. */

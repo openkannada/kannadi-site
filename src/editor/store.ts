@@ -13,6 +13,8 @@ export interface Settings {
 
 export interface Saved {
   text: string;
+  /** The document with its formats, where the editor keeps them. */
+  doc?: unknown;
   unknown?: number[];
   kept?: number[];
   settings?: Partial<Settings>;

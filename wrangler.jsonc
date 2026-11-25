@@ -24,6 +24,10 @@
   "previews": {
     "vars": { "PREVIEW": "1" }
   },
+  // Submissions from the interest form on /contribute/. The Turnstile secret is the Worker secret TURNSTILE_SECRET.
+  "d1_databases": [
+    { "binding": "DB", "database_name": "openkannada-interest", "database_id": "61e3c34f-0192-423d-bd48-9ee8be4bb18b", "migrations_dir": "migrations" }
+  ],
   "routes": [
     { "pattern": "openkannada.org", "custom_domain": true },
     { "pattern": "www.openkannada.org", "custom_domain": true },

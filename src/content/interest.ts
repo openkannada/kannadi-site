@@ -3,13 +3,13 @@
 import type { Lang } from "../i18n/core.ts";
 
 /**
- * The form renders while closed, and the Worker refuses every submission. Opening it needs the D1 binding and
- * the Turnstile keys in wrangler.jsonc (see infra/README.md); both change in the same pull request.
+ * Whether the form takes submissions. Closed, it renders disabled and the Worker refuses every submission. Open,
+ * it needs the D1 binding in wrangler.jsonc and the Worker secret TURNSTILE_SECRET (see infra/README.md).
  */
 export const INTEREST = {
-  open: false,
-  /** The public Turnstile site key; the secret is the Worker secret TURNSTILE_SECRET. */
-  turnstileSiteKey: "",
+  open: true,
+  /** The public Turnstile site key of the openkannada.org widget; its secret is the Worker secret TURNSTILE_SECRET. */
+  turnstileSiteKey: "0x4AAAAAAGSFG91KSCqC2D44",
 } as const;
 
 /** The ways to help, by the ids stored with each submission, so stored answers read the same in any language. */

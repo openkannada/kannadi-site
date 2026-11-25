@@ -39,11 +39,16 @@ const post = (body: unknown, headers: Record<string, string> = {}) => {
 const human = (async () => Response.json({ success: true, hostname: "openkannada.org" })) as typeof fetch;
 const bot = (async () => Response.json({ success: false })) as typeof fetch;
 
-test("the interest form ships closed until the storage and the privacy note are approved", () => {
-  assert.equal(INTEREST.open, false);
-  if (INTEREST.open) assert.ok(INTEREST.turnstileSiteKey, "an open form needs its Turnstile site key, or the CSP opens while the form stays closed");
-  const config = readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8");
-  assert.doesNotMatch(config, /d1_databases/, "no database is bound while the form is closed");
+test("the interest form is open, with its Turnstile site key and its database bound as DB", () => {
+  assert.equal(INTEREST.open, true);
+  assert.match(INTEREST.turnstileSiteKey, /^0x4[A-Za-z0-9_-]+$/, "an open form needs its Turnstile site key, or the CSP opens while the form stays closed");
+  const config = JSON.parse(readFileSync(new URL("../wrangler.jsonc", import.meta.url), "utf8").replace(/^\s*\/\/.*$/gm, ""));
+  const [db, ...others] = config.d1_databases ?? [];
+  assert.equal(others.length, 0);
+  assert.equal(db?.binding, "DB", "the Worker reads submissions' database as env.DB");
+  assert.equal(db?.database_name, "openkannada-interest");
+  assert.match(db?.database_id ?? "", /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+  assert.equal(db?.migrations_dir, "migrations");
 });
 
 test("while closed, every submission is refused before it is read or stored", async () => {
@@ -93,6 +98,7 @@ test("missing, unknown or overlong fields name themselves, and the link stays op
 test("only JSON from the site itself, under 8 KB, is read", async () => {
   const env = { DB: fakeDb().db, TURNSTILE_SECRET: "s" };
   assert.equal((await handleInterest(post(GOOD, { origin: "https://evil.example" }), env, true, human)).status, 403);
+  assert.equal((await handleInterest(post(GOOD, { origin: "null" }), env, true, human)).status, 403, "an opaque origin is refused, not a crash");
   assert.equal((await handleInterest(post(GOOD, { "content-type": "text/plain" }), env, true, human)).status, 403);
   assert.equal((await handleInterest(post(GOOD, { "content-length": "9000" }), env, true, human)).status, 413);
   assert.equal((await handleInterest(post(null), env, true, human)).status, 400, "a body that is not an object is refused, not a crash");

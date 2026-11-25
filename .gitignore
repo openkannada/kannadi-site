@@ -8,6 +8,7 @@ src/editor/typing/
 .DS_Store
 dist-site/
 .wrangler/
+.dev.vars
 .deploy/
 dist-drafts
 test-results/

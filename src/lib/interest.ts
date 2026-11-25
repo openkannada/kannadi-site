@@ -86,11 +86,11 @@ export async function turnstileOk(token: string, secret: string, ip: string | nu
 }
 
 const json = (status: number, body: Record<string, unknown>) =>
-  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
+  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-robots-tag": "noindex" } });
 
 /** Answers POST /api/interest: 503 while closed, 400 for a bad submission, 200 once stored. */
 export async function handleInterest(request: Request, env: InterestEnv, open: boolean, origin: InterestOrigin, fetcher: typeof fetch = fetch): Promise<Response> {
-  if (request.method !== "POST") return new Response(null, { status: 405, headers: { allow: "POST" } });
+  if (request.method !== "POST") return new Response(null, { status: 405, headers: { allow: "POST", "x-robots-tag": "noindex" } });
   if (!open || !env.DB || !env.TURNSTILE_SECRET) return json(503, { error: "closed" });
   // Only the site's own page posts here: JSON, from the canonical origin, and small.
   const from = request.headers.get("origin");

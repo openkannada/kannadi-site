@@ -97,11 +97,16 @@ export function llmsFull(pages: BuiltPage[], site: SiteInfo): string {
   return `# ${site.name}\n\n> ${site.summary}\n\n${sections.join("\n\n---\n\n")}\n`;
 }
 
-/** sitemap.xml for absolute page URLs. */
-export function sitemap(entries: { loc: string; lastmod?: string | undefined }[]): string {
-  const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
-  const lines = entries.map((e) => `  <url><loc>${escape(e.loc)}</loc>${e.lastmod ? `<lastmod>${e.lastmod}</lastmod>` : ""}</url>`).join("\n");
-  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${lines}\n</urlset>\n`;
+/** sitemap.xml for absolute page URLs, with each page's language versions as hreflang links. */
+export function sitemap(entries: { loc: string; lastmod?: string | undefined; alternates?: { hreflang: string; href: string }[] }[]): string {
+  const escape = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/"/g, "&quot;");
+  const lines = entries
+    .map((e) => {
+      const alt = (e.alternates ?? []).map((a) => `<xhtml:link rel="alternate" hreflang="${escape(a.hreflang)}" href="${escape(a.href)}"/>`).join("");
+      return `  <url><loc>${escape(e.loc)}</loc>${e.lastmod ? `<lastmod>${e.lastmod}</lastmod>` : ""}${alt}</url>`;
+    })
+    .join("\n");
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${lines}\n</urlset>\n`;
 }
 
 /** AI crawlers named in robots.txt, so it is plain to them and to readers that they are welcome. */

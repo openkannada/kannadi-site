@@ -1,5 +1,6 @@
 // Copy for the contribute page. Strings are trusted HTML. The Kannada waits for a native reader.
 import type { Lang } from "../i18n/core.ts";
+import { RIGHTS } from "./site.ts";
 
 const REPO = '<a href="https://github.com/openkannada/kannadi">openkannada/kannadi</a>';
 const SUPPORT = '<a href="mailto:support@luminik.io">support@luminik.io</a>';
@@ -31,7 +32,8 @@ const CONTRIBUTE_EN = {
       heading: "Sign off your commits",
       paragraphs: [
         `Open Kannada uses the ${DCO} in place of a contributor agreement. Add a sign-off to each commit with <code>git commit -s</code>. It adds a line such as ${SIGNED}, with your real name and email address.`,
-        "The sign-off says that you wrote the change, or have the right to submit it, under the license of the files it touches. You keep the copyright in what you contribute.",
+        "The sign-off says that you wrote the change, or have the right to submit it, under the license of the files it touches.",
+        RIGHTS.en,
       ],
     },
   ],
@@ -64,7 +66,8 @@ const CONTRIBUTE_KN: Contribute = {
       heading: "ನಿಮ್ಮ commit ಗಳಿಗೆ ಸಹಿ ಹಾಕಿ",
       paragraphs: [
         `ಓಪನ್ ಕನ್ನಡ, ಕೊಡುಗೆದಾರರ ಒಪ್ಪಂದದ ಬದಲು ${DCO} ಬಳಸುತ್ತದೆ. ಪ್ರತಿ commit ಗೆ <code>git commit -s</code> ಮೂಲಕ ಸಹಿ ಸೇರಿಸಿ. ಅದು ನಿಮ್ಮ ನಿಜವಾದ ಹೆಸರು ಮತ್ತು ಇಮೇಲ್ ವಿಳಾಸದೊಂದಿಗೆ ${SIGNED} ನಂತಹ ಸಾಲನ್ನು ಸೇರಿಸುತ್ತದೆ.`,
-        "ಆ ಬದಲಾವಣೆಯನ್ನು ನೀವೇ ಬರೆದಿದ್ದೀರಿ, ಅಥವಾ ಅದು ತಟ್ಟುವ ಫೈಲ್‌ಗಳ ಲೈಸೆನ್ಸ್ ಅಡಿಯಲ್ಲಿ ಅದನ್ನು ಸಲ್ಲಿಸುವ ಹಕ್ಕು ನಿಮಗಿದೆ ಎಂದು ಈ ಸಹಿ ಹೇಳುತ್ತದೆ. ನೀವು ಕೊಡುವ ಕೊಡುಗೆಯ ಕೃತಿಸ್ವಾಮ್ಯ ನಿಮ್ಮದೇ ಆಗಿರುತ್ತದೆ.",
+        "ಆ ಬದಲಾವಣೆಯನ್ನು ನೀವೇ ಬರೆದಿದ್ದೀರಿ, ಅಥವಾ ಅದು ತಟ್ಟುವ ಫೈಲ್‌ಗಳ ಲೈಸೆನ್ಸ್ ಅಡಿಯಲ್ಲಿ ಅದನ್ನು ಸಲ್ಲಿಸುವ ಹಕ್ಕು ನಿಮಗಿದೆ ಎಂದು ಈ ಸಹಿ ಹೇಳುತ್ತದೆ.",
+        RIGHTS.kn,
       ],
     },
   ],

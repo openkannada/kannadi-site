@@ -6,8 +6,8 @@ import { type Assets, handle } from "../src/lib/edge.ts";
 import { INTEREST_PATH, type InterestEnv, handleInterest } from "../src/lib/interest.ts";
 
 export default {
-  fetch(request: Request, env: { ASSETS: Assets } & InterestEnv): Promise<Response> {
+  fetch(request: Request, env: { ASSETS: Assets; PREVIEW?: string } & InterestEnv): Promise<Response> {
     if (new URL(request.url).pathname === INTEREST_PATH) return handleInterest(request, env, INTEREST.open, { host: LIVE.host });
-    return handle(request, env.ASSETS, { host: LIVE.host, launched: LIVE.launched });
+    return handle(request, env.ASSETS, { host: LIVE.host, launched: LIVE.launched, preview: env.PREVIEW === "1" });
   },
 };

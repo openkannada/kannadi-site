@@ -6,9 +6,9 @@
   "account_id": "47ac3abdfba61feac39847f19ee678b1",
   "main": "worker/index.ts",
   "compatibility_date": "2026-11-16",
-  // No *.workers.dev address and no preview URLs, so the site has 1 address.
+  // Production has 1 address. Branch Previews from Workers Builds live on workers.dev, noindex.
   "workers_dev": false,
-  "preview_urls": false,
+  "preview_urls": true,
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
@@ -20,6 +20,10 @@
   },
   // wrangler dev rewrites requests to the first route's host over http; https keeps the redirect from looping.
   "dev": { "upstream_protocol": "https" },
+  // Previews do not inherit production settings; PREVIEW makes the Worker serve the Preview's own host.
+  "previews": {
+    "vars": { "PREVIEW": "1" }
+  },
   "routes": [
     { "pattern": "openkannada.org", "custom_domain": true },
     { "pattern": "www.openkannada.org", "custom_domain": true },

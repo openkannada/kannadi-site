@@ -3,6 +3,7 @@ dist/
 .astro/
 .kannadi/
 src/editor/wasm/
+src/editor/typing/
 .lighthouseci/
 .DS_Store
 dist-site/

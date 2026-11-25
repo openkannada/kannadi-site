@@ -12,8 +12,14 @@ export const isPhone = (page: Page) => (page.viewportSize()?.width ?? 1280) < 76
 /** EDITOR_NEXT=1 runs every test on the ProseMirror editor, which ?editor=next opens. */
 export const NEXT = process.env.EDITOR_NEXT === "1";
 
-/** A page's address, on the ProseMirror editor when EDITOR_NEXT=1. */
-export const editorPath = (path: string) => (NEXT ? `${path}${path.includes("?") ? "&" : "?"}editor=next` : path);
+/** TYPING_NEXT=1 runs every test with suggestions from the typing engine, which ?typing=next turns on. */
+export const ENGINE = process.env.TYPING_NEXT === "1";
+
+/** A page's address, on the ProseMirror editor when EDITOR_NEXT=1, and with the typing engine when TYPING_NEXT=1. */
+export const editorPath = (path: string) => {
+  const flags = [...(NEXT ? ["editor=next"] : []), ...(ENGINE ? ["typing=next"] : [])];
+  return flags.length ? `${path}${path.includes("?") ? "&" : "?"}${flags.join("&")}` : path;
+};
 
 /** Opens the editor and waits until it takes input; with a mode, chooses it and waits for its word list. */
 export async function openEditor(page: Page, options: { path?: string; mode?: Mode } = {}): Promise<void> {
@@ -47,6 +53,25 @@ export async function openMenu(page: Page, id: "save-menu" | "tools-menu" | "for
 export async function wordsReady(page: Page): Promise<void> {
   await page.waitForFunction(() => document.querySelector<HTMLElement>(".editor")?.dataset.words === "ready", null, { timeout: 15_000 });
 }
+
+/**
+ * Opens an emulated on-screen keyboard `height` px tall, since emulators have none: the visual viewport shrinks as a real
+ * one makes it. iOS can also pan the visual viewport `pan` px down the page while the keyboard is open.
+ */
+export const openKeyboard = (page: Page, height: number, pan = 0) =>
+  page.evaluate(
+    ({ height, pan }) => {
+      const vv = visualViewport!;
+      const visible = innerHeight - height;
+      Object.defineProperty(vv, "height", { configurable: true, get: () => visible });
+      Object.defineProperty(vv, "offsetTop", { configurable: true, get: () => pan });
+      vv.dispatchEvent(new Event("resize"));
+    },
+    { height, pan },
+  );
+
+/** The part of the window a person can see: above the keyboard, and below where iOS has panned to. */
+export const visibleArea = (page: Page) => page.evaluate(() => ({ top: visualViewport!.offsetTop, bottom: visualViewport!.offsetTop + visualViewport!.height }));
 
 /** Clicks into the document at its end, as a person starting to type would. */
 export async function focusDoc(page: Page): Promise<void> {

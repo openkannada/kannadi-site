@@ -82,7 +82,7 @@ CI runs all of them on every pull request.
 ## Related
 
 - [kannadi](https://github.com/openkannada/kannadi): the converter, typing engine and text tools behind the editor, compiled to WebAssembly.
-- [Neha Sans and Neha Serif](https://github.com/openkannada/noto-kannada-fork) and [Gari](https://github.com/openkannada/gari-font): the Kannada fonts the site uses and offers on `/fonts/`.
+- [Neha Sans and Neha Serif](https://github.com/openkannada/neha-fonts) and [Gari](https://github.com/openkannada/gari-font): the Kannada fonts the site uses and offers on `/fonts/`.
 - [font-health-action](https://github.com/openkannada/font-health-action): the shaping tests those fonts pass.
 
 ## License

@@ -38,7 +38,7 @@ precedence = "override"
 SPDX-FileCopyrightText = "2022 The Noto Project Authors"
 SPDX-License-Identifier = "OFL-1.1"
 
-# Neha Sans and Neha Serif, from the openkannada/noto-kannada-fork release.
+# Neha Sans and Neha Serif, from the openkannada/neha-fonts release.
 [[annotations]]
 path = "src/fonts/neha-*.woff2"
 precedence = "override"

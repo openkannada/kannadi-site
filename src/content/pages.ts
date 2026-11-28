@@ -174,11 +174,11 @@ const ODBL = "https://opendatacommons.org/licenses/odbl/1-0/";
 const CC_BY = "https://creativecommons.org/licenses/by/4.0/";
 const OFL = "https://openfontlicense.org/open-font-license-official-text/";
 
-const NEHA_RELEASE = "https://github.com/openkannada/noto-kannada-fork/releases";
+const NEHA_RELEASE = "https://github.com/openkannada/neha-fonts/releases";
 const GARI_RELEASE = "https://github.com/openkannada/gari-font/releases";
 export const FONT_RELEASES: FontRelease[] = [
-  { name: "Neha Sans", version: "1.000", page: `${NEHA_RELEASE}/tag/v1.000`, zip: `${NEHA_RELEASE}/download/v1.000/NehaSans-1.000.zip`, source: "https://github.com/openkannada/noto-kannada-fork" },
-  { name: "Neha Serif", version: "1.000", page: `${NEHA_RELEASE}/tag/v1.000`, zip: `${NEHA_RELEASE}/download/v1.000/NehaSerif-1.000.zip`, source: "https://github.com/openkannada/noto-kannada-fork" },
+  { name: "Neha Sans", version: "1.000", page: `${NEHA_RELEASE}/tag/v1.000`, zip: `${NEHA_RELEASE}/download/v1.000/NehaSans-1.000.zip`, source: "https://github.com/openkannada/neha-fonts" },
+  { name: "Neha Serif", version: "1.000", page: `${NEHA_RELEASE}/tag/v1.000`, zip: `${NEHA_RELEASE}/download/v1.000/NehaSerif-1.000.zip`, source: "https://github.com/openkannada/neha-fonts" },
   { name: "Gari", version: "1.300", page: `${GARI_RELEASE}/tag/v1.300`, zip: `${GARI_RELEASE}/download/v1.300/Gari-1.300.zip`, source: "https://github.com/openkannada/gari-font" },
 ];
 const zipLink = (r: FontRelease) => `<a href="${r.zip}">${r.zip.split("/").pop()}</a>`;
